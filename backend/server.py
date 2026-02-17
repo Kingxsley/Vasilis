@@ -1223,31 +1223,29 @@ def get_template_scenario(module_type: str, index: int, scenario_id: str) -> dic
 @ai_router.post("/generate", response_model=AIGenerateResponse)
 async def generate_ai_content(data: AIGenerateRequest, user: dict = Depends(require_admin)):
     """Generate AI-powered training content"""
+    openai_key = os.environ.get('OPENAI_API_KEY')
+    if not openai_key:
+        raise HTTPException(status_code=500, detail="AI not configured. Set OPENAI_API_KEY in .env or use template scenarios.")
+    
     try:
-        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        import openai
+        client = openai.AsyncOpenAI(api_key=openai_key)
         
-        api_key = os.environ.get('EMERGENT_LLM_KEY')
-        if not api_key:
-            raise HTTPException(status_code=500, detail="AI service not configured")
-        
-        chat = LlmChat(
-            api_key=api_key,
-            session_id=f"generate_{uuid.uuid4().hex[:8]}",
-            system_message="""You are a cybersecurity training content generator. Create realistic but educational scenarios.
-Return JSON only with: content (object), correct_answer (safe/unsafe), explanation."""
-        ).with_model("openai", "gpt-5.2")
-        
-        prompt = f"""Generate a {data.difficulty} difficulty {data.scenario_type} scenario for cybersecurity training.
-Context: {data.context or 'General corporate environment'}
-Return ONLY valid JSON."""
-        
-        response = await chat.send_message(UserMessage(text=prompt))
+        response = await client.chat.completions.create(
+            model=os.environ.get('OPENAI_MODEL', 'gpt-3.5-turbo'),
+            messages=[
+                {"role": "system", "content": "You are a cybersecurity training content generator. Create realistic but educational scenarios. Return JSON only with: content (object), correct_answer (safe/unsafe), explanation."},
+                {"role": "user", "content": f"Generate a {data.difficulty} difficulty {data.scenario_type} scenario for cybersecurity training. Context: {data.context or 'General corporate environment'}. Return ONLY valid JSON."}
+            ],
+            temperature=0.8
+        )
         
         import json
-        json_start = response.find('{')
-        json_end = response.rfind('}') + 1
+        content = response.choices[0].message.content
+        json_start = content.find('{')
+        json_end = content.rfind('}') + 1
         if json_start >= 0 and json_end > json_start:
-            result = json.loads(response[json_start:json_end])
+            result = json.loads(content[json_start:json_end])
             return AIGenerateResponse(
                 content=result.get("content", {}),
                 correct_answer=result.get("correct_answer", "unsafe"),
