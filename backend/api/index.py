@@ -1,14 +1,15 @@
 # Vercel Serverless Entry Point for FastAPI
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 import sys
 import os
 
-# Add parent directory to path so we can import server
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# CRITICAL: Add parent directory to Python path BEFORE any imports
+# This allows importing from server.py and routes/
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
 
-# Import the FastAPI app from server.py
+# Now import the FastAPI app
 from server import app
 
-# Export for Vercel
-handler = app
+# Vercel expects either 'app' or 'handler' as the ASGI application
+# Using 'app' directly works with Vercel's Python runtime
