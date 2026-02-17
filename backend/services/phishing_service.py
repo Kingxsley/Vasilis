@@ -72,21 +72,24 @@ async def send_phishing_email(
         
         subject = template['subject'].replace('{{USER_NAME}}', target.get('user_name', 'User'))
         
-        # Check if we have SMTP configured
-        smtp_host = os.environ.get('SMTP_HOST')
-        smtp_port = os.environ.get('SMTP_PORT', 587)
+        # Check if we have SMTP configured (supports SendPulse, Gmail, etc.)
+        smtp_host = os.environ.get('SMTP_HOST')  # For SendPulse: smtp-pulse.com
+        smtp_port = int(os.environ.get('SMTP_PORT', 465))  # SendPulse uses 465 with SSL
         smtp_user = os.environ.get('SMTP_USER')
         smtp_pass = os.environ.get('SMTP_PASSWORD')
+        smtp_use_ssl = os.environ.get('SMTP_USE_SSL', 'true').lower() == 'true'
         
         if smtp_host and smtp_user and smtp_pass:
             import smtplib
+            import ssl
             from email.mime.text import MIMEText
             from email.mime.multipart import MIMEMultipart
             
             msg = MIMEMultipart('alternative')
             msg['Subject'] = subject
-            msg['From'] = f"{template['sender_name']} <{template['sender_email']}>"
+            msg['From'] = f"{template['sender_name']} <{smtp_user}>"  # Use SMTP user as from address
             msg['To'] = target['user_email']
+            msg['Reply-To'] = template['sender_email']
             
             # Add plain text version if available
             if template.get('body_text'):
@@ -97,12 +100,20 @@ async def send_phishing_email(
             
             msg.attach(MIMEText(html_body, 'html'))
             
-            with smtplib.SMTP(smtp_host, int(smtp_port)) as server:
-                server.starttls()
-                server.login(smtp_user, smtp_pass)
-                server.sendmail(template['sender_email'], target['user_email'], msg.as_string())
+            # SendPulse and similar services use SSL on port 465
+            if smtp_use_ssl and smtp_port == 465:
+                context = ssl.create_default_context()
+                with smtplib.SMTP_SSL(smtp_host, smtp_port, context=context) as server:
+                    server.login(smtp_user, smtp_pass)
+                    server.sendmail(smtp_user, target['user_email'], msg.as_string())
+            else:
+                # Standard STARTTLS on port 587
+                with smtplib.SMTP(smtp_host, smtp_port) as server:
+                    server.starttls()
+                    server.login(smtp_user, smtp_pass)
+                    server.sendmail(smtp_user, target['user_email'], msg.as_string())
             
-            logger.info(f"Phishing email sent to {target['user_email']}")
+            logger.info(f"Phishing email sent to {target['user_email']} via {smtp_host}")
             return True
         else:
             # Simulation mode - just mark as sent without actually sending
