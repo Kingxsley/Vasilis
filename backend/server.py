@@ -1326,6 +1326,9 @@ async def get_training_analytics(
 async def root():
     return {"message": "VasilisNetShield API", "version": "1.0.0"}
 
+# Import phishing routes
+from routes.phishing import router as phishing_router
+
 # Include all routers
 api_router.include_router(auth_router)
 api_router.include_router(org_router)
@@ -1333,6 +1336,7 @@ api_router.include_router(user_router)
 api_router.include_router(campaign_router)
 api_router.include_router(training_router)
 api_router.include_router(ai_router)
+api_router.include_router(phishing_router)
 
 app.include_router(api_router)
 
