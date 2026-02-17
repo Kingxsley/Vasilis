@@ -139,10 +139,10 @@ code, pre, .mono {
 
 @keyframes pulse-glow {
   0%, 100% {
-    box-shadow: 0 0 5px rgba(41, 121, 255, 0.5);
+    box-shadow: 0 0 5px rgba(212, 168, 54, 0.5);
   }
   50% {
-    box-shadow: 0 0 20px rgba(41, 121, 255, 0.8);
+    box-shadow: 0 0 20px rgba(212, 168, 54, 0.8);
   }
 }
 
