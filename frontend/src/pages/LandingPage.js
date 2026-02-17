@@ -5,13 +5,13 @@ import { Mail, MousePointerClick, Users, BarChart3, Lock, ChevronRight, Zap, Tar
 
 // Brand Assets
 const LOGO_HORIZONTAL = "https://customer-assets.emergentagent.com/job_cyber-sim-hub/artifacts/ff859qpf_logo-horizontal-transparent.png";
-const LOGO_SQUARE = "https://customer-assets.emergentagent.com/job_cyber-sim-hub/artifacts/aqr9agjm_logo-square.png";
+const ICON_TRANSPARENT = "https://customer-assets.emergentagent.com/job_cyber-sim-hub/artifacts/qnhbhq26_icon-transparent.png";
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#1A5653]">
+    <div className="min-h-screen">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-[#2A7370]">
+      <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-[#D4A836]/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <img 
@@ -26,7 +26,7 @@ export default function LandingPage() {
                 </Button>
               </Link>
               <Link to="/auth">
-                <Button className="bg-[#D4A836] hover:bg-[#C49A30] text-[#1A5653] font-semibold" data-testid="get-started-btn">
+                <Button className="bg-[#D4A836] hover:bg-[#C49A30] text-black font-semibold" data-testid="get-started-btn">
                   Get Started
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
@@ -50,41 +50,41 @@ export default function LandingPage() {
                 <span className="text-[#D4A836]"> Defend </span>
                 Against Cyber Threats
               </h1>
-              <p className="text-lg text-[#B8C4B8] mb-8 max-w-xl">
+              <p className="text-lg text-gray-400 mb-8 max-w-xl">
                 Realistic phishing simulations, malicious ad detection, and social engineering scenarios. 
                 Build a security-aware workforce with AI-generated training content.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link to="/auth">
-                  <Button size="lg" className="bg-[#D4A836] hover:bg-[#C49A30] text-[#1A5653] font-semibold px-8" data-testid="hero-cta-btn">
+                  <Button size="lg" className="bg-[#D4A836] hover:bg-[#C49A30] text-black font-semibold px-8" data-testid="hero-cta-btn">
                     Start Free Trial
                     <ChevronRight className="w-5 h-5 ml-2" />
                   </Button>
                 </Link>
-                <Button size="lg" variant="outline" className="border-[#2A7370] text-[#E8DDB5] hover:bg-white/5">
+                <Button size="lg" variant="outline" className="border-[#D4A836]/30 text-[#E8DDB5] hover:bg-white/5">
                   Watch Demo
                 </Button>
               </div>
               
-              <div className="flex items-center gap-8 mt-12 pt-8 border-t border-[#2A7370]">
+              <div className="flex items-center gap-8 mt-12 pt-8 border-t border-[#D4A836]/20">
                 <div>
                   <p className="text-3xl font-bold text-[#E8DDB5]">95%</p>
-                  <p className="text-sm text-[#7A9A8A]">Detection Rate</p>
+                  <p className="text-sm text-gray-500">Detection Rate</p>
                 </div>
                 <div>
                   <p className="text-3xl font-bold text-[#E8DDB5]">10k+</p>
-                  <p className="text-sm text-[#7A9A8A]">Users Trained</p>
+                  <p className="text-sm text-gray-500">Users Trained</p>
                 </div>
                 <div>
                   <p className="text-3xl font-bold text-[#E8DDB5]">500+</p>
-                  <p className="text-sm text-[#7A9A8A]">Organizations</p>
+                  <p className="text-sm text-gray-500">Organizations</p>
                 </div>
               </div>
             </div>
             
             <div className="relative hidden lg:block animate-slide-up stagger-2">
-              <div className="absolute -inset-4 bg-[#D4A836]/20 blur-3xl rounded-full" />
-              <div className="relative bg-[#1F6360] border border-[#2A7370] rounded-xl p-6 shadow-2xl">
+              <div className="absolute -inset-4 bg-[#D4A836]/10 blur-3xl rounded-full" />
+              <div className="relative card-dark rounded-xl p-6 shadow-2xl">
                 {/* Simulated email preview */}
                 <div className="email-container">
                   <div className="email-header flex items-center justify-between">
@@ -94,12 +94,12 @@ export default function LandingPage() {
                       </div>
                       <div>
                         <p className="text-sm font-medium text-[#E8DDB5]">Suspicious Email Detected</p>
-                        <p className="text-xs text-[#7A9A8A]">security@amaz0n-support.com</p>
+                        <p className="text-xs text-gray-500">security@amaz0n-support.com</p>
                       </div>
                     </div>
                     <span className="px-2 py-1 text-xs bg-[#FF3B30]/20 text-[#FF3B30] rounded">THREAT</span>
                   </div>
-                  <div className="email-body text-[#B8C4B8]">
+                  <div className="email-body text-gray-400">
                     <p className="text-sm">URGENT: Your account has been compromised. Click here to verify...</p>
                   </div>
                 </div>
@@ -109,7 +109,7 @@ export default function LandingPage() {
                     <Award className="w-5 h-5 text-[#00E676]" />
                     <span className="text-sm font-medium text-[#00E676]">Correctly Identified!</span>
                   </div>
-                  <p className="text-xs text-[#7A9A8A]">
+                  <p className="text-xs text-gray-500">
                     Great job! You spotted the misspelled domain and urgency tactics.
                   </p>
                 </div>
@@ -120,30 +120,30 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-24 bg-[#1A5653]">
+      <section className="py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
               Comprehensive Security Training
             </h2>
-            <p className="text-[#7A9A8A] max-w-2xl mx-auto">
+            <p className="text-gray-500 max-w-2xl mx-auto">
               Three powerful modules designed to build real-world cybersecurity awareness
             </p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
             {/* Phishing Module */}
-            <div className="group bg-[#1F6360] border border-[#2A7370] rounded-xl p-8 card-hover" data-testid="feature-phishing">
+            <div className="group card-dark rounded-xl p-8 card-hover" data-testid="feature-phishing">
               <div className="w-14 h-14 rounded-xl bg-[#D4A836]/10 flex items-center justify-center mb-6 group-hover:bg-[#D4A836]/20 transition-colors">
                 <Mail className="w-7 h-7 text-[#D4A836]" />
               </div>
               <h3 className="text-xl font-bold mb-3 text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
                 Phishing Email Detection
               </h3>
-              <p className="text-[#7A9A8A] mb-6">
+              <p className="text-gray-500 mb-6">
                 Learn to identify suspicious emails, fraudulent sender addresses, and malicious links through realistic simulations.
               </p>
-              <ul className="space-y-2 text-sm text-[#7A9A8A]">
+              <ul className="space-y-2 text-sm text-gray-500">
                 <li className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#D4A836]" />
                   Spoofed domain recognition
@@ -160,17 +160,17 @@ export default function LandingPage() {
             </div>
             
             {/* Malicious Ads Module */}
-            <div className="group bg-[#1F6360] border border-[#2A7370] rounded-xl p-8 card-hover" data-testid="feature-ads">
+            <div className="group card-dark rounded-xl p-8 card-hover" data-testid="feature-ads">
               <div className="w-14 h-14 rounded-xl bg-[#FFB300]/10 flex items-center justify-center mb-6 group-hover:bg-[#FFB300]/20 transition-colors">
                 <MousePointerClick className="w-7 h-7 text-[#FFB300]" />
               </div>
               <h3 className="text-xl font-bold mb-3 text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
                 Malicious Ad Recognition
               </h3>
-              <p className="text-[#7A9A8A] mb-6">
+              <p className="text-gray-500 mb-6">
                 Spot fake advertisements, clickbait, and potentially harmful ad content before they compromise your system.
               </p>
-              <ul className="space-y-2 text-sm text-[#7A9A8A]">
+              <ul className="space-y-2 text-sm text-gray-500">
                 <li className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#FFB300]" />
                   Clickbait identification
@@ -187,17 +187,17 @@ export default function LandingPage() {
             </div>
             
             {/* Social Engineering Module */}
-            <div className="group bg-[#1F6360] border border-[#2A7370] rounded-xl p-8 card-hover" data-testid="feature-social">
+            <div className="group card-dark rounded-xl p-8 card-hover" data-testid="feature-social">
               <div className="w-14 h-14 rounded-xl bg-[#FF3B30]/10 flex items-center justify-center mb-6 group-hover:bg-[#FF3B30]/20 transition-colors">
                 <Users className="w-7 h-7 text-[#FF3B30]" />
               </div>
               <h3 className="text-xl font-bold mb-3 text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
                 Social Engineering Defense
               </h3>
-              <p className="text-[#7A9A8A] mb-6">
+              <p className="text-gray-500 mb-6">
                 Recognize manipulation tactics including pretexting, baiting, and impersonation attempts.
               </p>
-              <ul className="space-y-2 text-sm text-[#7A9A8A]">
+              <ul className="space-y-2 text-sm text-gray-500">
                 <li className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#FF3B30]" />
                   Pretexting scenarios
@@ -217,14 +217,14 @@ export default function LandingPage() {
       </section>
 
       {/* Platform Features */}
-      <section className="py-24 bg-[#1F6360]">
+      <section className="py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
                 Enterprise-Ready Platform
               </h2>
-              <p className="text-[#7A9A8A] mb-8">
+              <p className="text-gray-500 mb-8">
                 Manage multiple organizations, track progress, and deploy targeted campaigns with our comprehensive admin dashboard.
               </p>
               
@@ -235,7 +235,7 @@ export default function LandingPage() {
                   </div>
                   <div>
                     <h4 className="font-semibold mb-1 text-[#E8DDB5]">Targeted Campaigns</h4>
-                    <p className="text-sm text-[#7A9A8A]">Create custom training campaigns for specific teams or departments.</p>
+                    <p className="text-sm text-gray-500">Create custom training campaigns for specific teams or departments.</p>
                   </div>
                 </div>
                 
@@ -245,7 +245,7 @@ export default function LandingPage() {
                   </div>
                   <div>
                     <h4 className="font-semibold mb-1 text-[#E8DDB5]">Real-Time Analytics</h4>
-                    <p className="text-sm text-[#7A9A8A]">Track completion rates, scores, and identify knowledge gaps.</p>
+                    <p className="text-sm text-gray-500">Track completion rates, scores, and identify knowledge gaps.</p>
                   </div>
                 </div>
                 
@@ -255,18 +255,18 @@ export default function LandingPage() {
                   </div>
                   <div>
                     <h4 className="font-semibold mb-1 text-[#E8DDB5]">AI-Generated Content</h4>
-                    <p className="text-sm text-[#7A9A8A]">Fresh, realistic scenarios powered by AI for continuous learning.</p>
+                    <p className="text-sm text-gray-500">Fresh, realistic scenarios powered by AI for continuous learning.</p>
                   </div>
                 </div>
               </div>
             </div>
             
             <div className="relative flex justify-center">
-              <div className="absolute -inset-4 bg-gradient-to-r from-[#D4A836]/20 to-[#00E676]/20 blur-3xl rounded-full" />
+              <div className="absolute -inset-8 bg-gradient-to-r from-[#D4A836]/10 to-[#0f3460]/20 blur-3xl rounded-full" />
               <img 
-                src={LOGO_SQUARE}
+                src={ICON_TRANSPARENT}
                 alt="Vasilis NetShield"
-                className="relative rounded-xl border border-[#2A7370] shadow-2xl max-w-sm"
+                className="relative w-64 h-64 object-contain animate-pulse-glow"
               />
             </div>
           </div>
@@ -274,16 +274,16 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-[#1A5653]">
+      <section className="py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
             Ready to Strengthen Your Security?
           </h2>
-          <p className="text-[#7A9A8A] mb-8 max-w-2xl mx-auto">
+          <p className="text-gray-500 mb-8 max-w-2xl mx-auto">
             Join hundreds of organizations already using Vasilis NetShield to build a security-conscious workforce.
           </p>
           <Link to="/auth">
-            <Button size="lg" className="bg-[#D4A836] hover:bg-[#C49A30] text-[#1A5653] font-semibold px-12" data-testid="cta-start-btn">
+            <Button size="lg" className="bg-[#D4A836] hover:bg-[#C49A30] text-black font-semibold px-12" data-testid="cta-start-btn">
               Start Training Today
               <ChevronRight className="w-5 h-5 ml-2" />
             </Button>
@@ -292,7 +292,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 bg-[#1F6360] border-t border-[#2A7370]">
+      <footer className="py-12 border-t border-[#D4A836]/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <img 
@@ -300,7 +300,7 @@ export default function LandingPage() {
               alt="Vasilis NetShield" 
               className="h-8"
             />
-            <p className="text-sm text-[#7A9A8A]">
+            <p className="text-sm text-gray-500">
               2024 Vasilis NetShield. Enterprise Cybersecurity Training.
             </p>
           </div>
