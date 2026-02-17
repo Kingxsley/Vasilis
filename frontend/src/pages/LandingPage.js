@@ -43,7 +43,7 @@ export default function LandingPage() {
             <div className="animate-slide-up">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4A836]/10 border border-[#D4A836]/30 mb-6">
                 <Zap className="w-4 h-4 text-[#D4A836]" />
-                <span className="text-sm text-[#D4A836]">AI-Powered Security Training</span>
+                <span className="text-sm text-[#D4A836]">Human + AI Powered Security Training</span>
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight mb-6 text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
                 Train Your Team to
