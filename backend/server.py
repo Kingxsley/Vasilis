@@ -1342,6 +1342,25 @@ async def get_training_analytics(
 async def root():
     return {"message": "VasilisNetShield API", "version": "1.0.0"}
 
+@api_router.get("/health")
+async def health_check():
+    """Check if API and database are working"""
+    try:
+        # Test database connection
+        await db.command("ping")
+        return {
+            "status": "healthy",
+            "database": "connected",
+            "message": "VasilisNetShield API is running"
+        }
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        return {
+            "status": "unhealthy",
+            "database": "disconnected",
+            "error": str(e)
+        }
+
 # Import phishing routes
 from routes.phishing import router as phishing_router
 from routes.export import router as export_router
