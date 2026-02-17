@@ -76,29 +76,29 @@ code, pre, .mono {
 }
 
 ::-webkit-scrollbar-track {
-  background: #0B0E14;
+  background: #1A5653;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #30363D;
+  background: #2A7370;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #484F58;
+  background: #3A8A87;
 }
 
 /* Glassmorphism utility */
 .glass {
-  background: rgba(22, 27, 34, 0.7);
+  background: rgba(26, 86, 83, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(212, 168, 54, 0.2);
 }
 
 /* Glow effects */
-.glow-blue {
-  box-shadow: 0 0 20px rgba(41, 121, 255, 0.3);
+.glow-gold {
+  box-shadow: 0 0 20px rgba(212, 168, 54, 0.3);
 }
 
 .glow-green {
