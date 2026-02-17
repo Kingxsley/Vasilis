@@ -21,9 +21,12 @@ const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, adminOnly: true },
   { path: '/organizations', label: 'Organizations', icon: Building2, adminOnly: true },
   { path: '/users', label: 'Users', icon: Users, adminOnly: true },
+  { path: '/user-import', label: 'Import Users', icon: Upload, adminOnly: true },
   { path: '/campaigns', label: 'Campaigns', icon: Target, adminOnly: true },
   { path: '/phishing', label: 'Phishing Sim', icon: Mail, adminOnly: true },
+  { path: '/ads', label: 'Ad Simulation', icon: Monitor, adminOnly: true },
   { path: '/training', label: 'Training', icon: BookOpen, adminOnly: false },
+  { path: '/certificates', label: 'Certificates', icon: Award, adminOnly: false },
   { path: '/analytics', label: 'Analytics', icon: BarChart3, adminOnly: true },
 ];
 
