@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import { 
   LayoutDashboard, Building2, Users, Target, 
-  BookOpen, BarChart3, LogOut, Menu, X, ChevronDown
+  BookOpen, BarChart3, LogOut, Menu, X, ChevronDown, Mail
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import {
@@ -22,6 +22,7 @@ const navItems = [
   { path: '/organizations', label: 'Organizations', icon: Building2, adminOnly: true },
   { path: '/users', label: 'Users', icon: Users, adminOnly: true },
   { path: '/campaigns', label: 'Campaigns', icon: Target, adminOnly: true },
+  { path: '/phishing', label: 'Phishing Sim', icon: Mail, adminOnly: true },
   { path: '/training', label: 'Training', icon: BookOpen, adminOnly: false },
   { path: '/analytics', label: 'Analytics', icon: BarChart3, adminOnly: true },
 ];
