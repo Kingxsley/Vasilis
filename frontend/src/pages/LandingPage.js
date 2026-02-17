@@ -20,11 +20,7 @@ export default function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-[#D4A836]/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <img 
-              src={LOGO_HORIZONTAL} 
-              alt="Vasilis NetShield" 
-              className="h-10"
-            />
+            <Logo />
             <div className="flex items-center gap-4">
               <Link to="/auth">
                 <Button variant="ghost" className="text-[#E8DDB5] hover:text-white hover:bg-white/10" data-testid="login-btn">
@@ -301,11 +297,7 @@ export default function LandingPage() {
       <footer className="py-12 border-t border-[#D4A836]/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <img 
-              src={LOGO_HORIZONTAL} 
-              alt="Vasilis NetShield" 
-              className="h-8"
-            />
+            <Logo />
             <p className="text-sm text-gray-500">
               2024 Vasilis NetShield. Enterprise Cybersecurity Training.
             </p>
