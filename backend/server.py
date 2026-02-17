@@ -17,10 +17,26 @@ import httpx
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# MongoDB connection - handle missing env vars gracefully
+mongo_url = os.environ.get('MONGO_URL', '')
+db_name = os.environ.get('DB_NAME', 'vasilisnetshield')
+
+if not mongo_url:
+    logger.error("MONGO_URL environment variable is not set!")
+    # Use a dummy for startup, will fail on actual DB operations
+    mongo_url = "mongodb://localhost:27017"
+
+try:
+    client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=5000)
+    db = client[db_name]
+    logger.info(f"MongoDB client initialized for database: {db_name}")
+except Exception as e:
+    logger.error(f"Failed to initialize MongoDB client: {e}")
+    raise
 
 # JWT Config
 JWT_SECRET = os.environ.get('JWT_SECRET', 'vasilisnetshield-secret-key-2024')
