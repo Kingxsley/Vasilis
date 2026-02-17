@@ -52,7 +52,7 @@ export default function LandingPage() {
               </h1>
               <p className="text-lg text-gray-400 mb-8 max-w-xl">
                 Realistic phishing simulations, malicious ad detection, and social engineering scenarios. 
-                Build a security-aware workforce with AI-generated training content.
+                Build a security-aware workforce with expert-crafted and AI-enhanced training content.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link to="/auth">
