@@ -680,8 +680,30 @@ export default function PhishingSimulations() {
         <Dialog open={showCampaignDetails} onOpenChange={setShowCampaignDetails}>
           <DialogContent className="bg-[#161B22] border-[#30363D] sm:max-w-4xl">
             <DialogHeader>
-              <DialogTitle className="text-[#E8DDB5]">
-                {selectedCampaign?.name} - Campaign Details
+              <DialogTitle className="text-[#E8DDB5] flex items-center justify-between">
+                <span>{selectedCampaign?.name} - Campaign Details</span>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => window.open(`${API}/export/phishing/${selectedCampaign?.campaign_id}/excel`, '_blank')}
+                    className="border-green-500/30 text-green-400 hover:bg-green-500/10"
+                    data-testid="export-excel-btn"
+                  >
+                    <FileSpreadsheet className="w-4 h-4 mr-1" />
+                    Excel
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => window.open(`${API}/export/phishing/${selectedCampaign?.campaign_id}/pdf`, '_blank')}
+                    className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                    data-testid="export-pdf-btn"
+                  >
+                    <Download className="w-4 h-4 mr-1" />
+                    PDF
+                  </Button>
+                </div>
               </DialogTitle>
               <DialogDescription className="text-gray-400">
                 Track email opens and link clicks in real-time
