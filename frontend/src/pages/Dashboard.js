@@ -1,0 +1,215 @@
+import React, { useEffect, useState } from 'react';
+import { DashboardLayout } from '../components/DashboardLayout';
+import { useAuth } from '../App';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Building2, Users, Target, BookOpen, TrendingUp, Shield, Activity } from 'lucide-react';
+import axios from 'axios';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
+
+export default function Dashboard() {
+  const { user, token } = useAuth();
+  const [stats, setStats] = useState(null);
+  const [recentSessions, setRecentSessions] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      const [statsRes, analyticsRes] = await Promise.all([
+        axios.get(`${API}/dashboard/stats`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${API}/analytics/training`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
+      setStats(statsRes.data);
+      setRecentSessions(analyticsRes.data.recent_sessions || []);
+    } catch (err) {
+      console.error('Failed to fetch dashboard data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const statCards = [
+    {
+      title: 'Organizations',
+      value: stats?.total_organizations || 0,
+      icon: Building2,
+      color: '#2979FF',
+      bgColor: 'bg-[#2979FF]/10'
+    },
+    {
+      title: 'Total Users',
+      value: stats?.total_users || 0,
+      icon: Users,
+      color: '#00E676',
+      bgColor: 'bg-[#00E676]/10'
+    },
+    {
+      title: 'Campaigns',
+      value: stats?.total_campaigns || 0,
+      icon: Target,
+      color: '#FFB300',
+      bgColor: 'bg-[#FFB300]/10'
+    },
+    {
+      title: 'Training Sessions',
+      value: stats?.total_training_sessions || 0,
+      icon: BookOpen,
+      color: '#FF3B30',
+      bgColor: 'bg-[#FF3B30]/10'
+    }
+  ];
+
+  return (
+    <DashboardLayout>
+      <div className="p-6 lg:p-8" data-testid="dashboard-page">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Chivo, sans-serif' }}>
+            Welcome back, {user?.name?.split(' ')[0]}
+          </h1>
+          <p className="text-gray-400">Here's what's happening with your security training</p>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {statCards.map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <Card 
+                key={stat.title} 
+                className="bg-[#161B22] border-[#30363D] card-hover animate-slide-up"
+                style={{ animationDelay: `${index * 0.1}s` }}
+                data-testid={`stat-${stat.title.toLowerCase().replace(' ', '-')}`}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-400 mb-1">{stat.title}</p>
+                      <p className="text-3xl font-bold" style={{ fontFamily: 'Chivo, sans-serif' }}>
+                        {loading ? '...' : stat.value.toLocaleString()}
+                      </p>
+                    </div>
+                    <div className={`w-12 h-12 rounded-xl ${stat.bgColor} flex items-center justify-center`}>
+                      <Icon className="w-6 h-6" style={{ color: stat.color }} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Average Score Card */}
+          <Card className="bg-[#161B22] border-[#30363D] lg:col-span-1">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-[#00E676]" />
+                Average Score
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-center py-8">
+                <div className="relative">
+                  <div className="w-40 h-40 rounded-full border-8 border-[#21262D] flex items-center justify-center">
+                    <div 
+                      className="absolute inset-0 rounded-full"
+                      style={{
+                        background: `conic-gradient(#00E676 ${(stats?.average_score || 0) * 3.6}deg, #21262D 0deg)`
+                      }}
+                    />
+                    <div className="w-32 h-32 rounded-full bg-[#161B22] flex items-center justify-center relative z-10">
+                      <div className="text-center">
+                        <p className="text-4xl font-bold text-[#00E676]" style={{ fontFamily: 'Chivo, sans-serif' }}>
+                          {loading ? '...' : `${Math.round(stats?.average_score || 0)}%`}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">Overall</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center justify-center gap-6 pt-4 border-t border-[#30363D]">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-white">{stats?.active_campaigns || 0}</p>
+                  <p className="text-xs text-gray-500">Active Campaigns</p>
+                </div>
+                <div className="w-px h-10 bg-[#30363D]" />
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-white">{stats?.total_training_sessions || 0}</p>
+                  <p className="text-xs text-gray-500">Total Sessions</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recent Activity */}
+          <Card className="bg-[#161B22] border-[#30363D] lg:col-span-2">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Activity className="w-5 h-5 text-[#2979FF]" />
+                Recent Training Activity
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="w-6 h-6 border-2 border-[#2979FF] border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : recentSessions.length === 0 ? (
+                <div className="text-center py-12">
+                  <Shield className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                  <p className="text-gray-400">No training sessions yet</p>
+                  <p className="text-sm text-gray-500">Start a training campaign to see activity</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {recentSessions.slice(0, 5).map((session, index) => (
+                    <div 
+                      key={session.session_id} 
+                      className="flex items-center justify-between p-4 rounded-lg bg-[#21262D]/50 border border-[#30363D]"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                          session.status === 'completed' ? 'bg-[#00E676]/10' : 'bg-[#FFB300]/10'
+                        }`}>
+                          <BookOpen className={`w-5 h-5 ${
+                            session.status === 'completed' ? 'text-[#00E676]' : 'text-[#FFB300]'
+                          }`} />
+                        </div>
+                        <div>
+                          <p className="font-medium text-white">{session.module_id.replace('mod_', '').replace(/_/g, ' ')}</p>
+                          <p className="text-xs text-gray-500">
+                            {new Date(session.started_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className={`text-lg font-bold ${
+                          session.score >= 70 ? 'text-[#00E676]' : session.score >= 50 ? 'text-[#FFB300]' : 'text-[#FF3B30]'
+                        }`}>
+                          {session.score}%
+                        </p>
+                        <p className="text-xs text-gray-500 capitalize">{session.status}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </DashboardLayout>
+  );
+}
