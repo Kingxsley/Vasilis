@@ -260,6 +260,30 @@ const AppRouter = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/ads"
+          element={
+            <ProtectedRoute adminOnly>
+              <AdSimulations />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/user-import"
+          element={
+            <ProtectedRoute adminOnly>
+              <UserImport />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/certificates"
+          element={
+            <ProtectedRoute>
+              <Certificates />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </React.Suspense>
