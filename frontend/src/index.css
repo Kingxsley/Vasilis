@@ -175,7 +175,7 @@ code, pre, .mono {
 }
 
 .card-hover:hover {
-  border-color: #2979FF;
+  border-color: #D4A836;
   transform: translateY(-2px);
 }
 
@@ -188,16 +188,16 @@ code, pre, .mono {
 
 /* Email simulation styles */
 .email-container {
-  background: #161B22;
-  border: 1px solid #30363D;
+  background: #1F6360;
+  border: 1px solid #2A7370;
   border-radius: 6px;
   overflow: hidden;
 }
 
 .email-header {
-  background: #21262D;
+  background: #256663;
   padding: 12px 16px;
-  border-bottom: 1px solid #30363D;
+  border-bottom: 1px solid #2A7370;
 }
 
 .email-body {
@@ -208,15 +208,15 @@ code, pre, .mono {
 
 /* Ad simulation styles */
 .ad-container {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
-  border: 2px solid #30363D;
+  background: linear-gradient(180deg, rgba(212, 168, 54, 0.1) 0%, rgba(212, 168, 54, 0) 100%);
+  border: 2px solid #2A7370;
   border-radius: 8px;
   overflow: hidden;
   transition: border-color 0.2s;
 }
 
 .ad-container:hover {
-  border-color: #FFB300;
+  border-color: #D4A836;
 }
 
 /* Chat/Dialogue styles */
@@ -228,12 +228,13 @@ code, pre, .mono {
 }
 
 .dialogue-bubble.incoming {
-  background: #21262D;
+  background: #256663;
   border-bottom-left-radius: 4px;
 }
 
 .dialogue-bubble.outgoing {
-  background: #2979FF;
+  background: #D4A836;
+  color: #1A5653;
   margin-left: auto;
   border-bottom-right-radius: 4px;
 }
@@ -241,14 +242,14 @@ code, pre, .mono {
 /* Progress bar styles */
 .progress-track {
   height: 8px;
-  background: #21262D;
+  background: #256663;
   border-radius: 4px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #2979FF, #00E676);
+  background: linear-gradient(90deg, #D4A836, #00E676);
   border-radius: 4px;
   transition: width 0.5s ease;
 }
@@ -271,8 +272,8 @@ code, pre, .mono {
 }
 
 .status-dot.warning {
-  background: #FFB300;
-  box-shadow: 0 0 8px rgba(255, 179, 0, 0.5);
+  background: #D4A836;
+  box-shadow: 0 0 8px rgba(212, 168, 54, 0.5);
 }
 
 .status-dot.danger {
@@ -282,7 +283,7 @@ code, pre, .mono {
 
 /* Hero gradient */
 .hero-gradient {
-  background: radial-gradient(circle at 50% 0%, rgba(41, 121, 255, 0.15) 0%, rgba(11, 14, 20, 0) 70%);
+  background: radial-gradient(circle at 50% 0%, rgba(212, 168, 54, 0.15) 0%, rgba(26, 86, 83, 0) 70%);
 }
 
 /* Data wrapper fix */
