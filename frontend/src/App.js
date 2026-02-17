@@ -249,6 +249,14 @@ const AppRouter = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/phishing"
+          element={
+            <ProtectedRoute adminOnly>
+              <PhishingSimulations />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </React.Suspense>
