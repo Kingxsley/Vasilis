@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 
 // Brand Assets
 const LOGO_HORIZONTAL = "https://customer-assets.emergentagent.com/job_cyber-sim-hub/artifacts/ff859qpf_logo-horizontal-transparent.png";
-const LOGO_SQUARE = "https://customer-assets.emergentagent.com/job_cyber-sim-hub/artifacts/aqr9agjm_logo-square.png";
+const ICON_TRANSPARENT = "https://customer-assets.emergentagent.com/job_cyber-sim-hub/artifacts/qnhbhq26_icon-transparent.png";
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -34,7 +34,6 @@ export default function AuthPage() {
       if (isLogin) {
         const user = await login(formData.email, formData.password);
         toast.success(`Welcome back, ${user.name}!`);
-        // Redirect based on role
         if (user.role === 'super_admin' || user.role === 'org_admin') {
           navigate('/dashboard', { replace: true });
         } else {
@@ -58,38 +57,36 @@ export default function AuthPage() {
   };
 
   const handleGoogleLogin = () => {
-    // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
     const redirectUrl = window.location.origin + '/dashboard';
     window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
   };
 
   return (
-    <div className="min-h-screen bg-[#1A5653] flex">
-      {/* Left Panel - Image */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-[#1F6360]">
-        <div className="absolute inset-0 flex items-center justify-center p-12">
-          <img 
-            src={LOGO_SQUARE}
-            alt="Vasilis NetShield"
-            className="max-w-md w-full"
-          />
-        </div>
-        <div className="absolute top-0 left-0 right-0 p-8">
+    <div className="min-h-screen flex">
+      {/* Left Panel - Branding */}
+      <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0f3460]/50 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 p-8 z-10">
           <button 
             onClick={() => navigate('/')} 
-            className="flex items-center gap-2 text-[#B8C4B8] hover:text-[#E8DDB5] transition-colors w-fit"
+            className="flex items-center gap-2 text-gray-400 hover:text-[#E8DDB5] transition-colors w-fit"
             data-testid="back-to-home-btn"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Home
           </button>
         </div>
-        <div className="absolute bottom-0 left-0 right-0 p-12">
+        <div className="relative z-10 text-center p-12">
+          <img 
+            src={ICON_TRANSPARENT}
+            alt="Vasilis NetShield"
+            className="w-48 h-48 mx-auto mb-8 animate-pulse-glow"
+          />
           <h2 className="text-4xl font-bold mb-4 text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
             Defend Against
             <span className="text-[#D4A836]"> Modern Threats</span>
           </h2>
-          <p className="text-[#B8C4B8] max-w-md">
+          <p className="text-gray-400 max-w-md mx-auto">
             Train your organization with realistic cybersecurity simulations powered by AI.
           </p>
         </div>
@@ -101,7 +98,7 @@ export default function AuthPage() {
           {/* Mobile Back Button */}
           <button 
             onClick={() => navigate('/')} 
-            className="lg:hidden flex items-center gap-2 text-[#B8C4B8] hover:text-[#E8DDB5] transition-colors mb-8"
+            className="lg:hidden flex items-center gap-2 text-gray-400 hover:text-[#E8DDB5] transition-colors mb-8"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Home
@@ -121,7 +118,7 @@ export default function AuthPage() {
             <h1 className="text-3xl font-bold mb-2 text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
               {isLogin ? 'Welcome back' : 'Create account'}
             </h1>
-            <p className="text-[#7A9A8A]">
+            <p className="text-gray-500">
               {isLogin 
                 ? 'Enter your credentials to access your account' 
                 : 'Start your cybersecurity training journey'}
@@ -132,16 +129,16 @@ export default function AuthPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {!isLogin && (
               <div className="space-y-2 animate-slide-up">
-                <Label htmlFor="name" className="text-[#B8C4B8]">Full Name</Label>
+                <Label htmlFor="name" className="text-gray-400">Full Name</Label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#7A9A8A]" />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                   <Input
                     id="name"
                     type="text"
                     placeholder="John Doe"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="pl-10 bg-[#1F6360] border-[#2A7370] text-[#E8DDB5] placeholder:text-[#7A9A8A] focus:border-[#D4A836] focus:ring-[#D4A836]/20"
+                    className="pl-10 bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] placeholder:text-gray-600 focus:border-[#D4A836] focus:ring-[#D4A836]/20"
                     data-testid="name-input"
                     required={!isLogin}
                   />
@@ -150,16 +147,16 @@ export default function AuthPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-[#B8C4B8]">Email</Label>
+              <Label htmlFor="email" className="text-gray-400">Email</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#7A9A8A]" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="you@company.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="pl-10 bg-[#1F6360] border-[#2A7370] text-[#E8DDB5] placeholder:text-[#7A9A8A] focus:border-[#D4A836] focus:ring-[#D4A836]/20"
+                  className="pl-10 bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] placeholder:text-gray-600 focus:border-[#D4A836] focus:ring-[#D4A836]/20"
                   data-testid="email-input"
                   required
                 />
@@ -167,16 +164,16 @@ export default function AuthPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-[#B8C4B8]">Password</Label>
+              <Label htmlFor="password" className="text-gray-400">Password</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#7A9A8A]" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <Input
                   id="password"
                   type="password"
                   placeholder="Enter your password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="pl-10 bg-[#1F6360] border-[#2A7370] text-[#E8DDB5] placeholder:text-[#7A9A8A] focus:border-[#D4A836] focus:ring-[#D4A836]/20"
+                  className="pl-10 bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] placeholder:text-gray-600 focus:border-[#D4A836] focus:ring-[#D4A836]/20"
                   data-testid="password-input"
                   required
                   minLength={6}
@@ -186,7 +183,7 @@ export default function AuthPage() {
 
             <Button 
               type="submit" 
-              className="w-full bg-[#D4A836] hover:bg-[#C49A30] text-[#1A5653] font-semibold h-12"
+              className="w-full bg-[#D4A836] hover:bg-[#C49A30] text-black font-semibold h-12"
               disabled={loading}
               data-testid="auth-submit-btn"
             >
@@ -204,10 +201,10 @@ export default function AuthPage() {
           {/* Divider */}
           <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[#2A7370]" />
+              <div className="w-full border-t border-[#D4A836]/20" />
             </div>
             <div className="relative flex justify-center">
-              <span className="bg-[#1A5653] px-4 text-sm text-[#7A9A8A]">or continue with</span>
+              <span className="bg-[#0a0a0a] px-4 text-sm text-gray-500">or continue with</span>
             </div>
           </div>
 
@@ -215,7 +212,7 @@ export default function AuthPage() {
           <Button 
             type="button" 
             variant="outline" 
-            className="w-full border-[#2A7370] text-[#E8DDB5] hover:bg-white/5 h-12"
+            className="w-full border-[#D4A836]/30 text-[#E8DDB5] hover:bg-white/5 h-12"
             onClick={handleGoogleLogin}
             data-testid="google-login-btn"
           >
@@ -229,7 +226,7 @@ export default function AuthPage() {
           </Button>
 
           {/* Toggle */}
-          <p className="mt-8 text-center text-[#7A9A8A]">
+          <p className="mt-8 text-center text-gray-500">
             {isLogin ? "Don't have an account? " : 'Already have an account? '}
             <button
               type="button"
