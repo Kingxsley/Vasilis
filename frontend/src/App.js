@@ -100,6 +100,9 @@ const TrainingModules = React.lazy(() => import('./pages/TrainingModules'));
 const TrainingSession = React.lazy(() => import('./pages/TrainingSession'));
 const Analytics = React.lazy(() => import('./pages/Analytics'));
 const PhishingSimulations = React.lazy(() => import('./pages/PhishingSimulations'));
+const AdSimulations = React.lazy(() => import('./pages/AdSimulations'));
+const UserImport = React.lazy(() => import('./pages/UserImport'));
+const Certificates = React.lazy(() => import('./pages/Certificates'));
 
 // Auth Callback Handler
 const AuthCallback = () => {
