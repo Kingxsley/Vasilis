@@ -67,6 +67,34 @@ A scalable cybersecurity training platform for simulating phishing attacks, mali
   - Displayed when user clicks phishing link
   - Educates user about the simulated attack
 
+### Phase 4: Advanced Features (Completed - Feb 17, 2026)
+- [x] **Export Reports (Excel & PDF)**:
+  - Campaign reports with full statistics
+  - Per-user click tracking data
+  - Risk assessment with color coding
+  - Downloadable from campaign details
+- [x] **CSV Bulk User Import**:
+  - Download CSV template with instructions
+  - Preview before import with validation
+  - Auto-create organizations if not exists
+  - Batch user creation with roles
+- [x] **Malicious Ad Simulations**:
+  - Ad template types: banner, popup, sidebar, native
+  - 4 default templates (Prize scam, Fake antivirus, Flash update, Work-from-home)
+  - Campaign creation with target users
+  - View and click tracking
+  - Embed code generation for testing
+  - Security awareness landing page
+- [x] **Training Completion Certificates**:
+  - PDF certificate generation
+  - Customizable with organization branding
+  - Unique certificate ID for verification
+  - Score and completion date included
+  - Downloadable by users
+
+### SMTP Configuration (SendPulse)
+- [x] Backend updated to support SendPulse SMTP (smtp-pulse.com:465 SSL)
+
 ---
 
 ## API Endpoints
