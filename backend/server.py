@@ -1038,51 +1038,45 @@ async def generate_scenario(module_type: str, index: int) -> dict:
     """Generate a training scenario using AI or fallback to templates"""
     scenario_id = f"scen_{uuid.uuid4().hex[:12]}"
     
-    # Try AI generation first
-    try:
-        from emergentintegrations.llm.chat import LlmChat, UserMessage
-        
-        api_key = os.environ.get('EMERGENT_LLM_KEY')
-        if api_key:
-            chat = LlmChat(
-                api_key=api_key,
-                session_id=f"scenario_{scenario_id}",
-                system_message="""You are a cybersecurity training content generator. Generate realistic but clearly educational scenarios.
+    # Try AI generation with OpenAI API (optional - set OPENAI_API_KEY in .env)
+    openai_key = os.environ.get('OPENAI_API_KEY')
+    if openai_key:
+        try:
+            import openai
+            client = openai.AsyncOpenAI(api_key=openai_key)
+            
+            response = await client.chat.completions.create(
+                model=os.environ.get('OPENAI_MODEL', 'gpt-3.5-turbo'),
+                messages=[
+                    {"role": "system", "content": """You are a cybersecurity training content generator. Generate realistic but clearly educational scenarios.
 Return JSON with: title, content (object with fields depending on type), correct_answer (safe/unsafe), explanation, difficulty (easy/medium/hard).
 For phishing_email: content should have from, to, subject, body, links (array)
 For malicious_ads: content should have headline, description, image_url, call_to_action, destination_url
-For social_engineering: content should have scenario_description, dialogue (array of messages), requested_action"""
-            ).with_model("openai", "gpt-5.2")
-            
-            prompt = f"""Generate a {module_type} training scenario #{index + 1}.
-Make it realistic but educational. Include both safe and unsafe examples.
-Return ONLY valid JSON."""
-            
-            response = await chat.send_message(UserMessage(text=prompt))
+For social_engineering: content should have scenario_description, dialogue (array of messages), requested_action"""},
+                    {"role": "user", "content": f"Generate a {module_type} training scenario #{index + 1}. Make it realistic but educational. Return ONLY valid JSON."}
+                ],
+                temperature=0.8
+            )
             
             import json
-            # Try to parse JSON from response
-            try:
-                # Find JSON in response
-                json_start = response.find('{')
-                json_end = response.rfind('}') + 1
-                if json_start >= 0 and json_end > json_start:
-                    scenario_data = json.loads(response[json_start:json_end])
-                    return {
-                        "scenario_id": scenario_id,
-                        "scenario_type": module_type.replace(" ", "_"),
-                        "title": scenario_data.get("title", f"Scenario {index + 1}"),
-                        "content": scenario_data.get("content", {}),
-                        "correct_answer": scenario_data.get("correct_answer", "unsafe"),
-                        "explanation": scenario_data.get("explanation", "Always verify before clicking."),
-                        "difficulty": scenario_data.get("difficulty", "medium")
-                    }
-            except json.JSONDecodeError:
-                pass
-    except Exception as e:
-        logging.warning(f"AI generation failed: {e}")
+            content = response.choices[0].message.content
+            json_start = content.find('{')
+            json_end = content.rfind('}') + 1
+            if json_start >= 0 and json_end > json_start:
+                scenario_data = json.loads(content[json_start:json_end])
+                return {
+                    "scenario_id": scenario_id,
+                    "scenario_type": module_type.replace(" ", "_"),
+                    "title": scenario_data.get("title", f"Scenario {index + 1}"),
+                    "content": scenario_data.get("content", {}),
+                    "correct_answer": scenario_data.get("correct_answer", "unsafe"),
+                    "explanation": scenario_data.get("explanation", "Always verify before clicking."),
+                    "difficulty": scenario_data.get("difficulty", "medium")
+                }
+        except Exception as e:
+            logging.warning(f"OpenAI generation failed: {e}")
     
-    # Fallback to template scenarios
+    # Fallback to template scenarios (works without any API key)
     return get_template_scenario(module_type, index, scenario_id)
 
 def get_template_scenario(module_type: str, index: int, scenario_id: str) -> dict:
