@@ -1,53 +1,267 @@
-import { useEffect } from "react";
-import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Toaster } from './components/ui/sonner';
+import axios from 'axios';
+
+// Context
+const AuthContext = createContext(null);
+
+export const useAuth = () => useContext(AuthContext);
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-const Home = () => {
-  const helloWorldApi = async () => {
+// Configure axios
+axios.defaults.withCredentials = true;
+
+// Auth Provider
+const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
     try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
+      if (token) {
+        const response = await axios.get(`${API}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setUser(response.data);
+      }
+    } catch (err) {
+      localStorage.removeItem('token');
+      setToken(null);
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const login = async (email, password) => {
+    const response = await axios.post(`${API}/auth/login`, { email, password });
+    const { token: newToken, user: userData } = response.data;
+    localStorage.setItem('token', newToken);
+    setToken(newToken);
+    setUser(userData);
+    return userData;
+  };
+
+  const register = async (email, password, name) => {
+    const response = await axios.post(`${API}/auth/register`, { email, password, name });
+    const { token: newToken, user: userData } = response.data;
+    localStorage.setItem('token', newToken);
+    setToken(newToken);
+    setUser(userData);
+    return userData;
+  };
+
+  const logout = async () => {
+    try {
+      await axios.post(`${API}/auth/logout`);
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
+    localStorage.removeItem('token');
+    setToken(null);
+    setUser(null);
+  };
+
+  const setUserData = (userData) => {
+    setUser(userData);
+  };
+
+  const value = {
+    user,
+    token,
+    loading,
+    login,
+    register,
+    logout,
+    setUserData,
+    isAuthenticated: !!user,
+    isAdmin: user?.role === 'super_admin' || user?.role === 'org_admin'
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+// Lazy load pages
+const LandingPage = React.lazy(() => import('./pages/LandingPage'));
+const AuthPage = React.lazy(() => import('./pages/AuthPage'));
+const Dashboard = React.lazy(() => import('./pages/Dashboard'));
+const Organizations = React.lazy(() => import('./pages/Organizations'));
+const Users = React.lazy(() => import('./pages/Users'));
+const Campaigns = React.lazy(() => import('./pages/Campaigns'));
+const TrainingModules = React.lazy(() => import('./pages/TrainingModules'));
+const TrainingSession = React.lazy(() => import('./pages/TrainingSession'));
+const Analytics = React.lazy(() => import('./pages/Analytics'));
+
+// Auth Callback Handler
+const AuthCallback = () => {
+  const navigate = useNavigate();
+  const { setUserData } = useAuth();
+  const hasProcessed = useRef(false);
+
   useEffect(() => {
-    helloWorldApi();
-  }, []);
+    if (hasProcessed.current) return;
+    hasProcessed.current = true;
+
+    const processAuth = async () => {
+      const hash = window.location.hash;
+      const sessionId = new URLSearchParams(hash.slice(1)).get('session_id');
+
+      if (sessionId) {
+        try {
+          const response = await axios.post(`${API}/auth/session`, { session_id: sessionId });
+          setUserData(response.data);
+          // Clear hash and redirect
+          window.history.replaceState(null, '', window.location.pathname);
+          navigate('/dashboard', { replace: true, state: { user: response.data } });
+        } catch (err) {
+          console.error('Auth callback error:', err);
+          navigate('/auth', { replace: true });
+        }
+      } else {
+        navigate('/auth', { replace: true });
+      }
+    };
+
+    processAuth();
+  }, [navigate, setUserData]);
 
   return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
+    <div className="min-h-screen bg-[#0B0E14] flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-8 h-8 border-2 border-[#2979FF] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-gray-400">Authenticating...</p>
+      </div>
     </div>
+  );
+};
+
+// Protected Route
+const ProtectedRoute = ({ children, adminOnly = false }) => {
+  const { user, loading, isAdmin } = useAuth();
+  const location = useLocation();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0B0E14] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[#2979FF] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" state={{ from: location }} replace />;
+  }
+
+  if (adminOnly && !isAdmin) {
+    return <Navigate to="/training" replace />;
+  }
+
+  return children;
+};
+
+// Loading Fallback
+const LoadingFallback = () => (
+  <div className="min-h-screen bg-[#0B0E14] flex items-center justify-center">
+    <div className="text-center">
+      <div className="w-10 h-10 border-2 border-[#2979FF] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+      <p className="text-gray-400 text-sm">Loading...</p>
+    </div>
+  </div>
+);
+
+// App Router
+const AppRouter = () => {
+  const location = useLocation();
+
+  // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
+  // Check for session_id in URL hash SYNCHRONOUSLY (before render)
+  if (location.hash?.includes('session_id=')) {
+    return <AuthCallback />;
+  }
+
+  return (
+    <React.Suspense fallback={<LoadingFallback />}>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/auth" element={<AuthPage />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute adminOnly>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/organizations"
+          element={
+            <ProtectedRoute adminOnly>
+              <Organizations />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/users"
+          element={
+            <ProtectedRoute adminOnly>
+              <Users />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/campaigns"
+          element={
+            <ProtectedRoute adminOnly>
+              <Campaigns />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/training"
+          element={
+            <ProtectedRoute>
+              <TrainingModules />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/training/:sessionId"
+          element={
+            <ProtectedRoute>
+              <TrainingSession />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute adminOnly>
+              <Analytics />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </React.Suspense>
   );
 };
 
 function App() {
   return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </div>
+    <BrowserRouter>
+      <AuthProvider>
+        <AppRouter />
+        <Toaster position="top-right" richColors />
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 
