@@ -265,11 +265,9 @@ export default function LandingPage() {
             
             <div className="relative flex justify-center">
               <div className="absolute -inset-8 bg-gradient-to-r from-[#D4A836]/10 to-[#0f3460]/20 blur-3xl rounded-full" />
-              <img 
-                src={ICON_TRANSPARENT}
-                alt="Vasilis NetShield"
-                className="relative w-64 h-64 object-contain animate-pulse-glow"
-              />
+              <div className="relative w-64 h-64 flex items-center justify-center">
+                <Shield className="w-32 h-32 text-[#D4A836] animate-pulse-glow" />
+              </div>
             </div>
           </div>
         </div>
