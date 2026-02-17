@@ -55,11 +55,7 @@ export const DashboardLayout = ({ children }) => {
       {/* Mobile Header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 z-50 glass border-b border-[#D4A836]/20 h-16">
         <div className="flex items-center justify-between h-full px-4">
-          <img 
-            src={LOGO_HORIZONTAL} 
-            alt="Vasilis NetShield" 
-            className="h-8"
-          />
+          <Logo />
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="p-2 text-gray-400 hover:text-[#E8DDB5]"
@@ -78,11 +74,7 @@ export const DashboardLayout = ({ children }) => {
       >
         {/* Logo */}
         <div className="h-16 flex items-center px-6 border-b border-[#D4A836]/20">
-          <img 
-            src={LOGO_HORIZONTAL} 
-            alt="Vasilis NetShield" 
-            className="h-8"
-          />
+          <Logo />
         </div>
 
         {/* Navigation */}
