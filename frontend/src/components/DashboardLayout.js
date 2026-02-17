@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import { 
   LayoutDashboard, Building2, Users, Target, 
-  BookOpen, BarChart3, LogOut, Menu, X, ChevronDown, Mail, Monitor, Upload, Award
+  BookOpen, BarChart3, LogOut, Menu, X, ChevronDown, Mail, Monitor, Upload, Award, Shield
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import {
@@ -14,8 +14,15 @@ import {
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
 
-// Brand Assets
-const LOGO_HORIZONTAL = "https://customer-assets.emergentagent.com/job_cyber-sim-hub/artifacts/ff859qpf_logo-horizontal-transparent.png";
+// Logo Component (self-hosted - no external dependencies)
+const Logo = ({ className = "h-8" }) => (
+  <div className={`flex items-center gap-2 ${className}`}>
+    <Shield className="w-7 h-7 text-[#D4A836]" />
+    <span className="text-lg font-bold text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
+      VasilisNetShield
+    </span>
+  </div>
+);
 
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, adminOnly: true },

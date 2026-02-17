@@ -1,11 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
-import { Mail, MousePointerClick, Users, BarChart3, Lock, ChevronRight, Zap, Target, Award } from 'lucide-react';
+import { Mail, MousePointerClick, Users, BarChart3, Lock, ChevronRight, Zap, Target, Award, Shield } from 'lucide-react';
 
-// Brand Assets
-const LOGO_HORIZONTAL = "https://customer-assets.emergentagent.com/job_cyber-sim-hub/artifacts/ff859qpf_logo-horizontal-transparent.png";
-const ICON_TRANSPARENT = "https://customer-assets.emergentagent.com/job_cyber-sim-hub/artifacts/qnhbhq26_icon-transparent.png";
+// Logo Component (self-hosted - no external dependencies)
+const Logo = ({ className = "h-10" }) => (
+  <div className={`flex items-center gap-2 ${className}`}>
+    <Shield className="w-8 h-8 text-[#D4A836]" />
+    <span className="text-xl font-bold text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
+      VasilisNetShield
+    </span>
+  </div>
+);
 
 export default function LandingPage() {
   return (
