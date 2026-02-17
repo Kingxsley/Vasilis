@@ -269,7 +269,7 @@ A scalable cybersecurity training platform for simulating phishing attacks, mali
 ---
 
 ## Known Limitations
-1. **Email Sending**: Currently in simulation mode (SMTP not configured). Emails are marked as "sent" but not actually delivered. Configure `SMTP_*` env vars for real sending.
+1. **Email Sending**: Currently in simulation mode (SMTP not configured). Emails are marked as "sent" but not actually delivered. Configure `SMTP_*` env vars for real sending (SendPulse ready).
 2. **AI Generation**: Optional - requires user-provided `OPENAI_API_KEY`.
 
 ---
@@ -277,16 +277,19 @@ A scalable cybersecurity training platform for simulating phishing attacks, mali
 ## Backlog / Future Tasks
 
 ### P1 - High Priority
-- [ ] Configure SMTP for actual email delivery
+- [ ] Configure SMTP credentials for actual email delivery (SendPulse ready)
 - [ ] Add email scheduling functionality
-- [ ] CSV import for bulk user creation
-- [ ] Export campaign reports (PDF/Excel)
+- [ ] Social engineering phone call simulations
 
 ### P2 - Medium Priority
-- [ ] Refactor server.py into modular APIRouters (partially done)
-- [ ] Add malicious ad simulation campaigns
-- [ ] Add social engineering phone call simulations
-- [ ] User training completion certificates
+- [ ] Refactor server.py into separate route modules (partially done)
+- [ ] Multi-language support
+- [ ] SIEM tool integration
+
+### P3 - Low Priority
+- [ ] Mobile app version
+- [ ] Gamification elements (leaderboards, badges)
+- [ ] Advanced analytics dashboard
 
 ### P3 - Low Priority
 - [ ] Multi-language support
