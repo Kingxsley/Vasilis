@@ -77,21 +77,21 @@ code, pre, .mono {
 }
 
 ::-webkit-scrollbar-track {
-  background: #1A5653;
+  background: #0a0a0a;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2A7370;
+  background: #D4A836;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3A8A87;
+  background: #e6bc4a;
 }
 
 /* Glassmorphism utility */
 .glass {
-  background: rgba(26, 86, 83, 0.85);
+  background: rgba(10, 10, 10, 0.7);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(212, 168, 54, 0.2);
