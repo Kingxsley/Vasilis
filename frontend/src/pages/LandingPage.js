@@ -254,8 +254,8 @@ export default function LandingPage() {
                     <Lock className="w-6 h-6 text-[#FFB300]" />
                   </div>
                   <div>
-                    <h4 className="font-semibold mb-1 text-[#E8DDB5]">AI-Generated Content</h4>
-                    <p className="text-sm text-gray-500">Fresh, realistic scenarios powered by AI for continuous learning.</p>
+                    <h4 className="font-semibold mb-1 text-[#E8DDB5]">Expert + AI Content</h4>
+                    <p className="text-sm text-gray-500">Human-crafted scenarios enhanced with AI for continuous learning.</p>
                   </div>
                 </div>
               </div>
