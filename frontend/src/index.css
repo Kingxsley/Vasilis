@@ -189,16 +189,16 @@ code, pre, .mono {
 
 /* Email simulation styles */
 .email-container {
-  background: #1F6360;
-  border: 1px solid #2A7370;
+  background: rgba(20, 20, 30, 0.8);
+  border: 1px solid rgba(212, 168, 54, 0.3);
   border-radius: 6px;
   overflow: hidden;
 }
 
 .email-header {
-  background: #256663;
+  background: rgba(30, 30, 45, 0.9);
   padding: 12px 16px;
-  border-bottom: 1px solid #2A7370;
+  border-bottom: 1px solid rgba(212, 168, 54, 0.2);
 }
 
 .email-body {
@@ -210,7 +210,7 @@ code, pre, .mono {
 /* Ad simulation styles */
 .ad-container {
   background: linear-gradient(180deg, rgba(212, 168, 54, 0.1) 0%, rgba(212, 168, 54, 0) 100%);
-  border: 2px solid #2A7370;
+  border: 2px solid rgba(212, 168, 54, 0.3);
   border-radius: 8px;
   overflow: hidden;
   transition: border-color 0.2s;
@@ -229,13 +229,13 @@ code, pre, .mono {
 }
 
 .dialogue-bubble.incoming {
-  background: #256663;
+  background: rgba(30, 30, 45, 0.9);
   border-bottom-left-radius: 4px;
 }
 
 .dialogue-bubble.outgoing {
   background: #D4A836;
-  color: #1A5653;
+  color: #0a0a0a;
   margin-left: auto;
   border-bottom-right-radius: 4px;
 }
@@ -243,7 +243,7 @@ code, pre, .mono {
 /* Progress bar styles */
 .progress-track {
   height: 8px;
-  background: #256663;
+  background: rgba(30, 30, 45, 0.9);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -284,7 +284,20 @@ code, pre, .mono {
 
 /* Hero gradient */
 .hero-gradient {
-  background: radial-gradient(circle at 50% 0%, rgba(212, 168, 54, 0.15) 0%, rgba(26, 86, 83, 0) 70%);
+  background: radial-gradient(ellipse at 50% 0%, rgba(212, 168, 54, 0.15) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 50%, rgba(15, 52, 96, 0.3) 0%, transparent 50%),
+              radial-gradient(ellipse at 20% 80%, rgba(26, 26, 46, 0.5) 0%, transparent 50%);
+}
+
+/* Card backgrounds */
+.card-dark {
+  background: rgba(15, 15, 25, 0.8);
+  border: 1px solid rgba(212, 168, 54, 0.2);
+}
+
+/* Sidebar background */
+.sidebar-bg {
+  background: linear-gradient(180deg, rgba(15, 15, 25, 0.95) 0%, rgba(10, 10, 15, 0.98) 100%);
 }
 
 /* Data wrapper fix */
