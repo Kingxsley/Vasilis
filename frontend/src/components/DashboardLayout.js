@@ -40,9 +40,9 @@ export const DashboardLayout = ({ children }) => {
   const filteredNavItems = navItems.filter(item => !item.adminOnly || isAdmin);
 
   return (
-    <div className="min-h-screen bg-[#1A5653]">
+    <div className="min-h-screen">
       {/* Mobile Header */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 glass border-b border-[#2A7370] h-16">
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 glass border-b border-[#D4A836]/20 h-16">
         <div className="flex items-center justify-between h-full px-4">
           <img 
             src={LOGO_HORIZONTAL} 
@@ -51,7 +51,7 @@ export const DashboardLayout = ({ children }) => {
           />
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 text-[#B8C4B8] hover:text-[#E8DDB5]"
+            className="p-2 text-gray-400 hover:text-[#E8DDB5]"
             data-testid="mobile-menu-btn"
           >
             {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -61,12 +61,12 @@ export const DashboardLayout = ({ children }) => {
 
       {/* Sidebar */}
       <aside 
-        className={`fixed top-0 left-0 z-40 h-full w-64 bg-[#1F6360] border-r border-[#2A7370] transform transition-transform lg:translate-x-0 ${
+        className={`fixed top-0 left-0 z-40 h-full w-64 sidebar-bg border-r border-[#D4A836]/20 transform transition-transform lg:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Logo */}
-        <div className="h-16 flex items-center px-6 border-b border-[#2A7370]">
+        <div className="h-16 flex items-center px-6 border-b border-[#D4A836]/20">
           <img 
             src={LOGO_HORIZONTAL} 
             alt="Vasilis NetShield" 
@@ -88,7 +88,7 @@ export const DashboardLayout = ({ children }) => {
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                   isActive 
                     ? 'bg-[#D4A836]/10 text-[#D4A836] border border-[#D4A836]/30' 
-                    : 'text-[#B8C4B8] hover:text-[#E8DDB5] hover:bg-white/5'
+                    : 'text-gray-400 hover:text-[#E8DDB5] hover:bg-white/5'
                 }`}
                 data-testid={`nav-${item.label.toLowerCase()}`}
               >
@@ -100,7 +100,7 @@ export const DashboardLayout = ({ children }) => {
         </nav>
 
         {/* User Section */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[#2A7370]">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[#D4A836]/20">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button 
@@ -118,17 +118,17 @@ export const DashboardLayout = ({ children }) => {
                 </div>
                 <div className="flex-1 text-left">
                   <p className="text-sm font-medium text-[#E8DDB5] truncate">{user?.name}</p>
-                  <p className="text-xs text-[#7A9A8A] capitalize">{user?.role?.replace('_', ' ')}</p>
+                  <p className="text-xs text-gray-500 capitalize">{user?.role?.replace('_', ' ')}</p>
                 </div>
-                <ChevronDown className="w-4 h-4 text-[#7A9A8A]" />
+                <ChevronDown className="w-4 h-4 text-gray-500" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 bg-[#1F6360] border-[#2A7370]">
+            <DropdownMenuContent align="end" className="w-56 bg-[#0f0f15] border-[#D4A836]/20">
               <div className="px-2 py-2">
                 <p className="text-sm font-medium text-[#E8DDB5]">{user?.name}</p>
-                <p className="text-xs text-[#7A9A8A]">{user?.email}</p>
+                <p className="text-xs text-gray-500">{user?.email}</p>
               </div>
-              <DropdownMenuSeparator className="bg-[#2A7370]" />
+              <DropdownMenuSeparator className="bg-[#D4A836]/20" />
               <DropdownMenuItem 
                 onClick={handleLogout}
                 className="text-[#FF3B30] focus:text-[#FF3B30] focus:bg-[#FF3B30]/10 cursor-pointer"
