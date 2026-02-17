@@ -11,7 +11,7 @@ import os
 import io
 import csv
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://netshield-admin-hub.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://cybersecurity-train.preview.emergentagent.com')
 
 # Test Credentials
 TEST_ADMIN_EMAIL = "testadmin@netshield.com"
