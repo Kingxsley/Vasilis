@@ -1328,6 +1328,10 @@ async def root():
 
 # Import phishing routes
 from routes.phishing import router as phishing_router
+from routes.export import router as export_router
+from routes.certificates import router as certificates_router
+from routes.user_import import router as import_router
+from routes.ads import router as ads_router
 
 # Include all routers
 api_router.include_router(auth_router)
@@ -1337,6 +1341,10 @@ api_router.include_router(campaign_router)
 api_router.include_router(training_router)
 api_router.include_router(ai_router)
 api_router.include_router(phishing_router)
+api_router.include_router(export_router)
+api_router.include_router(certificates_router)
+api_router.include_router(import_router)
+api_router.include_router(ads_router)
 
 app.include_router(api_router)
 
