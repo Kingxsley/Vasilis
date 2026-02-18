@@ -111,6 +111,7 @@ const navGroups = [
     icon: Cog,
     items: [
       { path: '/settings', label: 'Settings', icon: Settings, adminOnly: true },
+      { path: '/security', label: 'Security', icon: ShieldAlert, adminOnly: true },
     ]
   },
 ];
