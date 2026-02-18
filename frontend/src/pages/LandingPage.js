@@ -59,14 +59,27 @@ const Logo = ({ className = "h-10" }) => {
 
 export default function LandingPage() {
   const [content, setContent] = useState(null);
+  const [branding, setBranding] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get(`${API}/pages/landing`)
-      .then(res => setContent(res.data))
+    Promise.all([
+      axios.get(`${API}/pages/landing`),
+      axios.get(`${API}/settings/branding`)
+    ])
+      .then(([contentRes, brandingRes]) => {
+        setContent(contentRes.data);
+        setBranding(brandingRes.data);
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  // Dynamic colors from branding settings
+  const textColor = branding?.text_color || '#E8DDB5';
+  const headingColor = branding?.heading_color || '#FFFFFF';
+  const accentColor = branding?.accent_color || '#D4A836';
+  const primaryColor = branding?.primary_color || '#D4A836';
 
   // Default content while loading or if fetch fails
   const hero = content?.hero || {
