@@ -252,3 +252,45 @@ async def delete_favicon(request: Request):
     )
     
     return {"message": "Favicon removed"}
+
+
+# ============== PASSWORD POLICY SETTINGS ==============
+
+class PasswordPolicySettings(BaseModel):
+    password_expiry_days: Optional[int] = 0  # 0 = no expiry
+    expiry_reminder_days: Optional[int] = 7  # Days before expiry to send reminder
+    force_change_on_next_login: Optional[bool] = False
+    
+@router.get("/password-policy")
+async def get_password_policy(request: Request):
+    """Get password policy settings"""
+    user = await require_admin(request)
+    db = get_db()
+    
+    settings = await db.settings.find_one({"type": "password_policy"}, {"_id": 0})
+    
+    return {
+        "password_expiry_days": settings.get("password_expiry_days", 0) if settings else 0,
+        "expiry_reminder_days": settings.get("expiry_reminder_days", 7) if settings else 7,
+        "force_change_on_next_login": settings.get("force_change_on_next_login", False) if settings else False
+    }
+
+
+@router.patch("/password-policy")
+async def update_password_policy(data: PasswordPolicySettings, request: Request):
+    """Update password policy settings"""
+    user = await require_admin(request)
+    db = get_db()
+    
+    update_data = {k: v for k, v in data.model_dump().items() if v is not None}
+    update_data["type"] = "password_policy"
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    update_data["updated_by"] = user["user_id"]
+    
+    await db.settings.update_one(
+        {"type": "password_policy"},
+        {"$set": update_data},
+        upsert=True
+    )
+    
+    return await get_password_policy(request)
