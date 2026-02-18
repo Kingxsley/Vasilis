@@ -4,28 +4,32 @@ import { useAuth } from '../App';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Mail, Lock, User, ArrowLeft, Loader2, Shield, KeyRound } from 'lucide-react';
+import { Textarea } from '../components/ui/textarea';
+import { Mail, Lock, User, ArrowLeft, Loader2, Shield, KeyRound, Phone, MessageSquare, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function AuthPage() {
-  const [mode, setMode] = useState('login'); // 'login', 'register', 'forgot', 'reset'
+  const [mode, setMode] = useState('login'); // 'login', 'inquiry', 'forgot', 'reset'
   const [loading, setLoading] = useState(false);
   const [branding, setBranding] = useState(null);
   const [resetEmail, setResetEmail] = useState('');
+  const [inquirySubmitted, setInquirySubmitted] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     name: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    phone: '',
+    message: ''
   });
 
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const { login, register, isAdmin } = useAuth();
+  const { login, isAdmin } = useAuth();
   
   const from = location.state?.from?.pathname || '/dashboard';
   const resetToken = searchParams.get('reset_token');
@@ -69,14 +73,15 @@ export default function AuthPage() {
         } else {
           navigate('/training', { replace: true });
         }
-      } else if (mode === 'register') {
-        const user = await register(formData.email, formData.password, formData.name);
-        toast.success('Account created successfully!');
-        if (user.role === 'super_admin' || user.role === 'org_admin') {
-          navigate('/dashboard', { replace: true });
-        } else {
-          navigate('/training', { replace: true });
-        }
+      } else if (mode === 'inquiry') {
+        // Submit inquiry form
+        await axios.post(`${API}/inquiries`, {
+          email: formData.email,
+          phone: formData.phone,
+          message: formData.message
+        });
+        setInquirySubmitted(true);
+        toast.success('Thank you! We will contact you soon.');
       } else if (mode === 'forgot') {
         await axios.post(`${API}/auth/forgot-password`, { email: formData.email });
         toast.success('If an account exists with this email, a reset link has been sent.');
@@ -106,7 +111,7 @@ export default function AuthPage() {
 
   const getTitle = () => {
     switch (mode) {
-      case 'register': return 'Create account';
+      case 'inquiry': return 'Get Started';
       case 'forgot': return 'Forgot password';
       case 'reset': return 'Reset password';
       default: return 'Welcome back';
@@ -115,12 +120,49 @@ export default function AuthPage() {
 
   const getSubtitle = () => {
     switch (mode) {
-      case 'register': return 'Start your cybersecurity training journey';
+      case 'inquiry': return 'Submit your details and we will get back to you';
       case 'forgot': return 'Enter your email to receive a reset link';
       case 'reset': return `Set a new password for ${resetEmail}`;
       default: return 'Enter your credentials to access your account';
     }
   };
+
+  // Inquiry submitted success view
+  if (inquirySubmitted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-8">
+        <div className="w-full max-w-md text-center">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-green-500/20 flex items-center justify-center">
+            <CheckCircle className="w-10 h-10 text-green-500" />
+          </div>
+          <h1 className="text-3xl font-bold mb-4 text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
+            Thank You!
+          </h1>
+          <p className="text-gray-400 mb-8">
+            Your inquiry has been submitted successfully. Our team will review your request and contact you shortly.
+          </p>
+          <div className="space-y-4">
+            <Button 
+              onClick={() => navigate('/')}
+              className="w-full bg-[#D4A836] hover:bg-[#C49A30] text-black font-semibold h-12"
+            >
+              Back to Home
+            </Button>
+            <button
+              onClick={() => {
+                setInquirySubmitted(false);
+                setMode('login');
+                setFormData({ email: '', password: '', name: '', confirmPassword: '', phone: '', message: '' });
+              }}
+              className="text-[#D4A836] hover:text-[#C49A30] font-medium"
+            >
+              Already have an account? Sign in
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex">
@@ -146,11 +188,13 @@ export default function AuthPage() {
             )}
           </div>
           <h2 className="text-4xl font-bold mb-4 text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
-            Defend Against
-            <span className="text-[#D4A836]"> Modern Threats</span>
+            {mode === 'inquiry' ? 'Join Our Platform' : 'Defend Against'}
+            {mode !== 'inquiry' && <span className="text-[#D4A836]"> Modern Threats</span>}
           </h2>
           <p className="text-gray-400 max-w-md mx-auto">
-            {branding?.tagline || 'Train your organization with realistic cybersecurity simulations.'}
+            {mode === 'inquiry' 
+              ? 'Submit your inquiry and our team will set up your account with the right permissions for your organization.'
+              : (branding?.tagline || 'Human + AI Powered Security Training')}
           </p>
         </div>
       </div>
@@ -189,26 +233,63 @@ export default function AuthPage() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            {mode === 'register' && (
-              <div className="space-y-2 animate-slide-up">
-                <Label htmlFor="name" className="text-gray-400">Full Name</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="John Doe"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="pl-10 bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] placeholder:text-gray-600 focus:border-[#D4A836] focus:ring-[#D4A836]/20"
-                    data-testid="name-input"
-                    required
-                  />
+            {/* Inquiry Form Fields */}
+            {mode === 'inquiry' && (
+              <>
+                <div className="space-y-2 animate-slide-up">
+                  <Label htmlFor="email" className="text-gray-400">Email Address *</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="you@company.com"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="pl-10 bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] placeholder:text-gray-600 focus:border-[#D4A836] focus:ring-[#D4A836]/20"
+                      data-testid="inquiry-email-input"
+                      required
+                    />
+                  </div>
                 </div>
-              </div>
+
+                <div className="space-y-2 animate-slide-up">
+                  <Label htmlFor="phone" className="text-gray-400">Phone Number *</Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="+1 (555) 000-0000"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="pl-10 bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] placeholder:text-gray-600 focus:border-[#D4A836] focus:ring-[#D4A836]/20"
+                      data-testid="inquiry-phone-input"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2 animate-slide-up">
+                  <Label htmlFor="message" className="text-gray-400">Message *</Label>
+                  <div className="relative">
+                    <MessageSquare className="absolute left-3 top-3 w-5 h-5 text-gray-500" />
+                    <Textarea
+                      id="message"
+                      placeholder="Tell us about your organization and training needs..."
+                      value={formData.message}
+                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      className="pl-10 min-h-[100px] bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] placeholder:text-gray-600 focus:border-[#D4A836] focus:ring-[#D4A836]/20"
+                      data-testid="inquiry-message-input"
+                      required
+                    />
+                  </div>
+                </div>
+              </>
             )}
 
-            {(mode === 'login' || mode === 'register' || mode === 'forgot') && (
+            {/* Login Fields */}
+            {(mode === 'login' || mode === 'forgot') && (
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-gray-400">Email</Label>
                 <div className="relative">
@@ -227,7 +308,7 @@ export default function AuthPage() {
               </div>
             )}
 
-            {(mode === 'login' || mode === 'register' || mode === 'reset') && (
+            {(mode === 'login' || mode === 'reset') && (
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-gray-400">
                   {mode === 'reset' ? 'New Password' : 'Password'}
@@ -297,12 +378,12 @@ export default function AuthPage() {
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   {mode === 'login' ? 'Signing in...' : 
-                   mode === 'register' ? 'Creating account...' :
+                   mode === 'inquiry' ? 'Submitting...' :
                    mode === 'forgot' ? 'Sending...' : 'Resetting...'}
                 </>
               ) : (
                 mode === 'login' ? 'Sign in' : 
-                mode === 'register' ? 'Create account' :
+                mode === 'inquiry' ? 'Submit Inquiry' :
                 mode === 'forgot' ? 'Send reset link' : 'Reset password'
               )}
             </Button>
@@ -315,15 +396,15 @@ export default function AuthPage() {
                 Don't have an account?{' '}
                 <button
                   type="button"
-                  onClick={() => setMode('register')}
+                  onClick={() => setMode('inquiry')}
                   className="text-[#D4A836] hover:text-[#C49A30] font-medium"
                   data-testid="toggle-auth-btn"
                 >
-                  Sign up
+                  Request Access
                 </button>
               </p>
             )}
-            {mode === 'register' && (
+            {mode === 'inquiry' && (
               <p className="text-gray-500">
                 Already have an account?{' '}
                 <button
@@ -349,6 +430,16 @@ export default function AuthPage() {
               </button>
             )}
           </div>
+
+          {/* Info text for inquiry */}
+          {mode === 'inquiry' && (
+            <div className="mt-6 p-4 bg-[#D4A836]/10 rounded-lg border border-[#D4A836]/20">
+              <p className="text-sm text-gray-400">
+                <strong className="text-[#D4A836]">Note:</strong> User accounts are created by administrators only. 
+                Submit this form and our team will review your request and create your account with appropriate permissions.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
