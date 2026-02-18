@@ -180,9 +180,10 @@ export const DashboardLayout = ({ children }) => {
           <Logo collapsed={sidebarCollapsed} />
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="hidden lg:block p-1 text-gray-500 hover:text-[#E8DDB5] rounded"
+            className="hidden lg:block p-1.5 text-gray-500 hover:text-[#E8DDB5] hover:bg-white/5 rounded transition-colors"
+            title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <X className="w-4 h-4" />}
+            {sidebarCollapsed ? <PanelLeft className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
           </button>
         </div>
 
