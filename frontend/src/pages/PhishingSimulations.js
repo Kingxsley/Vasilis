@@ -502,24 +502,32 @@ export default function PhishingSimulations() {
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin text-[#D4A836]" />
               </div>
-            ) : campaigns.length === 0 ? (
+            ) : filteredCampaigns.length === 0 ? (
               <Card className="bg-[#161B22] border-[#30363D]">
                 <CardContent className="py-12 text-center">
                   <Mail className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-[#E8DDB5] mb-2">No campaigns yet</h3>
-                  <p className="text-gray-400 mb-4">Create your first phishing simulation campaign</p>
-                  <Button 
-                    onClick={() => setShowNewCampaign(true)}
-                    className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Campaign
-                  </Button>
+                  <h3 className="text-lg font-medium text-[#E8DDB5] mb-2">
+                    {campaignFilter === 'all' ? 'No campaigns yet' : `No ${campaignFilter} campaigns`}
+                  </h3>
+                  <p className="text-gray-400 mb-4">
+                    {campaignFilter === 'all' 
+                      ? 'Create your first phishing simulation campaign'
+                      : 'Try selecting a different filter'}
+                  </p>
+                  {campaignFilter === 'all' && (
+                    <Button 
+                      onClick={() => setShowNewCampaign(true)}
+                      className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Campaign
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             ) : (
               <div className="grid gap-4">
-                {campaigns.map((campaign) => (
+                {filteredCampaigns.map((campaign) => (
                   <Card 
                     key={campaign.campaign_id} 
                     className="bg-[#161B22] border-[#30363D] hover:border-[#D4A836]/30 transition-colors"
