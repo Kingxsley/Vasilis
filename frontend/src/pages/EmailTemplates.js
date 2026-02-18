@@ -261,16 +261,43 @@ export default function EmailTemplates() {
 
               {/* Body */}
               <div className="space-y-2">
-                <Label className="text-gray-400">Email Body (HTML)</Label>
-                <Textarea
-                  id="template-body"
-                  value={formData.body}
-                  onChange={(e) => setFormData({ ...formData, body: e.target.value })}
-                  className="bg-[#1a1a24] border-[#D4A836]/20 text-[#E8DDB5] min-h-[300px] font-mono text-sm"
-                  placeholder="Email body HTML..."
-                />
+                <div className="flex items-center justify-between">
+                  <Label className="text-gray-400">Email Body</Label>
+                  <Tabs value={editorMode} onValueChange={setEditorMode} className="w-auto">
+                    <TabsList className="h-8 bg-[#1a1a24]">
+                      <TabsTrigger value="visual" className="text-xs h-6 px-2">
+                        <FileText className="w-3 h-3 mr-1" />
+                        Visual
+                      </TabsTrigger>
+                      <TabsTrigger value="html" className="text-xs h-6 px-2">
+                        <Code className="w-3 h-3 mr-1" />
+                        HTML
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
+                
+                {editorMode === 'visual' ? (
+                  <Suspense fallback={<div className="h-[300px] bg-[#1a1a24] rounded flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-[#D4A836]" /></div>}>
+                    <RichTextEditor
+                      value={formData.body}
+                      onChange={(html) => setFormData({ ...formData, body: html })}
+                      placeholder="Write your email content..."
+                    />
+                  </Suspense>
+                ) : (
+                  <Textarea
+                    id="template-body"
+                    value={formData.body}
+                    onChange={(e) => setFormData({ ...formData, body: e.target.value })}
+                    className="bg-[#1a1a24] border-[#D4A836]/20 text-[#E8DDB5] min-h-[300px] font-mono text-sm"
+                    placeholder="Email body HTML..."
+                    dir="ltr"
+                    style={{ direction: 'ltr', textAlign: 'left' }}
+                  />
+                )}
                 <p className="text-xs text-gray-500">
-                  You can use HTML for formatting. The body will be wrapped in a styled email container automatically.
+                  Use Visual mode for easy editing, or HTML mode for advanced customization.
                 </p>
               </div>
 
