@@ -508,10 +508,42 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="py-12 border-t border-[#D4A836]/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <Logo />
+            
+            {/* Social Links */}
+            {(branding?.social_facebook || branding?.social_twitter || branding?.social_linkedin || branding?.social_instagram || branding?.social_youtube) && (
+              <div className="flex items-center gap-4">
+                {branding?.social_facebook && (
+                  <a href={branding.social_facebook} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-[#D4A836] transition-colors">
+                    <Facebook className="w-5 h-5" />
+                  </a>
+                )}
+                {branding?.social_twitter && (
+                  <a href={branding.social_twitter} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-[#D4A836] transition-colors">
+                    <Twitter className="w-5 h-5" />
+                  </a>
+                )}
+                {branding?.social_linkedin && (
+                  <a href={branding.social_linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-[#D4A836] transition-colors">
+                    <Linkedin className="w-5 h-5" />
+                  </a>
+                )}
+                {branding?.social_instagram && (
+                  <a href={branding.social_instagram} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-[#D4A836] transition-colors">
+                    <Instagram className="w-5 h-5" />
+                  </a>
+                )}
+                {branding?.social_youtube && (
+                  <a href={branding.social_youtube} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-[#D4A836] transition-colors">
+                    <Youtube className="w-5 h-5" />
+                  </a>
+                )}
+              </div>
+            )}
+            
             <p className="text-sm text-gray-500">
-              {content?.footer_text || "© 2024 Vasilis NetShield. Enterprise Cybersecurity Training."}
+              {branding?.footer_copyright || `© ${new Date().getFullYear()} ${companyName}. All rights reserved.`}
             </p>
           </div>
         </div>
