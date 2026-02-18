@@ -882,7 +882,7 @@ export default function PhishingSimulations() {
 
         {/* New Template Dialog */}
         <Dialog open={showNewTemplate} onOpenChange={setShowNewTemplate}>
-          <DialogContent className="bg-[#161B22] border-[#30363D] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="bg-[#161B22] border-[#30363D] sm:max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-[#E8DDB5]">Create Email Template</DialogTitle>
               <DialogDescription className="text-gray-400">
@@ -951,7 +951,33 @@ export default function PhishingSimulations() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-gray-400">Email Body</Label>
+                <div className="flex items-center justify-between">
+                  <Label className="text-gray-400">Email Body</Label>
+                  <div className="flex gap-2">
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => { fetchMediaImages(); setShowImageLibrary(true); }}
+                      className="border-[#D4A836]/30 text-[#E8DDB5]"
+                      data-testid="open-image-library"
+                    >
+                      <Image className="w-4 h-4 mr-1" />
+                      Image Library
+                    </Button>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={generatePreview}
+                      className="border-blue-500/30 text-blue-400"
+                      data-testid="preview-email-btn"
+                    >
+                      <Eye className="w-4 h-4 mr-1" />
+                      Preview
+                    </Button>
+                  </div>
+                </div>
                 <p className="text-xs text-gray-500 mb-2">
                   Use <code className="bg-[#0f0f15] px-1 rounded">{'{{USER_NAME}}'}</code> to personalize with recipient's name
                 </p>
@@ -963,6 +989,24 @@ export default function PhishingSimulations() {
                   />
                 </Suspense>
               </div>
+
+              {/* Attachments Section */}
+              {newTemplate.attachments.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-gray-400">Attachments ({newTemplate.attachments.length})</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {newTemplate.attachments.map((att) => (
+                      <div key={att.image_id} className="flex items-center gap-2 bg-[#0f0f15] px-3 py-1 rounded-full border border-[#D4A836]/30">
+                        <Paperclip className="w-3 h-3 text-[#D4A836]" />
+                        <span className="text-sm text-[#E8DDB5]">{att.filename}</span>
+                        <button type="button" onClick={() => removeAttachment(att.image_id)} className="text-gray-400 hover:text-red-400">
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowNewTemplate(false)} className="border-[#D4A836]/30 text-[#E8DDB5]">
