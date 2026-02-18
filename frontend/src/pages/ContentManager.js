@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import axios from 'axios';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { Button } from '../components/ui/button';
@@ -13,6 +13,13 @@ import {
   DialogTitle,
 } from '../components/ui/dialog';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../components/ui/select';
+import {
   Table,
   TableBody,
   TableCell,
@@ -24,12 +31,23 @@ import { Badge } from '../components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { 
   Plus, Edit, Trash2, Loader2, FileText, Video, Newspaper, 
-  Upload, Eye, EyeOff, Image, Youtube, Info
+  Upload, Eye, EyeOff, Image, Youtube, Info, Users
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../App';
 
+// Lazy load RichTextEditor to avoid SSR issues
+const RichTextEditor = lazy(() => import('../components/RichTextEditor'));
+
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+const VIDEO_CATEGORIES = [
+  { value: 'training', label: 'Training' },
+  { value: 'awareness', label: 'Security Awareness' },
+  { value: 'tutorials', label: 'Tutorials' },
+  { value: 'news', label: 'News & Updates' },
+  { value: 'webinars', label: 'Webinars' },
+];
 
 export default function ContentManager() {
   const { token } = useAuth();
