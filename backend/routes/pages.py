@@ -70,7 +70,9 @@ DEFAULT_LANDING_CONTENT = {
         "title_line2": "Against Cyber Threats",
         "subtitle": "Realistic phishing simulations, malicious ad detection, and social engineering scenarios. Build a security-aware workforce with expert-crafted and AI-enhanced training content.",
         "cta_primary_text": "Start Free Trial",
-        "cta_secondary_text": "Watch Demo"
+        "cta_primary_link": "/auth",
+        "cta_secondary_text": "Watch Demo",
+        "cta_secondary_link": ""
     },
     "stats": [
         {"value": "95%", "label": "Detection Rate"},
