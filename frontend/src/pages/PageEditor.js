@@ -203,30 +203,33 @@ export default function PageEditor() {
 
   return (
     <DashboardLayout>
-      <div className="p-6 lg:p-8" data-testid="page-editor">
+      <div className="p-4 sm:p-6 lg:p-8" data-testid="page-editor">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div className="flex flex-col gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Chivo, sans-serif' }}>
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2" style={{ fontFamily: 'Chivo, sans-serif' }}>
               Page Editor
             </h1>
-            <p className="text-gray-400">Edit your landing page content without code</p>
+            <p className="text-gray-400 text-sm sm:text-base">Edit your landing page content without code</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-2 sm:gap-3">
             <Button 
               variant="outline"
+              size="sm"
               onClick={() => window.open('/', '_blank')}
               className="border-[#D4A836]/30 text-[#E8DDB5]"
             >
-              <Eye className="w-4 h-4 mr-2" />
-              Preview
+              <Eye className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Preview</span>
+              <span className="sm:hidden">View</span>
             </Button>
             <Button 
               variant="outline"
+              size="sm"
               onClick={resetToDefaults}
               className="border-red-500/30 text-red-400 hover:bg-red-500/10"
             >
-              <RotateCcw className="w-4 h-4 mr-2" />
+              <RotateCcw className="w-4 h-4 mr-1 sm:mr-2" />
               Reset
             </Button>
             <Button 
