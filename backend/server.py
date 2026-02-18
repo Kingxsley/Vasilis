@@ -1426,6 +1426,7 @@ api_router.include_router(ads_router)
 api_router.include_router(scenarios_router)
 api_router.include_router(settings_router)
 api_router.include_router(content_router)
+api_router.include_router(pages_router)
 
 app.include_router(api_router)
 
