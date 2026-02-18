@@ -59,7 +59,9 @@ export default function PhishingSimulations() {
     name: '',
     organization_id: '',
     template_id: '',
-    target_user_ids: []
+    target_user_ids: [],
+    scheduled_at: '',
+    launch_immediately: true
   });
   
   const [newTemplate, setNewTemplate] = useState({
