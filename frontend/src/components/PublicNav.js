@@ -1,37 +1,55 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from './ui/button';
-import { Shield, Menu, X } from 'lucide-react';
-import axios from 'axios';
+import { Menu, X } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 // Logo Component - fetches custom logo from settings
-const Logo = ({ branding }) => (
+const Logo = ({ branding, isLoading }) => (
   <Link to="/" className="flex items-center gap-2">
-    {branding?.logo_url ? (
+    {/* Only show logo after branding is loaded to prevent flash */}
+    {!isLoading && branding?.logo_url ? (
       <img src={branding.logo_url} alt="Logo" className="w-8 h-8 object-contain" />
     ) : (
-      <Shield className="w-8 h-8" style={{ color: branding?.primary_color || '#D4A836' }} />
+      /* Empty placeholder with same size to prevent layout shift */
+      <div className="w-8 h-8" />
     )}
-    <span className="text-xl font-bold" style={{ color: branding?.text_color || '#E8DDB5', fontFamily: 'Chivo, sans-serif' }}>
+    <span 
+      className="text-xl font-bold" 
+      style={{ 
+        color: branding?.text_color || '#E8DDB5', 
+        fontFamily: 'Chivo, sans-serif',
+        opacity: isLoading ? 0 : 1,
+        transition: 'opacity 0.2s ease'
+      }}
+    >
       {branding?.company_name || 'Vasilis NetShield'}
     </span>
   </Link>
 );
 
-export const PublicNav = ({ branding }) => {
+export const PublicNav = ({ branding, isLoading = false }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const location = useLocation();
+  
+  // Prevent flash by waiting for mount and branding
+  useEffect(() => {
+    // Small delay to ensure branding is loaded
+    const timer = setTimeout(() => setMounted(true), 50);
+    return () => clearTimeout(timer);
+  }, []);
   
   const textColor = branding?.text_color || '#E8DDB5';
   const primaryColor = branding?.primary_color || '#D4A836';
   
-  // Navigation visibility
-  const showBlog = branding?.show_blog !== false;
-  const showVideos = branding?.show_videos !== false;
-  const showNews = branding?.show_news !== false;
-  const showAbout = branding?.show_about !== false;
+  // Navigation visibility - default to false until loaded to prevent flash
+  const isReady = mounted && !isLoading;
+  const showBlog = isReady && branding?.show_blog !== false;
+  const showVideos = isReady && branding?.show_videos !== false;
+  const showNews = isReady && branding?.show_news !== false;
+  const showAbout = isReady && branding?.show_about !== false;
   
   // Build visible nav items (exclude current page)
   const allNavItems = [
@@ -48,11 +66,11 @@ export const PublicNav = ({ branding }) => {
     <header className="border-b" style={{ borderColor: `${primaryColor}15` }}>
       <div className="container mx-auto px-4 sm:px-6 py-4">
         <div className="flex justify-between items-center">
-          <Logo branding={branding} />
+          <Logo branding={branding} isLoading={isLoading || !mounted} />
           
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
-            {navItems.map((item) => (
+            {isReady && navItems.map((item) => (
               <Link 
                 key={item.to}
                 to={item.to} 
@@ -72,7 +90,8 @@ export const PublicNav = ({ branding }) => {
             <Link to="/auth">
               <Button size="sm" className="text-black" style={{ backgroundColor: primaryColor }}>Login</Button>
             </Link>
-            {navItems.length > 0 && (
+            {/* Only show hamburger menu after branding is loaded AND there are nav items */}
+            {isReady && navItems.length > 0 && (
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="p-2 text-gray-400 hover:text-[#E8DDB5]"
@@ -85,7 +104,7 @@ export const PublicNav = ({ branding }) => {
         </div>
         
         {/* Mobile Menu Dropdown */}
-        {mobileMenuOpen && (
+        {mobileMenuOpen && isReady && (
           <div className="md:hidden py-4 border-t mt-4" style={{ borderColor: `${primaryColor}20` }}>
             <div className="flex flex-col gap-2">
               {navItems.map((item) => (
