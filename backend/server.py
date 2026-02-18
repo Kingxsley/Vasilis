@@ -1699,6 +1699,60 @@ api_router.include_router(email_templates_router)
 api_router.include_router(certificate_templates_router)
 api_router.include_router(landing_layouts_router)
 
+# ============== PUBLIC TRACKING ROUTE (Masked URL) ==============
+# This route provides a clean, masked URL for ad tracking
+# URL format: /track/{campaign_id}?u={user_tracking_code}
+
+@app.get("/track/{campaign_id}")
+async def public_masked_tracking(campaign_id: str, u: str = None, request: Request = None):
+    """
+    Public-facing masked tracking URL for ad campaigns.
+    Redirects to the internal API tracking endpoint.
+    """
+    from fastapi.responses import RedirectResponse
+    
+    if u:
+        # Redirect to the internal tracking endpoint with the tracking code
+        return RedirectResponse(url=f"/api/ads/track/view/{campaign_id}?u={u}")
+    else:
+        # For direct campaign links without user tracking, show a generic page
+        return HTMLResponse(content=f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Security Training</title>
+            <style>
+                body {{
+                    font-family: Arial, sans-serif;
+                    background: #0f0f15;
+                    color: #E8DDB5;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    min-height: 100vh;
+                    margin: 0;
+                    text-align: center;
+                }}
+                .container {{
+                    padding: 40px;
+                    border: 1px solid #D4A83633;
+                    border-radius: 8px;
+                    background: #161B22;
+                }}
+                h1 {{ color: #D4A836; margin-bottom: 16px; }}
+                p {{ color: #9CA3AF; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Security Awareness Training</h1>
+                <p>This tracking link requires a valid user parameter.</p>
+                <p>Please use the link provided in your campaign email.</p>
+            </div>
+        </body>
+        </html>
+        """)
+
 app.include_router(api_router)
 
 # CORS - Tighten origins for production
