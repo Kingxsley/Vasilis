@@ -32,12 +32,43 @@ export default function Settings() {
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingFavicon, setUploadingFavicon] = useState(false);
+  const [passwordPolicy, setPasswordPolicy] = useState({
+    password_expiry_days: 0,
+    expiry_reminder_days: 7
+  });
+  const [savingPolicy, setSavingPolicy] = useState(false);
   const logoInputRef = useRef(null);
   const faviconInputRef = useRef(null);
 
   useEffect(() => {
     fetchBranding();
+    fetchPasswordPolicy();
   }, []);
+
+  const fetchPasswordPolicy = async () => {
+    try {
+      const response = await axios.get(`${API}/settings/password-policy`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPasswordPolicy(response.data);
+    } catch (error) {
+      console.error('Failed to load password policy:', error);
+    }
+  };
+
+  const handleSavePasswordPolicy = async () => {
+    setSavingPolicy(true);
+    try {
+      await axios.patch(`${API}/settings/password-policy`, passwordPolicy, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Password policy saved');
+    } catch (error) {
+      toast.error('Failed to save password policy');
+    } finally {
+      setSavingPolicy(false);
+    }
+  };
 
   const fetchBranding = async () => {
     try {
