@@ -223,7 +223,7 @@ export default function TrainingSession() {
     if (type.includes('phishing')) return Mail;
     if (type.includes('ads')) return MousePointerClick;
     if (type.includes('social')) return Users;
-    return Shield;
+    return BookOpen;
   };
 
   const ScenarioIcon = getScenarioIcon();
