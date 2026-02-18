@@ -565,6 +565,7 @@ export default function ScenarioManager() {
               </form>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
 
         {/* Filter */}
