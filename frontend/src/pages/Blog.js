@@ -5,6 +5,7 @@ import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { ArrowLeft, Calendar, User, Tag, Loader2, BookOpen } from 'lucide-react';
 import { PublicNav } from '../components/PublicNav';
+import { getTextDirection, getDirectionStyle } from '../utils/rtl';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
