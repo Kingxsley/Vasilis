@@ -158,11 +158,12 @@ export default function AdSimulations() {
   };
 
   // Copy tracking URL to clipboard - masked URL format
+  // Uses clean URL: {domain}/{campaign_id}
   const copyTrackingUrl = async (campaignId) => {
     // Build the masked tracking URL using the website's domain
+    // Format: vasilisnetshield.net/{campaign_id}
     const baseUrl = window.location.origin;
-    // Use the API route format: /api/track/{campaign_id}
-    const trackingUrl = `${baseUrl}/api/track/${campaignId}`;
+    const trackingUrl = `${baseUrl}/${campaignId}`;
     
     try {
       await navigator.clipboard.writeText(trackingUrl);
