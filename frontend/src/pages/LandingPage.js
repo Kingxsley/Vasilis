@@ -134,13 +134,16 @@ export default function LandingPage() {
   const showNews = branding?.show_news !== false;
   const showAbout = branding?.show_about !== false;
   
-  // Count visible nav items for mobile
-  const visibleNavItems = [
+  // Only show nav items after branding is loaded to prevent flash
+  const isReady = !loading && branding !== null;
+  
+  // Count visible nav items for mobile - only when ready
+  const visibleNavItems = isReady ? [
     showBlog && { to: '/blog', label: 'Blog' },
     showVideos && { to: '/videos', label: 'Videos' },
     showNews && { to: '/news', label: 'News' },
     showAbout && { to: '/about', label: 'About' },
-  ].filter(Boolean);
+  ].filter(Boolean) : [];
 
   return (
     <div className="min-h-screen">
@@ -152,10 +155,10 @@ export default function LandingPage() {
             
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-6">
-              {showBlog && <Link to="/blog" className="text-gray-400 hover:text-[#E8DDB5] transition-colors" style={{ '--hover-color': textColor }}>Blog</Link>}
-              {showVideos && <Link to="/videos" className="text-gray-400 hover:text-[#E8DDB5] transition-colors" style={{ '--hover-color': textColor }}>Videos</Link>}
-              {showNews && <Link to="/news" className="text-gray-400 hover:text-[#E8DDB5] transition-colors" style={{ '--hover-color': textColor }}>News</Link>}
-              {showAbout && <Link to="/about" className="text-gray-400 hover:text-[#E8DDB5] transition-colors" style={{ '--hover-color': textColor }}>About</Link>}
+              {isReady && showBlog && <Link to="/blog" className="text-gray-400 hover:text-[#E8DDB5] transition-colors" style={{ '--hover-color': textColor }}>Blog</Link>}
+              {isReady && showVideos && <Link to="/videos" className="text-gray-400 hover:text-[#E8DDB5] transition-colors" style={{ '--hover-color': textColor }}>Videos</Link>}
+              {isReady && showNews && <Link to="/news" className="text-gray-400 hover:text-[#E8DDB5] transition-colors" style={{ '--hover-color': textColor }}>News</Link>}
+              {isReady && showAbout && <Link to="/about" className="text-gray-400 hover:text-[#E8DDB5] transition-colors" style={{ '--hover-color': textColor }}>About</Link>}
               <Link to="/auth">
                 <Button variant="ghost" className="hover:text-white hover:bg-white/10" style={{ color: textColor }} data-testid="login-btn">
                   Login
