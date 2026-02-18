@@ -7,7 +7,7 @@ import { Button } from '../components/ui/button';
 import { Progress } from '../components/ui/progress';
 import { 
   Mail, MousePointerClick, Users, AlertTriangle, CheckCircle, XCircle,
-  ArrowRight, ArrowLeft, Shield, ExternalLink, Award, RefreshCw
+  ArrowRight, ArrowLeft, ExternalLink, Award, RefreshCw, BookOpen
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
