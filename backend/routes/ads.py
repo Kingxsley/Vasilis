@@ -351,8 +351,8 @@ async def list_ad_campaigns(
         result.append(AdCampaignResponse(
             campaign_id=c["campaign_id"],
             name=c["name"],
-            organization_id=c["organization_id"],
-            template_id=c["template_id"],
+            organization_id=c.get("organization_id", ""),
+            template_id=c.get("template_id", ""),
             status=c.get("status", "active"),
             total_targets=c.get("total_targets", 0),
             ads_viewed=c.get("ads_viewed", 0),
