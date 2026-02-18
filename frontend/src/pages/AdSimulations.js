@@ -578,6 +578,22 @@ export default function AdSimulations() {
                   </div>
                 )}
               </div>
+              
+              {/* Schedule Campaign */}
+              <div className="space-y-2">
+                <Label className="text-gray-400 flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Schedule Campaign (Optional)
+                </Label>
+                <Input
+                  type="datetime-local"
+                  value={newCampaign.scheduled_at}
+                  onChange={(e) => setNewCampaign({...newCampaign, scheduled_at: e.target.value})}
+                  className="bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5]"
+                  data-testid="campaign-schedule-input"
+                />
+                <p className="text-xs text-gray-500">Leave empty to start immediately</p>
+              </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowNewCampaign(false)} className="border-[#D4A836]/30 text-[#E8DDB5]">
