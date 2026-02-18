@@ -101,7 +101,13 @@ async def get_branding():
             "show_blog": True,
             "show_videos": True,
             "show_news": True,
-            "show_about": True
+            "show_about": True,
+            "footer_copyright": None,
+            "social_facebook": None,
+            "social_twitter": None,
+            "social_linkedin": None,
+            "social_instagram": None,
+            "social_youtube": None
         }
     
     return {
@@ -117,7 +123,13 @@ async def get_branding():
         "show_blog": settings.get("show_blog", True),
         "show_videos": settings.get("show_videos", True),
         "show_news": settings.get("show_news", True),
-        "show_about": settings.get("show_about", True)
+        "show_about": settings.get("show_about", True),
+        "footer_copyright": settings.get("footer_copyright"),
+        "social_facebook": settings.get("social_facebook"),
+        "social_twitter": settings.get("social_twitter"),
+        "social_linkedin": settings.get("social_linkedin"),
+        "social_instagram": settings.get("social_instagram"),
+        "social_youtube": settings.get("social_youtube")
     }
 
 
