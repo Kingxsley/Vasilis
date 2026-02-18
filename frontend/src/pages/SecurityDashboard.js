@@ -367,24 +367,24 @@ export default function SecurityDashboard() {
                     className="pl-9 w-48 bg-[#1a1a24] border-[#D4A836]/20"
                   />
                 </div>
-                <Select value={filters.action} onValueChange={(v) => setFilters({ ...filters, action: v })}>
+                <Select value={filters.action || "all"} onValueChange={(v) => setFilters({ ...filters, action: v === "all" ? "" : v })}>
                   <SelectTrigger className="w-40 bg-[#1a1a24] border-[#D4A836]/20">
                     <SelectValue placeholder="All Actions" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Actions</SelectItem>
+                    <SelectItem value="all">All Actions</SelectItem>
                     <SelectItem value="login_success">Login Success</SelectItem>
                     <SelectItem value="login_failed_wrong_password">Login Failed</SelectItem>
                     <SelectItem value="login_blocked_lockout">Lockout</SelectItem>
                     <SelectItem value="password_reset_completed">Password Reset</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select value={filters.severity} onValueChange={(v) => setFilters({ ...filters, severity: v })}>
+                <Select value={filters.severity || "all"} onValueChange={(v) => setFilters({ ...filters, severity: v === "all" ? "" : v })}>
                   <SelectTrigger className="w-32 bg-[#1a1a24] border-[#D4A836]/20">
                     <SelectValue placeholder="Severity" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All</SelectItem>
+                    <SelectItem value="all">All</SelectItem>
                     <SelectItem value="critical">Critical</SelectItem>
                     <SelectItem value="warning">Warning</SelectItem>
                     <SelectItem value="info">Info</SelectItem>
