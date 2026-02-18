@@ -694,9 +694,9 @@ async def delete_organization(org_id: str, user: dict = Depends(require_super_ad
 
 # ============== USER MANAGEMENT ROUTES ==============
 
-from services.email_service import send_welcome_email
+from services.email_service import send_welcome_email, send_password_reset_email, send_forgot_password_email
 
-@user_router.post("", response_model=UserResponse)
+@user_router.post("")
 async def create_user(data: UserCreate, admin: dict = Depends(require_admin)):
     existing = await db.users.find_one({"email": data.email}, {"_id": 0})
     if existing:
@@ -717,22 +717,26 @@ async def create_user(data: UserCreate, admin: dict = Depends(require_admin)):
     await db.users.insert_one(user_doc)
     
     # Send welcome email with login credentials and branding
-    await send_welcome_email(
+    email_sent = await send_welcome_email(
         user_email=data.email,
         user_name=data.name,
-        password=data.password,  # Send the plain password before it was hashed
+        password=data.password,
         db=db
     )
     
-    return UserResponse(
-        user_id=user_id,
-        email=data.email,
-        name=data.name,
-        role=data.role,
-        organization_id=data.organization_id,
-        picture=None,
-        created_at=datetime.fromisoformat(user_doc["created_at"])
-    )
+    created_at = datetime.fromisoformat(user_doc["created_at"])
+    
+    return {
+        "user_id": user_id,
+        "email": data.email,
+        "name": data.name,
+        "role": data.role,
+        "organization_id": data.organization_id,
+        "picture": None,
+        "created_at": created_at.isoformat(),
+        "email_sent": email_sent,
+        "message": "User created successfully" + (" and welcome email sent" if email_sent else " (email not sent - check SendGrid config)")
+    }
 
 @user_router.get("", response_model=List[UserResponse])
 async def list_users(
