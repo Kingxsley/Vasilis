@@ -39,6 +39,9 @@ class BrandingSettings(BaseModel):
     favicon_url: Optional[str] = None
     primary_color: Optional[str] = "#D4A836"
     secondary_color: Optional[str] = "#0f3460"
+    text_color: Optional[str] = "#E8DDB5"
+    heading_color: Optional[str] = "#FFFFFF"
+    accent_color: Optional[str] = "#D4A836"
 
 
 class BrandingUpdate(BaseModel):
@@ -46,6 +49,9 @@ class BrandingUpdate(BaseModel):
     tagline: Optional[str] = None
     primary_color: Optional[str] = None
     secondary_color: Optional[str] = None
+    text_color: Optional[str] = None
+    heading_color: Optional[str] = None
+    accent_color: Optional[str] = None
 
 
 # ============== ROUTES ==============
@@ -65,7 +71,10 @@ async def get_branding():
             "logo_url": None,
             "favicon_url": None,
             "primary_color": "#D4A836",
-            "secondary_color": "#0f3460"
+            "secondary_color": "#0f3460",
+            "text_color": "#E8DDB5",
+            "heading_color": "#FFFFFF",
+            "accent_color": "#D4A836"
         }
     
     return {
@@ -74,7 +83,10 @@ async def get_branding():
         "logo_url": settings.get("logo_url"),
         "favicon_url": settings.get("favicon_url"),
         "primary_color": settings.get("primary_color", "#D4A836"),
-        "secondary_color": settings.get("secondary_color", "#0f3460")
+        "secondary_color": settings.get("secondary_color", "#0f3460"),
+        "text_color": settings.get("text_color", "#E8DDB5"),
+        "heading_color": settings.get("heading_color", "#FFFFFF"),
+        "accent_color": settings.get("accent_color", "#D4A836")
     }
 
 
