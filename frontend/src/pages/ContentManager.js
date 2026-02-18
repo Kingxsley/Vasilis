@@ -31,7 +31,7 @@ import { Badge } from '../components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { 
   Plus, Edit, Trash2, Loader2, FileText, Video, Newspaper, 
-  Upload, Eye, EyeOff, Image, Youtube, Info, Users
+  Upload, Eye, EyeOff, Image, Youtube, Info, Users, Rss, ExternalLink, Globe
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../App';
