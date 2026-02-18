@@ -647,7 +647,6 @@ async def forgot_password(data: ForgotPasswordRequest, request: Request):
     )
     
     # Send email
-    from services.email_service import send_forgot_password_email
     email_sent = await send_forgot_password_email(
         user_email=data.email,
         user_name=user["name"],
