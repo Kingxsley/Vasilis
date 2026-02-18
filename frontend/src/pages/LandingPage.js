@@ -1,10 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
-import { Mail, MousePointerClick, Users, BarChart3, Lock, ChevronRight, Zap, Target, Award, Shield } from 'lucide-react';
+import { Mail, MousePointerClick, Users, BarChart3, Lock, ChevronRight, Zap, Target, Award, Shield, Loader2 } from 'lucide-react';
 import axios from 'axios';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+// Icon mapping for features
+const iconMap = {
+  Mail: Mail,
+  MousePointerClick: MousePointerClick,
+  Users: Users,
+  Shield: Shield,
+  Target: Target,
+  Award: Award,
+  BarChart3: BarChart3,
+  Lock: Lock,
+  Zap: Zap,
+};
 
 // Logo Component - fetches custom logo from settings
 const Logo = ({ className = "h-10" }) => {
@@ -31,6 +44,60 @@ const Logo = ({ className = "h-10" }) => {
 };
 
 export default function LandingPage() {
+  const [content, setContent] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    axios.get(`${API}/pages/landing`)
+      .then(res => setContent(res.data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Default content while loading or if fetch fails
+  const hero = content?.hero || {
+    badge_text: "Human + AI Powered Security Training",
+    title_line1: "Train Your Team to",
+    title_highlight: "Defend",
+    title_line2: "Against Cyber Threats",
+    subtitle: "Realistic phishing simulations, malicious ad detection, and social engineering scenarios. Build a security-aware workforce with expert-crafted and AI-enhanced training content.",
+    cta_primary_text: "Start Free Trial",
+    cta_secondary_text: "Watch Demo"
+  };
+
+  const stats = content?.stats || [
+    { value: "95%", label: "Detection Rate" },
+    { value: "10k+", label: "Users Trained" },
+    { value: "500+", label: "Organizations" }
+  ];
+
+  const featuresTitle = content?.features_title || "Comprehensive Security Training";
+  const featuresSubtitle = content?.features_subtitle || "Three powerful modules designed to build real-world cybersecurity awareness";
+
+  const features = content?.features || [
+    {
+      title: "Phishing Email Detection",
+      description: "Learn to identify suspicious emails, fraudulent sender addresses, and malicious links through realistic simulations.",
+      bullet_points: ["Spoofed domain recognition", "Urgency tactic awareness", "Link verification skills"],
+      icon: "Mail",
+      color: "#D4A836"
+    },
+    {
+      title: "Malicious Ad Recognition",
+      description: "Spot fake advertisements, clickbait, and potentially harmful ad content before they compromise your system.",
+      bullet_points: ["Clickbait identification", "Fake download detection", "Ad network awareness"],
+      icon: "MousePointerClick",
+      color: "#FFB300"
+    },
+    {
+      title: "Social Engineering Defense",
+      description: "Recognize manipulation tactics including pretexting, baiting, and impersonation attempts.",
+      bullet_points: ["Pretexting scenarios", "Authority exploitation", "Emotional manipulation"],
+      icon: "Users",
+      color: "#FF3B30"
+    }
+  ];
+
   return (
     <div className="min-h-screen">
       {/* Navigation */}
@@ -65,42 +132,35 @@ export default function LandingPage() {
             <div className="animate-slide-up">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4A836]/10 border border-[#D4A836]/30 mb-6">
                 <Zap className="w-4 h-4 text-[#D4A836]" />
-                <span className="text-sm text-[#D4A836]">Human + AI Powered Security Training</span>
+                <span className="text-sm text-[#D4A836]">{hero.badge_text}</span>
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight mb-6 text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
-                Train Your Team to
-                <span className="text-[#D4A836]"> Defend </span>
-                Against Cyber Threats
+                {hero.title_line1}
+                <span className="text-[#D4A836]"> {hero.title_highlight} </span>
+                {hero.title_line2}
               </h1>
               <p className="text-lg text-gray-400 mb-8 max-w-xl">
-                Realistic phishing simulations, malicious ad detection, and social engineering scenarios. 
-                Build a security-aware workforce with expert-crafted and AI-enhanced training content.
+                {hero.subtitle}
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link to="/auth">
                   <Button size="lg" className="bg-[#D4A836] hover:bg-[#C49A30] text-black font-semibold px-8" data-testid="hero-cta-btn">
-                    Start Free Trial
+                    {hero.cta_primary_text}
                     <ChevronRight className="w-5 h-5 ml-2" />
                   </Button>
                 </Link>
                 <Button size="lg" variant="outline" className="border-[#D4A836]/30 text-[#E8DDB5] hover:bg-white/5">
-                  Watch Demo
+                  {hero.cta_secondary_text}
                 </Button>
               </div>
               
               <div className="flex items-center gap-8 mt-12 pt-8 border-t border-[#D4A836]/20">
-                <div>
-                  <p className="text-3xl font-bold text-[#E8DDB5]">95%</p>
-                  <p className="text-sm text-gray-500">Detection Rate</p>
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-[#E8DDB5]">10k+</p>
-                  <p className="text-sm text-gray-500">Users Trained</p>
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-[#E8DDB5]">500+</p>
-                  <p className="text-sm text-gray-500">Organizations</p>
-                </div>
+                {stats.map((stat, index) => (
+                  <div key={index}>
+                    <p className="text-3xl font-bold text-[#E8DDB5]">{stat.value}</p>
+                    <p className="text-sm text-gray-500">{stat.label}</p>
+                  </div>
+                ))}
               </div>
             </div>
             
@@ -146,94 +206,41 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
-              Comprehensive Security Training
+              {featuresTitle}
             </h2>
             <p className="text-gray-500 max-w-2xl mx-auto">
-              Three powerful modules designed to build real-world cybersecurity awareness
+              {featuresSubtitle}
             </p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
-            {/* Phishing Module */}
-            <div className="group card-dark rounded-xl p-8 card-hover" data-testid="feature-phishing">
-              <div className="w-14 h-14 rounded-xl bg-[#D4A836]/10 flex items-center justify-center mb-6 group-hover:bg-[#D4A836]/20 transition-colors">
-                <Mail className="w-7 h-7 text-[#D4A836]" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
-                Phishing Email Detection
-              </h3>
-              <p className="text-gray-500 mb-6">
-                Learn to identify suspicious emails, fraudulent sender addresses, and malicious links through realistic simulations.
-              </p>
-              <ul className="space-y-2 text-sm text-gray-500">
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#D4A836]" />
-                  Spoofed domain recognition
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#D4A836]" />
-                  Urgency tactic awareness
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#D4A836]" />
-                  Link verification skills
-                </li>
-              </ul>
-            </div>
-            
-            {/* Malicious Ads Module */}
-            <div className="group card-dark rounded-xl p-8 card-hover" data-testid="feature-ads">
-              <div className="w-14 h-14 rounded-xl bg-[#FFB300]/10 flex items-center justify-center mb-6 group-hover:bg-[#FFB300]/20 transition-colors">
-                <MousePointerClick className="w-7 h-7 text-[#FFB300]" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
-                Malicious Ad Recognition
-              </h3>
-              <p className="text-gray-500 mb-6">
-                Spot fake advertisements, clickbait, and potentially harmful ad content before they compromise your system.
-              </p>
-              <ul className="space-y-2 text-sm text-gray-500">
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#FFB300]" />
-                  Clickbait identification
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#FFB300]" />
-                  Fake offer detection
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#FFB300]" />
-                  Safe browsing habits
-                </li>
-              </ul>
-            </div>
-            
-            {/* Social Engineering Module */}
-            <div className="group card-dark rounded-xl p-8 card-hover" data-testid="feature-social">
-              <div className="w-14 h-14 rounded-xl bg-[#FF3B30]/10 flex items-center justify-center mb-6 group-hover:bg-[#FF3B30]/20 transition-colors">
-                <Users className="w-7 h-7 text-[#FF3B30]" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
-                Social Engineering Defense
-              </h3>
-              <p className="text-gray-500 mb-6">
-                Recognize manipulation tactics including pretexting, baiting, and impersonation attempts.
-              </p>
-              <ul className="space-y-2 text-sm text-gray-500">
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#FF3B30]" />
-                  Pretexting scenarios
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#FF3B30]" />
-                  CEO fraud awareness
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#FF3B30]" />
-                  Physical security basics
-                </li>
-              </ul>
-            </div>
+            {features.map((feature, index) => {
+              const IconComponent = iconMap[feature.icon] || Shield;
+              return (
+                <div key={index} className="group card-dark rounded-xl p-8 card-hover" data-testid={`feature-${index}`}>
+                  <div 
+                    className="w-14 h-14 rounded-xl flex items-center justify-center mb-6 transition-colors"
+                    style={{ backgroundColor: `${feature.color}15` }}
+                  >
+                    <IconComponent className="w-7 h-7" style={{ color: feature.color }} />
+                  </div>
+                  <h3 className="text-xl font-bold mb-3 text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
+                    {feature.title}
+                  </h3>
+                  <p className="text-gray-500 mb-6">
+                    {feature.description}
+                  </p>
+                  <ul className="space-y-2 text-sm text-gray-500">
+                    {feature.bullet_points?.map((bullet, bIndex) => (
+                      <li key={bIndex} className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: feature.color }} />
+                        {bullet}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -317,7 +324,7 @@ export default function LandingPage() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <Logo />
             <p className="text-sm text-gray-500">
-              2024 Vasilis NetShield. Enterprise Cybersecurity Training.
+              {content?.footer_text || "© 2024 VasilisNetShield. Enterprise Cybersecurity Training."}
             </p>
           </div>
         </div>
