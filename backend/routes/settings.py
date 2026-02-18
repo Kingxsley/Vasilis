@@ -47,6 +47,13 @@ class BrandingSettings(BaseModel):
     show_videos: Optional[bool] = True
     show_news: Optional[bool] = True
     show_about: Optional[bool] = True
+    # Footer settings
+    footer_copyright: Optional[str] = None  # e.g., "© 2024 Vasilis NetShield. All rights reserved."
+    social_facebook: Optional[str] = None
+    social_twitter: Optional[str] = None
+    social_linkedin: Optional[str] = None
+    social_instagram: Optional[str] = None
+    social_youtube: Optional[str] = None
 
 
 class BrandingUpdate(BaseModel):
@@ -61,6 +68,13 @@ class BrandingUpdate(BaseModel):
     show_videos: Optional[bool] = None
     show_news: Optional[bool] = None
     show_about: Optional[bool] = None
+    # Footer settings
+    footer_copyright: Optional[str] = None
+    social_facebook: Optional[str] = None
+    social_twitter: Optional[str] = None
+    social_linkedin: Optional[str] = None
+    social_instagram: Optional[str] = None
+    social_youtube: Optional[str] = None
 
 
 # ============== ROUTES ==============
