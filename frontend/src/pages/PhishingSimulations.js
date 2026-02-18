@@ -130,11 +130,46 @@ export default function PhishingSimulations() {
       return;
     }
     
+    // Wrap the body content with proper HTML structure and add tracking button
+    const buttonText = newTemplate.button_text || 'Click Here';
+    const wrappedHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .email-container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .cta-button { 
+      display: inline-block; 
+      background: #0066cc; 
+      color: white !important; 
+      padding: 12px 30px; 
+      text-decoration: none; 
+      border-radius: 5px; 
+      margin: 20px 0;
+      font-weight: bold;
+    }
+    .cta-button:hover { background: #0052a3; }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    ${newTemplate.body_html}
+    <p style="text-align: center; margin: 30px 0;">
+      <a href="{{TRACKING_LINK}}" class="cta-button">${buttonText}</a>
+    </p>
+  </div>
+</body>
+</html>`;
+
     try {
-      await axios.post(`${API}/phishing/templates`, newTemplate, { headers });
+      await axios.post(`${API}/phishing/templates`, {
+        ...newTemplate,
+        body_html: wrappedHtml
+      }, { headers });
       toast.success('Template created successfully');
       setShowNewTemplate(false);
-      setNewTemplate({ name: '', subject: '', sender_name: '', sender_email: '', body_html: '' });
+      setNewTemplate({ name: '', subject: '', sender_name: '', sender_email: '', body_html: '', button_text: '' });
       fetchData();
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Failed to create template');
