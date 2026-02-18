@@ -412,3 +412,72 @@ async def send_password_expiry_reminder(user_email: str, user_name: str, days_re
     except Exception as e:
         logger.error(f"Failed to send password expiry reminder to {user_email}: {e}")
         return False
+
+
+async def send_admin_notification(subject: str, body: str, db=None):
+    """Send notification email to admin (first super_admin in the system)"""
+    
+    sendgrid_api_key = os.environ.get('SENDGRID_API_KEY')
+    sender_email = os.environ.get('SENDER_EMAIL')
+    admin_email = os.environ.get('ADMIN_EMAIL')  # Optional dedicated admin email
+    
+    if not sendgrid_api_key or not sender_email:
+        logger.warning("Email not configured - skipping admin notification")
+        return False
+    
+    # Get admin email from database if not set in environment
+    if not admin_email and db is not None:
+        try:
+            admin_user = await db.users.find_one({"role": "super_admin"}, {"email": 1})
+            if admin_user:
+                admin_email = admin_user.get("email")
+        except Exception as e:
+            logger.warning(f"Could not fetch admin email: {e}")
+    
+    if not admin_email:
+        logger.warning("No admin email configured - skipping notification")
+        return False
+    
+    # Get branding
+    branding = {"company_name": "Vasilis NetShield", "primary_color": "#D4A836"}
+    if db is not None:
+        branding = await get_branding_settings(db)
+    
+    company_name = branding.get("company_name", "Vasilis NetShield")
+    primary_color = branding.get("primary_color", "#D4A836")
+    
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <body style="font-family: Arial, sans-serif; background-color: #0f0f15; color: #E8DDB5; padding: 20px; margin: 0;">
+        <div style="max-width: 600px; margin: 0 auto; background: #1a1a24; border-radius: 10px; padding: 30px; border: 1px solid {primary_color};">
+            <h1 style="color: {primary_color}; margin-bottom: 20px;">{subject}</h1>
+            <div style="color: #E8DDB5; line-height: 1.6; white-space: pre-wrap;">{body}</div>
+            <p style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #333; color: #666; font-size: 12px; text-align: center;">
+                {company_name} Admin Notification
+            </p>
+        </div>
+    </body>
+    </html>
+    """
+    
+    message = Mail(
+        from_email=Email(sender_email, company_name),
+        to_emails=To(admin_email),
+        subject=f"[{company_name}] {subject}",
+        html_content=Content("text/html", html_content)
+    )
+    
+    try:
+        sg = SendGridAPIClient(sendgrid_api_key)
+        response = sg.send(message)
+        
+        if response.status_code == 202:
+            logger.info(f"Admin notification sent to {admin_email}")
+            return True
+        else:
+            logger.error(f"SendGrid returned status {response.status_code}")
+            return False
+    except Exception as e:
+        logger.error(f"Failed to send admin notification: {e}")
+        return False
