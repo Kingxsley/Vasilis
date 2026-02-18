@@ -228,6 +228,107 @@ async def delete_scenario(scenario_id: str, request: Request):
     return {"message": "Scenario deleted"}
 
 
+# ============== BULK IMPORT ==============
+
+@router.post("/import")
+async def import_scenarios(request: Request, file: UploadFile = File(...)):
+    """
+    Import scenarios from CSV file.
+    CSV columns: title, scenario_type, difficulty, correct_answer, explanation, content_json
+    scenario_type: phishing_email, malicious_ads, social_engineering
+    difficulty: easy, medium, hard
+    correct_answer: safe, unsafe
+    content_json: JSON string with scenario content
+    """
+    user = await require_admin(request)
+    db = get_db()
+    
+    if not file.filename.endswith('.csv'):
+        raise HTTPException(status_code=400, detail="File must be CSV")
+    
+    import csv
+    import json
+    import io
+    
+    contents = await file.read()
+    decoded = contents.decode('utf-8')
+    reader = csv.DictReader(io.StringIO(decoded))
+    
+    imported = 0
+    errors = []
+    
+    for row_num, row in enumerate(reader, start=2):
+        try:
+            # Validate required fields
+            required = ['title', 'scenario_type', 'difficulty', 'correct_answer', 'explanation']
+            for field in required:
+                if not row.get(field):
+                    raise ValueError(f"Missing required field: {field}")
+            
+            # Validate scenario_type
+            valid_types = ['phishing_email', 'malicious_ads', 'social_engineering']
+            if row['scenario_type'] not in valid_types:
+                raise ValueError(f"Invalid scenario_type. Must be one of: {valid_types}")
+            
+            # Validate difficulty
+            if row['difficulty'] not in ['easy', 'medium', 'hard']:
+                raise ValueError("Invalid difficulty. Must be easy, medium, or hard")
+            
+            # Validate correct_answer
+            if row['correct_answer'] not in ['safe', 'unsafe']:
+                raise ValueError("Invalid correct_answer. Must be safe or unsafe")
+            
+            # Parse content JSON
+            content = {}
+            if row.get('content_json'):
+                try:
+                    content = json.loads(row['content_json'])
+                except json.JSONDecodeError:
+                    raise ValueError("Invalid content_json format")
+            
+            scenario_id = f"scen_{uuid.uuid4().hex[:12]}"
+            scenario_doc = {
+                "scenario_id": scenario_id,
+                "title": row['title'].strip(),
+                "scenario_type": row['scenario_type'],
+                "difficulty": row['difficulty'],
+                "correct_answer": row['correct_answer'],
+                "explanation": row['explanation'].strip(),
+                "content": content,
+                "is_active": True,
+                "created_by": user["user_id"],
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            
+            await db.scenarios.insert_one(scenario_doc)
+            imported += 1
+            
+        except Exception as e:
+            errors.append(f"Row {row_num}: {str(e)}")
+    
+    return {
+        "message": f"Import completed. {imported} scenarios imported.",
+        "imported": imported,
+        "errors": errors
+    }
+
+
+@router.get("/export")
+async def export_scenarios(request: Request):
+    """Export all scenarios as JSON for backup"""
+    user = await require_admin(request)
+    db = get_db()
+    
+    scenarios = await db.scenarios.find({}, {"_id": 0}).to_list(1000)
+    
+    return {
+        "scenarios": scenarios,
+        "count": len(scenarios),
+        "exported_at": datetime.now(timezone.utc).isoformat()
+    }
+
+
+
 # ============== GET RANDOM SCENARIO FOR TRAINING ==============
 
 @router.get("/training/{scenario_type}/random")
