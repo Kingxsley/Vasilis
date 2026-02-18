@@ -124,6 +124,142 @@ export default function PhishingSimulations() {
     }
   };
 
+  // Fetch media images for library
+  const fetchMediaImages = async () => {
+    setLoadingMedia(true);
+    try {
+      const res = await axios.get(`${API}/phishing/media`, { headers });
+      setMediaImages(res.data.images || []);
+    } catch (err) {
+      // If endpoint doesn't exist yet, set empty
+      setMediaImages([]);
+    } finally {
+      setLoadingMedia(false);
+    }
+  };
+
+  // Upload image for phishing emails
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File too large. Max 5MB');
+      return;
+    }
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await axios.post(`${API}/phishing/media/upload`, formData, {
+        headers: { ...headers, 'Content-Type': 'multipart/form-data' }
+      });
+      toast.success('Image uploaded');
+      fetchMediaImages();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Upload failed');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  // Delete image from library
+  const deleteMediaImage = async (imageId) => {
+    if (!window.confirm('Delete this image?')) return;
+    try {
+      await axios.delete(`${API}/phishing/media/${imageId}`, { headers });
+      toast.success('Image deleted');
+      fetchMediaImages();
+    } catch (err) {
+      toast.error('Failed to delete');
+    }
+  };
+
+  // Generate email preview
+  const generatePreview = () => {
+    if (!newTemplate.body_html) {
+      toast.error('Please write some email content first');
+      return;
+    }
+
+    const buttonText = newTemplate.button_text || 'Click Here';
+    const previewContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; margin: 0; padding: 20px; }
+    .email-container { max-width: 600px; margin: 0 auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .cta-button { 
+      display: inline-block; 
+      background: #0066cc; 
+      color: white !important; 
+      padding: 12px 30px; 
+      text-decoration: none; 
+      border-radius: 5px; 
+      margin: 20px 0;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    ${newTemplate.body_html.replace(/\{\{USER_NAME\}\}/g, 'John Doe')}
+    <p style="text-align: center; margin: 30px 0;">
+      <a href="#" class="cta-button">${buttonText}</a>
+    </p>
+  </div>
+</body>
+</html>`;
+    
+    setPreviewHtml(previewContent);
+    setShowPreview(true);
+  };
+
+  // Insert image URL into template body
+  const insertImageToBody = (url) => {
+    const imgTag = `<img src="${url}" alt="Image" style="max-width: 100%; height: auto; margin: 10px 0;" />`;
+    setNewTemplate({
+      ...newTemplate,
+      body_html: newTemplate.body_html + imgTag
+    });
+    toast.success('Image inserted into body');
+  };
+
+  // Add image as attachment
+  const addAttachment = (image) => {
+    if (newTemplate.attachments.some(a => a.image_id === image.image_id)) {
+      toast.error('Image already attached');
+      return;
+    }
+    setNewTemplate({
+      ...newTemplate,
+      attachments: [...newTemplate.attachments, image]
+    });
+    toast.success('Image added as attachment');
+  };
+
+  // Remove attachment
+  const removeAttachment = (imageId) => {
+    setNewTemplate({
+      ...newTemplate,
+      attachments: newTemplate.attachments.filter(a => a.image_id !== imageId)
+    });
+  };
+
+  // Filter campaigns by status
+  const filteredCampaigns = campaigns.filter(c => {
+    if (campaignFilter === 'all') return true;
+    if (campaignFilter === 'active') return c.status === 'active';
+    if (campaignFilter === 'past') return c.status === 'completed';
+    if (campaignFilter === 'scheduled') return c.status === 'scheduled';
+    if (campaignFilter === 'draft') return c.status === 'draft';
+    return true;
+  });
+
   const createCampaign = async () => {
     if (!newCampaign.name || !newCampaign.organization_id || !newCampaign.template_id || newCampaign.target_user_ids.length === 0) {
       toast.error('Please fill in all required fields');
