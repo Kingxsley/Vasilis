@@ -145,15 +145,23 @@ export default function LandingPage() {
                 {hero.subtitle}
               </p>
               <div className="flex flex-wrap gap-4">
-                <Link to="/auth">
+                <Link to={hero.cta_primary_link || "/auth"}>
                   <Button size="lg" className="bg-[#D4A836] hover:bg-[#C49A30] text-black font-semibold px-8" data-testid="hero-cta-btn">
                     {hero.cta_primary_text}
                     <ChevronRight className="w-5 h-5 ml-2" />
                   </Button>
                 </Link>
-                <Button size="lg" variant="outline" className="border-[#D4A836]/30 text-[#E8DDB5] hover:bg-white/5">
-                  {hero.cta_secondary_text}
-                </Button>
+                {hero.cta_secondary_link ? (
+                  <a href={hero.cta_secondary_link} target="_blank" rel="noopener noreferrer">
+                    <Button size="lg" variant="outline" className="border-[#D4A836]/30 text-[#E8DDB5] hover:bg-white/5">
+                      {hero.cta_secondary_text}
+                    </Button>
+                  </a>
+                ) : hero.cta_secondary_text ? (
+                  <Button size="lg" variant="outline" className="border-[#D4A836]/30 text-[#E8DDB5] hover:bg-white/5">
+                    {hero.cta_secondary_text}
+                  </Button>
+                ) : null}
               </div>
               
               <div className="flex items-center gap-8 mt-12 pt-8 border-t border-[#D4A836]/20">
