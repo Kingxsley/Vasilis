@@ -6,28 +6,40 @@ import { Menu, X } from 'lucide-react';
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 // Logo Component - fetches custom logo from settings
-const Logo = ({ branding, isLoading }) => (
-  <Link to="/" className="flex items-center gap-2">
-    {/* Only show logo after branding is loaded to prevent flash */}
-    {!isLoading && branding?.logo_url ? (
-      <img src={branding.logo_url} alt="Logo" className="w-8 h-8 object-contain" />
-    ) : (
-      /* Empty placeholder with same size to prevent layout shift */
-      <div className="w-8 h-8" />
-    )}
-    <span 
-      className="text-xl font-bold" 
-      style={{ 
-        color: branding?.text_color || '#E8DDB5', 
-        fontFamily: 'Chivo, sans-serif',
-        opacity: isLoading ? 0 : 1,
-        transition: 'opacity 0.2s ease'
-      }}
-    >
-      {branding?.company_name || 'Vasilis NetShield'}
-    </span>
-  </Link>
-);
+const Logo = ({ branding, isLoading }) => {
+  // Handle click - refresh the page
+  const handleClick = (e) => {
+    e.preventDefault();
+    window.location.href = '/';
+  };
+
+  return (
+    <a href="/" onClick={handleClick} className="flex items-center gap-2">
+      {/* Only show logo after branding is loaded to prevent flash */}
+      {!isLoading && branding?.logo_url ? (
+        <img src={branding.logo_url} alt="Logo" className="w-8 h-8 object-contain" />
+      ) : !isLoading ? (
+        <div className="w-8 h-8 bg-[#D4A836]/30 rounded flex items-center justify-center">
+          <span className="text-[#D4A836] font-bold text-sm">{(branding?.company_name || 'V')[0]}</span>
+        </div>
+      ) : (
+        /* Empty placeholder with same size to prevent layout shift */
+        <div className="w-8 h-8" />
+      )}
+      <span 
+        className="text-xl font-bold" 
+        style={{ 
+          color: branding?.text_color || '#E8DDB5', 
+          fontFamily: 'Chivo, sans-serif',
+          opacity: isLoading ? 0 : 1,
+          transition: 'opacity 0.2s ease'
+        }}
+      >
+        {branding?.company_name || 'Vasilis NetShield'}
+      </span>
+    </a>
+  );
+};
 
 export const PublicNav = ({ branding, isLoading = false }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
