@@ -221,6 +221,53 @@ export default function ContentManager() {
     }
   };
 
+  // ============== RSS FEED HANDLERS ==============
+  const handleRssFeedSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await axios.post(`${API}/content/news/rss-feeds`, rssFeedForm, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('RSS feed added');
+      setRssFeedDialogOpen(false);
+      setRssFeedForm({ name: '', url: '', enabled: true });
+      fetchRssFeeds();
+      fetchAllContent(); // Refresh news to include new feed
+    } catch (error) {
+      toast.error('Failed to add RSS feed');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const toggleRssFeed = async (feed) => {
+    try {
+      await axios.patch(`${API}/content/news/rss-feeds/${feed.feed_id}`, 
+        { enabled: !feed.enabled },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      fetchRssFeeds();
+      fetchAllContent();
+    } catch (error) {
+      toast.error('Failed to update feed');
+    }
+  };
+
+  const deleteRssFeed = async (feedId) => {
+    if (!window.confirm('Delete this RSS feed?')) return;
+    try {
+      await axios.delete(`${API}/content/news/rss-feeds/${feedId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('RSS feed deleted');
+      fetchRssFeeds();
+      fetchAllContent();
+    } catch (error) {
+      toast.error('Failed to delete feed');
+    }
+  };
+
   // ============== VIDEO HANDLERS ==============
   const handleVideoSubmit = async (e) => {
     e.preventDefault();
