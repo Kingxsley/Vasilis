@@ -5,14 +5,26 @@ from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
+import re
+import html
 from pathlib import Path
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field, EmailStr, field_validator
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone, timedelta
 import bcrypt
 import jwt
 import httpx
+
+# Import security middleware
+from middleware.security import (
+    RateLimitMiddleware, 
+    SecurityHeadersMiddleware,
+    account_lockout,
+    PasswordPolicy,
+    AuditLogger,
+    get_client_ip
+)
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
