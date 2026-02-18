@@ -80,14 +80,18 @@ export default function AuthPage() {
         </div>
         <div className="relative z-10 text-center p-12">
           <div className="w-48 h-48 mx-auto mb-8 rounded-full bg-gradient-to-br from-[#D4A836] to-[#0f3460] flex items-center justify-center animate-pulse">
-            <Shield className="w-24 h-24 text-[#E8DDB5]" />
+            {branding?.logo_url ? (
+              <img src={branding.logo_url} alt="Logo" className="w-24 h-24 object-contain" />
+            ) : (
+              <Shield className="w-24 h-24 text-[#E8DDB5]" />
+            )}
           </div>
           <h2 className="text-4xl font-bold mb-4 text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
             Defend Against
             <span className="text-[#D4A836]"> Modern Threats</span>
           </h2>
           <p className="text-gray-400 max-w-md mx-auto">
-            Train your organization with realistic cybersecurity simulations.
+            {branding?.tagline || 'Train your organization with realistic cybersecurity simulations.'}
           </p>
         </div>
       </div>
