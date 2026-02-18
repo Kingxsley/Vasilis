@@ -53,7 +53,10 @@ export default function Settings() {
         company_name: branding.company_name,
         tagline: branding.tagline,
         primary_color: branding.primary_color,
-        secondary_color: branding.secondary_color
+        secondary_color: branding.secondary_color,
+        text_color: branding.text_color,
+        heading_color: branding.heading_color,
+        accent_color: branding.accent_color
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
