@@ -601,11 +601,12 @@ async def create_user(data: UserCreate, admin: dict = Depends(require_admin)):
     }
     await db.users.insert_one(user_doc)
     
-    # Send welcome email with login credentials
+    # Send welcome email with login credentials and branding
     await send_welcome_email(
         user_email=data.email,
         user_name=data.name,
-        password=data.password  # Send the plain password before it was hashed
+        password=data.password,  # Send the plain password before it was hashed
+        db=db
     )
     
     return UserResponse(
