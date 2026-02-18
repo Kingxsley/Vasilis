@@ -299,6 +299,14 @@ To enable scheduled campaigns and password expiry reminders, add the following t
 - Hamburger menu only appears after branding is loaded
 - Prevents flash of all menu items before visibility settings are applied
 
+### Signup to Inquiry Form Conversion (Feb 18, 2026)
+- Removed direct user signup functionality
+- Replaced with contact/inquiry form collecting email, phone, and message
+- Users must be created by administrators only
+- Created `/inquiries` admin page ("Access Requests") to manage access requests
+- Status tracking: pending, contacted, approved, rejected
+- Backend routes: `/api/inquiries/*`
+
 ## Test Credentials
 - **Super Admin**: admin@test.com / Admin123!
 - **Media Manager**: media@netshield.com / MediaManager123!
