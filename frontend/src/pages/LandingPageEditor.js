@@ -95,6 +95,10 @@ const SectionEditor = ({ section, onUpdate, onDelete, onMoveUp, onMoveDown, onTo
       items.push({ quote: 'New testimonial', author: 'Author', role: 'Role' });
     } else if (section.type === 'faq') {
       items.push({ question: 'Question?', answer: 'Answer' });
+    } else if (section.type === 'pricing') {
+      items.push({ name: 'New Plan', price: '$0', period: '/month', features: ['Feature 1'], highlighted: false });
+    } else if (section.type === 'team') {
+      items.push({ name: 'Team Member', role: 'Position', image_url: '' });
     } else if (section.type === 'stats') {
       const stats = [...(content.stats || [])];
       stats.push({ value: '0', label: 'Label' });
