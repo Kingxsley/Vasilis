@@ -277,12 +277,18 @@ def hash_password(password: str) -> str:
 def verify_password(password: str, hashed: str) -> bool:
     return bcrypt.checkpw(password.encode(), hashed.encode())
 
-def create_jwt_token(user_id: str, email: str, role: str) -> str:
+def create_jwt_token(user_id: str, email: str, role: str, token_type: str = "access") -> str:
+    if token_type == "refresh":
+        expiration = datetime.now(timezone.utc) + timedelta(days=JWT_REFRESH_TOKEN_EXPIRE_DAYS)
+    else:
+        expiration = datetime.now(timezone.utc) + timedelta(hours=JWT_ACCESS_TOKEN_EXPIRE_HOURS)
+    
     payload = {
         "user_id": user_id,
         "email": email,
         "role": role,
-        "exp": datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRATION_HOURS)
+        "type": token_type,
+        "exp": expiration
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
