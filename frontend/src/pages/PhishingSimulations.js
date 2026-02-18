@@ -1146,6 +1146,156 @@ export default function PhishingSimulations() {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Email Preview Dialog */}
+        <Dialog open={showPreview} onOpenChange={setShowPreview}>
+          <DialogContent className="bg-[#161B22] border-[#30363D] sm:max-w-3xl max-h-[90vh]">
+            <DialogHeader>
+              <DialogTitle className="text-[#E8DDB5] flex items-center gap-2">
+                <Eye className="w-5 h-5" />
+                Email Preview
+              </DialogTitle>
+              <DialogDescription className="text-gray-400">
+                Preview how your email will look to recipients
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-4">
+              <div className="bg-[#0f0f15] rounded-lg p-4 space-y-3 mb-4">
+                <div className="flex gap-2 text-sm">
+                  <span className="text-gray-500">From:</span>
+                  <span className="text-[#E8DDB5]">{newTemplate.sender_name || 'Sender'} &lt;{newTemplate.sender_email || 'email@example.com'}&gt;</span>
+                </div>
+                <div className="flex gap-2 text-sm">
+                  <span className="text-gray-500">Subject:</span>
+                  <span className="text-[#E8DDB5]">{newTemplate.subject?.replace('{{USER_NAME}}', 'John Doe') || 'No subject'}</span>
+                </div>
+              </div>
+              <div 
+                className="bg-white rounded-lg overflow-hidden"
+                style={{ height: '400px' }}
+              >
+                <iframe
+                  srcDoc={previewHtml}
+                  className="w-full h-full border-0"
+                  title="Email Preview"
+                  sandbox="allow-same-origin"
+                  data-testid="email-preview-iframe"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowPreview(false)} className="border-[#D4A836]/30 text-[#E8DDB5]">
+                Close Preview
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Image Library Dialog */}
+        <Dialog open={showImageLibrary} onOpenChange={setShowImageLibrary}>
+          <DialogContent className="bg-[#161B22] border-[#30363D] sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-[#E8DDB5] flex items-center gap-2">
+                <Image className="w-5 h-5" />
+                Image Library
+              </DialogTitle>
+              <DialogDescription className="text-gray-400">
+                Upload and manage images for phishing email templates
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-4 space-y-4">
+              {/* Upload Section */}
+              <div className="flex gap-3">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+                <Button 
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
+                  data-testid="upload-image-btn"
+                >
+                  {uploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+                  Upload Image
+                </Button>
+                <Button variant="outline" onClick={fetchMediaImages} className="border-[#D4A836]/30 text-[#E8DDB5]">
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Refresh
+                </Button>
+              </div>
+
+              {/* Images Grid */}
+              {loadingMedia ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-[#D4A836]" />
+                </div>
+              ) : mediaImages.length === 0 ? (
+                <div className="text-center py-12">
+                  <Image className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                  <p className="text-gray-400">No images uploaded yet</p>
+                  <p className="text-sm text-gray-500">Upload images to use in your email templates</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {mediaImages.map((img) => (
+                    <div 
+                      key={img.image_id}
+                      className="bg-[#0f0f15] rounded-lg overflow-hidden border border-[#30363D] group"
+                    >
+                      <div className="aspect-square relative">
+                        <img 
+                          src={img.data_url || img.url} 
+                          alt={img.filename}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                          <Button 
+                            size="sm"
+                            onClick={() => insertImageToBody(img.data_url || img.url)}
+                            className="bg-blue-600 hover:bg-blue-700 text-xs"
+                            title="Insert into email body"
+                          >
+                            <Image className="w-3 h-3 mr-1" />
+                            Embed
+                          </Button>
+                          <Button 
+                            size="sm"
+                            onClick={() => addAttachment(img)}
+                            className="bg-green-600 hover:bg-green-700 text-xs"
+                            title="Add as attachment"
+                          >
+                            <Paperclip className="w-3 h-3 mr-1" />
+                            Attach
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="p-2 flex items-center justify-between">
+                        <span className="text-xs text-gray-400 truncate flex-1">{img.filename}</span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => deleteMediaImage(img.image_id)}
+                          className="text-gray-400 hover:text-red-400 p-1 h-auto"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowImageLibrary(false)} className="border-[#D4A836]/30 text-[#E8DDB5]">
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );
