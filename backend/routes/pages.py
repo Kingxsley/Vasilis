@@ -33,7 +33,9 @@ class HeroContent(BaseModel):
     title_line2: Optional[str] = "Against Cyber Threats"
     subtitle: Optional[str] = "Realistic phishing simulations, malicious ad detection, and social engineering scenarios. Build a security-aware workforce with expert-crafted and AI-enhanced training content."
     cta_primary_text: Optional[str] = "Start Free Trial"
+    cta_primary_link: Optional[str] = "/auth"
     cta_secondary_text: Optional[str] = "Watch Demo"
+    cta_secondary_link: Optional[str] = ""
 
 
 class StatItem(BaseModel):
