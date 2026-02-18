@@ -273,6 +273,23 @@ To enable scheduled campaigns and password expiry reminders, add the following t
 
 ## Recent Changes (Feb 18, 2026 - Session 2)
 
+### Ad Tracking URL Masking (NEW)
+- Implemented clean URL format: `{domain}/{campaign_id}` (e.g., `vasilisnetshield.net/adcamp_123`)
+- Created `AdTracker.js` component for rendering ad content at root URLs
+- Created `AdTrackerWrapper` in App.js to route campaign IDs to tracker
+- Supports both `adcamp_` and `adcmp_` (legacy) campaign ID prefixes
+- Updated "Copy URL" button to generate new clean URL format
+
+### Dashboard/Analytics Data Fix (NEW)
+- Fixed dashboard stats to aggregate from `phishing_campaigns` and `ad_campaigns` collections
+- Corrected KeyError bugs in `ads.py` by using `.get()` for optional fields
+- Dashboard now shows accurate campaign counts
+
+### Favicon Fix (Improved)
+- Added SVG favicon with gold shield design
+- Referenced in index.html for immediate display
+- No more blank favicon flash on page load
+
 ### Certificate Template Editor
 - Created `/certificate-templates` page with drag-and-drop canvas
 - Support for text, logo, signature, and certifying body elements
@@ -287,23 +304,12 @@ To enable scheduled campaigns and password expiry reminders, add the following t
 - Real-time preview link
 - Backend routes: `/api/landing-layouts/*`
 
-### Copy Tracking URL (Ad Simulations)
-- Added "Copy URL" button to campaign cards
-- Uses masked URL format: `{domain}/track/{campaign_id}?u={tracking_code}`
-- Clipboard API with fallback
-- Visual feedback on copy (green check, "Copied!" text)
-
-### Favicon Flash Fix
-- Removed default shield favicon from index.html
-- Implemented localStorage caching for instant favicon load
-- No more flash of default icon before custom favicon loads
-
 ### Mobile Menu Flash Fix
 - Added `isReady` state that waits for branding data before rendering nav items
 - Hamburger menu only appears after branding is loaded
 - Prevents flash of all menu items before visibility settings are applied
 
-### Signup to Inquiry Form Conversion (Feb 18, 2026)
+### Signup to Inquiry Form Conversion
 - Removed direct user signup functionality
 - Replaced with contact/inquiry form collecting email, phone, and message
 - Users must be created by administrators only
