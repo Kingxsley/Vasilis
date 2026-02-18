@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense, lazy } from 'react';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { useAuth } from '../App';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
@@ -7,6 +7,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Badge } from '../components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import {
   Dialog,
   DialogContent,
@@ -14,9 +15,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../components/ui/dialog';
-import { Mail, Edit2, Eye, RotateCcw, Save, Loader2, Info, CheckCircle } from 'lucide-react';
+import { Mail, Edit2, Eye, RotateCcw, Save, Loader2, Info, CheckCircle, Code, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
+
+// Lazy load RichTextEditor
+const RichTextEditor = lazy(() => import('../components/RichTextEditor'));
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
