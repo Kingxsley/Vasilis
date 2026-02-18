@@ -1,115 +1,145 @@
-import React, { useMemo } from 'react';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import React, { useRef, useCallback } from 'react';
+import { Button } from './ui/button';
+import { Bold, Italic, Underline, List, ListOrdered, Link2, Image, Quote, Code, Heading1, Heading2 } from 'lucide-react';
 
 const RichTextEditor = ({ value, onChange, placeholder = "Write your content..." }) => {
-  const modules = useMemo(() => ({
-    toolbar: [
-      [{ 'header': [1, 2, 3, false] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ 'color': [] }, { 'background': [] }],
-      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-      [{ 'indent': '-1' }, { 'indent': '+1' }],
-      ['blockquote', 'code-block'],
-      ['link', 'image'],
-      [{ 'align': [] }],
-      ['clean']
-    ],
-  }), []);
+  const editorRef = useRef(null);
 
-  const formats = [
-    'header',
-    'bold', 'italic', 'underline', 'strike',
-    'color', 'background',
-    'list', 'bullet', 'indent',
-    'blockquote', 'code-block',
-    'link', 'image',
-    'align'
-  ];
+  const execCommand = useCallback((command, value = null) => {
+    document.execCommand(command, false, value);
+    if (editorRef.current) {
+      onChange(editorRef.current.innerHTML);
+    }
+  }, [onChange]);
+
+  const handleInput = useCallback(() => {
+    if (editorRef.current) {
+      onChange(editorRef.current.innerHTML);
+    }
+  }, [onChange]);
+
+  const insertLink = () => {
+    const url = prompt('Enter URL:');
+    if (url) {
+      execCommand('createLink', url);
+    }
+  };
+
+  const insertImage = () => {
+    const url = prompt('Enter image URL:');
+    if (url) {
+      execCommand('insertImage', url);
+    }
+  };
+
+  const formatBlock = (tag) => {
+    execCommand('formatBlock', tag);
+  };
 
   return (
-    <div className="rich-text-editor">
+    <div className="rich-text-editor border border-[#D4A836]/30 rounded-lg overflow-hidden">
+      {/* Toolbar */}
+      <div className="flex flex-wrap gap-1 p-2 bg-[#1a1a24] border-b border-[#D4A836]/20">
+        <Button type="button" variant="ghost" size="sm" onClick={() => formatBlock('h1')} className="text-gray-400 hover:text-[#D4A836] h-8 w-8 p-0">
+          <Heading1 className="w-4 h-4" />
+        </Button>
+        <Button type="button" variant="ghost" size="sm" onClick={() => formatBlock('h2')} className="text-gray-400 hover:text-[#D4A836] h-8 w-8 p-0">
+          <Heading2 className="w-4 h-4" />
+        </Button>
+        <div className="w-px h-6 bg-[#D4A836]/20 mx-1" />
+        <Button type="button" variant="ghost" size="sm" onClick={() => execCommand('bold')} className="text-gray-400 hover:text-[#D4A836] h-8 w-8 p-0">
+          <Bold className="w-4 h-4" />
+        </Button>
+        <Button type="button" variant="ghost" size="sm" onClick={() => execCommand('italic')} className="text-gray-400 hover:text-[#D4A836] h-8 w-8 p-0">
+          <Italic className="w-4 h-4" />
+        </Button>
+        <Button type="button" variant="ghost" size="sm" onClick={() => execCommand('underline')} className="text-gray-400 hover:text-[#D4A836] h-8 w-8 p-0">
+          <Underline className="w-4 h-4" />
+        </Button>
+        <div className="w-px h-6 bg-[#D4A836]/20 mx-1" />
+        <Button type="button" variant="ghost" size="sm" onClick={() => execCommand('insertUnorderedList')} className="text-gray-400 hover:text-[#D4A836] h-8 w-8 p-0">
+          <List className="w-4 h-4" />
+        </Button>
+        <Button type="button" variant="ghost" size="sm" onClick={() => execCommand('insertOrderedList')} className="text-gray-400 hover:text-[#D4A836] h-8 w-8 p-0">
+          <ListOrdered className="w-4 h-4" />
+        </Button>
+        <div className="w-px h-6 bg-[#D4A836]/20 mx-1" />
+        <Button type="button" variant="ghost" size="sm" onClick={() => formatBlock('blockquote')} className="text-gray-400 hover:text-[#D4A836] h-8 w-8 p-0">
+          <Quote className="w-4 h-4" />
+        </Button>
+        <Button type="button" variant="ghost" size="sm" onClick={() => formatBlock('pre')} className="text-gray-400 hover:text-[#D4A836] h-8 w-8 p-0">
+          <Code className="w-4 h-4" />
+        </Button>
+        <div className="w-px h-6 bg-[#D4A836]/20 mx-1" />
+        <Button type="button" variant="ghost" size="sm" onClick={insertLink} className="text-gray-400 hover:text-[#D4A836] h-8 w-8 p-0">
+          <Link2 className="w-4 h-4" />
+        </Button>
+        <Button type="button" variant="ghost" size="sm" onClick={insertImage} className="text-gray-400 hover:text-[#D4A836] h-8 w-8 p-0">
+          <Image className="w-4 h-4" />
+        </Button>
+      </div>
+
+      {/* Editor */}
+      <div
+        ref={editorRef}
+        contentEditable
+        onInput={handleInput}
+        dangerouslySetInnerHTML={{ __html: value || '' }}
+        className="min-h-[200px] p-4 bg-[#1a1a24] text-[#E8DDB5] focus:outline-none prose prose-invert max-w-none"
+        style={{
+          minHeight: '200px',
+        }}
+        data-placeholder={placeholder}
+      />
+
       <style>{`
-        .rich-text-editor .ql-toolbar {
-          background: #1a1a24;
-          border-color: rgba(212, 168, 54, 0.3);
-          border-radius: 8px 8px 0 0;
-        }
-        .rich-text-editor .ql-toolbar .ql-stroke {
-          stroke: #9ca3af;
-        }
-        .rich-text-editor .ql-toolbar .ql-fill {
-          fill: #9ca3af;
-        }
-        .rich-text-editor .ql-toolbar .ql-picker {
-          color: #9ca3af;
-        }
-        .rich-text-editor .ql-toolbar button:hover .ql-stroke,
-        .rich-text-editor .ql-toolbar button.ql-active .ql-stroke {
-          stroke: #D4A836;
-        }
-        .rich-text-editor .ql-toolbar button:hover .ql-fill,
-        .rich-text-editor .ql-toolbar button.ql-active .ql-fill {
-          fill: #D4A836;
-        }
-        .rich-text-editor .ql-container {
-          background: #1a1a24;
-          border-color: rgba(212, 168, 54, 0.3);
-          border-radius: 0 0 8px 8px;
-          min-height: 200px;
-          font-size: 16px;
-        }
-        .rich-text-editor .ql-editor {
-          color: #E8DDB5;
-          min-height: 200px;
-        }
-        .rich-text-editor .ql-editor.ql-blank::before {
+        .rich-text-editor [contenteditable]:empty:before {
+          content: attr(data-placeholder);
           color: #6b7280;
-          font-style: normal;
+          pointer-events: none;
         }
-        .rich-text-editor .ql-editor h1 {
-          color: #E8DDB5;
+        .rich-text-editor [contenteditable] h1 {
           font-size: 2em;
-        }
-        .rich-text-editor .ql-editor h2 {
+          font-weight: bold;
+          margin: 0.5em 0;
           color: #E8DDB5;
+        }
+        .rich-text-editor [contenteditable] h2 {
           font-size: 1.5em;
-        }
-        .rich-text-editor .ql-editor h3 {
+          font-weight: bold;
+          margin: 0.5em 0;
           color: #E8DDB5;
-          font-size: 1.17em;
         }
-        .rich-text-editor .ql-editor a {
+        .rich-text-editor [contenteditable] a {
           color: #D4A836;
+          text-decoration: underline;
         }
-        .rich-text-editor .ql-editor blockquote {
-          border-left-color: #D4A836;
+        .rich-text-editor [contenteditable] blockquote {
+          border-left: 3px solid #D4A836;
+          padding-left: 1em;
+          margin-left: 0;
           color: #9ca3af;
+          font-style: italic;
         }
-        .rich-text-editor .ql-editor code,
-        .rich-text-editor .ql-editor pre {
+        .rich-text-editor [contenteditable] pre {
           background: #0f0f15;
-          color: #E8DDB5;
+          padding: 1em;
+          border-radius: 4px;
+          overflow-x: auto;
+          font-family: monospace;
         }
-        .rich-text-editor .ql-snow .ql-picker-options {
-          background: #1a1a24;
-          border-color: rgba(212, 168, 54, 0.3);
+        .rich-text-editor [contenteditable] ul,
+        .rich-text-editor [contenteditable] ol {
+          padding-left: 1.5em;
+          margin: 0.5em 0;
         }
-        .rich-text-editor .ql-snow .ql-picker-item {
-          color: #9ca3af;
-        }
-        .rich-text-editor .ql-snow .ql-picker-item:hover {
-          color: #D4A836;
+        .rich-text-editor [contenteditable] img {
+          max-width: 100%;
+          height: auto;
+          border-radius: 8px;
+          margin: 1em 0;
         }
       `}</style>
-      <ReactQuill
-        theme="snow"
-        value={value}
-        onChange={onChange}
-        modules={modules}
-        formats={formats}
-        placeholder={placeholder}
-      />
     </div>
   );
 };
