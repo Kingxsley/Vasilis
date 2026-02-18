@@ -379,6 +379,9 @@ const AppRouter = () => {
 };
 
 function App() {
+  // Apply custom favicon from settings
+  useFavicon();
+  
   return (
     <BrowserRouter>
       <AuthProvider>
