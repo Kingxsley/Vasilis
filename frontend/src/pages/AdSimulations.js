@@ -392,6 +392,26 @@ export default function AdSimulations() {
                           <Button
                             variant="outline"
                             size="sm"
+                            onClick={() => copyTrackingUrl(campaign.campaign_id)}
+                            className={`border-[#D4A836]/30 ${copiedUrl === campaign.campaign_id ? 'text-green-400 border-green-500/30' : 'text-[#E8DDB5]'}`}
+                            data-testid={`copy-url-${campaign.campaign_id}`}
+                            title="Copy tracking URL"
+                          >
+                            {copiedUrl === campaign.campaign_id ? (
+                              <>
+                                <Check className="w-4 h-4 mr-1" />
+                                Copied!
+                              </>
+                            ) : (
+                              <>
+                                <LinkIcon className="w-4 h-4 mr-1" />
+                                Copy URL
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => viewCampaignDetails(campaign)}
                             className="border-[#D4A836]/30 text-[#E8DDB5]"
                             data-testid={`view-campaign-${campaign.campaign_id}`}
