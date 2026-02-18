@@ -5,7 +5,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Upload, Trash2, Loader2, Shield, Globe, Palette } from 'lucide-react';
+import { Upload, Trash2, Loader2, Shield, Globe, Palette, Menu, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../App';
 
