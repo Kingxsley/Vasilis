@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import { 
-  LayoutDashboard, Building2, Users, Target, 
-  BookOpen, BarChart3, LogOut, Menu, X, ChevronDown, Mail, Monitor, Upload, Award, Shield, FileText, Settings, Layout
+  LayoutDashboard, Building2, Users, 
+  BookOpen, BarChart3, LogOut, Menu, X, ChevronDown, ChevronRight, Mail, Monitor, Upload, Award, Shield, FileText, Settings, Layout, Crosshair, GraduationCap, Cog
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import {
@@ -18,7 +18,7 @@ import axios from 'axios';
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 // Logo Component - fetches custom logo from settings
-const Logo = ({ className = "h-8" }) => {
+const Logo = ({ collapsed = false }) => {
   const [branding, setBranding] = useState(null);
   const [loaded, setLoaded] = useState(false);
 
@@ -31,67 +31,124 @@ const Logo = ({ className = "h-8" }) => {
       .catch(() => setLoaded(true));
   }, []);
 
-  // Show placeholder while loading to prevent flickering
   if (!loaded) {
     return (
-      <div className={`flex items-center gap-2 ${className}`}>
-        <div className="w-7 h-7 bg-[#D4A836]/20 rounded animate-pulse" />
-        <div className="w-28 h-5 bg-[#D4A836]/20 rounded animate-pulse" />
+      <div className="flex items-center gap-2">
+        <div className="w-8 h-8 bg-[#D4A836]/20 rounded animate-pulse" />
+        {!collapsed && <div className="w-24 h-5 bg-[#D4A836]/20 rounded animate-pulse" />}
       </div>
     );
   }
 
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
+    <div className="flex items-center gap-2">
       {branding?.logo_url ? (
-        <img src={branding.logo_url} alt="Logo" className="w-7 h-7 object-contain" />
+        <img src={branding.logo_url} alt="Logo" className="w-8 h-8 object-contain flex-shrink-0" />
       ) : (
-        <Shield className="w-7 h-7 text-[#D4A836]" />
+        <Shield className="w-8 h-8 text-[#D4A836] flex-shrink-0" />
       )}
-      <span className="text-lg font-bold text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
-        {branding?.company_name || 'Vasilis NetShield'}
-      </span>
+      {!collapsed && (
+        <span className="text-lg font-bold text-[#E8DDB5] truncate" style={{ fontFamily: 'Chivo, sans-serif' }}>
+          {branding?.company_name || 'Vasilis NetShield'}
+        </span>
+      )}
     </div>
   );
 };
 
-const navItems = [
-  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, adminOnly: true },
-  { path: '/organizations', label: 'Organizations', icon: Building2, adminOnly: true },
-  { path: '/users', label: 'Users', icon: Users, adminOnly: true },
-  { path: '/user-import', label: 'Import Users', icon: Upload, adminOnly: true },
-  { path: '/phishing', label: 'Phishing Sim', icon: Mail, adminOnly: true },
-  { path: '/ads', label: 'Ad Simulation', icon: Monitor, adminOnly: true },
-  { path: '/scenarios', label: 'Scenarios', icon: FileText, adminOnly: true },
-  { path: '/content', label: 'Content', icon: FileText, contentManager: true },
-  { path: '/page-editor', label: 'Page Editor', icon: Layout, adminOnly: true },
-  { path: '/training', label: 'Training', icon: BookOpen, adminOnly: false },
-  { path: '/certificates', label: 'Certificates', icon: Award, adminOnly: false },
-  { path: '/analytics', label: 'Analytics', icon: BarChart3, adminOnly: true },
-  { path: '/settings', label: 'Settings', icon: Settings, adminOnly: true },
+// Navigation structure with groups
+const navGroups = [
+  {
+    id: 'main',
+    label: 'Overview',
+    icon: LayoutDashboard,
+    items: [
+      { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, adminOnly: true },
+      { path: '/analytics', label: 'Analytics', icon: BarChart3, adminOnly: true },
+    ]
+  },
+  {
+    id: 'management',
+    label: 'Management',
+    icon: Building2,
+    items: [
+      { path: '/organizations', label: 'Organizations', icon: Building2, adminOnly: true },
+      { path: '/users', label: 'Users', icon: Users, adminOnly: true },
+      { path: '/user-import', label: 'Import Users', icon: Upload, adminOnly: true },
+    ]
+  },
+  {
+    id: 'simulations',
+    label: 'Simulations',
+    icon: Crosshair,
+    items: [
+      { path: '/phishing', label: 'Phishing Sim', icon: Mail, adminOnly: true },
+      { path: '/ads', label: 'Ad Simulation', icon: Monitor, adminOnly: true },
+      { path: '/scenarios', label: 'Scenarios', icon: FileText, adminOnly: true },
+    ]
+  },
+  {
+    id: 'content',
+    label: 'Content',
+    icon: FileText,
+    items: [
+      { path: '/content', label: 'CMS', icon: FileText, contentManager: true },
+      { path: '/page-editor', label: 'Page Editor', icon: Layout, adminOnly: true },
+    ]
+  },
+  {
+    id: 'training',
+    label: 'Training',
+    icon: GraduationCap,
+    items: [
+      { path: '/training', label: 'My Training', icon: BookOpen, adminOnly: false },
+      { path: '/certificates', label: 'Certificates', icon: Award, adminOnly: false },
+    ]
+  },
+  {
+    id: 'settings',
+    label: 'Settings',
+    icon: Cog,
+    items: [
+      { path: '/settings', label: 'Settings', icon: Settings, adminOnly: true },
+    ]
+  },
 ];
 
 export const DashboardLayout = ({ children }) => {
   const { user, logout, isAdmin, canManageContent } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState(['main', 'simulations', 'training']);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const handleLogout = async () => {
     await logout();
     navigate('/');
   };
 
-  // Filter nav items based on user role
-  const filteredNavItems = navItems.filter(item => {
-    if (item.contentManager) {
-      return canManageContent; // Show to super_admin, org_admin, and media_manager
-    }
-    if (item.adminOnly) {
-      return isAdmin; // Only show to super_admin and org_admin
-    }
-    return true; // Show to everyone
-  });
+  const toggleGroup = (groupId) => {
+    setExpandedGroups(prev => 
+      prev.includes(groupId) 
+        ? prev.filter(id => id !== groupId)
+        : [...prev, groupId]
+    );
+  };
+
+  // Filter items based on user role
+  const filterItems = (items) => {
+    return items.filter(item => {
+      if (item.contentManager) return canManageContent;
+      if (item.adminOnly) return isAdmin;
+      return true;
+    });
+  };
+
+  // Check if current path is in a group
+  const isGroupActive = (group) => {
+    return group.items.some(item => location.pathname === item.path);
+  };
 
   return (
     <div className="min-h-screen">
@@ -111,62 +168,131 @@ export const DashboardLayout = ({ children }) => {
 
       {/* Sidebar */}
       <aside 
-        className={`fixed top-0 left-0 z-40 h-full w-64 sidebar-bg border-r border-[#D4A836]/20 transform transition-transform lg:translate-x-0 flex flex-col ${
+        className={`fixed top-0 left-0 z-40 h-full ${sidebarCollapsed ? 'w-16' : 'w-64'} sidebar-bg border-r border-[#D4A836]/20 transform transition-all lg:translate-x-0 flex flex-col ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Logo */}
-        <div className="h-16 flex items-center px-6 border-b border-[#D4A836]/20 flex-shrink-0">
-          <Logo />
+        <div className="h-16 flex items-center justify-between px-4 border-b border-[#D4A836]/20 flex-shrink-0">
+          <Logo collapsed={sidebarCollapsed} />
+          <button
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            className="hidden lg:block p-1 text-gray-500 hover:text-[#E8DDB5] rounded"
+          >
+            {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <X className="w-4 h-4" />}
+          </button>
         </div>
 
         {/* Navigation - Scrollable */}
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {filteredNavItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            const Icon = item.icon;
+        <nav className="flex-1 p-2 overflow-y-auto">
+          {navGroups.map((group) => {
+            const filteredItems = filterItems(group.items);
+            if (filteredItems.length === 0) return null;
             
+            const isExpanded = expandedGroups.includes(group.id);
+            const isActive = isGroupActive(group);
+            const GroupIcon = group.icon;
+
+            // If collapsed sidebar, show only icons
+            if (sidebarCollapsed) {
+              return (
+                <div key={group.id} className="mb-1">
+                  {filteredItems.map((item) => {
+                    const ItemIcon = item.icon;
+                    const isItemActive = location.pathname === item.path;
+                    return (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        onClick={() => setSidebarOpen(false)}
+                        title={item.label}
+                        className={`flex items-center justify-center p-3 rounded-lg transition-colors mb-1 ${
+                          isItemActive 
+                            ? 'bg-[#D4A836]/10 text-[#D4A836]' 
+                            : 'text-gray-400 hover:text-[#E8DDB5] hover:bg-white/5'
+                        }`}
+                      >
+                        <ItemIcon className="w-5 h-5" />
+                      </Link>
+                    );
+                  })}
+                </div>
+              );
+            }
+
             return (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive 
-                    ? 'bg-[#D4A836]/10 text-[#D4A836] border border-[#D4A836]/30' 
-                    : 'text-gray-400 hover:text-[#E8DDB5] hover:bg-white/5'
-                }`}
-                data-testid={`nav-${item.label.toLowerCase()}`}
-              >
-                <Icon className="w-5 h-5" />
-                <span className="font-medium">{item.label}</span>
-              </Link>
+              <div key={group.id} className="mb-2">
+                {/* Group Header */}
+                <button
+                  onClick={() => toggleGroup(group.id)}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
+                    isActive ? 'text-[#D4A836]' : 'text-gray-500 hover:text-[#E8DDB5]'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <GroupIcon className="w-4 h-4" />
+                    <span className="text-xs font-semibold uppercase tracking-wider">{group.label}</span>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
+                </button>
+
+                {/* Group Items */}
+                {isExpanded && (
+                  <div className="mt-1 ml-2 space-y-1">
+                    {filteredItems.map((item) => {
+                      const isItemActive = location.pathname === item.path;
+                      const ItemIcon = item.icon;
+                      
+                      return (
+                        <Link
+                          key={item.path}
+                          to={item.path}
+                          onClick={() => setSidebarOpen(false)}
+                          className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                            isItemActive 
+                              ? 'bg-[#D4A836]/10 text-[#D4A836] border-l-2 border-[#D4A836]' 
+                              : 'text-gray-400 hover:text-[#E8DDB5] hover:bg-white/5 border-l-2 border-transparent'
+                          }`}
+                          data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
+                        >
+                          <ItemIcon className="w-4 h-4" />
+                          <span className="text-sm">{item.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>
 
         {/* User Section */}
-        <div className="flex-shrink-0 p-4 border-t border-[#D4A836]/20">
+        <div className="flex-shrink-0 p-3 border-t border-[#D4A836]/20">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button 
-                className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors"
+                className={`w-full flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors ${sidebarCollapsed ? 'justify-center' : ''}`}
                 data-testid="user-menu-btn"
               >
-                <div className="w-10 h-10 rounded-full bg-[#D4A836]/20 flex items-center justify-center overflow-hidden">
+                <div className="w-9 h-9 rounded-full bg-[#D4A836]/20 flex items-center justify-center overflow-hidden flex-shrink-0">
                   {user?.picture ? (
                     <img src={user.picture} alt={user.name} className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-[#D4A836] font-semibold">
+                    <span className="text-[#D4A836] font-semibold text-sm">
                       {user?.name?.charAt(0).toUpperCase()}
                     </span>
                   )}
                 </div>
-                <div className="flex-1 text-left">
-                  <p className="text-sm font-medium text-[#E8DDB5] truncate">{user?.name}</p>
-                  <p className="text-xs text-gray-500 capitalize">{user?.role?.replace('_', ' ')}</p>
-                </div>
-                <ChevronDown className="w-4 h-4 text-gray-500" />
+                {!sidebarCollapsed && (
+                  <>
+                    <div className="flex-1 text-left min-w-0">
+                      <p className="text-sm font-medium text-[#E8DDB5] truncate">{user?.name}</p>
+                      <p className="text-xs text-gray-500 capitalize truncate">{user?.role?.replace('_', ' ')}</p>
+                    </div>
+                    <ChevronDown className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                  </>
+                )}
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 bg-[#0f0f15] border-[#D4A836]/20">
