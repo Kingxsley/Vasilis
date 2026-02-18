@@ -265,6 +265,7 @@ export default function PhishingSimulations() {
   const getStatusBadge = (status) => {
     const colors = {
       draft: 'bg-gray-500/20 text-gray-400',
+      scheduled: 'bg-purple-500/20 text-purple-400',
       active: 'bg-green-500/20 text-green-400',
       paused: 'bg-yellow-500/20 text-yellow-400',
       completed: 'bg-blue-500/20 text-blue-400'
