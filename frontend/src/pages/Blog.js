@@ -109,11 +109,6 @@ export function BlogPost() {
   const headingColor = branding?.heading_color || '#FFFFFF';
   const accentColor = branding?.accent_color || '#D4A836';
   const primaryColor = branding?.primary_color || '#D4A836';
-  
-  // Navigation visibility
-  const showBlog = branding?.show_blog !== false;
-  const showVideos = branding?.show_videos !== false;
-  const showAbout = branding?.show_about !== false;
 
   if (loading) {
     return (
@@ -135,16 +130,7 @@ export function BlogPost() {
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
       {/* Header */}
-      <header className="border-b" style={{ borderColor: `${primaryColor}15` }}>
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <Logo branding={branding} />
-          <nav className="flex items-center gap-6">
-            {showBlog && <Link to="/blog" className="text-gray-400 hover:opacity-80">Blog</Link>}
-            {showVideos && <Link to="/videos" className="text-gray-400 hover:opacity-80">Videos</Link>}
-            {showAbout && <Link to="/about" className="text-gray-400 hover:opacity-80">About</Link>}
-          </nav>
-        </div>
-      </header>
+      <PublicNav branding={branding} />
 
       <main className="container mx-auto px-6 py-12 max-w-4xl">
         <Link to="/blog" className="flex items-center gap-2 mb-8 hover:opacity-80" style={{ color: textColor }}>
