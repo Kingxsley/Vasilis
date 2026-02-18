@@ -605,36 +605,127 @@ export default function ContentManager() {
 
           {/* ABOUT TAB */}
           <TabsContent value="about">
-            <Card className="bg-[#0f0f15] border-[#D4A836]/20">
-              <CardHeader><CardTitle className="text-[#E8DDB5]">About Page Content</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label className="text-gray-400">Title</Label>
-                  <Input value={about.title || ''} onChange={(e) => setAbout({...about, title: e.target.value})}
-                    className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]" />
-                </div>
-                <div>
-                  <Label className="text-gray-400">Main Content (HTML supported)</Label>
-                  <Textarea value={about.content || ''} onChange={(e) => setAbout({...about, content: e.target.value})}
-                    className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]" rows={6} />
-                </div>
-                <div>
-                  <Label className="text-gray-400">Mission Statement</Label>
-                  <Textarea value={about.mission || ''} onChange={(e) => setAbout({...about, mission: e.target.value})}
-                    className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]" rows={2} />
-                </div>
-                <div>
-                  <Label className="text-gray-400">Vision Statement</Label>
-                  <Textarea value={about.vision || ''} onChange={(e) => setAbout({...about, vision: e.target.value})}
-                    className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]" rows={2} />
-                </div>
-                <div className="flex justify-end">
-                  <Button onClick={handleAboutSave} disabled={saving} className="bg-[#D4A836] hover:bg-[#C49A30] text-black">
-                    {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}Save About Page
+            <div className="space-y-6">
+              <Card className="bg-[#0f0f15] border-[#D4A836]/20">
+                <CardHeader><CardTitle className="text-[#E8DDB5]">About Page Content</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label className="text-gray-400">Title</Label>
+                    <Input value={about.title || ''} onChange={(e) => setAbout({...about, title: e.target.value})}
+                      className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]" />
+                  </div>
+                  <div>
+                    <Label className="text-gray-400">Main Content</Label>
+                    <Suspense fallback={<div className="h-40 bg-[#1a1a24] rounded-lg flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-[#D4A836]" /></div>}>
+                      <RichTextEditor 
+                        value={about.content || ''} 
+                        onChange={(value) => setAbout({...about, content: value})}
+                        placeholder="Write about your company..."
+                      />
+                    </Suspense>
+                  </div>
+                  <div>
+                    <Label className="text-gray-400">Mission Statement</Label>
+                    <Textarea value={about.mission || ''} onChange={(e) => setAbout({...about, mission: e.target.value})}
+                      className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]" rows={2} />
+                  </div>
+                  <div>
+                    <Label className="text-gray-400">Vision Statement</Label>
+                    <Textarea value={about.vision || ''} onChange={(e) => setAbout({...about, vision: e.target.value})}
+                      className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]" rows={2} />
+                  </div>
+                  <div className="flex justify-end">
+                    <Button onClick={handleAboutSave} disabled={saving} className="bg-[#D4A836] hover:bg-[#C49A30] text-black">
+                      {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}Save About Page
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Team Members */}
+              <Card className="bg-[#0f0f15] border-[#D4A836]/20">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-[#E8DDB5]">
+                    <Users className="w-5 h-5 inline mr-2" />Team Members
+                  </CardTitle>
+                  <Button size="sm" onClick={() => { setTeamMemberForm({ name: '', role: '', bio: '', image: '' }); setTeamDialogOpen(true); }}
+                    className="bg-[#D4A836] hover:bg-[#C49A30] text-black">
+                    <Plus className="w-4 h-4 mr-1" />Add Member
                   </Button>
+                </CardHeader>
+                <CardContent>
+                  {(!about.team_members || about.team_members.length === 0) ? (
+                    <p className="text-gray-500 text-center py-4">No team members added yet</p>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {about.team_members.map((member, index) => (
+                        <div key={index} className="bg-[#1a1a24] rounded-lg p-4 flex items-start gap-3">
+                          {member.image ? (
+                            <img src={member.image} alt={member.name} className="w-12 h-12 rounded-full object-cover" />
+                          ) : (
+                            <div className="w-12 h-12 rounded-full bg-[#D4A836]/20 flex items-center justify-center">
+                              <Users className="w-6 h-6 text-[#D4A836]" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-[#E8DDB5] font-medium truncate">{member.name}</h4>
+                            <p className="text-[#D4A836] text-sm">{member.role}</p>
+                            <p className="text-gray-500 text-xs mt-1 line-clamp-2">{member.bio}</p>
+                          </div>
+                          <Button size="sm" variant="ghost" onClick={() => {
+                            const newMembers = about.team_members.filter((_, i) => i !== index);
+                            setAbout({...about, team_members: newMembers});
+                          }} className="text-gray-400 hover:text-red-400">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Team Member Dialog */}
+            <Dialog open={teamDialogOpen} onOpenChange={setTeamDialogOpen}>
+              <DialogContent className="bg-[#0f0f15] border-[#D4A836]/20">
+                <DialogHeader><DialogTitle className="text-[#E8DDB5]">Add Team Member</DialogTitle></DialogHeader>
+                <div className="space-y-4 mt-4">
+                  <div>
+                    <Label className="text-gray-400">Name</Label>
+                    <Input value={teamMemberForm.name} onChange={(e) => setTeamMemberForm({...teamMemberForm, name: e.target.value})}
+                      className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]" />
+                  </div>
+                  <div>
+                    <Label className="text-gray-400">Role/Title</Label>
+                    <Input value={teamMemberForm.role} onChange={(e) => setTeamMemberForm({...teamMemberForm, role: e.target.value})}
+                      placeholder="e.g., CEO, Security Analyst" className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]" />
+                  </div>
+                  <div>
+                    <Label className="text-gray-400">Bio</Label>
+                    <Textarea value={teamMemberForm.bio} onChange={(e) => setTeamMemberForm({...teamMemberForm, bio: e.target.value})}
+                      placeholder="Short bio..." className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]" rows={2} />
+                  </div>
+                  <div>
+                    <Label className="text-gray-400">Photo URL (optional)</Label>
+                    <Input value={teamMemberForm.image} onChange={(e) => setTeamMemberForm({...teamMemberForm, image: e.target.value})}
+                      placeholder="Upload image first, paste URL here" className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]" />
+                  </div>
+                  <div className="flex justify-end gap-3">
+                    <Button type="button" variant="outline" onClick={() => setTeamDialogOpen(false)} className="border-[#D4A836]/30 text-[#E8DDB5]">Cancel</Button>
+                    <Button onClick={() => {
+                      if (!teamMemberForm.name) { toast.error('Name is required'); return; }
+                      const newMembers = [...(about.team_members || []), teamMemberForm];
+                      setAbout({...about, team_members: newMembers});
+                      setTeamDialogOpen(false);
+                      toast.success('Team member added. Don\'t forget to save!');
+                    }} className="bg-[#D4A836] hover:bg-[#C49A30] text-black">
+                      Add Member
+                    </Button>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
+              </DialogContent>
+            </Dialog>
           </TabsContent>
         </Tabs>
       </div>
