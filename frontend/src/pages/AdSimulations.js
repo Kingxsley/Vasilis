@@ -25,7 +25,7 @@ import {
 import { 
   Monitor, Plus, Eye, MousePointer, Users, Trash2, 
   BarChart3, AlertTriangle, FileText, Loader2, RefreshCw, Code,
-  Play, Pause, Clock, Calendar
+  Play, Pause, Clock, Calendar, Copy, Check, Link as LinkIcon
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
@@ -44,6 +44,7 @@ export default function AdSimulations() {
   const [selectedCampaign, setSelectedCampaign] = useState(null);
   const [campaignTargets, setCampaignTargets] = useState([]);
   const [campaignStats, setCampaignStats] = useState(null);
+  const [copiedUrl, setCopiedUrl] = useState(null);
   
   // Campaign filter state
   const [campaignFilter, setCampaignFilter] = useState('all');
