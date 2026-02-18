@@ -1,44 +1,67 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../App';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Mail, Lock, User, ArrowLeft, Loader2, Shield } from 'lucide-react';
+import { Mail, Lock, User, ArrowLeft, Loader2, Shield, KeyRound } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function AuthPage() {
-  const [isLogin, setIsLogin] = useState(true);
+  const [mode, setMode] = useState('login'); // 'login', 'register', 'forgot', 'reset'
   const [loading, setLoading] = useState(false);
   const [branding, setBranding] = useState(null);
+  const [resetEmail, setResetEmail] = useState('');
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    name: ''
+    name: '',
+    confirmPassword: ''
   });
 
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { login, register, isAdmin } = useAuth();
   
   const from = location.state?.from?.pathname || '/dashboard';
+  const resetToken = searchParams.get('reset_token');
 
   useEffect(() => {
     // Fetch branding settings
     axios.get(`${API}/settings/branding`)
       .then(res => setBranding(res.data))
       .catch(() => {});
-  }, []);
+    
+    // Check for reset token in URL
+    if (resetToken) {
+      verifyResetToken(resetToken);
+    }
+  }, [resetToken]);
+
+  const verifyResetToken = async (token) => {
+    try {
+      const res = await axios.get(`${API}/auth/verify-reset-token/${token}`);
+      if (res.data.valid) {
+        setMode('reset');
+        setResetEmail(res.data.email);
+      } else {
+        toast.error(res.data.message || 'Invalid reset link');
+      }
+    } catch (err) {
+      toast.error('Invalid or expired reset link');
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      if (isLogin) {
+      if (mode === 'login') {
         const user = await login(formData.email, formData.password);
         toast.success(`Welcome back, ${user.name}!`);
         if (user.role === 'super_admin' || user.role === 'org_admin') {
@@ -46,7 +69,7 @@ export default function AuthPage() {
         } else {
           navigate('/training', { replace: true });
         }
-      } else {
+      } else if (mode === 'register') {
         const user = await register(formData.email, formData.password, formData.name);
         toast.success('Account created successfully!');
         if (user.role === 'super_admin' || user.role === 'org_admin') {
@@ -54,12 +77,48 @@ export default function AuthPage() {
         } else {
           navigate('/training', { replace: true });
         }
+      } else if (mode === 'forgot') {
+        await axios.post(`${API}/auth/forgot-password`, { email: formData.email });
+        toast.success('If an account exists with this email, a reset link has been sent.');
+        setMode('login');
+        setFormData({ ...formData, email: '' });
+      } else if (mode === 'reset') {
+        if (formData.password !== formData.confirmPassword) {
+          toast.error('Passwords do not match');
+          setLoading(false);
+          return;
+        }
+        await axios.post(`${API}/auth/reset-password`, { 
+          token: resetToken, 
+          new_password: formData.password 
+        });
+        toast.success('Password reset successful! You can now login.');
+        setMode('login');
+        navigate('/auth', { replace: true });
       }
     } catch (err) {
-      const message = err.response?.data?.detail || 'Authentication failed';
+      const message = err.response?.data?.detail || 'Operation failed';
       toast.error(message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getTitle = () => {
+    switch (mode) {
+      case 'register': return 'Create account';
+      case 'forgot': return 'Forgot password';
+      case 'reset': return 'Reset password';
+      default: return 'Welcome back';
+    }
+  };
+
+  const getSubtitle = () => {
+    switch (mode) {
+      case 'register': return 'Start your cybersecurity training journey';
+      case 'forgot': return 'Enter your email to receive a reset link';
+      case 'reset': return `Set a new password for ${resetEmail}`;
+      default: return 'Enter your credentials to access your account';
     }
   };
 
@@ -123,18 +182,14 @@ export default function AuthPage() {
           {/* Title */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2 text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
-              {isLogin ? 'Welcome back' : 'Create account'}
+              {getTitle()}
             </h1>
-            <p className="text-gray-500">
-              {isLogin 
-                ? 'Enter your credentials to access your account' 
-                : 'Start your cybersecurity training journey'}
-            </p>
+            <p className="text-gray-500">{getSubtitle()}</p>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            {!isLogin && (
+            {mode === 'register' && (
               <div className="space-y-2 animate-slide-up">
                 <Label htmlFor="name" className="text-gray-400">Full Name</Label>
                 <div className="relative">
@@ -147,46 +202,90 @@ export default function AuthPage() {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="pl-10 bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] placeholder:text-gray-600 focus:border-[#D4A836] focus:ring-[#D4A836]/20"
                     data-testid="name-input"
-                    required={!isLogin}
+                    required
                   />
                 </div>
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-gray-400">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@company.com"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="pl-10 bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] placeholder:text-gray-600 focus:border-[#D4A836] focus:ring-[#D4A836]/20"
-                  data-testid="email-input"
-                  required
-                />
+            {(mode === 'login' || mode === 'register' || mode === 'forgot') && (
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-gray-400">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@company.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="pl-10 bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] placeholder:text-gray-600 focus:border-[#D4A836] focus:ring-[#D4A836]/20"
+                    data-testid="email-input"
+                    required
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-gray-400">Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="pl-10 bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] placeholder:text-gray-600 focus:border-[#D4A836] focus:ring-[#D4A836]/20"
-                  data-testid="password-input"
-                  required
-                  minLength={6}
-                />
+            {(mode === 'login' || mode === 'register' || mode === 'reset') && (
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-gray-400">
+                  {mode === 'reset' ? 'New Password' : 'Password'}
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder={mode === 'reset' ? 'Enter new password' : 'Enter your password'}
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    className="pl-10 bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] placeholder:text-gray-600 focus:border-[#D4A836] focus:ring-[#D4A836]/20"
+                    data-testid="password-input"
+                    required
+                    minLength={8}
+                  />
+                </div>
+                {mode === 'reset' && (
+                  <p className="text-xs text-gray-500">
+                    Min 8 characters, include uppercase, lowercase, number, and special character
+                  </p>
+                )}
               </div>
-            </div>
+            )}
+
+            {mode === 'reset' && (
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword" className="text-gray-400">Confirm Password</Label>
+                <div className="relative">
+                  <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="Confirm new password"
+                    value={formData.confirmPassword}
+                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                    className="pl-10 bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] placeholder:text-gray-600 focus:border-[#D4A836] focus:ring-[#D4A836]/20"
+                    data-testid="confirm-password-input"
+                    required
+                    minLength={8}
+                  />
+                </div>
+              </div>
+            )}
+
+            {mode === 'login' && (
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setMode('forgot')}
+                  className="text-sm text-[#D4A836] hover:text-[#C49A30]"
+                  data-testid="forgot-password-btn"
+                >
+                  Forgot password?
+                </button>
+              </div>
+            )}
 
             <Button 
               type="submit" 
@@ -197,26 +296,59 @@ export default function AuthPage() {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {isLogin ? 'Signing in...' : 'Creating account...'}
+                  {mode === 'login' ? 'Signing in...' : 
+                   mode === 'register' ? 'Creating account...' :
+                   mode === 'forgot' ? 'Sending...' : 'Resetting...'}
                 </>
               ) : (
-                isLogin ? 'Sign in' : 'Create account'
+                mode === 'login' ? 'Sign in' : 
+                mode === 'register' ? 'Create account' :
+                mode === 'forgot' ? 'Send reset link' : 'Reset password'
               )}
             </Button>
           </form>
 
-          {/* Toggle */}
-          <p className="mt-8 text-center text-gray-500">
-            {isLogin ? "Don't have an account? " : 'Already have an account? '}
-            <button
-              type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-[#D4A836] hover:text-[#C49A30] font-medium"
-              data-testid="toggle-auth-btn"
-            >
-              {isLogin ? 'Sign up' : 'Sign in'}
-            </button>
-          </p>
+          {/* Toggle / Back Links */}
+          <div className="mt-8 text-center">
+            {mode === 'login' && (
+              <p className="text-gray-500">
+                Don't have an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => setMode('register')}
+                  className="text-[#D4A836] hover:text-[#C49A30] font-medium"
+                  data-testid="toggle-auth-btn"
+                >
+                  Sign up
+                </button>
+              </p>
+            )}
+            {mode === 'register' && (
+              <p className="text-gray-500">
+                Already have an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => setMode('login')}
+                  className="text-[#D4A836] hover:text-[#C49A30] font-medium"
+                >
+                  Sign in
+                </button>
+              </p>
+            )}
+            {(mode === 'forgot' || mode === 'reset') && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMode('login');
+                  navigate('/auth', { replace: true });
+                }}
+                className="text-[#D4A836] hover:text-[#C49A30] font-medium flex items-center gap-2 mx-auto"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to login
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
