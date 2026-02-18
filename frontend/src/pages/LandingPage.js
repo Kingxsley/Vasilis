@@ -489,8 +489,16 @@ export default function LandingPage() {
                     alt="Platform" 
                     className="max-w-full max-h-full object-contain drop-shadow-2xl platform-glow"
                   />
+                ) : branding?.logo_url ? (
+                  <img 
+                    src={branding.logo_url} 
+                    alt="Logo" 
+                    className="w-32 h-32 object-contain drop-shadow-2xl platform-glow"
+                  />
                 ) : (
-                  <Shield className="w-32 h-32 text-[#D4A836] animate-pulse-glow" />
+                  <div className="w-32 h-32 bg-gradient-to-br from-[#D4A836] to-[#C49A30] rounded-2xl flex items-center justify-center animate-pulse-glow shadow-2xl">
+                    <span className="text-6xl font-black text-black">{(branding?.company_name || 'V')[0]}</span>
+                  </div>
                 )}
               </div>
             </div>
