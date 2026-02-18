@@ -14,6 +14,39 @@ const API = `${BACKEND_URL}/api`;
 // Configure axios
 axios.defaults.withCredentials = true;
 
+// Favicon Hook - applies custom favicon from settings
+const useFavicon = () => {
+  useEffect(() => {
+    const applyFavicon = async () => {
+      try {
+        const response = await axios.get(`${API}/settings/branding`);
+        const faviconUrl = response.data?.favicon_url;
+        
+        if (faviconUrl) {
+          // Find existing favicon link or create new one
+          let link = document.querySelector("link[rel*='icon']");
+          if (!link) {
+            link = document.createElement('link');
+            link.rel = 'icon';
+            document.head.appendChild(link);
+          }
+          link.href = faviconUrl;
+          
+          // Also update apple-touch-icon if exists
+          let appleLink = document.querySelector("link[rel='apple-touch-icon']");
+          if (appleLink) {
+            appleLink.href = faviconUrl;
+          }
+        }
+      } catch (error) {
+        // Silently fail - use default favicon
+      }
+    };
+    
+    applyFavicon();
+  }, []);
+};
+
 // Auth Provider
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
