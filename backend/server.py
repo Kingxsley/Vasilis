@@ -1409,6 +1409,7 @@ from routes.ads import router as ads_router
 from routes.scenarios import router as scenarios_router
 from routes.settings import router as settings_router
 from routes.content import router as content_router
+from routes.pages import router as pages_router
 
 # Include all routers
 api_router.include_router(auth_router)
