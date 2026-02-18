@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from '../components/ui/select';
 import { Input } from '../components/ui/input';
-import { Shield, AlertTriangle, CheckCircle, Lock, Unlock, RefreshCw, Search, Activity, Users, Key, Globe, Loader2 } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Lock, Unlock, RefreshCw, Search, Activity, Users, Key, Globe, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 
