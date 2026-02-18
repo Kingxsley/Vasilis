@@ -290,7 +290,7 @@ class PasswordPolicySettings(BaseModel):
 @router.get("/password-policy")
 async def get_password_policy(request: Request):
     """Get password policy settings"""
-    user = await require_admin(request)
+    await require_admin(request)
     db = get_db()
     
     settings = await db.settings.find_one({"type": "password_policy"}, {"_id": 0})
