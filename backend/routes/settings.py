@@ -279,26 +279,35 @@ async def delete_logo(request: Request):
 
 @router.post("/branding/favicon")
 async def upload_favicon(request: Request, file: UploadFile = File(...)):
-    """Upload favicon"""
-    user = await require_admin(request)
+    """Upload favicon with automatic optimization"""
+    await require_admin(request)
     db = get_db()
     
     # Validate file type
-    allowed_types = ["image/png", "image/x-icon", "image/ico", "image/vnd.microsoft.icon"]
+    allowed_types = ["image/png", "image/x-icon", "image/ico", "image/vnd.microsoft.icon", "image/svg+xml"]
     if file.content_type not in allowed_types:
         raise HTTPException(
             status_code=400, 
-            detail="Invalid file type. Allowed: PNG, ICO"
+            detail="Invalid file type. Allowed: PNG, ICO, SVG"
         )
     
-    # Check file size (max 500KB)
+    # Check file size (max 1MB before optimization)
     contents = await file.read()
-    if len(contents) > 500 * 1024:
-        raise HTTPException(status_code=400, detail="File too large. Max 500KB")
+    original_size = len(contents)
+    if original_size > 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File too large. Max 1MB")
     
-    # Convert to base64
-    base64_data = base64.b64encode(contents).decode('utf-8')
-    data_url = f"data:{file.content_type};base64,{base64_data}"
+    # Skip optimization for SVG and ICO files
+    if file.content_type in ["image/svg+xml", "image/x-icon", "image/ico", "image/vnd.microsoft.icon"]:
+        base64_data = base64.b64encode(contents).decode('utf-8')
+        data_url = f"data:{file.content_type};base64,{base64_data}"
+        optimized_size = original_size
+    else:
+        # Optimize - favicons should be 64x64 max
+        optimized_contents, mime_type = optimize_image(contents, max_size=(64, 64), quality=90)
+        optimized_size = len(optimized_contents)
+        base64_data = base64.b64encode(optimized_contents).decode('utf-8')
+        data_url = f"data:{mime_type};base64,{base64_data}"
     
     await db.settings.update_one(
         {"type": "branding"},
@@ -306,16 +315,20 @@ async def upload_favicon(request: Request, file: UploadFile = File(...)):
             "$set": {
                 "type": "branding",
                 "favicon_url": data_url,
-                "updated_at": datetime.now(timezone.utc).isoformat(),
-                "updated_by": user["user_id"]
+                "updated_at": datetime.now(timezone.utc).isoformat()
             }
         },
         upsert=True
     )
     
+    savings_percent = round((1 - optimized_size / original_size) * 100, 1) if original_size > 0 else 0
+    
     return {
-        "message": "Favicon uploaded successfully",
-        "favicon_url": data_url
+        "message": "Favicon uploaded and optimized successfully",
+        "favicon_url": data_url,
+        "original_size": original_size,
+        "optimized_size": optimized_size,
+        "savings_percent": savings_percent
     }
 
 
