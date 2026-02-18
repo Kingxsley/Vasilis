@@ -57,6 +57,7 @@ class LandingPageContent(BaseModel):
     features_title: Optional[str] = "Comprehensive Security Training"
     features_subtitle: Optional[str] = "Three powerful modules designed to build real-world cybersecurity awareness"
     features: Optional[List[FeatureItem]] = None
+    platform_image: Optional[str] = None  # Base64 or URL for the platform section image
     footer_text: Optional[str] = None
 
 
