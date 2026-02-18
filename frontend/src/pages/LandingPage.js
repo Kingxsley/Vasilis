@@ -12,7 +12,6 @@ const iconMap = {
   Mail: Mail,
   MousePointerClick: MousePointerClick,
   Users: Users,
-  Shield: Shield,
   Target: Target,
   Award: Award,
   BarChart3: BarChart3,
