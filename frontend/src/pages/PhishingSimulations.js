@@ -335,7 +335,7 @@ export default function PhishingSimulations() {
       }, { headers });
       toast.success('Template created successfully');
       setShowNewTemplate(false);
-      setNewTemplate({ name: '', subject: '', sender_name: '', sender_email: '', body_html: '', button_text: '' });
+      setNewTemplate({ name: '', subject: '', sender_name: '', sender_email: '', body_html: '', button_text: '', attachments: [] });
       fetchData();
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Failed to create template');
