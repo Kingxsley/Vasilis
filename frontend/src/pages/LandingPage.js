@@ -83,17 +83,20 @@ const Logo = ({ className = "h-10" }) => {
 export default function LandingPage() {
   const [layout, setLayout] = useState(null);
   const [branding, setBranding] = useState(null);
+  const [pageContent, setPageContent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     Promise.all([
       axios.get(`${API}/landing-layouts/public`).catch(() => ({ data: null })),
-      axios.get(`${API}/settings/branding`).catch(() => ({ data: null }))
+      axios.get(`${API}/settings/branding`).catch(() => ({ data: null })),
+      axios.get(`${API}/pages/landing`).catch(() => ({ data: null }))
     ])
-      .then(([layoutRes, brandingRes]) => {
+      .then(([layoutRes, brandingRes, pageRes]) => {
         setLayout(layoutRes.data);
         setBranding(brandingRes.data);
+        setPageContent(pageRes.data);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
