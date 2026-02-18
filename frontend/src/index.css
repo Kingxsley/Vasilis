@@ -304,3 +304,24 @@ code, pre, .mono {
 [data-debug-wrapper="true"] {
   display: contents !important;
 }
+
+/* FAQ Section Styles */
+details summary {
+  -webkit-tap-highlight-color: transparent;
+}
+
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+details summary::marker {
+  display: none;
+}
+
+details[open] summary {
+  border-bottom: 1px solid rgba(212, 168, 54, 0.1);
+}
+
+details summary:hover {
+  background: rgba(212, 168, 54, 0.05);
+}
