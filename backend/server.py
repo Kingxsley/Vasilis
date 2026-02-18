@@ -1668,6 +1668,10 @@ from routes.scenarios import router as scenarios_router
 from routes.settings import router as settings_router
 from routes.content import router as content_router
 from routes.pages import router as pages_router
+from routes.security import router as security_router, init_security_routes
+
+# Initialize security routes with dependencies
+init_security_routes(db, require_super_admin, audit_logger, account_lockout)
 
 # Include all routers
 api_router.include_router(auth_router)
