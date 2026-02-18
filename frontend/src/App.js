@@ -314,6 +314,14 @@ const AppRouter = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/content"
+          element={
+            <ProtectedRoute contentManager>
+              <ContentManager />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </React.Suspense>
