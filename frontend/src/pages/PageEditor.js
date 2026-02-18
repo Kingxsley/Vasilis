@@ -8,7 +8,7 @@ import { Label } from '../components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { 
   FileText, Save, RotateCcw, Loader2, Eye, Plus, Trash2,
-  Layout, Type, BarChart3, Sparkles, CheckCircle, Image, Upload, Shield
+  Layout, Type, BarChart3, Sparkles, CheckCircle, Image, Upload, Globe
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
