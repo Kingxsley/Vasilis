@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import { 
   LayoutDashboard, Building2, Users, Target, 
-  BookOpen, BarChart3, LogOut, Menu, X, ChevronDown, Mail, Monitor, Upload, Award, Shield
+  BookOpen, BarChart3, LogOut, Menu, X, ChevronDown, Mail, Monitor, Upload, Award, Shield, FileText, Settings
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import {
@@ -13,16 +13,33 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
+import axios from 'axios';
 
-// Logo Component (self-hosted - no external dependencies)
-const Logo = ({ className = "h-8" }) => (
-  <div className={`flex items-center gap-2 ${className}`}>
-    <Shield className="w-7 h-7 text-[#D4A836]" />
-    <span className="text-lg font-bold text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
-      VasilisNetShield
-    </span>
-  </div>
-);
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+// Logo Component - fetches custom logo from settings
+const Logo = ({ className = "h-8" }) => {
+  const [branding, setBranding] = useState(null);
+
+  useEffect(() => {
+    axios.get(`${API}/settings/branding`)
+      .then(res => setBranding(res.data))
+      .catch(() => {});
+  }, []);
+
+  return (
+    <div className={`flex items-center gap-2 ${className}`}>
+      {branding?.logo_url ? (
+        <img src={branding.logo_url} alt="Logo" className="w-7 h-7 object-contain" />
+      ) : (
+        <Shield className="w-7 h-7 text-[#D4A836]" />
+      )}
+      <span className="text-lg font-bold text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
+        {branding?.company_name || 'VasilisNetShield'}
+      </span>
+    </div>
+  );
+};
 
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, adminOnly: true },
@@ -32,6 +49,7 @@ const navItems = [
   { path: '/campaigns', label: 'Campaigns', icon: Target, adminOnly: true },
   { path: '/phishing', label: 'Phishing Sim', icon: Mail, adminOnly: true },
   { path: '/ads', label: 'Ad Simulation', icon: Monitor, adminOnly: true },
+  { path: '/scenarios', label: 'Scenarios', icon: FileText, adminOnly: true },
   { path: '/training', label: 'Training', icon: BookOpen, adminOnly: false },
   { path: '/certificates', label: 'Certificates', icon: Award, adminOnly: false },
   { path: '/analytics', label: 'Analytics', icon: BarChart3, adminOnly: true },
