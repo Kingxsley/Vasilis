@@ -116,11 +116,24 @@ export default function PhishingSimulations() {
       return;
     }
     
+    if (!newCampaign.launch_immediately && !newCampaign.scheduled_at) {
+      toast.error('Please select a schedule date/time');
+      return;
+    }
+    
     try {
-      await axios.post(`${API}/phishing/campaigns`, newCampaign, { headers });
-      toast.success('Campaign created successfully');
+      const payload = {
+        name: newCampaign.name,
+        organization_id: newCampaign.organization_id,
+        template_id: newCampaign.template_id,
+        target_user_ids: newCampaign.target_user_ids,
+        scheduled_at: newCampaign.scheduled_at ? new Date(newCampaign.scheduled_at).toISOString() : null
+      };
+      
+      await axios.post(`${API}/phishing/campaigns`, payload, { headers });
+      toast.success(newCampaign.scheduled_at ? 'Campaign scheduled successfully' : 'Campaign created successfully');
       setShowNewCampaign(false);
-      setNewCampaign({ name: '', organization_id: '', template_id: '', target_user_ids: [] });
+      setNewCampaign({ name: '', organization_id: '', template_id: '', target_user_ids: [], scheduled_at: '', launch_immediately: true });
       fetchData();
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Failed to create campaign');
