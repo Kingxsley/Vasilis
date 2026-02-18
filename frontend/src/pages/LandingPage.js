@@ -131,7 +131,16 @@ export default function LandingPage() {
   // Navigation visibility from branding settings
   const showBlog = branding?.show_blog !== false;
   const showVideos = branding?.show_videos !== false;
+  const showNews = branding?.show_news !== false;
   const showAbout = branding?.show_about !== false;
+  
+  // Count visible nav items for mobile
+  const visibleNavItems = [
+    showBlog && { to: '/blog', label: 'Blog' },
+    showVideos && { to: '/videos', label: 'Videos' },
+    showNews && { to: '/news', label: 'News' },
+    showAbout && { to: '/about', label: 'About' },
+  ].filter(Boolean);
 
   return (
     <div className="min-h-screen">
@@ -140,10 +149,13 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Logo />
-            <div className="flex items-center gap-6">
-              {showBlog && <Link to="/blog" className="text-gray-400 hover:text-[#E8DDB5]" style={{ '--hover-color': textColor }}>Blog</Link>}
-              {showVideos && <Link to="/videos" className="text-gray-400 hover:text-[#E8DDB5] hidden md:block" style={{ '--hover-color': textColor }}>Videos</Link>}
-              {showAbout && <Link to="/about" className="text-gray-400 hover:text-[#E8DDB5] hidden md:block" style={{ '--hover-color': textColor }}>About</Link>}
+            
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-6">
+              {showBlog && <Link to="/blog" className="text-gray-400 hover:text-[#E8DDB5] transition-colors" style={{ '--hover-color': textColor }}>Blog</Link>}
+              {showVideos && <Link to="/videos" className="text-gray-400 hover:text-[#E8DDB5] transition-colors" style={{ '--hover-color': textColor }}>Videos</Link>}
+              {showNews && <Link to="/news" className="text-gray-400 hover:text-[#E8DDB5] transition-colors" style={{ '--hover-color': textColor }}>News</Link>}
+              {showAbout && <Link to="/about" className="text-gray-400 hover:text-[#E8DDB5] transition-colors" style={{ '--hover-color': textColor }}>About</Link>}
               <Link to="/auth">
                 <Button variant="ghost" className="hover:text-white hover:bg-white/10" style={{ color: textColor }} data-testid="login-btn">
                   Login
@@ -156,7 +168,50 @@ export default function LandingPage() {
                 </Button>
               </Link>
             </div>
+            
+            {/* Mobile Navigation Controls */}
+            <div className="flex md:hidden items-center gap-2">
+              <Link to="/auth">
+                <Button size="sm" className="text-black font-semibold" style={{ backgroundColor: primaryColor }} data-testid="mobile-get-started-btn">
+                  Get Started
+                </Button>
+              </Link>
+              {visibleNavItems.length > 0 && (
+                <button
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  className="p-2 text-gray-400 hover:text-[#E8DDB5]"
+                  data-testid="mobile-nav-toggle"
+                >
+                  {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                </button>
+              )}
+            </div>
           </div>
+          
+          {/* Mobile Menu Dropdown */}
+          {mobileMenuOpen && (
+            <div className="md:hidden py-4 border-t border-[#D4A836]/20 animate-slide-up">
+              <div className="flex flex-col gap-2">
+                {visibleNavItems.map((item) => (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="px-4 py-2 text-gray-400 hover:text-[#E8DDB5] hover:bg-white/5 rounded-lg transition-colors"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                <Link 
+                  to="/auth" 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-4 py-2 text-gray-400 hover:text-[#E8DDB5] hover:bg-white/5 rounded-lg transition-colors"
+                >
+                  Login
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </nav>
 
