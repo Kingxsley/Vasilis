@@ -242,10 +242,10 @@ export default function LandingPage() {
       <section className="py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4" style={{ color: headingColor, fontFamily: 'Chivo, sans-serif' }}>
               {featuresTitle}
             </h2>
-            <p className="text-gray-500 max-w-2xl mx-auto">
+            <p className="max-w-2xl mx-auto" style={{ color: textColor, opacity: 0.7 }}>
               {featuresSubtitle}
             </p>
           </div>
@@ -261,13 +261,13 @@ export default function LandingPage() {
                   >
                     <IconComponent className="w-7 h-7" style={{ color: feature.color }} />
                   </div>
-                  <h3 className="text-xl font-bold mb-3 text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
+                  <h3 className="text-xl font-bold mb-3" style={{ color: headingColor, fontFamily: 'Chivo, sans-serif' }}>
                     {feature.title}
                   </h3>
-                  <p className="text-gray-500 mb-6">
+                  <p className="mb-6" style={{ color: textColor, opacity: 0.7 }}>
                     {feature.description}
                   </p>
-                  <ul className="space-y-2 text-sm text-gray-500">
+                  <ul className="space-y-2 text-sm" style={{ color: textColor, opacity: 0.6 }}>
                     {feature.bullet_points?.map((bullet, bIndex) => (
                       <li key={bIndex} className="flex items-center gap-2">
                         <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: feature.color }} />
