@@ -1712,8 +1712,6 @@ async def public_masked_tracking(campaign_id: str, u: str = None, request: Reque
     Public-facing masked tracking URL for ad campaigns.
     Renders the ad directly or shows info page if no tracking code.
     """
-    db = get_db()
-    
     if not u:
         # For direct campaign links without user tracking, show a generic page
         return HTMLResponse(content="""
