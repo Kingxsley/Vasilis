@@ -144,6 +144,8 @@ async def update_landing_page_content(content: LandingPageContent, request: Requ
         update_doc["features_subtitle"] = content.features_subtitle
     if content.features:
         update_doc["features"] = [f.dict() for f in content.features]
+    if content.platform_image is not None:
+        update_doc["platform_image"] = content.platform_image
     if content.footer_text:
         update_doc["footer_text"] = content.footer_text
     
