@@ -67,6 +67,11 @@ export default function ContentManager() {
   const [newsDialogOpen, setNewsDialogOpen] = useState(false);
   const [newsForm, setNewsForm] = useState({ title: '', content: '', link: '', published: true });
   
+  // RSS Feeds state
+  const [rssFeeds, setRssFeeds] = useState([]);
+  const [rssFeedDialogOpen, setRssFeedDialogOpen] = useState(false);
+  const [rssFeedForm, setRssFeedForm] = useState({ name: '', url: '', enabled: true });
+  
   // Video state
   const [videos, setVideos] = useState([]);
   const [videoDialogOpen, setVideoDialogOpen] = useState(false);
