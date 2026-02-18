@@ -67,7 +67,8 @@ export default function PhishingSimulations() {
     subject: '',
     sender_name: '',
     sender_email: '',
-    body_html: ''
+    body_html: '',
+    button_text: ''
   });
 
   const headers = { Authorization: `Bearer ${token}` };
