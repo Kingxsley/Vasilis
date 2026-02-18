@@ -19,9 +19,24 @@ const Logo = ({ branding, isLoading }) => {
       {!isLoading && branding?.logo_url ? (
         <img src={branding.logo_url} alt="Logo" className="w-8 h-8 object-contain" />
       ) : !isLoading ? (
-        <div className="w-8 h-8 bg-[#D4A836]/30 rounded flex items-center justify-center">
-          <span className="text-[#D4A836] font-bold text-sm">{(branding?.company_name || 'V')[0]}</span>
-        </div>
+        /* Professional mini shield icon when no logo is uploaded */
+        <svg viewBox="0 0 100 100" className="w-8 h-8">
+          <defs>
+            <linearGradient id="pubNavShieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#D4A836" />
+              <stop offset="100%" stopColor="#C49A30" />
+            </linearGradient>
+          </defs>
+          <path 
+            d="M50 5 L90 20 L90 50 C90 75 70 90 50 95 C30 90 10 75 10 50 L10 20 Z" 
+            fill="url(#pubNavShieldGrad)" 
+          />
+          <rect x="38" y="42" width="24" height="20" rx="3" fill="#0a0a0f" opacity="0.9" />
+          <path d="M42 42 L42 35 C42 30 46 26 50 26 C54 26 58 30 58 35 L58 42" 
+                stroke="#0a0a0f" strokeWidth="4" fill="none" opacity="0.9" />
+          <circle cx="50" cy="52" r="3" fill="#D4A836" />
+          <rect x="49" y="52" width="2" height="6" fill="#D4A836" />
+        </svg>
       ) : (
         /* Empty placeholder with same size to prevent layout shift */
         <div className="w-8 h-8" />
