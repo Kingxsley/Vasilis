@@ -226,7 +226,7 @@ export default function SecurityDashboard() {
                     {dashboard?.summary?.active_lockouts || 0}
                   </p>
                 </div>
-                <Shield className="w-8 h-8 text-orange-400/40" />
+                <Lock className="w-8 h-8 text-orange-400/40" />
               </div>
             </CardContent>
           </Card>
