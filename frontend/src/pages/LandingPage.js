@@ -22,12 +22,26 @@ const iconMap = {
 // Logo Component - fetches custom logo from settings
 const Logo = ({ className = "h-10" }) => {
   const [branding, setBranding] = useState(null);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     axios.get(`${API}/settings/branding`)
-      .then(res => setBranding(res.data))
-      .catch(() => {});
+      .then(res => {
+        setBranding(res.data);
+        setLoaded(true);
+      })
+      .catch(() => setLoaded(true));
   }, []);
+
+  // Don't render anything until branding is loaded to prevent flickering
+  if (!loaded) {
+    return (
+      <div className={`flex items-center gap-2 ${className}`}>
+        <div className="w-8 h-8 bg-[#D4A836]/20 rounded animate-pulse" />
+        <div className="w-32 h-6 bg-[#D4A836]/20 rounded animate-pulse" />
+      </div>
+    );
+  }
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
