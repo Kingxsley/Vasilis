@@ -629,13 +629,60 @@ export default function PhishingSimulations() {
                   </div>
                 )}
               </div>
+              
+              {/* Launch Options */}
+              <div className="space-y-3 pt-2 border-t border-[#30363D]">
+                <Label className="text-gray-400">Launch Options</Label>
+                <div className="space-y-3">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="launch_option"
+                      checked={newCampaign.launch_immediately}
+                      onChange={() => setNewCampaign({...newCampaign, launch_immediately: true, scheduled_at: ''})}
+                      className="w-4 h-4 accent-[#D4A836]"
+                    />
+                    <div>
+                      <span className="text-sm text-[#E8DDB5]">Save as Draft</span>
+                      <p className="text-xs text-gray-500">Launch manually when ready</p>
+                    </div>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="launch_option"
+                      checked={!newCampaign.launch_immediately}
+                      onChange={() => setNewCampaign({...newCampaign, launch_immediately: false})}
+                      className="w-4 h-4 accent-[#D4A836]"
+                    />
+                    <div>
+                      <span className="text-sm text-[#E8DDB5]">Schedule for Later</span>
+                      <p className="text-xs text-gray-500">Auto-launch at specified date/time</p>
+                    </div>
+                  </label>
+                </div>
+                
+                {!newCampaign.launch_immediately && (
+                  <div className="ml-7 space-y-2">
+                    <Label className="text-gray-400 text-sm">Schedule Date & Time</Label>
+                    <Input
+                      type="datetime-local"
+                      value={newCampaign.scheduled_at}
+                      onChange={(e) => setNewCampaign({...newCampaign, scheduled_at: e.target.value})}
+                      min={new Date().toISOString().slice(0, 16)}
+                      className="bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5]"
+                      data-testid="campaign-schedule-input"
+                    />
+                  </div>
+                )}
+              </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowNewCampaign(false)} className="border-[#D4A836]/30 text-[#E8DDB5]">
                 Cancel
               </Button>
               <Button onClick={createCampaign} className="bg-[#D4A836] hover:bg-[#C49A30] text-black" data-testid="create-campaign-submit">
-                Create Campaign
+                {newCampaign.launch_immediately ? 'Create Campaign' : 'Schedule Campaign'}
               </Button>
             </DialogFooter>
           </DialogContent>
