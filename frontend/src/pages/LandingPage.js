@@ -490,6 +490,160 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Stats Section (if exists in layout) */}
+      {statsContent && (
+        <section className="py-20 bg-[#0a0a0f]/50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {statsContent.title && (
+              <div className="text-center mb-12">
+                <h2 className="text-3xl font-bold" style={{ color: headingColor, fontFamily: 'Chivo, sans-serif' }}>
+                  {statsContent.title}
+                </h2>
+                {statsContent.subtitle && (
+                  <p className="mt-2" style={{ color: textColor, opacity: 0.7 }}>{statsContent.subtitle}</p>
+                )}
+              </div>
+            )}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+              {(statsContent.stats || []).map((stat, idx) => (
+                <div key={idx}>
+                  <p className="text-4xl font-bold" style={{ color: primaryColor }}>{stat.value}</p>
+                  <p className="text-gray-500 mt-1">{stat.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Testimonials Section (if exists in layout) */}
+      {testimonialsContent && (
+        <section className="py-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl sm:text-4xl font-bold mb-4" style={{ color: headingColor, fontFamily: 'Chivo, sans-serif' }}>
+                {testimonialsContent.title || "What Our Clients Say"}
+              </h2>
+              {testimonialsContent.subtitle && (
+                <p className="max-w-2xl mx-auto" style={{ color: textColor, opacity: 0.7 }}>
+                  {testimonialsContent.subtitle}
+                </p>
+              )}
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {(testimonialsContent.items || []).map((testimonial, idx) => (
+                <div key={idx} className="card-dark rounded-xl p-6">
+                  <p className="text-lg mb-6" style={{ color: textColor, opacity: 0.9 }}>
+                    "{testimonial.quote}"
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-[#D4A836]/20 flex items-center justify-center">
+                      <span className="text-[#D4A836] font-bold">{testimonial.author?.[0]}</span>
+                    </div>
+                    <div>
+                      <p className="font-medium" style={{ color: headingColor }}>{testimonial.author}</p>
+                      <p className="text-sm text-gray-500">{testimonial.role}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Pricing Section (if exists in layout) */}
+      {pricingContent && (
+        <section className="py-24 bg-[#0a0a0f]/50" data-testid="pricing-section">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl sm:text-4xl font-bold mb-4" style={{ color: headingColor, fontFamily: 'Chivo, sans-serif' }}>
+                {pricingContent.title || "Pricing Plans"}
+              </h2>
+              {pricingContent.subtitle && (
+                <p className="max-w-2xl mx-auto" style={{ color: textColor, opacity: 0.7 }}>
+                  {pricingContent.subtitle}
+                </p>
+              )}
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              {(pricingContent.items || []).map((plan, idx) => (
+                <div 
+                  key={idx} 
+                  className={`card-dark rounded-xl p-8 ${plan.highlighted ? 'ring-2 ring-[#D4A836] relative' : ''}`}
+                >
+                  {plan.highlighted && (
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                      <Badge className="bg-[#D4A836] text-black">Most Popular</Badge>
+                    </div>
+                  )}
+                  <h3 className="text-xl font-bold mb-2" style={{ color: headingColor }}>
+                    {plan.name}
+                  </h3>
+                  {plan.description && (
+                    <p className="text-sm text-gray-500 mb-4">{plan.description}</p>
+                  )}
+                  <div className="mb-6">
+                    <span className="text-4xl font-bold" style={{ color: primaryColor }}>{plan.price}</span>
+                    {plan.period && <span className="text-gray-500">{plan.period}</span>}
+                  </div>
+                  <ul className="space-y-3 mb-8">
+                    {(plan.features || []).map((feature, fIdx) => (
+                      <li key={fIdx} className="flex items-center gap-2">
+                        <ChevronRight className="w-4 h-4 text-[#D4A836]" />
+                        <span style={{ color: textColor, opacity: 0.8 }}>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {plan.button_text && (
+                    <Link to={plan.button_link || "/auth"}>
+                      <Button 
+                        className={`w-full ${plan.highlighted ? 'bg-[#D4A836] text-black hover:bg-[#C49A30]' : 'bg-transparent border border-[#D4A836] text-[#D4A836] hover:bg-[#D4A836]/10'}`}
+                      >
+                        {plan.button_text}
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Team Section (if exists in layout) */}
+      {teamContent && (
+        <section className="py-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl sm:text-4xl font-bold mb-4" style={{ color: headingColor, fontFamily: 'Chivo, sans-serif' }}>
+                {teamContent.title || "Meet Our Team"}
+              </h2>
+              {teamContent.subtitle && (
+                <p className="max-w-2xl mx-auto" style={{ color: textColor, opacity: 0.7 }}>
+                  {teamContent.subtitle}
+                </p>
+              )}
+            </div>
+            <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-8">
+              {(teamContent.items || []).map((member, idx) => (
+                <div key={idx} className="text-center">
+                  <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-[#D4A836]/20 flex items-center justify-center overflow-hidden">
+                    {member.image_url ? (
+                      <img src={member.image_url} alt={member.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-3xl text-[#D4A836] font-bold">{member.name?.[0]}</span>
+                    )}
+                  </div>
+                  <h4 className="font-bold" style={{ color: headingColor }}>{member.name}</h4>
+                  <p className="text-sm text-gray-500">{member.role}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* FAQ Section */}
       <section className="py-24 bg-[#0a0a0f]/50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
