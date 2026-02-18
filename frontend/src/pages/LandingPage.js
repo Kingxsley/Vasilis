@@ -409,6 +409,67 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* FAQ Section */}
+      <section className="py-24 bg-[#0a0a0f]/50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4" style={{ color: headingColor, fontFamily: 'Chivo, sans-serif' }}>
+              Frequently Asked Questions
+            </h2>
+            <p className="max-w-2xl mx-auto" style={{ color: textColor, opacity: 0.7 }}>
+              Everything you need to know about our security training platform
+            </p>
+          </div>
+          
+          <div className="space-y-4" data-testid="faq-section">
+            {[
+              {
+                question: "What types of security training do you offer?",
+                answer: "We offer comprehensive training modules covering phishing email detection, malicious ad recognition, and social engineering defense. Each module includes realistic simulations and immediate feedback to reinforce learning."
+              },
+              {
+                question: "How are the training scenarios created?",
+                answer: "Our scenarios are crafted by cybersecurity experts and enhanced with AI to ensure they reflect real-world threats. We continuously update our content based on the latest attack patterns and techniques used by cybercriminals."
+              },
+              {
+                question: "Can I track my team's progress?",
+                answer: "Yes! Our admin dashboard provides real-time analytics including completion rates, individual scores, vulnerability assessments, and detailed reports. You can identify knowledge gaps and target specific areas for improvement."
+              },
+              {
+                question: "How long does each training module take?",
+                answer: "Training modules typically take 20-45 minutes to complete, depending on the complexity. Phishing email detection takes about 30 minutes, malicious ad recognition about 20 minutes, and social engineering defense approximately 45 minutes."
+              },
+              {
+                question: "Is the platform suitable for organizations of all sizes?",
+                answer: "Absolutely! Whether you're a small business or a large enterprise, our platform scales to meet your needs. You can manage multiple organizations, departments, and create targeted campaigns for specific teams."
+              },
+              {
+                question: "Do you provide certificates upon completion?",
+                answer: "Yes, users receive a certificate upon successfully completing each training module. These certificates can be customized with your organization's branding and are available for download."
+              }
+            ].map((faq, index) => (
+              <details 
+                key={index} 
+                className="group card-dark rounded-xl overflow-hidden"
+                data-testid={`faq-item-${index}`}
+              >
+                <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
+                  <h3 className="text-lg font-semibold pr-4" style={{ color: headingColor }}>
+                    {faq.question}
+                  </h3>
+                  <ChevronRight className="w-5 h-5 text-[#D4A836] transform group-open:rotate-90 transition-transform flex-shrink-0" />
+                </summary>
+                <div className="px-6 pb-6">
+                  <p style={{ color: textColor, opacity: 0.8 }}>
+                    {faq.answer}
+                  </p>
+                </div>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
