@@ -165,6 +165,9 @@ async def create_campaign(data: PhishingCampaignCreate, request: Request):
     if len(target_users) != len(data.target_user_ids):
         raise HTTPException(status_code=400, detail="Some target users not found")
     
+    # Determine initial status based on whether it's scheduled
+    initial_status = "scheduled" if data.scheduled_at else "draft"
+    
     campaign_id = f"phish_{uuid.uuid4().hex[:12]}"
     campaign_doc = {
         "campaign_id": campaign_id,
@@ -172,7 +175,7 @@ async def create_campaign(data: PhishingCampaignCreate, request: Request):
         "organization_id": data.organization_id,
         "template_id": data.template_id,
         "landing_page_url": data.landing_page_url,
-        "status": "draft",
+        "status": initial_status,
         "total_targets": len(target_users),
         "emails_sent": 0,
         "emails_opened": 0,
@@ -214,7 +217,7 @@ async def create_campaign(data: PhishingCampaignCreate, request: Request):
         name=data.name,
         organization_id=data.organization_id,
         template_id=data.template_id,
-        status="draft",
+        status=initial_status,
         total_targets=len(target_users),
         emails_sent=0,
         emails_opened=0,
