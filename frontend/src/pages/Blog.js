@@ -50,37 +50,49 @@ export function BlogList() {
           <p className="text-gray-500 text-center py-12">No blog posts yet. Check back soon!</p>
         ) : (
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {posts.map((post) => (
-              <Link key={post.post_id} to={`/blog/${post.slug}`} 
-                className="group bg-[#0f0f15] border rounded-xl overflow-hidden hover:opacity-90 transition-all"
-                style={{ borderColor: `${primaryColor}33` }}>
-                {post.featured_image && (
-                  <div className="aspect-video bg-[#1a1a24]">
-                    <img src={post.featured_image} alt={post.title} className="w-full h-full object-cover" />
-                  </div>
-                )}
-                <div className="p-6">
-                  <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
-                    <Calendar className="w-3 h-3" />
-                    {new Date(post.created_at).toLocaleDateString()}
-                    <span className="mx-2">•</span>
-                    <User className="w-3 h-3" />
-                    {post.author_name}
-                  </div>
-                  <h2 className="text-xl font-bold transition-colors mb-2" style={{ color: headingColor }}>
-                    {post.title}
-                  </h2>
-                  <p className="text-sm line-clamp-2" style={{ color: textColor, opacity: 0.7 }}>{post.excerpt}</p>
-                  {post.tags?.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-4">
-                      {post.tags.slice(0, 3).map((tag) => (
-                        <Badge key={tag} style={{ backgroundColor: `${accentColor}15`, color: accentColor }}>{tag}</Badge>
-                      ))}
+            {posts.map((post) => {
+              const titleDir = getTextDirection(post.title);
+              const excerptDir = getTextDirection(post.excerpt);
+              return (
+                <Link key={post.post_id} to={`/blog/${post.slug}`} 
+                  className="group bg-[#0f0f15] border rounded-xl overflow-hidden hover:opacity-90 transition-all"
+                  style={{ borderColor: `${primaryColor}33` }}>
+                  {post.featured_image && (
+                    <div className="aspect-video bg-[#1a1a24]">
+                      <img src={post.featured_image} alt={post.title} className="w-full h-full object-cover" />
                     </div>
                   )}
-                </div>
-              </Link>
-            ))}
+                  <div className="p-6">
+                    <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
+                      <Calendar className="w-3 h-3" />
+                      {new Date(post.created_at).toLocaleDateString()}
+                      <span className="mx-2">•</span>
+                      <User className="w-3 h-3" />
+                      {post.author_name}
+                    </div>
+                    <h2 
+                      className="text-xl font-bold transition-colors mb-2" 
+                      style={{ color: headingColor, direction: titleDir, textAlign: titleDir === 'rtl' ? 'right' : 'left' }}
+                    >
+                      {post.title}
+                    </h2>
+                    <p 
+                      className="text-sm line-clamp-2" 
+                      style={{ color: textColor, opacity: 0.7, direction: excerptDir, textAlign: excerptDir === 'rtl' ? 'right' : 'left' }}
+                    >
+                      {post.excerpt}
+                    </p>
+                    {post.tags?.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-4">
+                        {post.tags.slice(0, 3).map((tag) => (
+                          <Badge key={tag} style={{ backgroundColor: `${accentColor}15`, color: accentColor }}>{tag}</Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         )}
       </main>
