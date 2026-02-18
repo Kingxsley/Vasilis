@@ -95,6 +95,7 @@ const navGroups = [
     items: [
       { path: '/content', label: 'CMS', icon: FileText, contentManager: true },
       { path: '/page-editor', label: 'Page Editor', icon: Layout, adminOnly: true },
+      { path: '/landing-editor', label: 'Landing Page', icon: Layout, adminOnly: true },
     ]
   },
   {
@@ -104,6 +105,7 @@ const navGroups = [
     items: [
       { path: '/training', label: 'My Training', icon: BookOpen, adminOnly: false },
       { path: '/certificates', label: 'Certificates', icon: Award, adminOnly: false },
+      { path: '/certificate-templates', label: 'Cert Templates', icon: Award, adminOnly: true },
     ]
   },
   {
