@@ -26,7 +26,7 @@ import {
 import { 
   Mail, Plus, Play, Pause, CheckCircle, Eye, MousePointer, 
   Send, Users, Building2, Trash2, BarChart3, AlertTriangle,
-  FileText, Loader2, RefreshCw, Download, FileSpreadsheet, Link, Bold, Italic
+  FileText, Loader2, RefreshCw, Download, FileSpreadsheet, Link, Bold, Italic, Clock, Calendar
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
