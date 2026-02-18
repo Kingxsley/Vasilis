@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { useAuth } from '../App';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Building2, Users, Target, BookOpen, TrendingUp, Shield, Activity } from 'lucide-react';
+import { Building2, Users, Target, BookOpen, TrendingUp, Activity, Award } from 'lucide-react';
 import axios from 'axios';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
