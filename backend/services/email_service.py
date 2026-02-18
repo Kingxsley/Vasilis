@@ -40,7 +40,7 @@ async def send_welcome_email(user_email: str, user_name: str, password: str, log
     
     # Get branding settings
     branding = {"company_name": "Vasilis NetShield", "logo_url": None, "primary_color": "#D4A836"}
-    if db:
+    if db is not None:
         branding = await get_branding_settings(db)
     
     company_name = branding["company_name"]
@@ -162,7 +162,7 @@ async def send_password_reset_email(user_email: str, user_name: str, new_passwor
     
     # Get branding settings
     branding = {"company_name": "Vasilis NetShield", "logo_url": None, "primary_color": "#D4A836"}
-    if db:
+    if db is not None:
         branding = await get_branding_settings(db)
     
     company_name = branding["company_name"]
@@ -249,7 +249,7 @@ async def send_forgot_password_email(user_email: str, user_name: str, reset_toke
     
     # Get branding settings
     branding = {"company_name": "Vasilis NetShield", "logo_url": None, "primary_color": "#D4A836"}
-    if db:
+    if db is not None:
         branding = await get_branding_settings(db)
     
     company_name = branding["company_name"]
