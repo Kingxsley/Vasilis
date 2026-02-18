@@ -112,17 +112,17 @@ export const DashboardLayout = ({ children }) => {
 
       {/* Sidebar */}
       <aside 
-        className={`fixed top-0 left-0 z-40 h-full w-64 sidebar-bg border-r border-[#D4A836]/20 transform transition-transform lg:translate-x-0 ${
+        className={`fixed top-0 left-0 z-40 h-full w-64 sidebar-bg border-r border-[#D4A836]/20 transform transition-transform lg:translate-x-0 flex flex-col ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Logo */}
-        <div className="h-16 flex items-center px-6 border-b border-[#D4A836]/20">
+        <div className="h-16 flex items-center px-6 border-b border-[#D4A836]/20 flex-shrink-0">
           <Logo />
         </div>
 
-        {/* Navigation */}
-        <nav className="p-4 space-y-1">
+        {/* Navigation - Scrollable */}
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {filteredNavItems.map((item) => {
             const isActive = location.pathname === item.path;
             const Icon = item.icon;
@@ -147,7 +147,7 @@ export const DashboardLayout = ({ children }) => {
         </nav>
 
         {/* User Section */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[#D4A836]/20">
+        <div className="flex-shrink-0 p-4 border-t border-[#D4A836]/20">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button 
