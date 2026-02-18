@@ -60,7 +60,7 @@ async def send_welcome_email(user_email: str, user_name: str, password: str, log
     if logo_url and logo_url.startswith('data:'):
         logo_html = f'<img src="{logo_url}" alt="{company_name}" style="height: 60px; max-width: 200px; object-fit: contain;" />'
     else:
-        logo_html = f'<span style="font-size: 50px;">🛡️</span>'
+        logo_html = '<span style="font-size: 50px;">🛡️</span>'
     
     html_content = f"""
     <html>
