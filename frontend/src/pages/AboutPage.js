@@ -102,6 +102,31 @@ export default function AboutPage() {
           )}
         </div>
 
+        {/* Team Members */}
+        {about?.team_members && about.team_members.length > 0 && (
+          <div className="max-w-5xl mx-auto mb-16">
+            <h2 className="text-3xl font-bold text-[#E8DDB5] text-center mb-8" style={{ fontFamily: 'Chivo, sans-serif' }}>
+              Our Team
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {about.team_members.map((member, index) => (
+                <div key={index} className="bg-[#0f0f15] border border-[#D4A836]/20 rounded-xl p-6 text-center">
+                  {member.image ? (
+                    <img src={member.image} alt={member.name} className="w-24 h-24 rounded-full mx-auto mb-4 object-cover" />
+                  ) : (
+                    <div className="w-24 h-24 rounded-full mx-auto mb-4 bg-[#D4A836]/20 flex items-center justify-center">
+                      <span className="text-3xl text-[#D4A836]">{member.name.charAt(0)}</span>
+                    </div>
+                  )}
+                  <h3 className="text-xl font-bold text-[#E8DDB5]">{member.name}</h3>
+                  <p className="text-[#D4A836] text-sm mb-2">{member.role}</p>
+                  {member.bio && <p className="text-gray-400 text-sm">{member.bio}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* CTA */}
         <div className="text-center">
           <h2 className="text-2xl font-bold text-[#E8DDB5] mb-4">Ready to strengthen your security?</h2>
