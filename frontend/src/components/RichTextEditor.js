@@ -88,7 +88,11 @@ const RichTextEditor = ({ value, onChange, placeholder = "Write your content..."
         className="min-h-[200px] p-4 bg-[#1a1a24] text-[#E8DDB5] focus:outline-none prose prose-invert max-w-none"
         style={{
           minHeight: '200px',
+          direction: 'ltr',
+          textAlign: 'left',
+          unicodeBidi: 'plaintext'
         }}
+        dir="ltr"
         data-placeholder={placeholder}
       />
 
