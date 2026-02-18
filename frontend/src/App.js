@@ -152,6 +152,7 @@ const ScenarioManager = React.lazy(() => import('./pages/ScenarioManager'));
 const Settings = React.lazy(() => import('./pages/Settings'));
 const ContentManager = React.lazy(() => import('./pages/ContentManager'));
 const PageEditor = React.lazy(() => import('./pages/PageEditor'));
+const SecurityDashboard = React.lazy(() => import('./pages/SecurityDashboard'));
 const BlogListPage = React.lazy(() => import('./pages/Blog').then(m => ({ default: m.BlogList })));
 const BlogPostPage = React.lazy(() => import('./pages/Blog').then(m => ({ default: m.BlogPost })));
 const VideosPage = React.lazy(() => import('./pages/VideosPage'));
