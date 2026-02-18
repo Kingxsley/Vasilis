@@ -164,20 +164,37 @@ Build a scalable cybersecurity training application with:
   - Color picker UI in Settings page
   - Live preview of color changes
 
+### December 2025 - Session 4 (Current)
+- **Security Hardening** (All approved by user):
+  - Security headers middleware (X-Frame-Options, X-Content-Type-Options, X-XSS-Protection, Referrer-Policy, Permissions-Policy)
+  - Rate limiting on sensitive endpoints (login: 5/min, register: 3/min, default: 100/min)
+  - Account lockout after 5 failed login attempts (15-minute lockout)
+  - Password policy enforcement (8+ chars, uppercase, lowercase, digit, special char)
+  - Input sanitization utilities for XSS prevention
+  - Audit logging for security events
+  - JWT access token lifespan reduced to 24 hours (from 7 days)
+- **Mobile Navigation Fix**:
+  - Created reusable PublicNav component with hamburger menu for mobile
+  - Landing page navigation optimized for all screen sizes
+  - All public pages (Blog, Videos, News, About) use mobile-friendly navigation
+- **News Page Added**:
+  - New /news route for public news page
+  - Displays both local news and RSS feed items
+  - Uses PublicNav component for consistent navigation
+
 ## Pending/Upcoming Tasks
 
 ### P0 - Critical
-- [ ] Verify user's Vercel deployment status
-- [ ] User to add `SENDGRID_API_KEY` and `SENDER_EMAIL` to Vercel env vars
-- [ ] Setup cron job for scheduled campaign launching
+- [x] ~~Security hardening~~ (Completed)
+- [ ] Setup cron job for scheduled campaign launching (Vercel Crons)
 
 ### P1 - Important  
 - [ ] Self-hosted Google OAuth setup (requires user's Google Cloud credentials)
 - [ ] SPF/DKIM domain authentication for better email deliverability
+- [ ] Favicon rendering investigation (reported as recurring issue)
 
 ### P2 - Nice to Have
-- [ ] Full end-to-end testing on production domain
-- [ ] Apply dynamic text colors to public pages (landing, blog, etc.)
+- [ ] Full end-to-end testing on production domain (vasilisnetshield.net)
 
 ### Future Enhancements
 - [ ] Multi-language support
