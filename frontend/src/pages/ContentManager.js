@@ -95,6 +95,7 @@ export default function ContentManager() {
 
   useEffect(() => {
     fetchAllContent();
+    fetchRssFeeds();
   }, []);
 
   const fetchAllContent = async () => {
@@ -102,7 +103,7 @@ export default function ContentManager() {
     try {
       const [blogRes, newsRes, videosRes, aboutRes] = await Promise.all([
         axios.get(`${API}/content/blog?published_only=false`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API}/content/news`),
+        axios.get(`${API}/content/news?include_rss=true`),
         axios.get(`${API}/content/videos?published_only=false`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API}/content/about`)
       ]);
@@ -114,6 +115,15 @@ export default function ContentManager() {
       toast.error('Failed to load content');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRssFeeds = async () => {
+    try {
+      const res = await axios.get(`${API}/content/news/rss-feeds`, { headers: { Authorization: `Bearer ${token}` } });
+      setRssFeeds(res.data.feeds || []);
+    } catch (error) {
+      // Ignore error - RSS feeds might not be set up yet
     }
   };
 
