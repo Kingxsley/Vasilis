@@ -105,6 +105,12 @@ const UserImport = React.lazy(() => import('./pages/UserImport'));
 const Certificates = React.lazy(() => import('./pages/Certificates'));
 const ScenarioManager = React.lazy(() => import('./pages/ScenarioManager'));
 const Settings = React.lazy(() => import('./pages/Settings'));
+const ContentManager = React.lazy(() => import('./pages/ContentManager'));
+const { BlogList, BlogPost } = React.lazy(() => import('./pages/Blog').then(m => ({ 
+  default: { BlogList: m.BlogList, BlogPost: m.BlogPost } 
+}))) || { BlogList: React.lazy(() => import('./pages/Blog').then(m => ({ default: m.BlogList }))), BlogPost: React.lazy(() => import('./pages/Blog').then(m => ({ default: m.BlogPost }))) };
+const VideosPage = React.lazy(() => import('./pages/VideosPage'));
+const AboutPage = React.lazy(() => import('./pages/AboutPage'));
 
 // Auth Callback Handler
 const AuthCallback = () => {
