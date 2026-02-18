@@ -34,27 +34,35 @@ const Logo = ({ className = "h-10" }) => {
       .catch(() => setLoaded(true));
   }, []);
 
+  // Handle click - refresh the page
+  const handleClick = (e) => {
+    e.preventDefault();
+    window.location.href = '/';
+  };
+
   // Don't render anything until branding is loaded to prevent flickering
   if (!loaded) {
     return (
-      <Link to="/" className={`flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity ${className}`}>
+      <a href="/" onClick={handleClick} className={`flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity ${className}`}>
         <div className="w-8 h-8 bg-[#D4A836]/20 rounded animate-pulse" />
         <div className="w-32 h-6 bg-[#D4A836]/20 rounded animate-pulse" />
-      </Link>
+      </a>
     );
   }
 
   return (
-    <Link to="/" className={`flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity ${className}`} data-testid="logo-home-link">
+    <a href="/" onClick={handleClick} className={`flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity ${className}`} data-testid="logo-home-link">
       {branding?.logo_url ? (
         <img src={branding.logo_url} alt="Logo" className="w-8 h-8 object-contain" />
       ) : (
-        <Shield className="w-8 h-8 text-[#D4A836]" />
+        <div className="w-8 h-8 bg-[#D4A836]/30 rounded flex items-center justify-center">
+          <span className="text-[#D4A836] font-bold text-sm">{(branding?.company_name || 'V')[0]}</span>
+        </div>
       )}
       <span className="text-xl font-bold text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
         {branding?.company_name || 'Vasilis NetShield'}
       </span>
-    </Link>
+    </a>
   );
 };
 
