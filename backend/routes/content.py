@@ -64,6 +64,12 @@ class NewsCreate(BaseModel):
     published: bool = True
 
 
+class RssFeedCreate(BaseModel):
+    name: str
+    url: str
+    enabled: bool = True
+
+
 class VideoCreate(BaseModel):
     title: str
     description: str
