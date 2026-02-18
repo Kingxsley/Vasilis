@@ -456,6 +456,65 @@ export default function Settings() {
             </CardContent>
           </Card>
 
+          {/* Navigation Menu */}
+          <Card className="bg-[#0f0f15] border-[#D4A836]/20">
+            <CardHeader>
+              <CardTitle className="text-[#E8DDB5] flex items-center gap-2">
+                <Menu className="w-5 h-5" />
+                Navigation Menu
+              </CardTitle>
+              <CardDescription>Choose which pages to show in the navigation bar</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div 
+                  className={`p-4 rounded-lg border cursor-pointer transition-all ${branding.show_blog ? 'border-[#D4A836] bg-[#D4A836]/10' : 'border-gray-600 bg-[#1a1a24]'}`}
+                  onClick={() => setBranding({ ...branding, show_blog: !branding.show_blog })}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-medium text-[#E8DDB5]">Blog</span>
+                    {branding.show_blog ? <Eye className="w-4 h-4 text-[#D4A836]" /> : <EyeOff className="w-4 h-4 text-gray-500" />}
+                  </div>
+                  <p className="text-xs text-gray-500">{branding.show_blog ? 'Visible' : 'Hidden'}</p>
+                </div>
+
+                <div 
+                  className={`p-4 rounded-lg border cursor-pointer transition-all ${branding.show_videos ? 'border-[#D4A836] bg-[#D4A836]/10' : 'border-gray-600 bg-[#1a1a24]'}`}
+                  onClick={() => setBranding({ ...branding, show_videos: !branding.show_videos })}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-medium text-[#E8DDB5]">Videos</span>
+                    {branding.show_videos ? <Eye className="w-4 h-4 text-[#D4A836]" /> : <EyeOff className="w-4 h-4 text-gray-500" />}
+                  </div>
+                  <p className="text-xs text-gray-500">{branding.show_videos ? 'Visible' : 'Hidden'}</p>
+                </div>
+
+                <div 
+                  className={`p-4 rounded-lg border cursor-pointer transition-all ${branding.show_news !== false ? 'border-[#D4A836] bg-[#D4A836]/10' : 'border-gray-600 bg-[#1a1a24]'}`}
+                  onClick={() => setBranding({ ...branding, show_news: !branding.show_news })}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-medium text-[#E8DDB5]">News</span>
+                    {branding.show_news !== false ? <Eye className="w-4 h-4 text-[#D4A836]" /> : <EyeOff className="w-4 h-4 text-gray-500" />}
+                  </div>
+                  <p className="text-xs text-gray-500">{branding.show_news !== false ? 'Visible' : 'Hidden'}</p>
+                </div>
+
+                <div 
+                  className={`p-4 rounded-lg border cursor-pointer transition-all ${branding.show_about ? 'border-[#D4A836] bg-[#D4A836]/10' : 'border-gray-600 bg-[#1a1a24]'}`}
+                  onClick={() => setBranding({ ...branding, show_about: !branding.show_about })}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-medium text-[#E8DDB5]">About</span>
+                    {branding.show_about ? <Eye className="w-4 h-4 text-[#D4A836]" /> : <EyeOff className="w-4 h-4 text-gray-500" />}
+                  </div>
+                  <p className="text-xs text-gray-500">{branding.show_about ? 'Visible' : 'Hidden'}</p>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-4">Click on a page to toggle its visibility in the navigation bar</p>
+            </CardContent>
+          </Card>
+
           {/* Save Button */}
           <div className="flex justify-end">
             <Button
