@@ -33,15 +33,15 @@ const Logo = ({ collapsed = false }) => {
 
   if (!loaded) {
     return (
-      <div className="flex items-center gap-2">
+      <Link to="/" className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
         <div className="w-8 h-8 bg-[#D4A836]/20 rounded animate-pulse" />
         {!collapsed && <div className="w-24 h-5 bg-[#D4A836]/20 rounded animate-pulse" />}
-      </div>
+      </Link>
     );
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <Link to="/" className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" data-testid="logo-home-link">
       {branding?.logo_url ? (
         <img src={branding.logo_url} alt="Logo" className="w-8 h-8 object-contain flex-shrink-0" />
       ) : (
@@ -52,7 +52,7 @@ const Logo = ({ collapsed = false }) => {
           {branding?.company_name || 'Vasilis NetShield'}
         </span>
       )}
-    </div>
+    </Link>
   );
 };
 
