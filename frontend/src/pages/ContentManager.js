@@ -527,6 +527,9 @@ export default function ContentManager() {
                         <div className="w-0 h-0 border-t-8 border-t-transparent border-l-12 border-l-white border-b-8 border-b-transparent ml-1" />
                       </div>
                     </div>
+                    <Badge className="absolute top-2 left-2 bg-black/70 text-white">
+                      {VIDEO_CATEGORIES.find(c => c.value === video.category)?.label || video.category}
+                    </Badge>
                   </div>
                   <CardContent className="p-4">
                     <h3 className="text-[#E8DDB5] font-medium truncate">{video.title}</h3>
@@ -547,7 +550,8 @@ export default function ContentManager() {
                   </CardContent>
                 </Card>
               ))}
-              {videos.length === 0 && <p className="col-span-full text-center text-gray-500 py-8">No videos yet</p>}
+              {videos.filter(v => videoFilter === 'all' || v.category === videoFilter).length === 0 && 
+                <p className="col-span-full text-center text-gray-500 py-8">No videos in this category</p>}
             </div>
 
             {/* Video Dialog */}
@@ -569,6 +573,19 @@ export default function ContentManager() {
                     <Label className="text-gray-400">Description</Label>
                     <Textarea value={videoForm.description} onChange={(e) => setVideoForm({...videoForm, description: e.target.value})}
                       className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]" rows={2} required />
+                  </div>
+                  <div>
+                    <Label className="text-gray-400">Category</Label>
+                    <Select value={videoForm.category} onValueChange={(v) => setVideoForm({...videoForm, category: v})}>
+                      <SelectTrigger className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-[#1a1a24] border-[#D4A836]/30">
+                        {VIDEO_CATEGORIES.map(cat => (
+                          <SelectItem key={cat.value} value={cat.value} className="text-[#E8DDB5]">{cat.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="flex items-center gap-2">
                     <input type="checkbox" checked={videoForm.published} onChange={(e) => setVideoForm({...videoForm, published: e.target.checked})}
