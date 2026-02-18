@@ -198,8 +198,8 @@ async def update_branding(data: BrandingUpdate, request: Request):
 
 @router.post("/branding/logo")
 async def upload_logo(request: Request, file: UploadFile = File(...)):
-    """Upload company logo"""
-    user = await require_admin(request)
+    """Upload company logo with automatic optimization"""
+    await require_admin(request)
     db = get_db()
     
     # Validate file type
@@ -210,14 +210,25 @@ async def upload_logo(request: Request, file: UploadFile = File(...)):
             detail="Invalid file type. Allowed: PNG, JPEG, SVG, WebP"
         )
     
-    # Check file size (max 2MB)
+    # Check file size (max 5MB before optimization)
     contents = await file.read()
-    if len(contents) > 2 * 1024 * 1024:
-        raise HTTPException(status_code=400, detail="File too large. Max 2MB")
+    original_size = len(contents)
+    if original_size > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File too large. Max 5MB")
     
-    # Convert to base64 data URL
-    base64_data = base64.b64encode(contents).decode('utf-8')
-    data_url = f"data:{file.content_type};base64,{base64_data}"
+    # Skip optimization for SVG files
+    if file.content_type == "image/svg+xml":
+        base64_data = base64.b64encode(contents).decode('utf-8')
+        data_url = f"data:{file.content_type};base64,{base64_data}"
+        optimized_size = original_size
+    else:
+        # Optimize the image - logos should be max 400x400 for good quality
+        optimized_contents, mime_type = optimize_image(contents, max_size=(400, 400), quality=90)
+        optimized_size = len(optimized_contents)
+        
+        # Convert to base64 data URL
+        base64_data = base64.b64encode(optimized_contents).decode('utf-8')
+        data_url = f"data:{mime_type};base64,{base64_data}"
     
     # Save to database
     await db.settings.update_one(
