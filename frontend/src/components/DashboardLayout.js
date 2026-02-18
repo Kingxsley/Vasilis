@@ -60,7 +60,6 @@ const navItems = [
   { path: '/organizations', label: 'Organizations', icon: Building2, adminOnly: true },
   { path: '/users', label: 'Users', icon: Users, adminOnly: true },
   { path: '/user-import', label: 'Import Users', icon: Upload, adminOnly: true },
-  { path: '/campaigns', label: 'Campaigns', icon: Target, adminOnly: true },
   { path: '/phishing', label: 'Phishing Sim', icon: Mail, adminOnly: true },
   { path: '/ads', label: 'Ad Simulation', icon: Monitor, adminOnly: true },
   { path: '/scenarios', label: 'Scenarios', icon: FileText, adminOnly: true },
