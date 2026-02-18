@@ -31,28 +31,36 @@ const Logo = ({ collapsed = false }) => {
       .catch(() => setLoaded(true));
   }, []);
 
+  // Handle click - refresh the page
+  const handleClick = (e) => {
+    e.preventDefault();
+    window.location.href = '/';
+  };
+
   if (!loaded) {
     return (
-      <Link to="/" className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
+      <a href="/" onClick={handleClick} className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
         <div className="w-8 h-8 bg-[#D4A836]/20 rounded animate-pulse" />
         {!collapsed && <div className="w-24 h-5 bg-[#D4A836]/20 rounded animate-pulse" />}
-      </Link>
+      </a>
     );
   }
 
   return (
-    <Link to="/" className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" data-testid="logo-home-link">
+    <a href="/" onClick={handleClick} className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" data-testid="logo-home-link">
       {branding?.logo_url ? (
         <img src={branding.logo_url} alt="Logo" className="w-8 h-8 object-contain flex-shrink-0" />
       ) : (
-        <Shield className="w-8 h-8 text-[#D4A836] flex-shrink-0" />
+        <div className="w-8 h-8 bg-[#D4A836]/30 rounded flex items-center justify-center flex-shrink-0">
+          <span className="text-[#D4A836] font-bold text-sm">{(branding?.company_name || 'V')[0]}</span>
+        </div>
       )}
       {!collapsed && (
         <span className="text-lg font-bold text-[#E8DDB5] truncate" style={{ fontFamily: 'Chivo, sans-serif' }}>
           {branding?.company_name || 'Vasilis NetShield'}
         </span>
       )}
-    </Link>
+    </a>
   );
 };
 
