@@ -479,15 +479,15 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4" style={{ color: headingColor, fontFamily: 'Chivo, sans-serif' }}>
-              Frequently Asked Questions
+              {faqContent?.title || "Frequently Asked Questions"}
             </h2>
             <p className="max-w-2xl mx-auto" style={{ color: textColor, opacity: 0.7 }}>
-              Everything you need to know about our security training platform
+              {faqContent?.subtitle || "Everything you need to know about our security training platform"}
             </p>
           </div>
           
           <div className="space-y-4" data-testid="faq-section">
-            {[
+            {(faqContent?.items || [
               {
                 question: "What types of security training do you offer?",
                 answer: "We offer comprehensive training modules covering phishing email detection, malicious ad recognition, and social engineering defense. Each module includes realistic simulations and immediate feedback to reinforce learning."
@@ -512,7 +512,7 @@ export default function LandingPage() {
                 question: "Do you provide certificates upon completion?",
                 answer: "Yes, users receive a certificate upon successfully completing each training module. These certificates can be customized with your organization's branding and are available for download."
               }
-            ].map((faq, index) => (
+            ]).map((faq, index) => (
               <details 
                 key={index} 
                 className="group card-dark rounded-xl overflow-hidden"
