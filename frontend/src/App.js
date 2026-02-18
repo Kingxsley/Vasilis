@@ -17,43 +17,68 @@ axios.defaults.withCredentials = true;
 // Favicon Hook - applies custom favicon from settings
 const useFavicon = () => {
   useEffect(() => {
-    const applyFavicon = async () => {
+    const applyFavicon = (faviconUrl) => {
+      // Remove all existing favicons
+      const existingFavicons = document.querySelectorAll("link[rel*='icon']");
+      existingFavicons.forEach(el => el.remove());
+      
+      if (!faviconUrl) return;
+      
+      // Create new favicon link with type
+      const link = document.createElement('link');
+      link.rel = 'icon';
+      link.type = faviconUrl.startsWith('data:image/png') ? 'image/png' : 
+                  faviconUrl.startsWith('data:image/svg') ? 'image/svg+xml' : 
+                  faviconUrl.startsWith('data:image/x-icon') ? 'image/x-icon' : 'image/png';
+      link.href = faviconUrl;
+      document.head.appendChild(link);
+      
+      // Create shortcut icon for older browsers
+      const shortcutLink = document.createElement('link');
+      shortcutLink.rel = 'shortcut icon';
+      shortcutLink.href = faviconUrl;
+      document.head.appendChild(shortcutLink);
+      
+      // Also update apple-touch-icon
+      const appleLink = document.createElement('link');
+      appleLink.rel = 'apple-touch-icon';
+      appleLink.href = faviconUrl;
+      document.head.appendChild(appleLink);
+    };
+
+    const loadFavicon = async () => {
+      // First, try to apply cached favicon to prevent flash
+      const cachedFavicon = localStorage.getItem('app_favicon_url');
+      if (cachedFavicon) {
+        applyFavicon(cachedFavicon);
+      }
+      
       try {
         const response = await axios.get(`${API}/settings/branding`);
         const faviconUrl = response.data?.favicon_url;
         
         if (faviconUrl) {
-          // Remove all existing favicons
-          const existingFavicons = document.querySelectorAll("link[rel*='icon']");
-          existingFavicons.forEach(el => el.remove());
-          
-          // Create new favicon link with type
-          const link = document.createElement('link');
-          link.rel = 'icon';
-          link.type = faviconUrl.startsWith('data:image/png') ? 'image/png' : 
-                      faviconUrl.startsWith('data:image/svg') ? 'image/svg+xml' : 
-                      faviconUrl.startsWith('data:image/x-icon') ? 'image/x-icon' : 'image/png';
-          link.href = faviconUrl;
-          document.head.appendChild(link);
-          
-          // Create shortcut icon for older browsers
-          const shortcutLink = document.createElement('link');
-          shortcutLink.rel = 'shortcut icon';
-          shortcutLink.href = faviconUrl;
-          document.head.appendChild(shortcutLink);
-          
-          // Also update apple-touch-icon
-          const appleLink = document.createElement('link');
-          appleLink.rel = 'apple-touch-icon';
-          appleLink.href = faviconUrl;
-          document.head.appendChild(appleLink);
+          // Cache for future visits
+          localStorage.setItem('app_favicon_url', faviconUrl);
+          // Only re-apply if different from cached
+          if (faviconUrl !== cachedFavicon) {
+            applyFavicon(faviconUrl);
+          }
+        } else {
+          // No custom favicon set - clear cache and remove any favicons
+          localStorage.removeItem('app_favicon_url');
+          if (cachedFavicon) {
+            // Remove the cached favicon that was applied
+            const existingFavicons = document.querySelectorAll("link[rel*='icon']");
+            existingFavicons.forEach(el => el.remove());
+          }
         }
       } catch (error) {
-        // Silently fail - use default favicon
+        // Silently fail - keep cached favicon if available
       }
     };
     
-    applyFavicon();
+    loadFavicon();
   }, []);
 };
 
