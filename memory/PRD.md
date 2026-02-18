@@ -245,11 +245,12 @@ To enable scheduled campaigns and password expiry reminders, add the following t
 - [x] ~~Advanced analytics dashboard~~ (Completed)
 - [x] ~~Password expiry settings~~ (Completed)
 - [x] ~~Collapsible sidebar~~ (Completed)
-- [x] ~~Favicon fix~~ (Completed - removed shield flash, uses cached favicon)
+- [x] ~~Favicon fix~~ (Completed - SVG favicon with proper caching)
 - [x] ~~Certificate Template Editor~~ (Completed - drag & drop with signatures/logos)
 - [x] ~~Landing Page Layout Editor~~ (Completed - add/reorder/hide sections)
 - [x] ~~Mobile menu flash fix~~ (Completed - waits for branding to load)
-- [x] ~~Ad Simulation Copy URL feature~~ (Completed - masked URLs /track/{campaign_id})
+- [x] ~~Ad Simulation Copy URL feature~~ (Completed - clean URLs at root: /{campaign_id})
+- [x] ~~Dashboard/Analytics data aggregation~~ (Completed - aggregates from phishing_campaigns + ad_campaigns)
 - [ ] Setup cron job for:
   - Scheduled campaign launching (Vercel Crons)
   - Password expiry reminder emails
@@ -257,9 +258,12 @@ To enable scheduled campaigns and password expiry reminders, add the following t
 ### P1 - Important  
 - [ ] JWT refresh token implementation (access token lifetime shortened but refresh not implemented)
 - [ ] Cron job setup guide for Vercel
+- [ ] Certificate signature upload functionality
+- [ ] Media Library for storing and compressing images
 
 ### P2 - Nice to Have
 - [ ] Full end-to-end testing on production domain (vasilisnetshield.net)
+- [ ] Drag-and-drop functionality for Certificate/Landing Page editors
 
 ### Future Enhancements
 - [ ] Multi-language support
@@ -267,7 +271,7 @@ To enable scheduled campaigns and password expiry reminders, add the following t
 - [ ] Certificate drag-and-drop resize handles
 - [ ] More landing page section templates
 
-## Recent Changes (Feb 18, 2026)
+## Recent Changes (Feb 18, 2026 - Session 2)
 
 ### Certificate Template Editor
 - Created `/certificate-templates` page with drag-and-drop canvas
