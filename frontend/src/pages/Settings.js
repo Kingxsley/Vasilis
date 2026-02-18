@@ -22,7 +22,11 @@ export default function Settings() {
     secondary_color: '#0f3460',
     text_color: '#E8DDB5',
     heading_color: '#FFFFFF',
-    accent_color: '#D4A836'
+    accent_color: '#D4A836',
+    show_blog: true,
+    show_videos: true,
+    show_news: true,
+    show_about: true
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
