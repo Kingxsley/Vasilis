@@ -129,8 +129,8 @@ export default function Settings() {
       return;
     }
 
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error('File too large. Max 2MB');
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File too large. Max 5MB');
       return;
     }
 
@@ -146,7 +146,15 @@ export default function Settings() {
         }
       });
       setBranding(prev => ({ ...prev, logo_url: response.data.logo_url }));
-      toast.success('Logo uploaded');
+      
+      // Show optimization info
+      if (response.data.savings_percent > 0) {
+        const origKB = Math.round(response.data.original_size / 1024);
+        const optKB = Math.round(response.data.optimized_size / 1024);
+        toast.success(`Logo optimized! ${origKB}KB → ${optKB}KB (${response.data.savings_percent}% smaller)`);
+      } else {
+        toast.success('Logo uploaded successfully');
+      }
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to upload logo');
     } finally {
@@ -172,9 +180,9 @@ export default function Settings() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const allowedTypes = ['image/png', 'image/x-icon', 'image/ico', 'image/vnd.microsoft.icon'];
+    const allowedTypes = ['image/png', 'image/x-icon', 'image/ico', 'image/vnd.microsoft.icon', 'image/svg+xml'];
     if (!allowedTypes.includes(file.type)) {
-      toast.error('Invalid file type. Use PNG or ICO');
+      toast.error('Invalid file type. Use PNG, ICO, or SVG');
       return;
     }
 
