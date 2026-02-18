@@ -22,40 +22,45 @@ export default function VideosPage() {
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
+  // Dynamic colors
+  const textColor = branding?.text_color || '#E8DDB5';
+  const headingColor = branding?.heading_color || '#FFFFFF';
+  const primaryColor = branding?.primary_color || '#D4A836';
+
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
       {/* Header */}
-      <header className="border-b border-[#D4A836]/10">
+      <header className="border-b" style={{ borderColor: `${primaryColor}15` }}>
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-2">
             {branding?.logo_url ? (
               <img src={branding.logo_url} alt="Logo" className="w-8 h-8 object-contain" />
             ) : (
-              <Shield className="w-8 h-8 text-[#D4A836]" />
+              <Shield className="w-8 h-8" style={{ color: primaryColor }} />
             )}
-            <span className="text-xl font-bold text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
+            <span className="text-xl font-bold" style={{ color: textColor, fontFamily: 'Chivo, sans-serif' }}>
               {branding?.company_name || 'Vasilis NetShield'}
             </span>
           </Link>
           <nav className="flex items-center gap-6">
-            <Link to="/blog" className="text-gray-400 hover:text-[#E8DDB5]">Blog</Link>
-            <Link to="/about" className="text-gray-400 hover:text-[#E8DDB5]">About</Link>
+            <Link to="/blog" className="text-gray-400 hover:opacity-80">Blog</Link>
+            <Link to="/about" className="text-gray-400 hover:opacity-80">About</Link>
             <Link to="/auth">
-              <Button className="bg-[#D4A836] hover:bg-[#C49A30] text-black">Login</Button>
+              <Button className="text-black" style={{ backgroundColor: primaryColor }}>Login</Button>
             </Link>
           </nav>
         </div>
       </header>
 
       <main className="container mx-auto px-6 py-12">
-        <h1 className="text-4xl font-bold text-[#E8DDB5] mb-2" style={{ fontFamily: 'Chivo, sans-serif' }}>
+        <h1 className="text-4xl font-bold mb-2" style={{ color: headingColor, fontFamily: 'Chivo, sans-serif' }}>
           Videos
         </h1>
-        <p className="text-gray-400 mb-8">Training videos and security awareness content</p>
+        <p className="mb-8" style={{ color: textColor, opacity: 0.7 }}>Training videos and security awareness content</p>
 
         {loading ? (
           <div className="flex justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-[#D4A836]" />
+            <Loader2 className="w-8 h-8 animate-spin" style={{ color: primaryColor }} />
           </div>
         ) : videos.length === 0 ? (
           <p className="text-gray-500 text-center py-12">No videos yet. Check back soon!</p>
@@ -64,20 +69,21 @@ export default function VideosPage() {
             {videos.map((video) => (
               <div 
                 key={video.video_id} 
-                className="bg-[#0f0f15] border border-[#D4A836]/20 rounded-xl overflow-hidden hover:border-[#D4A836]/50 transition-colors cursor-pointer"
+                className="bg-[#0f0f15] border rounded-xl overflow-hidden hover:opacity-90 transition-all cursor-pointer"
+                style={{ borderColor: `${primaryColor}33` }}
                 onClick={() => setActiveVideo(video)}
               >
                 <div className="aspect-video bg-black relative group">
                   <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/50 transition-colors">
-                    <div className="w-16 h-16 rounded-full bg-[#D4A836] flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform" style={{ backgroundColor: primaryColor }}>
                       <Play className="w-8 h-8 text-black ml-1" fill="black" />
                     </div>
                   </div>
                 </div>
                 <div className="p-4">
-                  <h3 className="text-[#E8DDB5] font-medium mb-1">{video.title}</h3>
-                  <p className="text-gray-500 text-sm line-clamp-2">{video.description}</p>
+                  <h3 className="font-medium mb-1" style={{ color: headingColor }}>{video.title}</h3>
+                  <p className="text-sm line-clamp-2" style={{ color: textColor, opacity: 0.6 }}>{video.description}</p>
                 </div>
               </div>
             ))}
