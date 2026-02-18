@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import { 
   LayoutDashboard, Building2, Users, Target, 
-  BookOpen, BarChart3, LogOut, Menu, X, ChevronDown, Mail, Monitor, Upload, Award, Shield, FileText, Settings
+  BookOpen, BarChart3, LogOut, Menu, X, ChevronDown, Mail, Monitor, Upload, Award, Shield, FileText, Settings, Layout
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import {
@@ -51,6 +51,7 @@ const navItems = [
   { path: '/ads', label: 'Ad Simulation', icon: Monitor, adminOnly: true },
   { path: '/scenarios', label: 'Scenarios', icon: FileText, adminOnly: true },
   { path: '/content', label: 'Content', icon: FileText, contentManager: true },
+  { path: '/page-editor', label: 'Page Editor', icon: Layout, adminOnly: true },
   { path: '/training', label: 'Training', icon: BookOpen, adminOnly: false },
   { path: '/certificates', label: 'Certificates', icon: Award, adminOnly: false },
   { path: '/analytics', label: 'Analytics', icon: BarChart3, adminOnly: true },
