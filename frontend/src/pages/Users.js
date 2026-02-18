@@ -27,7 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from '../components/ui/table';
-import { Users, Plus, Search, Pencil, Trash2, Building2, Shield, Loader2 } from 'lucide-react';
+import { Users, Plus, Search, Pencil, Trash2, Building2, Award, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 
