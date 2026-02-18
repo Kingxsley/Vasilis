@@ -643,8 +643,8 @@ export default function PageEditor() {
                         />
                       ) : (
                         <div className="text-center">
-                          <Shield className="w-24 h-24 text-[#D4A836] mx-auto mb-2 animate-pulse" />
-                          <p className="text-sm text-gray-500">Default shield icon</p>
+                          <Globe className="w-24 h-24 text-[#D4A836] mx-auto mb-2 animate-pulse" />
+                          <p className="text-sm text-gray-500">Upload your logo or image</p>
                         </div>
                       )}
                     </div>
