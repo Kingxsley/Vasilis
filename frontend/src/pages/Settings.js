@@ -5,7 +5,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Upload, Trash2, Loader2, Image, Shield } from 'lucide-react';
+import { Upload, Trash2, Loader2, Shield, Globe } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../App';
 
@@ -17,13 +17,16 @@ export default function Settings() {
     company_name: 'VasilisNetShield',
     tagline: 'Human + AI Powered Security Training',
     logo_url: null,
+    favicon_url: null,
     primary_color: '#D4A836',
     secondary_color: '#0f3460'
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingFavicon, setUploadingFavicon] = useState(false);
+  const logoInputRef = useRef(null);
+  const faviconInputRef = useRef(null);
 
   useEffect(() => {
     fetchBranding();
@@ -63,20 +66,18 @@ export default function Settings() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
       toast.error('Invalid file type. Use PNG, JPEG, SVG, or WebP');
       return;
     }
 
-    // Validate file size (2MB)
     if (file.size > 2 * 1024 * 1024) {
       toast.error('File too large. Max 2MB');
       return;
     }
 
-    setUploading(true);
+    setUploadingLogo(true);
     const formData = new FormData();
     formData.append('file', file);
 
@@ -92,7 +93,7 @@ export default function Settings() {
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to upload logo');
     } finally {
-      setUploading(false);
+      setUploadingLogo(false);
     }
   };
 
@@ -107,6 +108,55 @@ export default function Settings() {
       toast.success('Logo removed');
     } catch (error) {
       toast.error('Failed to remove logo');
+    }
+  };
+
+  const handleFaviconUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ['image/png', 'image/x-icon', 'image/ico', 'image/vnd.microsoft.icon'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Invalid file type. Use PNG or ICO');
+      return;
+    }
+
+    if (file.size > 500 * 1024) {
+      toast.error('File too large. Max 500KB');
+      return;
+    }
+
+    setUploadingFavicon(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post(`${API}/settings/branding/favicon`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      setBranding(prev => ({ ...prev, favicon_url: response.data.favicon_url }));
+      toast.success('Favicon uploaded');
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to upload favicon');
+    } finally {
+      setUploadingFavicon(false);
+    }
+  };
+
+  const handleFaviconDelete = async () => {
+    if (!window.confirm('Remove the favicon?')) return;
+
+    try {
+      await axios.delete(`${API}/settings/branding/favicon`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setBranding(prev => ({ ...prev, favicon_url: null }));
+      toast.success('Favicon removed');
+    } catch (error) {
+      toast.error('Failed to remove favicon');
     }
   };
 
@@ -141,23 +191,16 @@ export default function Settings() {
             </CardHeader>
             <CardContent>
               <div className="flex items-start gap-6">
-                {/* Logo Preview */}
                 <div className="w-32 h-32 rounded-lg border-2 border-dashed border-[#D4A836]/30 flex items-center justify-center bg-[#1a1a24] overflow-hidden">
                   {branding.logo_url ? (
-                    <img 
-                      src={branding.logo_url} 
-                      alt="Logo" 
-                      className="w-full h-full object-contain"
-                    />
+                    <img src={branding.logo_url} alt="Logo" className="w-full h-full object-contain" />
                   ) : (
                     <Shield className="w-12 h-12 text-[#D4A836]/50" />
                   )}
                 </div>
-
-                {/* Upload Controls */}
                 <div className="flex-1 space-y-4">
                   <input
-                    ref={fileInputRef}
+                    ref={logoInputRef}
                     type="file"
                     accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp"
                     onChange={handleLogoUpload}
@@ -165,21 +208,15 @@ export default function Settings() {
                   />
                   <div className="flex gap-3">
                     <Button
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={uploading}
+                      onClick={() => logoInputRef.current?.click()}
+                      disabled={uploadingLogo}
                       className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
                       data-testid="upload-logo-btn"
                     >
-                      {uploading ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Uploading...
-                        </>
+                      {uploadingLogo ? (
+                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Uploading...</>
                       ) : (
-                        <>
-                          <Upload className="w-4 h-4 mr-2" />
-                          Upload Logo
-                        </>
+                        <><Upload className="w-4 h-4 mr-2" />Upload Logo</>
                       )}
                     </Button>
                     {branding.logo_url && (
@@ -189,14 +226,66 @@ export default function Settings() {
                         className="border-red-500/30 text-red-400 hover:bg-red-500/10"
                         data-testid="delete-logo-btn"
                       >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Remove
+                        <Trash2 className="w-4 h-4 mr-2" />Remove
                       </Button>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500">
-                    Recommended: Square image, at least 200x200 pixels
-                  </p>
+                  <p className="text-xs text-gray-500">Recommended: Square image, at least 200x200 pixels</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Favicon Upload */}
+          <Card className="bg-[#0f0f15] border-[#D4A836]/20">
+            <CardHeader>
+              <CardTitle className="text-[#E8DDB5]">Favicon</CardTitle>
+              <CardDescription>
+                Upload favicon for browser tab (PNG or ICO - Max 500KB)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-start gap-6">
+                <div className="w-16 h-16 rounded-lg border-2 border-dashed border-[#D4A836]/30 flex items-center justify-center bg-[#1a1a24] overflow-hidden">
+                  {branding.favicon_url ? (
+                    <img src={branding.favicon_url} alt="Favicon" className="w-full h-full object-contain" />
+                  ) : (
+                    <Globe className="w-6 h-6 text-[#D4A836]/50" />
+                  )}
+                </div>
+                <div className="flex-1 space-y-4">
+                  <input
+                    ref={faviconInputRef}
+                    type="file"
+                    accept="image/png,image/x-icon,image/ico"
+                    onChange={handleFaviconUpload}
+                    className="hidden"
+                  />
+                  <div className="flex gap-3">
+                    <Button
+                      onClick={() => faviconInputRef.current?.click()}
+                      disabled={uploadingFavicon}
+                      className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
+                      data-testid="upload-favicon-btn"
+                    >
+                      {uploadingFavicon ? (
+                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Uploading...</>
+                      ) : (
+                        <><Upload className="w-4 h-4 mr-2" />Upload Favicon</>
+                      )}
+                    </Button>
+                    {branding.favicon_url && (
+                      <Button
+                        variant="outline"
+                        onClick={handleFaviconDelete}
+                        className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                        data-testid="delete-favicon-btn"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />Remove
+                      </Button>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500">Recommended: 32x32 or 64x64 pixels</p>
                 </div>
               </div>
             </CardContent>
@@ -206,9 +295,7 @@ export default function Settings() {
           <Card className="bg-[#0f0f15] border-[#D4A836]/20">
             <CardHeader>
               <CardTitle className="text-[#E8DDB5]">Company Information</CardTitle>
-              <CardDescription>
-                Update your company name and tagline
-              </CardDescription>
+              <CardDescription>Update your company name and tagline</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -236,9 +323,7 @@ export default function Settings() {
           <Card className="bg-[#0f0f15] border-[#D4A836]/20">
             <CardHeader>
               <CardTitle className="text-[#E8DDB5]">Brand Colors</CardTitle>
-              <CardDescription>
-                Customize your color scheme
-              </CardDescription>
+              <CardDescription>Customize your color scheme</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-6">
@@ -289,10 +374,7 @@ export default function Settings() {
               data-testid="save-settings-btn"
             >
               {saving ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Saving...
-                </>
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</>
               ) : (
                 'Save Settings'
               )}
