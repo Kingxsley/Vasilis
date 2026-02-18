@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { useAuth } from '../App';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
@@ -8,7 +8,7 @@ import { Label } from '../components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { 
   FileText, Save, RotateCcw, Loader2, Eye, Plus, Trash2,
-  Layout, Type, BarChart3, Sparkles, CheckCircle
+  Layout, Type, BarChart3, Sparkles, CheckCircle, Image, Upload, Shield
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
@@ -18,6 +18,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 export default function PageEditor() {
   const { token } = useAuth();
   const [loading, setLoading] = useState(true);
+  const platformImageRef = useRef(null);
   const [saving, setSaving] = useState(false);
   const [content, setContent] = useState(null);
   const [activeTab, setActiveTab] = useState('hero');
