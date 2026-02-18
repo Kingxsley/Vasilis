@@ -1546,14 +1546,28 @@ api_router.include_router(pages_router)
 
 app.include_router(api_router)
 
-# CORS
+# CORS - Tighten origins for production
+cors_origins = os.environ.get('CORS_ORIGINS', '*')
+if cors_origins == '*':
+    # Allow all for development, but log warning
+    logger.warning("CORS is set to allow all origins (*). Tighten this in production!")
+    allow_origins = ["*"]
+else:
+    allow_origins = [origin.strip() for origin in cors_origins.split(',')]
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
-    allow_methods=["*"],
+    allow_origins=allow_origins,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
+
+# Add Security Headers Middleware
+app.add_middleware(SecurityHeadersMiddleware)
+
+# Add Rate Limiting Middleware
+app.add_middleware(RateLimitMiddleware)
 
 # Logging
 logging.basicConfig(
