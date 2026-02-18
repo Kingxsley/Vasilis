@@ -319,49 +319,97 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4" style={{ color: headingColor, fontFamily: 'Chivo, sans-serif' }}>
-              {featuresTitle}
-            </h2>
-            <p className="max-w-2xl mx-auto" style={{ color: textColor, opacity: 0.7 }}>
-              {featuresSubtitle}
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            {features.map((feature, index) => {
-              const IconComponent = iconMap[feature.icon] || Shield;
-              return (
-                <div key={index} className="group card-dark rounded-xl p-8 card-hover" data-testid={`feature-${index}`}>
-                  <div 
-                    className="w-14 h-14 rounded-xl flex items-center justify-center mb-6 transition-colors"
-                    style={{ backgroundColor: `${feature.color}15` }}
-                  >
-                    <IconComponent className="w-7 h-7" style={{ color: feature.color }} />
-                  </div>
-                  <h3 className="text-xl font-bold mb-3" style={{ color: headingColor, fontFamily: 'Chivo, sans-serif' }}>
-                    {feature.title}
-                  </h3>
-                  <p className="mb-6" style={{ color: textColor, opacity: 0.7 }}>
-                    {feature.description}
-                  </p>
-                  <ul className="space-y-2 text-sm" style={{ color: textColor, opacity: 0.6 }}>
-                    {feature.bullet_points?.map((bullet, bIndex) => (
-                      <li key={bIndex} className="flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: feature.color }} />
-                        {bullet}
-                      </li>
-                    ))}
-                  </ul>
+      {/* Dynamic Features Sections from Layout */}
+      {featureSections.length > 0 ? (
+        featureSections.map((section, sIdx) => {
+          const content = section.content || {};
+          const items = content.items || [];
+          return (
+            <section key={section.section_id} className="py-24" style={{ backgroundColor: content.background_color }}>
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="text-center mb-16">
+                  <h2 className="text-3xl sm:text-4xl font-bold mb-4" style={{ color: headingColor, fontFamily: 'Chivo, sans-serif' }}>
+                    {content.title || 'Features'}
+                  </h2>
+                  {content.subtitle && (
+                    <p className="max-w-2xl mx-auto" style={{ color: textColor, opacity: 0.7 }}>
+                      {content.subtitle}
+                    </p>
+                  )}
                 </div>
-              );
-            })}
+                
+                <div className="grid md:grid-cols-3 gap-8">
+                  {items.map((feature, index) => {
+                    const IconComponent = iconMap[feature.icon] || Shield;
+                    return (
+                      <div key={index} className="group card-dark rounded-xl p-8 card-hover" data-testid={`feature-${sIdx}-${index}`}>
+                        <div 
+                          className="w-14 h-14 rounded-xl flex items-center justify-center mb-6 transition-colors"
+                          style={{ backgroundColor: `${feature.color || primaryColor}15` }}
+                        >
+                          <IconComponent className="w-7 h-7" style={{ color: feature.color || primaryColor }} />
+                        </div>
+                        <h3 className="text-xl font-bold mb-3" style={{ color: headingColor, fontFamily: 'Chivo, sans-serif' }}>
+                          {feature.title}
+                        </h3>
+                        <p className="mb-6" style={{ color: textColor, opacity: 0.7 }}>
+                          {feature.description}
+                        </p>
+                        {feature.bullet_points && (
+                          <ul className="space-y-2 text-sm" style={{ color: textColor, opacity: 0.6 }}>
+                            {feature.bullet_points.map((bullet, bIndex) => (
+                              <li key={bIndex} className="flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: feature.color || primaryColor }} />
+                                {bullet}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </section>
+          );
+        })
+      ) : (
+        /* Default Features Section if no layout data */
+        <section className="py-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl sm:text-4xl font-bold mb-4" style={{ color: headingColor, fontFamily: 'Chivo, sans-serif' }}>
+                Comprehensive Security Training
+              </h2>
+              <p className="max-w-2xl mx-auto" style={{ color: textColor, opacity: 0.7 }}>
+                Three powerful modules designed to build real-world cybersecurity awareness
+              </p>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-8">
+              {defaultFeatures.map((feature, index) => {
+                const IconComponent = iconMap[feature.icon] || Shield;
+                return (
+                  <div key={index} className="group card-dark rounded-xl p-8 card-hover" data-testid={`feature-${index}`}>
+                    <div 
+                      className="w-14 h-14 rounded-xl flex items-center justify-center mb-6 transition-colors"
+                      style={{ backgroundColor: `${feature.color}15` }}
+                    >
+                      <IconComponent className="w-7 h-7" style={{ color: feature.color }} />
+                    </div>
+                    <h3 className="text-xl font-bold mb-3" style={{ color: headingColor, fontFamily: 'Chivo, sans-serif' }}>
+                      {feature.title}
+                    </h3>
+                    <p className="mb-6" style={{ color: textColor, opacity: 0.7 }}>
+                      {feature.description}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Platform Features */}
       <section className="py-24">
