@@ -1399,6 +1399,7 @@ from routes.user_import import router as import_router
 from routes.ads import router as ads_router
 from routes.scenarios import router as scenarios_router
 from routes.settings import router as settings_router
+from routes.content import router as content_router
 
 # Include all routers
 api_router.include_router(auth_router)
@@ -1414,6 +1415,7 @@ api_router.include_router(import_router)
 api_router.include_router(ads_router)
 api_router.include_router(scenarios_router)
 api_router.include_router(settings_router)
+api_router.include_router(content_router)
 
 app.include_router(api_router)
 
