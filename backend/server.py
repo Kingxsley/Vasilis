@@ -388,18 +388,73 @@ async def register(data: UserRegister):
     return TokenResponse(token=token, user=user_response)
 
 @auth_router.post("/login", response_model=TokenResponse)
-async def login(data: UserLogin):
+async def login(data: UserLogin, request: Request):
+    client_ip = get_client_ip(request)
+    
+    # Check if account is locked
+    is_locked, seconds_remaining = account_lockout.is_locked(data.email)
+    if is_locked:
+        await audit_logger.log(
+            action="login_blocked_lockout",
+            user_email=data.email,
+            ip_address=client_ip,
+            severity="warning"
+        )
+        raise HTTPException(
+            status_code=429, 
+            detail=f"Account temporarily locked. Try again in {seconds_remaining // 60} minutes."
+        )
+    
     user = await db.users.find_one({"email": data.email}, {"_id": 0})
     if not user:
+        # Record failed attempt
+        locked = account_lockout.record_failed_attempt(data.email, client_ip)
+        await audit_logger.log(
+            action="login_failed_user_not_found",
+            user_email=data.email,
+            ip_address=client_ip,
+            severity="warning"
+        )
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
     if not verify_password(data.password, user.get("password_hash", "")):
+        # Record failed attempt
+        locked = account_lockout.record_failed_attempt(data.email, client_ip)
+        await audit_logger.log(
+            action="login_failed_wrong_password",
+            user_email=data.email,
+            ip_address=client_ip,
+            severity="warning"
+        )
+        if locked:
+            raise HTTPException(
+                status_code=429, 
+                detail="Too many failed attempts. Account temporarily locked."
+            )
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
     if not user.get("is_active", True):
+        await audit_logger.log(
+            action="login_failed_inactive",
+            user_email=data.email,
+            ip_address=client_ip,
+            severity="warning"
+        )
         raise HTTPException(status_code=401, detail="Account is deactivated")
     
+    # Clear failed attempts on successful login
+    account_lockout.clear_attempts(data.email)
+    
     token = create_jwt_token(user["user_id"], user["email"], user["role"])
+    
+    # Log successful login
+    await audit_logger.log(
+        action="login_success",
+        user_id=user["user_id"],
+        user_email=user["email"],
+        ip_address=client_ip,
+        severity="info"
+    )
     
     created_at = user.get("created_at")
     if isinstance(created_at, str):
