@@ -331,6 +331,14 @@ const AppRouter = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/page-editor"
+          element={
+            <ProtectedRoute adminOnly>
+              <PageEditor />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </React.Suspense>
