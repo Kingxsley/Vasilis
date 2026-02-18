@@ -189,7 +189,7 @@ Build a scalable cybersecurity training application with:
 - **Media Manager**: media@netshield.com / MediaManager123!
 
 ## Deployment
-- Preview: https://campaign-manager-pro.preview.emergentagent.com
+- Preview: https://threat-simulator-5.preview.emergentagent.com
 - Production: vasilisnetshield.net (pending user verification)
 - Backend API: /api prefix required for all endpoints
 
