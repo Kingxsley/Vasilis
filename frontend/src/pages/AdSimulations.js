@@ -270,8 +270,22 @@ export default function AdSimulations() {
 
           {/* Campaigns Tab */}
           <TabsContent value="campaigns" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold text-[#E8DDB5]">Ad Campaigns</h2>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="flex items-center gap-3">
+                <h2 className="text-xl font-semibold text-[#E8DDB5]">All Campaigns</h2>
+                <Select value={campaignFilter} onValueChange={setCampaignFilter}>
+                  <SelectTrigger className="w-36 bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5]" data-testid="campaign-filter">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#161B22] border-[#30363D]">
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="scheduled">Scheduled</SelectItem>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <Button 
                 onClick={() => setShowNewCampaign(true)}
                 className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
@@ -286,24 +300,32 @@ export default function AdSimulations() {
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin text-[#D4A836]" />
               </div>
-            ) : campaigns.length === 0 ? (
+            ) : filteredCampaigns.length === 0 ? (
               <Card className="bg-[#161B22] border-[#30363D]">
                 <CardContent className="py-12 text-center">
                   <Monitor className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-[#E8DDB5] mb-2">No ad campaigns yet</h3>
-                  <p className="text-gray-400 mb-4">Create your first malicious ad simulation campaign</p>
-                  <Button 
-                    onClick={() => setShowNewCampaign(true)}
-                    className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Campaign
-                  </Button>
+                  <h3 className="text-lg font-medium text-[#E8DDB5] mb-2">
+                    {campaignFilter === 'all' ? 'No ad campaigns yet' : `No ${campaignFilter} campaigns`}
+                  </h3>
+                  <p className="text-gray-400 mb-4">
+                    {campaignFilter === 'all' 
+                      ? 'Create your first malicious ad simulation campaign'
+                      : 'Try selecting a different filter'}
+                  </p>
+                  {campaignFilter === 'all' && (
+                    <Button 
+                      onClick={() => setShowNewCampaign(true)}
+                      className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Campaign
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             ) : (
               <div className="grid gap-4">
-                {campaigns.map((campaign) => (
+                {filteredCampaigns.map((campaign) => (
                   <Card 
                     key={campaign.campaign_id} 
                     className="bg-[#161B22] border-[#30363D] hover:border-[#D4A836]/30 transition-colors"
@@ -314,7 +336,7 @@ export default function AdSimulations() {
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             <h3 className="text-lg font-semibold text-[#E8DDB5]">{campaign.name}</h3>
-                            <Badge className="bg-green-500/20 text-green-400">Active</Badge>
+                            {getStatusBadge(campaign.status || 'active')}
                           </div>
                           <div className="flex flex-wrap gap-4 text-sm text-gray-400">
                             <span className="flex items-center gap-1">
@@ -329,6 +351,12 @@ export default function AdSimulations() {
                               <MousePointer className="w-4 h-4" />
                               {campaign.ads_clicked} clicked
                             </span>
+                            {campaign.scheduled_at && (
+                              <span className="flex items-center gap-1 text-blue-400">
+                                <Calendar className="w-4 h-4" />
+                                {new Date(campaign.scheduled_at).toLocaleString()}
+                              </span>
+                            )}
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
