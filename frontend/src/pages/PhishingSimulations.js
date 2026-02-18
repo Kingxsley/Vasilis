@@ -472,8 +472,22 @@ export default function PhishingSimulations() {
 
           {/* Campaigns Tab */}
           <TabsContent value="campaigns" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold text-[#E8DDB5]">Phishing Campaigns</h2>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="flex items-center gap-3">
+                <h2 className="text-xl font-semibold text-[#E8DDB5]">All Campaigns</h2>
+                <Select value={campaignFilter} onValueChange={setCampaignFilter}>
+                  <SelectTrigger className="w-36 bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5]" data-testid="campaign-filter">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#161B22] border-[#30363D]">
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="scheduled">Scheduled</SelectItem>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="past">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <Button 
                 onClick={() => setShowNewCampaign(true)}
                 className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
