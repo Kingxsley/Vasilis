@@ -47,6 +47,7 @@ Build a scalable cybersecurity training application with:
 - Upload custom logo and favicon
 - Set company name and tagline
 - Customize text colors (body, headings, accent/links)
+- Toggle navigation menu items (Blog, Videos, News, About)
 - Applied across all pages (landing, auth, dashboard)
 
 ### Phishing Simulations
