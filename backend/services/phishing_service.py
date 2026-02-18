@@ -72,9 +72,47 @@ async def send_phishing_email(
         
         subject = template['subject'].replace('{{USER_NAME}}', target.get('user_name', 'User'))
         
-        # Check if we have SMTP configured (supports SendPulse, Gmail, etc.)
-        smtp_host = os.environ.get('SMTP_HOST')  # For SendPulse: smtp-pulse.com
-        smtp_port = int(os.environ.get('SMTP_PORT', 465))  # SendPulse uses 465 with SSL
+        # Check if we have SendGrid configured (preferred method)
+        sendgrid_api_key = os.environ.get('SENDGRID_API_KEY')
+        sender_email = os.environ.get('SENDER_EMAIL')
+        
+        if sendgrid_api_key and sender_email:
+            from sendgrid import SendGridAPIClient
+            from sendgrid.helpers.mail import Mail, Email, To, Content, ReplyTo
+            
+            # Create the email message
+            message = Mail(
+                from_email=Email(sender_email, template.get('sender_name', 'Security Team')),
+                to_emails=To(target['user_email']),
+                subject=subject,
+                html_content=Content("text/html", html_body)
+            )
+            
+            # Add reply-to if specified in template
+            if template.get('sender_email'):
+                message.reply_to = ReplyTo(template['sender_email'])
+            
+            # Add plain text version if available
+            if template.get('body_text'):
+                text_body = template['body_text']
+                text_body = text_body.replace('{{USER_NAME}}', target.get('user_name', 'User'))
+                text_body = text_body.replace('{{TRACKING_LINK}}', generate_tracking_link(base_url, target['tracking_code']))
+                message.add_content(Content("text/plain", text_body))
+            
+            # Send via SendGrid API
+            sg = SendGridAPIClient(sendgrid_api_key)
+            response = sg.send(message)
+            
+            if response.status_code in [200, 201, 202]:
+                logger.info(f"Phishing email sent to {target['user_email']} via SendGrid (status: {response.status_code})")
+                return True
+            else:
+                logger.error(f"SendGrid returned status {response.status_code} for {target['user_email']}")
+                return False
+        
+        # Fallback to SMTP if SendGrid not configured
+        smtp_host = os.environ.get('SMTP_HOST')
+        smtp_port = int(os.environ.get('SMTP_PORT', 465))
         smtp_user = os.environ.get('SMTP_USER')
         smtp_pass = os.environ.get('SMTP_PASSWORD')
         smtp_use_ssl = os.environ.get('SMTP_USE_SSL', 'true').lower() == 'true'
@@ -87,11 +125,10 @@ async def send_phishing_email(
             
             msg = MIMEMultipart('alternative')
             msg['Subject'] = subject
-            msg['From'] = f"{template['sender_name']} <{smtp_user}>"  # Use SMTP user as from address
+            msg['From'] = f"{template['sender_name']} <{smtp_user}>"
             msg['To'] = target['user_email']
             msg['Reply-To'] = template['sender_email']
             
-            # Add plain text version if available
             if template.get('body_text'):
                 text_body = template['body_text']
                 text_body = text_body.replace('{{USER_NAME}}', target.get('user_name', 'User'))
@@ -100,25 +137,23 @@ async def send_phishing_email(
             
             msg.attach(MIMEText(html_body, 'html'))
             
-            # SendPulse and similar services use SSL on port 465
             if smtp_use_ssl and smtp_port == 465:
                 context = ssl.create_default_context()
                 with smtplib.SMTP_SSL(smtp_host, smtp_port, context=context) as server:
                     server.login(smtp_user, smtp_pass)
                     server.sendmail(smtp_user, target['user_email'], msg.as_string())
             else:
-                # Standard STARTTLS on port 587
                 with smtplib.SMTP(smtp_host, smtp_port) as server:
                     server.starttls()
                     server.login(smtp_user, smtp_pass)
                     server.sendmail(smtp_user, target['user_email'], msg.as_string())
             
-            logger.info(f"Phishing email sent to {target['user_email']} via {smtp_host}")
+            logger.info(f"Phishing email sent to {target['user_email']} via SMTP")
             return True
         else:
             # Simulation mode - just mark as sent without actually sending
-            logger.warning(f"SMTP not configured - simulating email send to {target['user_email']}")
-            return True  # Return True to update status even in simulation mode
+            logger.warning(f"Email not configured - simulating email send to {target['user_email']}")
+            return True
             
     except Exception as e:
         logger.error(f"Failed to send phishing email to {target['user_email']}: {e}")
