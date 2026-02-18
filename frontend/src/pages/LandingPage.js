@@ -58,18 +58,18 @@ const Logo = ({ className = "h-10" }) => {
 };
 
 export default function LandingPage() {
-  const [content, setContent] = useState(null);
+  const [layout, setLayout] = useState(null);
   const [branding, setBranding] = useState(null);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     Promise.all([
-      axios.get(`${API}/pages/landing`),
-      axios.get(`${API}/settings/branding`)
+      axios.get(`${API}/landing-layouts/public`).catch(() => ({ data: null })),
+      axios.get(`${API}/settings/branding`).catch(() => ({ data: null }))
     ])
-      .then(([contentRes, brandingRes]) => {
-        setContent(contentRes.data);
+      .then(([layoutRes, brandingRes]) => {
+        setLayout(layoutRes.data);
         setBranding(brandingRes.data);
       })
       .catch(() => {})
@@ -81,52 +81,69 @@ export default function LandingPage() {
   const headingColor = branding?.heading_color || '#FFFFFF';
   const accentColor = branding?.accent_color || '#D4A836';
   const primaryColor = branding?.primary_color || '#D4A836';
+  const companyName = branding?.company_name || 'Vasilis NetShield';
 
-  // Default content while loading or if fetch fails
-  const hero = content?.hero || {
+  // Get sections from layout or use defaults
+  const sections = layout?.sections || [];
+  
+  // Helper to find a section by type
+  const findSection = (type) => sections.find(s => s.type === type && s.visible !== false);
+  
+  // Default content for fallback
+  const defaultHero = {
     badge_text: "Human + AI Powered Security Training",
-    title_line1: "Train Your Team to",
-    title_highlight: "Defend",
-    title_line2: "Against Cyber Threats",
-    subtitle: "Realistic phishing simulations, malicious ad detection, and social engineering scenarios. Build a security-aware workforce with expert-crafted and AI-enhanced training content.",
-    cta_primary_text: "Start Free Trial",
-    cta_primary_link: "/auth",
-    cta_secondary_text: "Watch Demo",
-    cta_secondary_link: ""
+    title: "Train Your Team to Defend Against Cyber Threats",
+    description: "Realistic phishing simulations, malicious ad detection, and social engineering scenarios. Build a security-aware workforce with expert-crafted and AI-enhanced training content.",
+    button_text: "Start Free Trial",
+    button_link: "/auth",
+    stats: [
+      { value: "95%", label: "Detection Rate" },
+      { value: "10k+", label: "Users Trained" },
+      { value: "500+", label: "Organizations" }
+    ]
   };
 
-  const stats = content?.stats || [
-    { value: "95%", label: "Detection Rate" },
-    { value: "10k+", label: "Users Trained" },
-    { value: "500+", label: "Organizations" }
-  ];
-
-  const featuresTitle = content?.features_title || "Comprehensive Security Training";
-  const featuresSubtitle = content?.features_subtitle || "Three powerful modules designed to build real-world cybersecurity awareness";
-
-  const features = content?.features || [
+  const defaultFeatures = [
     {
       title: "Phishing Email Detection",
       description: "Learn to identify suspicious emails, fraudulent sender addresses, and malicious links through realistic simulations.",
-      bullet_points: ["Spoofed domain recognition", "Urgency tactic awareness", "Link verification skills"],
       icon: "Mail",
       color: "#D4A836"
     },
     {
       title: "Malicious Ad Recognition",
       description: "Spot fake advertisements, clickbait, and potentially harmful ad content before they compromise your system.",
-      bullet_points: ["Clickbait identification", "Fake download detection", "Ad network awareness"],
       icon: "MousePointerClick",
       color: "#FFB300"
     },
     {
       title: "Social Engineering Defense",
       description: "Recognize manipulation tactics including pretexting, baiting, and impersonation attempts.",
-      bullet_points: ["Pretexting scenarios", "Authority exploitation", "Emotional manipulation"],
       icon: "Users",
       color: "#FF3B30"
     }
   ];
+
+  // Get hero section content
+  const heroSection = findSection('hero');
+  const hero = heroSection?.content || defaultHero;
+  const stats = hero.stats || defaultHero.stats;
+
+  // Get feature sections
+  const featureSections = sections.filter(s => s.type === 'features' && s.visible !== false);
+  
+  // Get CTA section
+  const ctaSection = findSection('cta');
+  const cta = ctaSection?.content || {
+    title: "Ready to Strengthen Your Security?",
+    description: "Join hundreds of organizations already using our platform to build a security-conscious workforce.",
+    button_text: "Start Training Today",
+    button_link: "/auth"
+  };
+
+  // Get FAQ section
+  const faqSection = findSection('faq');
+  const faqContent = faqSection?.content || null;
 
   // Navigation visibility from branding settings
   const showBlog = branding?.show_blog !== false;
