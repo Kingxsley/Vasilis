@@ -44,7 +44,7 @@ JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = 168  # 7 days
 
 # Create the main app
-app = FastAPI(title="VasilisNetShield API")
+app = FastAPI(title="Vasilis NetShield API")
 
 # Create routers
 api_router = APIRouter(prefix="/api")
@@ -1379,7 +1379,7 @@ async def get_training_analytics(
 
 @api_router.get("/")
 async def root():
-    return {"message": "VasilisNetShield API", "version": "1.0.0"}
+    return {"message": "Vasilis NetShield API", "version": "1.0.0"}
 
 @api_router.get("/health")
 async def health_check():
@@ -1390,7 +1390,7 @@ async def health_check():
         return {
             "status": "healthy",
             "database": "connected",
-            "message": "VasilisNetShield API is running"
+            "message": "Vasilis NetShield API is running"
         }
     except Exception as e:
         logger.error(f"Health check failed: {e}")

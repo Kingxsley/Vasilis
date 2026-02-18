@@ -33,7 +33,7 @@ async def require_admin(request: Request) -> dict:
 # ============== MODELS ==============
 
 class BrandingSettings(BaseModel):
-    company_name: Optional[str] = "VasilisNetShield"
+    company_name: Optional[str] = "Vasilis NetShield"
     tagline: Optional[str] = "Human + AI Powered Security Training"
     logo_url: Optional[str] = None  # Base64 data URL or external URL
     favicon_url: Optional[str] = None
@@ -60,7 +60,7 @@ async def get_branding():
     if not settings:
         # Return defaults
         return {
-            "company_name": "VasilisNetShield",
+            "company_name": "Vasilis NetShield",
             "tagline": "Human + AI Powered Security Training",
             "logo_url": None,
             "favicon_url": None,
@@ -69,7 +69,7 @@ async def get_branding():
         }
     
     return {
-        "company_name": settings.get("company_name", "VasilisNetShield"),
+        "company_name": settings.get("company_name", "Vasilis NetShield"),
         "tagline": settings.get("tagline", "Human + AI Powered Security Training"),
         "logo_url": settings.get("logo_url"),
         "favicon_url": settings.get("favicon_url"),

@@ -343,7 +343,7 @@ async def get_about():
     if not about:
         return {
             "title": "About Us",
-            "content": "Welcome to VasilisNetShield - your trusted partner in cybersecurity training.",
+            "content": "Welcome to Vasilis NetShield - your trusted partner in cybersecurity training.",
             "mission": "To empower organizations with the knowledge and skills to defend against cyber threats.",
             "vision": "A world where every employee is a cybersecurity asset.",
             "team_members": []

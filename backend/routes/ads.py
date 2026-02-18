@@ -608,7 +608,7 @@ async def track_ad_click(tracking_code: str, request: Request):
                 <li><strong>Poor grammar:</strong> Typos and odd phrasing</li>
             </ul>
             <p style="margin-top: 30px; color: #666;">
-                Powered by VasilisNetShield Security Training
+                Powered by Vasilis NetShield Security Training
             </p>
         </div>
     </body>

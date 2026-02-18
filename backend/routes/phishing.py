@@ -632,7 +632,7 @@ async def track_link_click(tracking_code: str, request: Request):
                 <li>Compromised sensitive company data</li>
             </ul>
             <p><strong>Remember:</strong> Always verify links before clicking, especially in unexpected emails.</p>
-            <p style="margin-top: 30px; color: #666;">Powered by VasilisNetShield Security Training</p>
+            <p style="margin-top: 30px; color: #666;">Powered by Vasilis NetShield Security Training</p>
         </div>
     </body>
     </html>

@@ -179,7 +179,7 @@ def generate_training_certificate(
     
     # Right signature (Organization Admin or NetShield)
     c.line(3*page_width/4 - sig_width/2, sig_y, 3*page_width/4 + sig_width/2, sig_y)
-    admin_title = f"{organization_name} Administrator" if organization_name else "VasilisNetShield"
+    admin_title = f"{organization_name} Administrator" if organization_name else "Vasilis NetShield"
     c.drawCentredString(3*page_width/4, sig_y - 15, admin_title)
     
     # Footer
@@ -187,7 +187,7 @@ def generate_training_certificate(
     c.setFillColor(colors.HexColor('#999999'))
     
     footer_y = 55
-    c.drawCentredString(page_width / 2, footer_y, "Powered by VasilisNetShield - Human + AI Powered Security Training")
+    c.drawCentredString(page_width / 2, footer_y, "Powered by Vasilis NetShield - Human + AI Powered Security Training")
     
     if certificate_id:
         c.drawCentredString(page_width / 2, footer_y - 12, f"Certificate ID: {certificate_id}")

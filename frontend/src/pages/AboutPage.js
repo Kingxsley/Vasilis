@@ -41,7 +41,7 @@ export default function AboutPage() {
               <Shield className="w-8 h-8 text-[#D4A836]" />
             )}
             <span className="text-xl font-bold text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
-              {branding?.company_name || 'VasilisNetShield'}
+              {branding?.company_name || 'Vasilis NetShield'}
             </span>
           </Link>
           <nav className="flex items-center gap-6">
@@ -141,7 +141,7 @@ export default function AboutPage() {
       {/* Footer */}
       <footer className="border-t border-[#D4A836]/10 mt-16 py-8">
         <div className="container mx-auto px-6 text-center text-gray-500">
-          © {new Date().getFullYear()} {branding?.company_name || 'VasilisNetShield'}. All rights reserved.
+          © {new Date().getFullYear()} {branding?.company_name || 'Vasilis NetShield'}. All rights reserved.
         </div>
       </footer>
     </div>

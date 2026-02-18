@@ -105,7 +105,7 @@ DEFAULT_LANDING_CONTENT = {
             "color": "#FF3B30"
         }
     ],
-    "footer_text": "© 2024 VasilisNetShield. All rights reserved."
+    "footer_text": "© 2024 Vasilis NetShield. All rights reserved."
 }
 
 

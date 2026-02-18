@@ -16,7 +16,7 @@ const Logo = ({ branding }) => (
       <Shield className="w-8 h-8 text-[#D4A836]" />
     )}
     <span className="text-xl font-bold text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
-      {branding?.company_name || 'VasilisNetShield'}
+      {branding?.company_name || 'Vasilis NetShield'}
     </span>
   </Link>
 );

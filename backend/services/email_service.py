@@ -27,11 +27,11 @@ async def send_welcome_email(user_email: str, user_name: str, password: str, log
             <div style="text-align: center; margin-bottom: 20px;">
                 <span style="font-size: 50px;">🛡️</span>
             </div>
-            <h1 style="color: #D4A836; margin-bottom: 10px; text-align: center;">Welcome to VasilisNetShield!</h1>
+            <h1 style="color: #D4A836; margin-bottom: 10px; text-align: center;">Welcome to Vasilis NetShield!</h1>
             <p style="color: #888; text-align: center; margin-bottom: 30px;">Your account has been created</p>
             
             <p style="color: #E8DDB5; line-height: 1.6;">Hello <strong>{user_name}</strong>,</p>
-            <p style="color: #E8DDB5; line-height: 1.6;">An administrator has created an account for you on the VasilisNetShield cybersecurity training platform.</p>
+            <p style="color: #E8DDB5; line-height: 1.6;">An administrator has created an account for you on the Vasilis NetShield cybersecurity training platform.</p>
             
             <div style="background: #0f0f15; border-radius: 8px; padding: 20px; margin: 25px 0; border-left: 4px solid #D4A836;">
                 <p style="color: #D4A836; margin: 0 0 15px 0; font-weight: bold; font-size: 16px;">Your Login Credentials:</p>
@@ -58,7 +58,7 @@ async def send_welcome_email(user_email: str, user_name: str, password: str, log
             </div>
             
             <p style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #333; color: #666; font-size: 12px; text-align: center;">
-                This email was sent by VasilisNetShield Security Training Platform.<br>
+                This email was sent by Vasilis NetShield Security Training Platform.<br>
                 If you did not expect this email, please contact your administrator.
             </p>
         </div>
@@ -67,11 +67,11 @@ async def send_welcome_email(user_email: str, user_name: str, password: str, log
     """
     
     plain_text = f"""
-Welcome to VasilisNetShield!
+Welcome to Vasilis NetShield!
 
 Hello {user_name},
 
-An administrator has created an account for you on the VasilisNetShield cybersecurity training platform.
+An administrator has created an account for you on the Vasilis NetShield cybersecurity training platform.
 
 Your Login Credentials:
 - Email: {user_email}
@@ -82,13 +82,13 @@ Login here: {login_url}
 SECURITY REMINDER: Please change your password after your first login.
 
 ---
-VasilisNetShield Security Training Platform
+Vasilis NetShield Security Training Platform
     """
     
     message = Mail(
-        from_email=Email(sender_email, "VasilisNetShield"),
+        from_email=Email(sender_email, "Vasilis NetShield"),
         to_emails=To(user_email),
-        subject="Welcome to VasilisNetShield - Your Login Credentials",
+        subject="Welcome to Vasilis NetShield - Your Login Credentials",
         plain_text_content=Content("text/plain", plain_text),
         html_content=Content("text/html", html_content)
     )
@@ -147,7 +147,7 @@ async def send_password_reset_email(user_email: str, user_name: str, new_passwor
             </p>
             
             <p style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #333; color: #666; font-size: 12px; text-align: center;">
-                VasilisNetShield Security Training Platform
+                Vasilis NetShield Security Training Platform
             </p>
         </div>
     </body>
@@ -155,9 +155,9 @@ async def send_password_reset_email(user_email: str, user_name: str, new_passwor
     """
     
     message = Mail(
-        from_email=Email(sender_email, "VasilisNetShield"),
+        from_email=Email(sender_email, "Vasilis NetShield"),
         to_emails=To(user_email),
-        subject="VasilisNetShield - Your Password Has Been Reset",
+        subject="Vasilis NetShield - Your Password Has Been Reset",
         html_content=Content("text/html", html_content)
     )
     

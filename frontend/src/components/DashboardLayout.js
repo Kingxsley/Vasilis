@@ -35,7 +35,7 @@ const Logo = ({ className = "h-8" }) => {
         <Shield className="w-7 h-7 text-[#D4A836]" />
       )}
       <span className="text-lg font-bold text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
-        {branding?.company_name || 'VasilisNetShield'}
+        {branding?.company_name || 'Vasilis NetShield'}
       </span>
     </div>
   );

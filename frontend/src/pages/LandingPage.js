@@ -37,7 +37,7 @@ const Logo = ({ className = "h-10" }) => {
         <Shield className="w-8 h-8 text-[#D4A836]" />
       )}
       <span className="text-xl font-bold text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
-        {branding?.company_name || 'VasilisNetShield'}
+        {branding?.company_name || 'Vasilis NetShield'}
       </span>
     </div>
   );
@@ -342,7 +342,7 @@ export default function LandingPage() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <Logo />
             <p className="text-sm text-gray-500">
-              {content?.footer_text || "© 2024 VasilisNetShield. Enterprise Cybersecurity Training."}
+              {content?.footer_text || "© 2024 Vasilis NetShield. Enterprise Cybersecurity Training."}
             </p>
           </div>
         </div>

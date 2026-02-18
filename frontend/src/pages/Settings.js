@@ -14,7 +14,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 export default function Settings() {
   const { token } = useAuth();
   const [branding, setBranding] = useState({
-    company_name: 'VasilisNetShield',
+    company_name: 'Vasilis NetShield',
     tagline: 'Human + AI Powered Security Training',
     logo_url: null,
     favicon_url: null,

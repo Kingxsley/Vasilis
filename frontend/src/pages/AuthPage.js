@@ -116,7 +116,7 @@ export default function AuthPage() {
               <Shield className="w-10 h-10 text-[#D4A836]" />
             )}
             <span className="text-2xl font-bold text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
-              {branding?.company_name || 'VasilisNetShield'}
+              {branding?.company_name || 'Vasilis NetShield'}
             </span>
           </div>
 
