@@ -36,15 +36,15 @@ const Logo = ({ className = "h-10" }) => {
   // Don't render anything until branding is loaded to prevent flickering
   if (!loaded) {
     return (
-      <div className={`flex items-center gap-2 ${className}`}>
+      <Link to="/" className={`flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity ${className}`}>
         <div className="w-8 h-8 bg-[#D4A836]/20 rounded animate-pulse" />
         <div className="w-32 h-6 bg-[#D4A836]/20 rounded animate-pulse" />
-      </div>
+      </Link>
     );
   }
 
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
+    <Link to="/" className={`flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity ${className}`} data-testid="logo-home-link">
       {branding?.logo_url ? (
         <img src={branding.logo_url} alt="Logo" className="w-8 h-8 object-contain" />
       ) : (
@@ -53,7 +53,7 @@ const Logo = ({ className = "h-10" }) => {
       <span className="text-xl font-bold text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
         {branding?.company_name || 'Vasilis NetShield'}
       </span>
-    </div>
+    </Link>
   );
 };
 
