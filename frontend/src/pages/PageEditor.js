@@ -264,6 +264,13 @@ export default function PageEditor() {
               <Sparkles className="w-4 h-4 mr-2" />
               Features
             </TabsTrigger>
+            <TabsTrigger 
+              value="platform"
+              className="data-[state=active]:bg-[#D4A836]/20 data-[state=active]:text-[#D4A836]"
+            >
+              <Image className="w-4 h-4 mr-2" />
+              Platform
+            </TabsTrigger>
           </TabsList>
 
           {/* Hero Section Tab */}
