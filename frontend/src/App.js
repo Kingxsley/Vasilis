@@ -205,6 +205,11 @@ const AppRouter = () => {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/auth" element={<AuthPage />} />
+        {/* Public content pages */}
+        <Route path="/blog" element={<BlogListPage />} />
+        <Route path="/blog/:slug" element={<BlogPostPage />} />
+        <Route path="/videos" element={<VideosPage />} />
+        <Route path="/about" element={<AboutPage />} />
         <Route
           path="/dashboard"
           element={
