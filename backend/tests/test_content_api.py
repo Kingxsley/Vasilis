@@ -7,7 +7,7 @@ import requests
 import os
 import uuid
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://netshield-cms.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://campaign-manager-pro.preview.emergentagent.com').rstrip('/')
 
 # Test credentials
 SUPER_ADMIN_CREDS = {"email": "testadmin@netshield.com", "password": "AdminTest123!"}
