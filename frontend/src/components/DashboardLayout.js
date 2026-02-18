@@ -68,7 +68,16 @@ export const DashboardLayout = ({ children }) => {
     navigate('/');
   };
 
-  const filteredNavItems = navItems.filter(item => !item.adminOnly || isAdmin);
+  // Filter nav items based on user role
+  const filteredNavItems = navItems.filter(item => {
+    if (item.contentManager) {
+      return canManageContent; // Show to super_admin, org_admin, and media_manager
+    }
+    if (item.adminOnly) {
+      return isAdmin; // Only show to super_admin and org_admin
+    }
+    return true; // Show to everyone
+  });
 
   return (
     <div className="min-h-screen">
