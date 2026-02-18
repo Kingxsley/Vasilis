@@ -59,6 +59,8 @@ export default function ScenarioManager() {
   const [editingScenario, setEditingScenario] = useState(null);
   const [saving, setSaving] = useState(false);
   const [filterType, setFilterType] = useState('all');
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -84,6 +86,74 @@ export default function ScenarioManager() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleImport = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.csv')) {
+      toast.error('Please upload a CSV file');
+      return;
+    }
+
+    setImporting(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post(`${API}/scenarios/import`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      toast.success(response.data.message);
+      if (response.data.errors?.length > 0) {
+        response.data.errors.forEach(err => toast.error(err));
+      }
+      fetchScenarios();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Import failed');
+    } finally {
+      setImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      const response = await axios.get(`${API}/scenarios/export`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Download as JSON
+      const blob = new Blob([JSON.stringify(response.data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `scenarios_export_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('Scenarios exported');
+    } catch (error) {
+      toast.error('Export failed');
+    }
+  };
+
+  const downloadTemplate = () => {
+    const template = `title,scenario_type,difficulty,correct_answer,explanation,content_json
+"Fake Bank Alert",phishing_email,medium,unsafe,"This is a phishing email because the sender domain is suspicious and it creates urgency.","{\\"from_email\\":\\"security@bank-alert.xyz\\",\\"subject\\":\\"URGENT: Verify your account\\",\\"body\\":\\"Your account has been compromised. Click here to verify.\\",\\"links\\":[\\"http://fake-bank.com/verify\\"]}"
+"Free iPhone Scam",malicious_ads,easy,unsafe,"This ad is malicious because it promises unrealistic prizes and uses urgency tactics.","{\\"headline\\":\\"You Won a Free iPhone!\\",\\"description\\":\\"Click now to claim your prize!\\",\\"call_to_action\\":\\"CLAIM NOW\\",\\"destination_url\\":\\"http://free-prizes.xyz\\"}"`;
+    
+    const blob = new Blob([template], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'scenario_import_template.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Template downloaded');
   };
 
   const handleSubmit = async (e) => {
