@@ -1029,7 +1029,16 @@ export default function PhishingSimulations() {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => window.open(`${API}/export/phishing/${selectedCampaign?.campaign_id}/excel`, '_blank')}
+                    onClick={async () => {
+                      try {
+                        const res = await axios.post(`${API}/export/token/phishing/${selectedCampaign?.campaign_id}/excel`, {}, {
+                          headers: { Authorization: `Bearer ${token}` }
+                        });
+                        window.open(`${API}${res.data.download_url}`, '_blank');
+                      } catch (err) {
+                        toast.error('Failed to generate download link');
+                      }
+                    }}
                     className="border-green-500/30 text-green-400 hover:bg-green-500/10"
                     data-testid="export-excel-btn"
                   >
@@ -1039,7 +1048,16 @@ export default function PhishingSimulations() {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => window.open(`${API}/export/phishing/${selectedCampaign?.campaign_id}/pdf`, '_blank')}
+                    onClick={async () => {
+                      try {
+                        const res = await axios.post(`${API}/export/token/phishing/${selectedCampaign?.campaign_id}/pdf`, {}, {
+                          headers: { Authorization: `Bearer ${token}` }
+                        });
+                        window.open(`${API}${res.data.download_url}`, '_blank');
+                      } catch (err) {
+                        toast.error('Failed to generate download link');
+                      }
+                    }}
                     className="border-red-500/30 text-red-400 hover:bg-red-500/10"
                     data-testid="export-pdf-btn"
                   >
