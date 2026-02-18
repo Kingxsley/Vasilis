@@ -130,21 +130,21 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-[#D4A836]/20">
+      <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-[#D4A836]/20" style={{ borderColor: `${primaryColor}33` }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Logo />
             <div className="flex items-center gap-6">
-              <Link to="/blog" className="text-gray-400 hover:text-[#E8DDB5] hidden md:block">Blog</Link>
-              <Link to="/videos" className="text-gray-400 hover:text-[#E8DDB5] hidden md:block">Videos</Link>
-              <Link to="/about" className="text-gray-400 hover:text-[#E8DDB5] hidden md:block">About</Link>
+              <Link to="/blog" className="text-gray-400 hover:text-[#E8DDB5]" style={{ '--hover-color': textColor }}>Blog</Link>
+              <Link to="/videos" className="text-gray-400 hover:text-[#E8DDB5] hidden md:block" style={{ '--hover-color': textColor }}>Videos</Link>
+              <Link to="/about" className="text-gray-400 hover:text-[#E8DDB5] hidden md:block" style={{ '--hover-color': textColor }}>About</Link>
               <Link to="/auth">
-                <Button variant="ghost" className="text-[#E8DDB5] hover:text-white hover:bg-white/10" data-testid="login-btn">
+                <Button variant="ghost" className="hover:text-white hover:bg-white/10" style={{ color: textColor }} data-testid="login-btn">
                   Login
                 </Button>
               </Link>
               <Link to="/auth">
-                <Button className="bg-[#D4A836] hover:bg-[#C49A30] text-black font-semibold" data-testid="get-started-btn">
+                <Button className="text-black font-semibold" style={{ backgroundColor: primaryColor }} data-testid="get-started-btn">
                   Get Started
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
@@ -159,42 +159,42 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="animate-slide-up">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4A836]/10 border border-[#D4A836]/30 mb-6">
-                <Zap className="w-4 h-4 text-[#D4A836]" />
-                <span className="text-sm text-[#D4A836]">{hero.badge_text}</span>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border mb-6" style={{ backgroundColor: `${primaryColor}15`, borderColor: `${primaryColor}50` }}>
+                <Zap className="w-4 h-4" style={{ color: accentColor }} />
+                <span className="text-sm" style={{ color: accentColor }}>{hero.badge_text}</span>
               </div>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight mb-6 text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight mb-6" style={{ color: headingColor, fontFamily: 'Chivo, sans-serif' }}>
                 {hero.title_line1}
-                <span className="text-[#D4A836]"> {hero.title_highlight} </span>
+                <span style={{ color: accentColor }}> {hero.title_highlight} </span>
                 {hero.title_line2}
               </h1>
-              <p className="text-lg text-gray-400 mb-8 max-w-xl">
+              <p className="text-lg mb-8 max-w-xl" style={{ color: textColor, opacity: 0.8 }}>
                 {hero.subtitle}
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link to={hero.cta_primary_link || "/auth"}>
-                  <Button size="lg" className="bg-[#D4A836] hover:bg-[#C49A30] text-black font-semibold px-8" data-testid="hero-cta-btn">
+                  <Button size="lg" className="text-black font-semibold px-8" style={{ backgroundColor: primaryColor }} data-testid="hero-cta-btn">
                     {hero.cta_primary_text}
                     <ChevronRight className="w-5 h-5 ml-2" />
                   </Button>
                 </Link>
                 {hero.cta_secondary_link ? (
                   <a href={hero.cta_secondary_link} target="_blank" rel="noopener noreferrer">
-                    <Button size="lg" variant="outline" className="border-[#D4A836]/30 text-[#E8DDB5] hover:bg-white/5">
+                    <Button size="lg" variant="outline" className="hover:bg-white/5" style={{ borderColor: `${primaryColor}50`, color: textColor }}>
                       {hero.cta_secondary_text}
                     </Button>
                   </a>
                 ) : hero.cta_secondary_text ? (
-                  <Button size="lg" variant="outline" className="border-[#D4A836]/30 text-[#E8DDB5] hover:bg-white/5">
+                  <Button size="lg" variant="outline" className="hover:bg-white/5" style={{ borderColor: `${primaryColor}50`, color: textColor }}>
                     {hero.cta_secondary_text}
                   </Button>
                 ) : null}
               </div>
               
-              <div className="flex items-center gap-8 mt-12 pt-8 border-t border-[#D4A836]/20">
+              <div className="flex items-center gap-8 mt-12 pt-8 border-t" style={{ borderColor: `${primaryColor}33` }}>
                 {stats.map((stat, index) => (
                   <div key={index}>
-                    <p className="text-3xl font-bold text-[#E8DDB5]">{stat.value}</p>
+                    <p className="text-3xl font-bold" style={{ color: headingColor }}>{stat.value}</p>
                     <p className="text-sm text-gray-500">{stat.label}</p>
                   </div>
                 ))}
