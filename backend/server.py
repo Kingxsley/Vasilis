@@ -1737,3 +1737,143 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+
+
+# ============== CRON ENDPOINTS ==============
+# These endpoints are designed to be called by Vercel Cron Jobs or similar schedulers
+
+@api_router.get("/cron/check-scheduled-campaigns")
+async def cron_check_scheduled_campaigns():
+    """
+    Cron endpoint to check and launch scheduled phishing/ad campaigns.
+    Call this endpoint every 5-15 minutes via a cron job.
+    
+    Vercel Cron example (vercel.json):
+    {
+      "crons": [{
+        "path": "/api/cron/check-scheduled-campaigns",
+        "schedule": "*/15 * * * *"
+      }]
+    }
+    """
+    from datetime import datetime, timezone
+    
+    now = datetime.now(timezone.utc)
+    launched_campaigns = []
+    
+    # Check phishing campaigns
+    phishing_campaigns = await db.phishing_campaigns.find({
+        "status": "scheduled",
+        "scheduled_at": {"$lte": now.isoformat()}
+    }).to_list(100)
+    
+    for campaign in phishing_campaigns:
+        await db.phishing_campaigns.update_one(
+            {"campaign_id": campaign["campaign_id"]},
+            {"$set": {"status": "active", "started_at": now.isoformat()}}
+        )
+        launched_campaigns.append({"type": "phishing", "id": campaign["campaign_id"], "name": campaign.get("name")})
+    
+    # Check ad campaigns
+    ad_campaigns = await db.ad_campaigns.find({
+        "status": "scheduled",
+        "scheduled_at": {"$lte": now.isoformat()}
+    }).to_list(100)
+    
+    for campaign in ad_campaigns:
+        await db.ad_campaigns.update_one(
+            {"campaign_id": campaign["campaign_id"]},
+            {"$set": {"status": "active", "started_at": now.isoformat()}}
+        )
+        launched_campaigns.append({"type": "ad", "id": campaign["campaign_id"], "name": campaign.get("name")})
+    
+    return {
+        "message": f"Checked scheduled campaigns at {now.isoformat()}",
+        "launched": len(launched_campaigns),
+        "campaigns": launched_campaigns
+    }
+
+
+@api_router.get("/cron/check-password-expiry")
+async def cron_check_password_expiry():
+    """
+    Cron endpoint to check for expiring passwords and send reminder emails.
+    Call this endpoint daily via a cron job.
+    
+    Vercel Cron example (vercel.json):
+    {
+      "crons": [{
+        "path": "/api/cron/check-password-expiry",
+        "schedule": "0 9 * * *"
+      }]
+    }
+    """
+    from datetime import datetime, timezone, timedelta
+    from services.email_service import send_password_expiry_reminder
+    
+    # Get password policy
+    policy = await db.settings.find_one({"type": "password_policy"}, {"_id": 0})
+    expiry_days = policy.get("password_expiry_days", 0) if policy else 0
+    reminder_days = policy.get("expiry_reminder_days", 7) if policy else 7
+    
+    if expiry_days == 0:
+        return {"message": "Password expiry is disabled", "reminders_sent": 0}
+    
+    now = datetime.now(timezone.utc)
+    reminder_threshold = now + timedelta(days=reminder_days)
+    
+    # Find users whose passwords are about to expire
+    users_to_notify = []
+    
+    # Get all users and check their password_changed_at
+    users = await db.users.find(
+        {"is_active": True},
+        {"_id": 0, "user_id": 1, "email": 1, "name": 1, "password_changed_at": 1, "created_at": 1}
+    ).to_list(1000)
+    
+    for user in users:
+        # Use password_changed_at or created_at as the base date
+        base_date_str = user.get("password_changed_at") or user.get("created_at")
+        if not base_date_str:
+            continue
+        
+        try:
+            base_date = datetime.fromisoformat(base_date_str.replace('Z', '+00:00'))
+            if base_date.tzinfo is None:
+                base_date = base_date.replace(tzinfo=timezone.utc)
+            
+            expiry_date = base_date + timedelta(days=expiry_days)
+            days_until_expiry = (expiry_date - now).days
+            
+            # Send reminder if within reminder window and not already expired
+            if 0 < days_until_expiry <= reminder_days:
+                users_to_notify.append({
+                    "user": user,
+                    "days_remaining": days_until_expiry
+                })
+        except Exception as e:
+            logger.error(f"Error processing user {user.get('email')}: {e}")
+            continue
+    
+    # Send reminder emails
+    reminders_sent = 0
+    for item in users_to_notify:
+        try:
+            sent = await send_password_expiry_reminder(
+                user_email=item["user"]["email"],
+                user_name=item["user"]["name"],
+                days_remaining=item["days_remaining"],
+                db=db
+            )
+            if sent:
+                reminders_sent += 1
+        except Exception as e:
+            logger.error(f"Failed to send expiry reminder to {item['user']['email']}: {e}")
+    
+    return {
+        "message": f"Password expiry check completed at {now.isoformat()}",
+        "policy": {"expiry_days": expiry_days, "reminder_days": reminder_days},
+        "users_checked": len(users),
+        "reminders_sent": reminders_sent
+    }
+
