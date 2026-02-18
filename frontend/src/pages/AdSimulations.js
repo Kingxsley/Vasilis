@@ -157,6 +157,34 @@ export default function AdSimulations() {
     );
   };
 
+  // Copy tracking URL to clipboard - masked URL format
+  const copyTrackingUrl = async (campaignId) => {
+    // Build the masked tracking URL using the website's domain
+    const baseUrl = window.location.origin;
+    // Use the masked URL format: /track/{campaign_id}
+    const trackingUrl = `${baseUrl}/track/${campaignId}`;
+    
+    try {
+      await navigator.clipboard.writeText(trackingUrl);
+      setCopiedUrl(campaignId);
+      toast.success('Tracking URL copied to clipboard');
+      
+      // Reset copied state after 2 seconds
+      setTimeout(() => setCopiedUrl(null), 2000);
+    } catch (err) {
+      // Fallback for browsers that don't support clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = trackingUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopiedUrl(campaignId);
+      toast.success('Tracking URL copied to clipboard');
+      setTimeout(() => setCopiedUrl(null), 2000);
+    }
+  };
+
   const createTemplate = async () => {
     if (!newTemplate.name || !newTemplate.headline || !newTemplate.description || !newTemplate.call_to_action) {
       toast.error('Please fill in all required fields');
