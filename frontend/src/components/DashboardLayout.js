@@ -50,6 +50,7 @@ const navItems = [
   { path: '/phishing', label: 'Phishing Sim', icon: Mail, adminOnly: true },
   { path: '/ads', label: 'Ad Simulation', icon: Monitor, adminOnly: true },
   { path: '/scenarios', label: 'Scenarios', icon: FileText, adminOnly: true },
+  { path: '/content', label: 'Content', icon: FileText, contentManager: true },
   { path: '/training', label: 'Training', icon: BookOpen, adminOnly: false },
   { path: '/certificates', label: 'Certificates', icon: Award, adminOnly: false },
   { path: '/analytics', label: 'Analytics', icon: BarChart3, adminOnly: true },
@@ -57,7 +58,7 @@ const navItems = [
 ];
 
 export const DashboardLayout = ({ children }) => {
-  const { user, logout, isAdmin } = useAuth();
+  const { user, logout, isAdmin, canManageContent } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
