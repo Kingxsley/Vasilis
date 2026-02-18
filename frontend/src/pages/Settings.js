@@ -328,8 +328,11 @@ export default function Settings() {
           {/* Colors */}
           <Card className="bg-[#0f0f15] border-[#D4A836]/20">
             <CardHeader>
-              <CardTitle className="text-[#E8DDB5]">Brand Colors</CardTitle>
-              <CardDescription>Customize your color scheme</CardDescription>
+              <CardTitle className="text-[#E8DDB5] flex items-center gap-2">
+                <Palette className="w-5 h-5" />
+                Brand Colors
+              </CardTitle>
+              <CardDescription>Customize your color scheme for the website</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-6">
@@ -367,6 +370,80 @@ export default function Settings() {
                     />
                   </div>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Text Colors */}
+          <Card className="bg-[#0f0f15] border-[#D4A836]/20">
+            <CardHeader>
+              <CardTitle className="text-[#E8DDB5]">Text Colors</CardTitle>
+              <CardDescription>Customize text colors for the public website</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-3 gap-6">
+                <div>
+                  <Label className="text-gray-400">Body Text</Label>
+                  <div className="flex items-center gap-3 mt-2">
+                    <input
+                      type="color"
+                      value={branding.text_color || '#E8DDB5'}
+                      onChange={(e) => setBranding({ ...branding, text_color: e.target.value })}
+                      className="w-10 h-10 rounded cursor-pointer border-0"
+                    />
+                    <Input
+                      value={branding.text_color || '#E8DDB5'}
+                      onChange={(e) => setBranding({ ...branding, text_color: e.target.value })}
+                      className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5] font-mono text-sm"
+                      data-testid="text-color-input"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Paragraphs, descriptions</p>
+                </div>
+                <div>
+                  <Label className="text-gray-400">Headings</Label>
+                  <div className="flex items-center gap-3 mt-2">
+                    <input
+                      type="color"
+                      value={branding.heading_color || '#FFFFFF'}
+                      onChange={(e) => setBranding({ ...branding, heading_color: e.target.value })}
+                      className="w-10 h-10 rounded cursor-pointer border-0"
+                    />
+                    <Input
+                      value={branding.heading_color || '#FFFFFF'}
+                      onChange={(e) => setBranding({ ...branding, heading_color: e.target.value })}
+                      className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5] font-mono text-sm"
+                      data-testid="heading-color-input"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Titles, section headers</p>
+                </div>
+                <div>
+                  <Label className="text-gray-400">Accent/Links</Label>
+                  <div className="flex items-center gap-3 mt-2">
+                    <input
+                      type="color"
+                      value={branding.accent_color || '#D4A836'}
+                      onChange={(e) => setBranding({ ...branding, accent_color: e.target.value })}
+                      className="w-10 h-10 rounded cursor-pointer border-0"
+                    />
+                    <Input
+                      value={branding.accent_color || '#D4A836'}
+                      onChange={(e) => setBranding({ ...branding, accent_color: e.target.value })}
+                      className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5] font-mono text-sm"
+                      data-testid="accent-color-input"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Links, highlights</p>
+                </div>
+              </div>
+              
+              {/* Preview */}
+              <div className="mt-6 p-4 rounded-lg border border-[#30363D]" style={{ backgroundColor: branding.secondary_color || '#0f3460' }}>
+                <h4 className="text-sm font-medium mb-2" style={{ color: branding.heading_color || '#FFFFFF' }}>Color Preview</h4>
+                <p className="text-sm" style={{ color: branding.text_color || '#E8DDB5' }}>
+                  This is how your body text will appear. <a href="#" style={{ color: branding.accent_color || '#D4A836' }} onClick={(e) => e.preventDefault()}>This is a link.</a>
+                </p>
               </div>
             </CardContent>
           </Card>
