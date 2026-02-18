@@ -39,6 +39,7 @@ export default function EmailTemplates() {
   const [previewData, setPreviewData] = useState(null);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({ subject: '', body: '' });
+  const [editorMode, setEditorMode] = useState('visual'); // 'visual' or 'html'
 
   useEffect(() => {
     fetchTemplates();
