@@ -1717,13 +1717,13 @@ async def public_masked_tracking(campaign_id: str, u: str = None, request: Reque
         return RedirectResponse(url=f"/api/ads/track/view/{campaign_id}?u={u}")
     else:
         # For direct campaign links without user tracking, show a generic page
-        return HTMLResponse(content=f"""
+        return HTMLResponse(content="""
         <!DOCTYPE html>
         <html>
         <head>
             <title>Security Training</title>
             <style>
-                body {{
+                body {
                     font-family: Arial, sans-serif;
                     background: #0f0f15;
                     color: #E8DDB5;
@@ -1733,15 +1733,15 @@ async def public_masked_tracking(campaign_id: str, u: str = None, request: Reque
                     min-height: 100vh;
                     margin: 0;
                     text-align: center;
-                }}
-                .container {{
+                }
+                .container {
                     padding: 40px;
                     border: 1px solid #D4A83633;
                     border-radius: 8px;
                     background: #161B22;
-                }}
-                h1 {{ color: #D4A836; margin-bottom: 16px; }}
-                p {{ color: #9CA3AF; }}
+                }
+                h1 { color: #D4A836; margin-bottom: 16px; }
+                p { color: #9CA3AF; }
             </style>
         </head>
         <body>
