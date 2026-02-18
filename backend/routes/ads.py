@@ -644,3 +644,112 @@ async def get_ad_embed_code(campaign_id: str, user_id: str, request: Request):
         "iframe_code": f'<iframe src="{embed_url}" width="400" height="200" frameborder="0"></iframe>',
         "direct_link": f"{base_url}/api/ads/track/click/{target['tracking_code']}"
     }
+
+
+# ============== MASKED PUBLIC TRACKING URL ==============
+
+@router.get("/track/view/{campaign_id}")
+async def public_track_view(campaign_id: str, request: Request):
+    """
+    Public-facing masked tracking URL for ad campaigns.
+    URL format: /api/ads/track/view/{campaign_id}?u={user_tracking_code}
+    This provides a cleaner URL than the internal tracking code URL.
+    """
+    db = get_db()
+    
+    # Get tracking code from query param
+    tracking_code = request.query_params.get("u")
+    
+    if not tracking_code:
+        # If no tracking code, redirect to a generic awareness page
+        return HTMLResponse(content="""
+        <!DOCTYPE html>
+        <html>
+        <head><title>Security Training</title></head>
+        <body style="font-family: Arial; text-align: center; padding: 50px;">
+            <h1>Security Awareness Training</h1>
+            <p>This link requires a valid tracking parameter.</p>
+        </body>
+        </html>
+        """)
+    
+    # Find target
+    target = await db.ad_targets.find_one({"tracking_code": tracking_code}, {"_id": 0})
+    if not target:
+        raise HTTPException(status_code=404, detail="Invalid tracking link")
+    
+    # Verify campaign matches
+    if target["campaign_id"] != campaign_id:
+        raise HTTPException(status_code=404, detail="Invalid tracking link")
+    
+    # Get template
+    campaign = await db.ad_campaigns.find_one({"campaign_id": campaign_id}, {"_id": 0})
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    
+    template = await db.ad_templates.find_one({"template_id": campaign["template_id"]}, {"_id": 0})
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found")
+    
+    # Record view (only first time)
+    if not target.get("ad_viewed"):
+        await db.ad_targets.update_one(
+            {"tracking_code": tracking_code},
+            {
+                "$set": {
+                    "ad_viewed": True,
+                    "ad_viewed_at": datetime.now(timezone.utc).isoformat()
+                }
+            }
+        )
+        await db.ad_campaigns.update_one(
+            {"campaign_id": campaign_id},
+            {"$inc": {"ads_viewed": 1}}
+        )
+    
+    # Generate click URL using the masked format
+    click_url = f"/api/ads/track/click/{tracking_code}"
+    style = template.get("style_css", "background: #fff; color: #333;")
+    
+    ad_html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+            body {{ font-family: Arial, sans-serif; }}
+            .ad-container {{
+                {style}
+                padding: 20px;
+                text-align: center;
+                border-radius: 8px;
+                max-width: 400px;
+                margin: 10px auto;
+                cursor: pointer;
+            }}
+            .ad-headline {{ font-size: 18px; font-weight: bold; margin-bottom: 10px; }}
+            .ad-description {{ font-size: 14px; margin-bottom: 15px; }}
+            .ad-cta {{
+                display: inline-block;
+                padding: 10px 20px;
+                background: rgba(255,255,255,0.2);
+                border: 2px solid currentColor;
+                border-radius: 5px;
+                font-weight: bold;
+                text-decoration: none;
+                color: inherit;
+            }}
+            .ad-cta:hover {{ background: rgba(255,255,255,0.3); }}
+        </style>
+    </head>
+    <body>
+        <div class="ad-container" onclick="window.location.href='{click_url}'">
+            <div class="ad-headline">{template['headline']}</div>
+            <div class="ad-description">{template['description']}</div>
+            <a href="{click_url}" class="ad-cta">{template['call_to_action']}</a>
+        </div>
+    </body>
+    </html>
+    """
+    
+    return HTMLResponse(content=ad_html)
