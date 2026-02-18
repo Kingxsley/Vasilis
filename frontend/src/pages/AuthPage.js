@@ -110,9 +110,13 @@ export default function AuthPage() {
 
           {/* Logo */}
           <div className="mb-8 flex items-center gap-3">
-            <Shield className="w-10 h-10 text-[#D4A836]" />
+            {branding?.logo_url ? (
+              <img src={branding.logo_url} alt="Logo" className="w-10 h-10 object-contain" />
+            ) : (
+              <Shield className="w-10 h-10 text-[#D4A836]" />
+            )}
             <span className="text-2xl font-bold text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
-              VasilisNetShield
+              {branding?.company_name || 'VasilisNetShield'}
             </span>
           </div>
 
