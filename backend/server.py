@@ -1672,6 +1672,7 @@ from routes.security import router as security_router, init_security_routes
 from routes.email_templates import router as email_templates_router, init_email_templates_routes
 from routes.certificate_templates import router as certificate_templates_router
 from routes.landing_layouts import router as landing_layouts_router
+from routes.inquiries import router as inquiries_router
 
 # Initialize security routes with dependencies
 init_security_routes(db, require_super_admin, audit_logger, account_lockout)
