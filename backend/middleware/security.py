@@ -336,7 +336,7 @@ class AuditLogger:
             logger.info(log_message)
         
         # Log to database if available
-        if self.db:
+        if self.db is not None:
             try:
                 await self.db.audit_logs.insert_one(event)
             except Exception as e:
