@@ -546,6 +546,117 @@ export default function Settings() {
             </CardContent>
           </Card>
 
+          {/* Password Policy */}
+          <Card className="bg-[#0f0f15] border-[#D4A836]/20">
+            <CardHeader>
+              <CardTitle className="text-[#E8DDB5] flex items-center gap-2">
+                <Key className="w-5 h-5" />
+                Password Policy
+              </CardTitle>
+              <CardDescription>Configure automatic password expiry and reminders</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <Label className="text-gray-400">Password Expiry (Days)</Label>
+                  <div className="flex items-center gap-3 mt-2">
+                    <Input
+                      type="number"
+                      min="0"
+                      max="365"
+                      value={passwordPolicy.password_expiry_days}
+                      onChange={(e) => setPasswordPolicy({ ...passwordPolicy, password_expiry_days: parseInt(e.target.value) || 0 })}
+                      className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {passwordPolicy.password_expiry_days === 0 
+                      ? 'Passwords never expire' 
+                      : `Users must change password every ${passwordPolicy.password_expiry_days} days`}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-gray-400">Reminder Before Expiry (Days)</Label>
+                  <div className="flex items-center gap-3 mt-2">
+                    <Input
+                      type="number"
+                      min="1"
+                      max="30"
+                      value={passwordPolicy.expiry_reminder_days}
+                      onChange={(e) => setPasswordPolicy({ ...passwordPolicy, expiry_reminder_days: parseInt(e.target.value) || 7 })}
+                      className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]"
+                      disabled={passwordPolicy.password_expiry_days === 0}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Send email reminder this many days before expiry
+                  </p>
+                </div>
+              </div>
+              
+              {/* Common Presets */}
+              <div>
+                <Label className="text-gray-400 mb-2 block">Quick Presets</Label>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    size="sm"
+                    variant={passwordPolicy.password_expiry_days === 0 ? "default" : "outline"}
+                    className={passwordPolicy.password_expiry_days === 0 ? "bg-[#D4A836] text-black" : "border-[#D4A836]/30"}
+                    onClick={() => setPasswordPolicy({ ...passwordPolicy, password_expiry_days: 0 })}
+                  >
+                    Never
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={passwordPolicy.password_expiry_days === 30 ? "default" : "outline"}
+                    className={passwordPolicy.password_expiry_days === 30 ? "bg-[#D4A836] text-black" : "border-[#D4A836]/30"}
+                    onClick={() => setPasswordPolicy({ ...passwordPolicy, password_expiry_days: 30 })}
+                  >
+                    30 Days
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={passwordPolicy.password_expiry_days === 60 ? "default" : "outline"}
+                    className={passwordPolicy.password_expiry_days === 60 ? "bg-[#D4A836] text-black" : "border-[#D4A836]/30"}
+                    onClick={() => setPasswordPolicy({ ...passwordPolicy, password_expiry_days: 60 })}
+                  >
+                    60 Days
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={passwordPolicy.password_expiry_days === 90 ? "default" : "outline"}
+                    className={passwordPolicy.password_expiry_days === 90 ? "bg-[#D4A836] text-black" : "border-[#D4A836]/30"}
+                    onClick={() => setPasswordPolicy({ ...passwordPolicy, password_expiry_days: 90 })}
+                  >
+                    90 Days
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={passwordPolicy.password_expiry_days === 180 ? "default" : "outline"}
+                    className={passwordPolicy.password_expiry_days === 180 ? "bg-[#D4A836] text-black" : "border-[#D4A836]/30"}
+                    onClick={() => setPasswordPolicy({ ...passwordPolicy, password_expiry_days: 180 })}
+                  >
+                    180 Days
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <Button
+                  onClick={handleSavePasswordPolicy}
+                  disabled={savingPolicy}
+                  className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
+                >
+                  {savingPolicy ? (
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</>
+                  ) : (
+                    'Save Password Policy'
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Save Button */}
           <div className="flex justify-end">
             <Button
