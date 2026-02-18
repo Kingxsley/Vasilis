@@ -501,9 +501,10 @@ export default function LandingPage() {
             <div className="relative flex justify-center">
               <div className="absolute -inset-8 bg-gradient-to-r from-[#D4A836]/10 to-[#0f3460]/20 blur-3xl rounded-full animate-pulse" />
               <div className="relative w-64 h-64 flex items-center justify-center platform-float">
-                {hero?.platform_image ? (
+                {/* Priority: 1. Platform image from Page Editor, 2. Logo from Branding, 3. Default shield */}
+                {pageContent?.platform_image ? (
                   <img 
-                    src={hero.platform_image} 
+                    src={pageContent.platform_image} 
                     alt="Platform" 
                     className="max-w-full max-h-full object-contain drop-shadow-2xl platform-glow"
                   />
