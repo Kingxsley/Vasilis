@@ -127,6 +127,11 @@ export default function LandingPage() {
     }
   ];
 
+  // Navigation visibility from branding settings
+  const showBlog = branding?.show_blog !== false;
+  const showVideos = branding?.show_videos !== false;
+  const showAbout = branding?.show_about !== false;
+
   return (
     <div className="min-h-screen">
       {/* Navigation */}
@@ -135,9 +140,9 @@ export default function LandingPage() {
           <div className="flex items-center justify-between h-16">
             <Logo />
             <div className="flex items-center gap-6">
-              <Link to="/blog" className="text-gray-400 hover:text-[#E8DDB5]" style={{ '--hover-color': textColor }}>Blog</Link>
-              <Link to="/videos" className="text-gray-400 hover:text-[#E8DDB5] hidden md:block" style={{ '--hover-color': textColor }}>Videos</Link>
-              <Link to="/about" className="text-gray-400 hover:text-[#E8DDB5] hidden md:block" style={{ '--hover-color': textColor }}>About</Link>
+              {showBlog && <Link to="/blog" className="text-gray-400 hover:text-[#E8DDB5]" style={{ '--hover-color': textColor }}>Blog</Link>}
+              {showVideos && <Link to="/videos" className="text-gray-400 hover:text-[#E8DDB5] hidden md:block" style={{ '--hover-color': textColor }}>Videos</Link>}
+              {showAbout && <Link to="/about" className="text-gray-400 hover:text-[#E8DDB5] hidden md:block" style={{ '--hover-color': textColor }}>About</Link>}
               <Link to="/auth">
                 <Button variant="ghost" className="hover:text-white hover:bg-white/10" style={{ color: textColor }} data-testid="login-btn">
                   Login
