@@ -395,6 +395,22 @@ const AppRouter = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/email-templates"
+          element={
+            <ProtectedRoute adminOnly>
+              <EmailTemplates />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/advanced-analytics"
+          element={
+            <ProtectedRoute adminOnly>
+              <AdvancedAnalytics />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </React.Suspense>
