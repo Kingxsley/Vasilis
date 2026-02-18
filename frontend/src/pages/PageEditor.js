@@ -582,6 +582,78 @@ export default function PageEditor() {
               </Card>
             ))}
           </TabsContent>
+
+          {/* Platform Section Tab */}
+          <TabsContent value="platform" className="space-y-6">
+            <Card className="bg-[#161B22] border-[#30363D]">
+              <CardHeader>
+                <CardTitle className="text-[#E8DDB5]">Platform Section Image</CardTitle>
+                <CardDescription className="text-gray-400">
+                  Upload a custom image for the "Enterprise-Ready Platform" section. This replaces the default shield icon.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-8">
+                  {/* Upload Area */}
+                  <div className="space-y-4">
+                    <Label className="text-gray-400">Custom Image</Label>
+                    <div 
+                      className="border-2 border-dashed border-[#D4A836]/30 rounded-lg p-8 text-center hover:border-[#D4A836] transition-colors cursor-pointer"
+                      onClick={() => platformImageRef.current?.click()}
+                    >
+                      <input
+                        type="file"
+                        ref={platformImageRef}
+                        accept="image/*"
+                        onChange={handlePlatformImageUpload}
+                        className="hidden"
+                      />
+                      <Upload className="w-12 h-12 text-[#D4A836]/50 mx-auto mb-4" />
+                      <p className="text-[#E8DDB5] font-medium mb-1">Click to upload image</p>
+                      <p className="text-sm text-gray-500">PNG, JPG, GIF up to 5MB</p>
+                      <p className="text-xs text-gray-600 mt-2">Recommended: Square image, 400x400px or larger</p>
+                    </div>
+                    
+                    {content.platform_image && (
+                      <Button
+                        variant="outline"
+                        onClick={removePlatformImage}
+                        className="w-full border-red-500/30 text-red-400 hover:bg-red-500/10"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Remove Custom Image
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Preview Area */}
+                  <div className="space-y-4">
+                    <Label className="text-gray-400">Preview</Label>
+                    <div className="bg-[#0f0f15] rounded-lg p-8 flex items-center justify-center min-h-[250px]">
+                      {content.platform_image ? (
+                        <img 
+                          src={content.platform_image} 
+                          alt="Platform" 
+                          className="max-w-full max-h-[200px] object-contain"
+                        />
+                      ) : (
+                        <div className="text-center">
+                          <Shield className="w-24 h-24 text-[#D4A836] mx-auto mb-2 animate-pulse" />
+                          <p className="text-sm text-gray-500">Default shield icon</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-[#0f0f15] rounded-lg border border-[#30363D]">
+                  <p className="text-xs text-gray-500">
+                    <strong className="text-[#D4A836]">Tip:</strong> Upload your company logo, a product screenshot, or a relevant illustration to personalize the "Enterprise-Ready Platform" section on your landing page.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
     </DashboardLayout>
