@@ -153,7 +153,17 @@ export default function UsersPage() {
     switch (role) {
       case 'super_admin': return 'bg-[#FF3B30]/20 text-[#FF3B30]';
       case 'org_admin': return 'bg-[#FFB300]/20 text-[#FFB300]';
+      case 'media_manager': return 'bg-[#9C27B0]/20 text-[#9C27B0]';
       default: return 'bg-[#2979FF]/20 text-[#2979FF]';
+    }
+  };
+
+  const getRoleLabel = (role) => {
+    switch (role) {
+      case 'super_admin': return 'Super Admin';
+      case 'org_admin': return 'Org Admin';
+      case 'media_manager': return 'Media Manager';
+      default: return 'Trainee';
     }
   };
 
