@@ -264,23 +264,64 @@ export default function ScenarioManager() {
             <p className="text-gray-500 mt-1">Create and manage training scenarios</p>
           </div>
           
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button 
-                onClick={openNewDialog}
-                className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
-                data-testid="create-scenario-btn"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Create Scenario
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="bg-[#0f0f15] border-[#D4A836]/20 max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle className="text-[#E8DDB5]">
-                  {editingScenario ? 'Edit Scenario' : 'Create New Scenario'}
-                </DialogTitle>
-              </DialogHeader>
+          <div className="flex flex-wrap gap-2">
+            {/* Import/Export Buttons */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv"
+              onChange={handleImport}
+              className="hidden"
+            />
+            <Button
+              variant="outline"
+              onClick={downloadTemplate}
+              className="border-[#D4A836]/30 text-[#E8DDB5]"
+              data-testid="download-template-btn"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Template
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={importing}
+              className="border-[#D4A836]/30 text-[#E8DDB5]"
+              data-testid="import-scenarios-btn"
+            >
+              {importing ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Importing...</>
+              ) : (
+                <><Upload className="w-4 h-4 mr-2" />Import CSV</>
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleExport}
+              className="border-[#D4A836]/30 text-[#E8DDB5]"
+              data-testid="export-scenarios-btn"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export
+            </Button>
+            
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  onClick={openNewDialog}
+                  className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
+                  data-testid="create-scenario-btn"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Scenario
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-[#0f0f15] border-[#D4A836]/20 max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-[#E8DDB5]">
+                    {editingScenario ? 'Edit Scenario' : 'Create New Scenario'}
+                  </DialogTitle>
+                </DialogHeader>
               
               <form onSubmit={handleSubmit} className="space-y-4 mt-4">
                 {/* Title */}
