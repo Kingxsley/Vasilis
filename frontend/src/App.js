@@ -413,6 +413,22 @@ const AppRouter = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/certificate-templates"
+          element={
+            <ProtectedRoute adminOnly>
+              <CertificateTemplates />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/landing-editor"
+          element={
+            <ProtectedRoute adminOnly>
+              <LandingPageEditor />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </React.Suspense>
