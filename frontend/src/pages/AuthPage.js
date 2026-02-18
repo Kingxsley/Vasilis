@@ -184,7 +184,9 @@ export default function AuthPage() {
             {branding?.logo_url ? (
               <img src={branding.logo_url} alt="Logo" className="w-24 h-24 object-contain" />
             ) : (
-              <Shield className="w-24 h-24 text-[#E8DDB5]" />
+              <div className="w-24 h-24 bg-[#E8DDB5]/10 rounded-xl flex items-center justify-center">
+                <span className="text-5xl font-black text-[#E8DDB5]">{(branding?.company_name || 'V')[0]}</span>
+              </div>
             )}
           </div>
           <h2 className="text-4xl font-bold mb-4 text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
@@ -216,7 +218,9 @@ export default function AuthPage() {
             {branding?.logo_url ? (
               <img src={branding.logo_url} alt="Logo" className="w-10 h-10 object-contain" />
             ) : (
-              <Shield className="w-10 h-10 text-[#D4A836]" />
+              <div className="w-10 h-10 bg-[#D4A836]/30 rounded flex items-center justify-center">
+                <span className="text-[#D4A836] font-bold text-lg">{(branding?.company_name || 'V')[0]}</span>
+              </div>
             )}
             <span className="text-2xl font-bold text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
               {branding?.company_name || 'Vasilis NetShield'}
