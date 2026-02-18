@@ -164,63 +164,58 @@ Build a scalable cybersecurity training application with:
   - Color picker UI in Settings page
   - Live preview of color changes
 
-### December 2025 - Session 4 (Current)
-- **Security Hardening** (All approved by user):
-  - Security headers middleware (X-Frame-Options, X-Content-Type-Options, X-XSS-Protection, Referrer-Policy, Permissions-Policy)
-  - Rate limiting on sensitive endpoints (login: 5/min, register: 3/min, default: 100/min)
-  - Account lockout after 5 failed login attempts (15-minute lockout)
-  - Password policy enforcement (8+ chars, uppercase, lowercase, digit, special char)
-  - Input sanitization utilities for XSS prevention
-  - Audit logging for security events
-  - JWT access token lifespan reduced to 24 hours (from 7 days)
-- **Mobile Navigation Fix**:
-  - Created reusable PublicNav component with hamburger menu for mobile
-  - Landing page navigation optimized for all screen sizes
-  - All public pages (Blog, Videos, News, About) use mobile-friendly navigation
-- **News Page Added**:
-  - New /news route for public news page
-  - Displays both local news and RSS feed items
-  - Uses PublicNav component for consistent navigation
-- **Forgot Password Feature**:
-  - Added forgot password flow with email reset link
-  - Reset token expires after 1 hour
-  - Password reset form with validation
-  - Audit logging for password reset events
-- **Security Dashboard**:
-  - New admin page at /security
+### December 2025 - Session 5 (Current)
+- **Security Dashboard** (Complete):
   - Summary cards for login metrics (successful, failed, lockouts, resets)
   - Active lockouts panel with manual unlock option
   - Suspicious IPs detection (3+ failed attempts)
   - Login activity chart for last 7 days
   - Paginated audit logs with filters
-- **User Creation Fix**:
-  - Improved feedback when creating users (shows email sent status)
-  - Fixed "operation failed" error when email sending fails
-
-## Email Template Customization
-
-Email templates are defined in `/app/backend/services/email_service.py`:
-- `send_welcome_email()` - Line 31-150: New user welcome email with credentials
-- `send_password_reset_email()` - Line 153-237: Admin-initiated password reset
-- `send_forgot_password_email()` - Line 240-330: Self-service password reset link
-
-All emails automatically include:
-- Company logo (from Settings > Branding)
-- Company name and colors
-- Secure login URL (from FRONTEND_URL env var)
+- **Forgot Password Feature** (Complete):
+  - "Forgot password?" link on login page
+  - Email with secure reset link (expires in 1 hour)
+  - Password reset form with validation
+- **Email Templates Customization** (Complete):
+  - Admin page at /email-templates
+  - 4 customizable templates: Welcome, Password Reset, Forgot Password, Password Expiry
+  - Edit and preview functionality
+  - Template variables for dynamic content
+  - Reset to default option
+- **Advanced Analytics Dashboard** (Complete):
+  - Time range selector (7, 30, 90, 365 days)
+  - Phishing campaign performance metrics
+  - Vulnerability breakdown with progress bars
+  - User distribution (active/inactive, by role)
+  - Risk assessment summary with recommendations
+- **Password Expiry Settings** (Complete):
+  - Configurable expiry days (0 = never, or custom days)
+  - Reminder days before expiry
+  - Quick preset buttons (Never, 30, 60, 90, 180 days)
+- **Collapsible Sidebar** (Complete):
+  - Sidebar collapse/expand button
+  - Menu groups expand/collapse independently
+- **Favicon Fix** (Complete):
+  - Created SVG favicon
+  - Updated HTML to use SVG favicon
+- **User Creation Fix** (Complete):
+  - Improved feedback on email send status
 
 ## Pending/Upcoming Tasks
 
 ### P0 - Critical
 - [x] ~~Security hardening~~ (Completed)
 - [x] ~~Forgot password feature~~ (Completed)
-- [x] ~~Security dashboard~~ (Completed)
-- [ ] Setup cron job for scheduled campaign launching (Vercel Crons)
+- [x] ~~Email templates customization~~ (Completed)
+- [x] ~~Advanced analytics dashboard~~ (Completed)
+- [x] ~~Password expiry settings~~ (Completed)
+- [x] ~~Collapsible sidebar~~ (Completed)
+- [x] ~~Favicon fix~~ (Completed)
+- [ ] Setup cron job for:
+  - Scheduled campaign launching (Vercel Crons)
+  - Password expiry reminder emails
 
 ### P1 - Important  
-- [ ] Self-hosted Google OAuth setup (requires user's Google Cloud credentials)
-- [ ] SPF/DKIM domain authentication for better email deliverability
-- [ ] Favicon rendering investigation (reported as recurring issue)
+- [ ] Password expiry cron job to check and send reminder emails
 
 ### P2 - Nice to Have
 - [ ] Full end-to-end testing on production domain (vasilisnetshield.net)
