@@ -200,6 +200,19 @@ Build a scalable cybersecurity training application with:
 - **User Creation Fix** (Complete):
   - Improved feedback on email send status
 
+## Documentation
+
+Full user documentation is available at `/app/DOCUMENTATION.md`. This includes:
+- Getting started guide
+- User management
+- Phishing and Ad simulations
+- Training modules
+- Analytics and reports
+- Content management (Blog, Videos, News)
+- Settings and configuration
+- Security dashboard
+- Troubleshooting
+
 ## Cron Job Setup (Vercel)
 
 To enable scheduled campaigns and password expiry reminders, add the following to your `vercel.json` file:
