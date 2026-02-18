@@ -234,12 +234,134 @@ async def create_news(data: NewsCreate, request: Request):
 
 
 @router.get("/news")
-async def list_news(limit: int = 10):
-    """List news items (public endpoint)"""
+async def list_news(limit: int = 10, include_rss: bool = True):
+    """List news items including RSS feeds (public endpoint)"""
+    db = get_db()
+    import httpx
+    import xml.etree.ElementTree as ET
+    
+    # Get local news
+    local_news = await db.news.find({"published": True}, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
+    
+    # Add source indicator
+    for item in local_news:
+        item["source"] = "local"
+    
+    combined_news = list(local_news)
+    
+    # Fetch RSS feeds if requested
+    if include_rss:
+        rss_feeds = await db.rss_feeds.find({"enabled": True}, {"_id": 0}).to_list(20)
+        
+        for feed in rss_feeds:
+            try:
+                async with httpx.AsyncClient(timeout=5.0) as client:
+                    response = await client.get(feed["url"])
+                    if response.status_code == 200:
+                        root = ET.fromstring(response.content)
+                        
+                        # Handle both RSS and Atom feeds
+                        items = root.findall(".//item") or root.findall(".//{http://www.w3.org/2005/Atom}entry")
+                        
+                        for item in items[:5]:  # Limit to 5 items per feed
+                            # RSS format
+                            title = item.findtext("title") or item.findtext("{http://www.w3.org/2005/Atom}title")
+                            description = item.findtext("description") or item.findtext("{http://www.w3.org/2005/Atom}summary")
+                            link = item.findtext("link")
+                            if not link:
+                                link_elem = item.find("{http://www.w3.org/2005/Atom}link")
+                                if link_elem is not None:
+                                    link = link_elem.get("href")
+                            
+                            pub_date = item.findtext("pubDate") or item.findtext("{http://www.w3.org/2005/Atom}published")
+                            
+                            if title:
+                                combined_news.append({
+                                    "news_id": f"rss_{hash(title + (link or '')) % 10000000}",
+                                    "title": title.strip() if title else "No title",
+                                    "content": (description[:200] + "..." if description and len(description) > 200 else description) if description else "",
+                                    "link": link,
+                                    "source": feed.get("name", "RSS Feed"),
+                                    "source_type": "rss",
+                                    "published": True,
+                                    "created_at": pub_date or datetime.now(timezone.utc).isoformat()
+                                })
+            except Exception as e:
+                # Log error but continue
+                print(f"Failed to fetch RSS feed {feed.get('name')}: {e}")
+                continue
+    
+    # Sort by date (approximate, since RSS dates vary)
+    try:
+        combined_news.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+    except:
+        pass
+    
+    return {"news": combined_news[:limit * 2]}  # Return more items since we have mixed sources
+
+
+@router.post("/news/rss-feeds")
+async def add_rss_feed(data: RssFeedCreate, request: Request):
+    """Add an RSS feed source"""
+    user = await require_content_access(request)
     db = get_db()
     
-    news = await db.news.find({"published": True}, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
-    return {"news": news}
+    feed_id = f"feed_{uuid.uuid4().hex[:12]}"
+    
+    feed_doc = {
+        "feed_id": feed_id,
+        "name": data.name,
+        "url": data.url,
+        "enabled": data.enabled,
+        "created_by": user["user_id"],
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.rss_feeds.insert_one(feed_doc)
+    feed_doc.pop("_id", None)
+    return feed_doc
+
+
+@router.get("/news/rss-feeds")
+async def list_rss_feeds(request: Request):
+    """List all RSS feed sources"""
+    await require_content_access(request)
+    db = get_db()
+    
+    feeds = await db.rss_feeds.find({}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return {"feeds": feeds}
+
+
+@router.patch("/news/rss-feeds/{feed_id}")
+async def update_rss_feed(feed_id: str, data: dict, request: Request):
+    """Update an RSS feed"""
+    await require_content_access(request)
+    db = get_db()
+    
+    allowed_fields = ["name", "url", "enabled"]
+    update_data = {k: v for k, v in data.items() if k in allowed_fields and v is not None}
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No update data provided")
+    
+    result = await db.rss_feeds.update_one({"feed_id": feed_id}, {"$set": update_data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Feed not found")
+    
+    return await db.rss_feeds.find_one({"feed_id": feed_id}, {"_id": 0})
+
+
+@router.delete("/news/rss-feeds/{feed_id}")
+async def delete_rss_feed(feed_id: str, request: Request):
+    """Delete an RSS feed source"""
+    await require_content_access(request)
+    db = get_db()
+    
+    result = await db.rss_feeds.delete_one({"feed_id": feed_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Feed not found")
+    
+    return {"message": "Feed deleted"}
 
 
 @router.delete("/news/{news_id}")
