@@ -116,7 +116,7 @@ async def get_audit_logs(
     user: dict = Depends(lambda: require_super_admin)
 ):
     """Get paginated audit logs with filters"""
-    if not db:
+    if db is None:
         raise HTTPException(status_code=500, detail="Database not initialized")
     
     query = {}
