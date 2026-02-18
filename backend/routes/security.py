@@ -158,7 +158,7 @@ async def get_login_history(
     user: dict = Depends(lambda: require_super_admin)
 ):
     """Get login history grouped by day"""
-    if not db:
+    if db is None:
         raise HTTPException(status_code=500, detail="Database not initialized")
     
     start_date = datetime.now(timezone.utc) - timedelta(days=days)
