@@ -238,16 +238,21 @@ async def upload_logo(request: Request, file: UploadFile = File(...)):
                 "type": "branding",
                 "logo_url": data_url,
                 "logo_filename": file.filename,
-                "updated_at": datetime.now(timezone.utc).isoformat(),
-                "updated_by": user["user_id"]
+                "updated_at": datetime.now(timezone.utc).isoformat()
             }
         },
         upsert=True
     )
     
+    # Calculate savings
+    savings_percent = round((1 - optimized_size / original_size) * 100, 1) if original_size > 0 else 0
+    
     return {
-        "message": "Logo uploaded successfully",
-        "logo_url": data_url
+        "message": "Logo uploaded and optimized successfully",
+        "logo_url": data_url,
+        "original_size": original_size,
+        "optimized_size": optimized_size,
+        "savings_percent": savings_percent
     }
 
 
