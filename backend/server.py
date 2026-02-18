@@ -1693,6 +1693,7 @@ api_router.include_router(settings_router)
 api_router.include_router(content_router)
 api_router.include_router(pages_router)
 api_router.include_router(security_router)
+api_router.include_router(email_templates_router)
 
 app.include_router(api_router)
 
