@@ -182,6 +182,7 @@ const EmailTemplates = React.lazy(() => import('./pages/EmailTemplates'));
 const AdvancedAnalytics = React.lazy(() => import('./pages/AdvancedAnalytics'));
 const CertificateTemplates = React.lazy(() => import('./pages/CertificateTemplates'));
 const LandingPageEditor = React.lazy(() => import('./pages/LandingPageEditor'));
+const Inquiries = React.lazy(() => import('./pages/Inquiries'));
 const BlogListPage = React.lazy(() => import('./pages/Blog').then(m => ({ default: m.BlogList })));
 const BlogPostPage = React.lazy(() => import('./pages/Blog').then(m => ({ default: m.BlogPost })));
 const VideosPage = React.lazy(() => import('./pages/VideosPage'));
