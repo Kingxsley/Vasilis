@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
-import { ArrowLeft, Calendar, User, Tag, Loader2, Shield } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Tag, Loader2, BookOpen } from 'lucide-react';
 import { PublicNav } from '../components/PublicNav';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
