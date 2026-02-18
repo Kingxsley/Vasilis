@@ -15,11 +15,17 @@ def generate_tracking_code() -> str:
 
 def generate_tracking_pixel_url(base_url: str, tracking_code: str) -> str:
     """Generate URL for tracking pixel (email opens)"""
+    # Ensure HTTPS
+    if base_url.startswith('http://') and 'localhost' not in base_url:
+        base_url = base_url.replace('http://', 'https://')
     return f"{base_url}/api/phishing/track/open/{tracking_code}"
 
 
 def generate_tracking_link(base_url: str, tracking_code: str, original_url: str = None) -> str:
     """Generate URL for tracking link clicks"""
+    # Ensure HTTPS
+    if base_url.startswith('http://') and 'localhost' not in base_url:
+        base_url = base_url.replace('http://', 'https://')
     return f"{base_url}/api/phishing/track/click/{tracking_code}"
 
 
