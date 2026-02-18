@@ -181,11 +181,40 @@ Build a scalable cybersecurity training application with:
   - New /news route for public news page
   - Displays both local news and RSS feed items
   - Uses PublicNav component for consistent navigation
+- **Forgot Password Feature**:
+  - Added forgot password flow with email reset link
+  - Reset token expires after 1 hour
+  - Password reset form with validation
+  - Audit logging for password reset events
+- **Security Dashboard**:
+  - New admin page at /security
+  - Summary cards for login metrics (successful, failed, lockouts, resets)
+  - Active lockouts panel with manual unlock option
+  - Suspicious IPs detection (3+ failed attempts)
+  - Login activity chart for last 7 days
+  - Paginated audit logs with filters
+- **User Creation Fix**:
+  - Improved feedback when creating users (shows email sent status)
+  - Fixed "operation failed" error when email sending fails
+
+## Email Template Customization
+
+Email templates are defined in `/app/backend/services/email_service.py`:
+- `send_welcome_email()` - Line 31-150: New user welcome email with credentials
+- `send_password_reset_email()` - Line 153-237: Admin-initiated password reset
+- `send_forgot_password_email()` - Line 240-330: Self-service password reset link
+
+All emails automatically include:
+- Company logo (from Settings > Branding)
+- Company name and colors
+- Secure login URL (from FRONTEND_URL env var)
 
 ## Pending/Upcoming Tasks
 
 ### P0 - Critical
 - [x] ~~Security hardening~~ (Completed)
+- [x] ~~Forgot password feature~~ (Completed)
+- [x] ~~Security dashboard~~ (Completed)
 - [ ] Setup cron job for scheduled campaign launching (Vercel Crons)
 
 ### P1 - Important  
