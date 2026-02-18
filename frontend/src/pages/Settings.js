@@ -252,7 +252,7 @@ export default function Settings() {
                   {branding.logo_url ? (
                     <img src={branding.logo_url} alt="Logo" className="w-full h-full object-contain" />
                   ) : (
-                    <Shield className="w-12 h-12 text-[#D4A836]/50" />
+                    <Image className="w-12 h-12 text-[#D4A836]/50" />
                   )}
                 </div>
                 <div className="flex-1 space-y-4">
