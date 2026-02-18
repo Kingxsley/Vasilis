@@ -1576,8 +1576,17 @@ async def generate_ai_content(data: AIGenerateRequest, user: dict = Depends(requ
 async def get_dashboard_stats(user: dict = Depends(require_admin)):
     total_orgs = await db.organizations.count_documents({})
     total_users = await db.users.count_documents({})
-    total_campaigns = await db.campaigns.count_documents({})
-    active_campaigns = await db.campaigns.count_documents({"status": "active"})
+    
+    # Count all campaign types
+    phishing_campaigns = await db.phishing_campaigns.count_documents({})
+    ad_campaigns = await db.ad_campaigns.count_documents({})
+    total_campaigns = phishing_campaigns + ad_campaigns
+    
+    # Active campaigns
+    active_phishing = await db.phishing_campaigns.count_documents({"status": "active"})
+    active_ads = await db.ad_campaigns.count_documents({"status": "active"})
+    active_campaigns = active_phishing + active_ads
+    
     total_sessions = await db.training_sessions.count_documents({})
     
     # Calculate average score
