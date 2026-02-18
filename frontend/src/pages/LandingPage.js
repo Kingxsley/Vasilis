@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
+import { Badge } from '../components/ui/badge';
 import { Mail, MousePointerClick, Users, BarChart3, Lock, ChevronRight, Zap, Target, Award, Shield, Loader2, Menu, X, Facebook, Twitter, Linkedin, Instagram, Youtube } from 'lucide-react';
 import axios from 'axios';
 
