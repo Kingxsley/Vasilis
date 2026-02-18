@@ -42,6 +42,10 @@ export function BlogList() {
   const headingColor = branding?.heading_color || '#FFFFFF';
   const accentColor = branding?.accent_color || '#D4A836';
   const primaryColor = branding?.primary_color || '#D4A836';
+  
+  // Navigation visibility
+  const showVideos = branding?.show_videos !== false;
+  const showAbout = branding?.show_about !== false;
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
@@ -50,8 +54,8 @@ export function BlogList() {
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <Logo branding={branding} />
           <nav className="flex items-center gap-6">
-            <Link to="/videos" className="text-gray-400 hover:opacity-80" style={{ '--hover-color': textColor }}>Videos</Link>
-            <Link to="/about" className="text-gray-400 hover:opacity-80" style={{ '--hover-color': textColor }}>About</Link>
+            {showVideos && <Link to="/videos" className="text-gray-400 hover:opacity-80" style={{ '--hover-color': textColor }}>Videos</Link>}
+            {showAbout && <Link to="/about" className="text-gray-400 hover:opacity-80" style={{ '--hover-color': textColor }}>About</Link>}
             <Link to="/auth">
               <Button className="text-black" style={{ backgroundColor: primaryColor }}>Login</Button>
             </Link>
