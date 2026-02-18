@@ -53,10 +53,39 @@ except Exception as e:
 # JWT Config
 JWT_SECRET = os.environ.get('JWT_SECRET', 'vasilisnetshield-secret-key-2024')
 JWT_ALGORITHM = "HS256"
-JWT_EXPIRATION_HOURS = 168  # 7 days
+JWT_ACCESS_TOKEN_EXPIRE_HOURS = 24  # Shorter access token lifespan
+JWT_REFRESH_TOKEN_EXPIRE_DAYS = 7  # Refresh tokens last longer
 
 # Create the main app
 app = FastAPI(title="Vasilis NetShield API")
+
+# Initialize audit logger (connected to DB after startup)
+audit_logger = AuditLogger()
+
+# ============== INPUT SANITIZATION ==============
+
+def sanitize_string(value: str, max_length: int = 1000) -> str:
+    """Sanitize input string to prevent XSS and injection attacks"""
+    if not value:
+        return value
+    # Remove null bytes
+    value = value.replace('\x00', '')
+    # HTML encode potentially dangerous characters
+    value = html.escape(value)
+    # Truncate to max length
+    return value[:max_length]
+
+def sanitize_html_content(value: str) -> str:
+    """Sanitize HTML content while preserving safe tags"""
+    if not value:
+        return value
+    # Remove script tags and their content
+    value = re.sub(r'<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>', '', value, flags=re.IGNORECASE)
+    # Remove on* event handlers
+    value = re.sub(r'\s+on\w+\s*=\s*["\'][^"\']*["\']', '', value, flags=re.IGNORECASE)
+    # Remove javascript: URLs
+    value = re.sub(r'javascript:', '', value, flags=re.IGNORECASE)
+    return value
 
 # Create routers
 api_router = APIRouter(prefix="/api")
