@@ -161,8 +161,8 @@ export default function AdSimulations() {
   const copyTrackingUrl = async (campaignId) => {
     // Build the masked tracking URL using the website's domain
     const baseUrl = window.location.origin;
-    // Use the masked URL format: /track/{campaign_id}
-    const trackingUrl = `${baseUrl}/track/${campaignId}`;
+    // Use the API route format: /api/track/{campaign_id}
+    const trackingUrl = `${baseUrl}/api/track/${campaignId}`;
     
     try {
       await navigator.clipboard.writeText(trackingUrl);
