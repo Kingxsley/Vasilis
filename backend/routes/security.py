@@ -31,8 +31,6 @@ async def get_security_dashboard(user: dict = Depends(lambda: require_super_admi
     
     now = datetime.now(timezone.utc)
     last_24h = now - timedelta(hours=24)
-    last_7d = now - timedelta(days=7)
-    last_30d = now - timedelta(days=30)
     
     # Count recent login events
     login_success_24h = await db.audit_logs.count_documents({
