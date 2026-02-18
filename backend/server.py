@@ -1704,20 +1704,17 @@ api_router.include_router(inquiries_router)
 
 # ============== PUBLIC TRACKING ROUTE (Masked URL) ==============
 # This route provides a clean, masked URL for ad tracking
-# URL format: /track/{campaign_id}?u={user_tracking_code}
+# URL format: /api/track/{campaign_id}?u={user_tracking_code}
 
-@app.get("/track/{campaign_id}")
+@api_router.get("/track/{campaign_id}")
 async def public_masked_tracking(campaign_id: str, u: str = None, request: Request = None):
     """
     Public-facing masked tracking URL for ad campaigns.
-    Redirects to the internal API tracking endpoint.
+    Renders the ad directly or shows info page if no tracking code.
     """
-    from fastapi.responses import RedirectResponse
+    db = get_db()
     
-    if u:
-        # Redirect to the internal tracking endpoint with the tracking code
-        return RedirectResponse(url=f"/api/ads/track/view/{campaign_id}?u={u}")
-    else:
+    if not u:
         # For direct campaign links without user tracking, show a generic page
         return HTMLResponse(content="""
         <!DOCTYPE html>
@@ -1755,6 +1752,141 @@ async def public_masked_tracking(campaign_id: str, u: str = None, request: Reque
         </body>
         </html>
         """)
+    
+    # Find target by tracking code
+    target = await db.ad_targets.find_one({"tracking_code": u}, {"_id": 0})
+    if not target:
+        return HTMLResponse(content="""
+        <!DOCTYPE html>
+        <html>
+        <head><title>Invalid Link</title>
+        <style>
+            body { font-family: Arial; background: #0f0f15; color: #E8DDB5; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+            .container { padding: 40px; background: #161B22; border-radius: 8px; text-align: center; }
+            h1 { color: #D4A836; }
+        </style>
+        </head>
+        <body><div class="container"><h1>Invalid Tracking Link</h1><p>This link is no longer valid.</p></div></body>
+        </html>
+        """, status_code=404)
+    
+    # Verify campaign matches
+    if target["campaign_id"] != campaign_id:
+        return HTMLResponse(content="""
+        <!DOCTYPE html>
+        <html>
+        <head><title>Invalid Link</title>
+        <style>
+            body { font-family: Arial; background: #0f0f15; color: #E8DDB5; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+            .container { padding: 40px; background: #161B22; border-radius: 8px; text-align: center; }
+            h1 { color: #D4A836; }
+        </style>
+        </head>
+        <body><div class="container"><h1>Invalid Tracking Link</h1><p>This link does not match the campaign.</p></div></body>
+        </html>
+        """, status_code=404)
+    
+    # Get campaign and template
+    campaign = await db.ad_campaigns.find_one({"campaign_id": campaign_id}, {"_id": 0})
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    
+    template = await db.ad_templates.find_one({"template_id": campaign["template_id"]}, {"_id": 0})
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found")
+    
+    # Record view (only first time)
+    if not target.get("ad_viewed"):
+        await db.ad_targets.update_one(
+            {"tracking_code": u},
+            {
+                "$set": {
+                    "ad_viewed": True,
+                    "ad_viewed_at": datetime.now(timezone.utc).isoformat()
+                }
+            }
+        )
+        await db.ad_campaigns.update_one(
+            {"campaign_id": campaign_id},
+            {"$inc": {"ads_viewed": 1}}
+        )
+    
+    # Generate click URL
+    click_url = f"/api/ads/track/click/{u}"
+    style = template.get("style_css", "background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #E8DDB5;")
+    
+    # Render the ad
+    ad_html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>{template.get('headline', 'Special Offer')}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+            body {{ 
+                font-family: Arial, sans-serif;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: #0f0f15;
+                padding: 20px;
+            }}
+            .ad-container {{
+                {style}
+                padding: 40px;
+                text-align: center;
+                border-radius: 12px;
+                max-width: 500px;
+                width: 100%;
+                cursor: pointer;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+                transition: transform 0.2s ease;
+            }}
+            .ad-container:hover {{
+                transform: scale(1.02);
+            }}
+            .ad-headline {{ 
+                font-size: 28px; 
+                font-weight: bold; 
+                margin-bottom: 15px;
+                line-height: 1.3;
+            }}
+            .ad-description {{ 
+                font-size: 16px; 
+                margin-bottom: 25px;
+                opacity: 0.9;
+                line-height: 1.5;
+            }}
+            .ad-cta {{
+                display: inline-block;
+                padding: 15px 35px;
+                background: #D4A836;
+                color: #000;
+                border: none;
+                border-radius: 8px;
+                font-weight: bold;
+                font-size: 16px;
+                text-decoration: none;
+                transition: background 0.2s ease;
+            }}
+            .ad-cta:hover {{ 
+                background: #C49A30;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="ad-container" onclick="window.location.href='{click_url}'">
+            <div class="ad-headline">{template.get('headline', 'Special Offer!')}</div>
+            <div class="ad-description">{template.get('description', 'Click to learn more about this special offer.')}</div>
+            <a href="{click_url}" class="ad-cta">{template.get('call_to_action', 'Learn More')}</a>
+        </div>
+    </body>
+    </html>
+    """
+    
+    return HTMLResponse(content=ad_html)
 
 app.include_router(api_router)
 
