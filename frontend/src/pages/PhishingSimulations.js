@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect, lazy, Suspense, useRef } from 'react';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { useAuth } from '../App';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
@@ -26,7 +26,8 @@ import {
 import { 
   Mail, Plus, Play, Pause, CheckCircle, Eye, MousePointer, 
   Send, Users, Building2, Trash2, BarChart3, AlertTriangle,
-  FileText, Loader2, RefreshCw, Download, FileSpreadsheet, Link, Bold, Italic, Clock, Calendar
+  FileText, Loader2, RefreshCw, Download, FileSpreadsheet, Link, Bold, Italic, Clock, Calendar,
+  Image, Upload, Paperclip, X
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
