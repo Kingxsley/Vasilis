@@ -26,6 +26,10 @@ export default function VideosPage() {
   const textColor = branding?.text_color || '#E8DDB5';
   const headingColor = branding?.heading_color || '#FFFFFF';
   const primaryColor = branding?.primary_color || '#D4A836';
+  
+  // Navigation visibility
+  const showBlog = branding?.show_blog !== false;
+  const showAbout = branding?.show_about !== false;
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
@@ -43,8 +47,8 @@ export default function VideosPage() {
             </span>
           </Link>
           <nav className="flex items-center gap-6">
-            <Link to="/blog" className="text-gray-400 hover:opacity-80">Blog</Link>
-            <Link to="/about" className="text-gray-400 hover:opacity-80">About</Link>
+            {showBlog && <Link to="/blog" className="text-gray-400 hover:opacity-80">Blog</Link>}
+            {showAbout && <Link to="/about" className="text-gray-400 hover:opacity-80">About</Link>}
             <Link to="/auth">
               <Button className="text-black" style={{ backgroundColor: primaryColor }}>Login</Button>
             </Link>
