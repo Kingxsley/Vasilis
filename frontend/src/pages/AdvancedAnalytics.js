@@ -46,14 +46,15 @@ export default function AdvancedAnalytics() {
         }).catch(() => ({ data: null })),
         axios.get(`${API}/users`, {
           headers: { Authorization: `Bearer ${token}` }
-        }).catch(() => ({ data: { users: [] } }))
+        }).catch(() => ({ data: [] }))
       ]);
 
       setAnalytics(analyticsRes.data);
       setPhishingStats(phishingRes.data);
       
       // Calculate user stats from users list
-      const users = usersRes.data.users || [];
+      // API returns array directly, not { users: [] }
+      const users = Array.isArray(usersRes.data) ? usersRes.data : (usersRes.data?.users || []);
       const activeUsers = users.filter(u => u.is_active).length;
       const roleDistribution = users.reduce((acc, u) => {
         acc[u.role] = (acc[u.role] || 0) + 1;
