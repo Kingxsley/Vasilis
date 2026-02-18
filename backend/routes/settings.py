@@ -164,7 +164,7 @@ async def upload_logo(request: Request, file: UploadFile = File(...)):
     if file.content_type not in allowed_types:
         raise HTTPException(
             status_code=400, 
-            detail=f"Invalid file type. Allowed: PNG, JPEG, SVG, WebP"
+            detail="Invalid file type. Allowed: PNG, JPEG, SVG, WebP"
         )
     
     # Check file size (max 2MB)
