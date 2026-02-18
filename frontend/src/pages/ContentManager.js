@@ -73,9 +73,13 @@ export default function ContentManager() {
   const [videoForm, setVideoForm] = useState({
     title: '', description: '', youtube_url: '', category: 'training', published: false
   });
+  const [videoFilter, setVideoFilter] = useState('all');
+  const [editingVideo, setEditingVideo] = useState(null);
   
   // About state
-  const [about, setAbout] = useState({ title: '', content: '', mission: '', vision: '' });
+  const [about, setAbout] = useState({ title: '', content: '', mission: '', vision: '', team_members: [] });
+  const [teamMemberForm, setTeamMemberForm] = useState({ name: '', role: '', bio: '', image: '' });
+  const [teamDialogOpen, setTeamDialogOpen] = useState(false);
   
   // Media state
   const [media, setMedia] = useState([]);
