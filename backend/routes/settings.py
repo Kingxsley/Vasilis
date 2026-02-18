@@ -203,3 +203,23 @@ async def upload_favicon(request: Request, file: UploadFile = File(...)):
         "message": "Favicon uploaded successfully",
         "favicon_url": data_url
     }
+
+
+@router.delete("/branding/favicon")
+async def delete_favicon(request: Request):
+    """Remove favicon"""
+    user = await require_admin(request)
+    db = get_db()
+    
+    await db.settings.update_one(
+        {"type": "branding"},
+        {
+            "$set": {
+                "favicon_url": None,
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+                "updated_by": user["user_id"]
+            }
+        }
+    )
+    
+    return {"message": "Favicon removed"}
