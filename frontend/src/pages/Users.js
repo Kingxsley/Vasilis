@@ -86,10 +86,15 @@ export default function UsersPage() {
         });
         toast.success('User updated');
       } else {
-        await axios.post(`${API}/users`, payload, {
+        const response = await axios.post(`${API}/users`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        toast.success('User created');
+        // Show success with email status
+        if (response.data.email_sent) {
+          toast.success('User created and welcome email sent');
+        } else {
+          toast.success('User created (email not sent - check SendGrid config)');
+        }
       }
       setDialogOpen(false);
       setEditingUser(null);
