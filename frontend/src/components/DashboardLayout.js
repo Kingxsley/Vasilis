@@ -53,6 +53,7 @@ const navItems = [
   { path: '/training', label: 'Training', icon: BookOpen, adminOnly: false },
   { path: '/certificates', label: 'Certificates', icon: Award, adminOnly: false },
   { path: '/analytics', label: 'Analytics', icon: BarChart3, adminOnly: true },
+  { path: '/settings', label: 'Settings', icon: Settings, adminOnly: true },
 ];
 
 export const DashboardLayout = ({ children }) => {
