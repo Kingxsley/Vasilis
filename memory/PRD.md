@@ -322,7 +322,7 @@ To enable scheduled campaigns and password expiry reminders, add the following t
 - **Media Manager**: media@netshield.com / MediaManager123!
 
 ## Deployment
-- Preview: https://training-platform-12.preview.emergentagent.com
+- Preview: https://netshield-stage.preview.emergentagent.com
 - Production: vasilisnetshield.net (pending user verification)
 - Backend API: /api prefix required for all endpoints
 
