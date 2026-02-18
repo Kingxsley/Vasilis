@@ -5,7 +5,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Upload, Trash2, Loader2, Shield, Globe } from 'lucide-react';
+import { Upload, Trash2, Loader2, Shield, Globe, Palette } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../App';
 
@@ -19,7 +19,10 @@ export default function Settings() {
     logo_url: null,
     favicon_url: null,
     primary_color: '#D4A836',
-    secondary_color: '#0f3460'
+    secondary_color: '#0f3460',
+    text_color: '#E8DDB5',
+    heading_color: '#FFFFFF',
+    accent_color: '#D4A836'
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
