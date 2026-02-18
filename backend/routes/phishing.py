@@ -1,9 +1,10 @@
-from fastapi import APIRouter, HTTPException, Depends, Request, Response
+from fastapi import APIRouter, HTTPException, Depends, Request, Response, UploadFile, File
 from fastapi.responses import RedirectResponse, HTMLResponse
 from typing import List, Optional
 from datetime import datetime, timezone
 import uuid
 import secrets
+import base64
 
 from models import (
     PhishingTemplateCreate, PhishingTemplateResponse,
