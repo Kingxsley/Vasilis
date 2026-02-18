@@ -276,15 +276,15 @@ const LoadingFallback = () => (
 );
 
 // Ad Tracker Wrapper - routes campaign IDs to AdTracker
-// Checks if the path looks like a campaign ID (starts with "adcamp_")
+// Checks if the path looks like a campaign ID (starts with "adcmp_")
 // If not a campaign ID, redirect to home
 const AdTrackerWrapper = () => {
   const params = useParams();
   const campaignId = params.campaignId;
   
   // Check if this looks like a valid campaign ID
-  // Campaign IDs start with "adcamp_" 
-  if (campaignId && campaignId.startsWith('adcamp_')) {
+  // Campaign IDs start with "adcmp_" 
+  if (campaignId && campaignId.startsWith('adcmp_')) {
     return <AdTracker />;
   }
   
