@@ -286,6 +286,22 @@ const AppRouter = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/scenarios"
+          element={
+            <ProtectedRoute adminOnly>
+              <ScenarioManager />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute adminOnly>
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </React.Suspense>
