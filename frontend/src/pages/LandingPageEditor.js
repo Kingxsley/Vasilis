@@ -456,6 +456,173 @@ const SectionEditor = ({ section, onUpdate, onDelete, onMoveUp, onMoveDown, onTo
             </div>
           )}
 
+          {/* Pricing Plans */}
+          {section.type === 'pricing' && (
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <Label className="text-gray-400">Pricing Plans</Label>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={addItem}
+                  className="border-[#D4A836]/30 text-[#D4A836] h-7"
+                >
+                  <Plus className="w-3 h-3 mr-1" /> Add Plan
+                </Button>
+              </div>
+              <div className="space-y-4">
+                {(content.items || []).map((plan, idx) => (
+                  <div key={idx} className={`p-4 bg-[#1a1a24] rounded-lg border ${plan.highlighted ? 'border-[#D4A836]' : 'border-[#30363D]'}`}>
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-500 text-xs">Plan {idx + 1}</span>
+                        <label className="flex items-center gap-1 text-xs text-gray-400 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={plan.highlighted || false}
+                            onChange={(e) => updateItem(idx, { highlighted: e.target.checked })}
+                            className="rounded border-gray-600"
+                          />
+                          Featured
+                        </label>
+                      </div>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => removeItem(idx)}
+                        className="text-red-400 h-6 w-6"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                    <div className="grid md:grid-cols-3 gap-3 mb-3">
+                      <div>
+                        <Label className="text-gray-500 text-xs">Plan Name</Label>
+                        <Input
+                          value={plan.name || ''}
+                          onChange={(e) => updateItem(idx, { name: e.target.value })}
+                          placeholder="e.g., Basic, Pro, Enterprise"
+                          className="bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] h-8 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-gray-500 text-xs">Price</Label>
+                        <Input
+                          value={plan.price || ''}
+                          onChange={(e) => updateItem(idx, { price: e.target.value })}
+                          placeholder="e.g., $29, €49, Free"
+                          className="bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] h-8 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-gray-500 text-xs">Period</Label>
+                        <Input
+                          value={plan.period || ''}
+                          onChange={(e) => updateItem(idx, { period: e.target.value })}
+                          placeholder="e.g., /month, /year"
+                          className="bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] h-8 text-sm"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-gray-500 text-xs">Description (optional)</Label>
+                      <Input
+                        value={plan.description || ''}
+                        onChange={(e) => updateItem(idx, { description: e.target.value })}
+                        placeholder="Short description of this plan"
+                        className="bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] h-8 text-sm mb-3"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-500 text-xs">Features (one per line)</Label>
+                      <Textarea
+                        value={(plan.features || []).join('\n')}
+                        onChange={(e) => updateItem(idx, { features: e.target.value.split('\n').filter(f => f.trim()) })}
+                        placeholder="Feature 1&#10;Feature 2&#10;Feature 3"
+                        className="bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] text-sm"
+                        rows={4}
+                      />
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-3 mt-3">
+                      <div>
+                        <Label className="text-gray-500 text-xs">Button Text</Label>
+                        <Input
+                          value={plan.button_text || ''}
+                          onChange={(e) => updateItem(idx, { button_text: e.target.value })}
+                          placeholder="e.g., Get Started, Contact Sales"
+                          className="bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] h-8 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-gray-500 text-xs">Button Link</Label>
+                        <Input
+                          value={plan.button_link || ''}
+                          onChange={(e) => updateItem(idx, { button_link: e.target.value })}
+                          placeholder="e.g., /auth, /contact"
+                          className="bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] h-8 text-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Team Members */}
+          {section.type === 'team' && (
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <Label className="text-gray-400">Team Members</Label>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={addItem}
+                  className="border-[#D4A836]/30 text-[#D4A836] h-7"
+                >
+                  <Plus className="w-3 h-3 mr-1" /> Add Member
+                </Button>
+              </div>
+              <div className="space-y-3">
+                {(content.items || []).map((member, idx) => (
+                  <div key={idx} className="p-3 bg-[#1a1a24] rounded-lg border border-[#30363D]">
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="text-gray-500 text-xs">Member {idx + 1}</span>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => removeItem(idx)}
+                        className="text-red-400 h-6 w-6"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-2">
+                      <Input
+                        value={member.name || ''}
+                        onChange={(e) => updateItem(idx, { name: e.target.value })}
+                        placeholder="Name"
+                        className="bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] h-8 text-sm"
+                      />
+                      <Input
+                        value={member.role || ''}
+                        onChange={(e) => updateItem(idx, { role: e.target.value })}
+                        placeholder="Role/Position"
+                        className="bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] h-8 text-sm"
+                      />
+                    </div>
+                    <Input
+                      value={member.image_url || ''}
+                      onChange={(e) => updateItem(idx, { image_url: e.target.value })}
+                      placeholder="Image URL (optional)"
+                      className="bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] h-8 text-sm mt-2"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Custom HTML */}
           {section.type === 'custom' && (
             <div>
