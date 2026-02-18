@@ -4,22 +4,9 @@ import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { ArrowLeft, Calendar, User, Tag, Loader2, Shield } from 'lucide-react';
+import { PublicNav } from '../components/PublicNav';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
-
-// Shared Logo component
-const Logo = ({ branding }) => (
-  <Link to="/" className="flex items-center gap-2">
-    {branding?.logo_url ? (
-      <img src={branding.logo_url} alt="Logo" className="w-8 h-8 object-contain" />
-    ) : (
-      <Shield className="w-8 h-8" style={{ color: branding?.primary_color || '#D4A836' }} />
-    )}
-    <span className="text-xl font-bold" style={{ color: branding?.text_color || '#E8DDB5', fontFamily: 'Chivo, sans-serif' }}>
-      {branding?.company_name || 'Vasilis NetShield'}
-    </span>
-  </Link>
-);
 
 // Blog List Page
 export function BlogList() {
@@ -42,26 +29,11 @@ export function BlogList() {
   const headingColor = branding?.heading_color || '#FFFFFF';
   const accentColor = branding?.accent_color || '#D4A836';
   const primaryColor = branding?.primary_color || '#D4A836';
-  
-  // Navigation visibility
-  const showVideos = branding?.show_videos !== false;
-  const showAbout = branding?.show_about !== false;
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
       {/* Header */}
-      <header className="border-b" style={{ borderColor: `${primaryColor}15` }}>
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <Logo branding={branding} />
-          <nav className="flex items-center gap-6">
-            {showVideos && <Link to="/videos" className="text-gray-400 hover:opacity-80" style={{ '--hover-color': textColor }}>Videos</Link>}
-            {showAbout && <Link to="/about" className="text-gray-400 hover:opacity-80" style={{ '--hover-color': textColor }}>About</Link>}
-            <Link to="/auth">
-              <Button className="text-black" style={{ backgroundColor: primaryColor }}>Login</Button>
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <PublicNav branding={branding} />
 
       <main className="container mx-auto px-6 py-12">
         <h1 className="text-4xl font-bold mb-2" style={{ color: headingColor, fontFamily: 'Chivo, sans-serif' }}>
