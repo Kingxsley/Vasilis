@@ -464,6 +464,9 @@ const AppRouter = () => {
             </ProtectedRoute>
           }
         />
+        {/* Ad Tracking Route - catches campaign IDs at root level */}
+        {/* URL format: /{campaign_id}?u={tracking_code} */}
+        <Route path="/:campaignId" element={<AdTrackerWrapper />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </React.Suspense>
