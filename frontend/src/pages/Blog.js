@@ -13,9 +13,9 @@ const Logo = ({ branding }) => (
     {branding?.logo_url ? (
       <img src={branding.logo_url} alt="Logo" className="w-8 h-8 object-contain" />
     ) : (
-      <Shield className="w-8 h-8 text-[#D4A836]" />
+      <Shield className="w-8 h-8" style={{ color: branding?.primary_color || '#D4A836' }} />
     )}
-    <span className="text-xl font-bold text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
+    <span className="text-xl font-bold" style={{ color: branding?.text_color || '#E8DDB5', fontFamily: 'Chivo, sans-serif' }}>
       {branding?.company_name || 'Vasilis NetShield'}
     </span>
   </Link>
@@ -37,31 +37,37 @@ export function BlogList() {
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
+  // Dynamic colors
+  const textColor = branding?.text_color || '#E8DDB5';
+  const headingColor = branding?.heading_color || '#FFFFFF';
+  const accentColor = branding?.accent_color || '#D4A836';
+  const primaryColor = branding?.primary_color || '#D4A836';
+
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
       {/* Header */}
-      <header className="border-b border-[#D4A836]/10">
+      <header className="border-b" style={{ borderColor: `${primaryColor}15` }}>
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <Logo branding={branding} />
           <nav className="flex items-center gap-6">
-            <Link to="/videos" className="text-gray-400 hover:text-[#E8DDB5]">Videos</Link>
-            <Link to="/about" className="text-gray-400 hover:text-[#E8DDB5]">About</Link>
+            <Link to="/videos" className="text-gray-400 hover:opacity-80" style={{ '--hover-color': textColor }}>Videos</Link>
+            <Link to="/about" className="text-gray-400 hover:opacity-80" style={{ '--hover-color': textColor }}>About</Link>
             <Link to="/auth">
-              <Button className="bg-[#D4A836] hover:bg-[#C49A30] text-black">Login</Button>
+              <Button className="text-black" style={{ backgroundColor: primaryColor }}>Login</Button>
             </Link>
           </nav>
         </div>
       </header>
 
       <main className="container mx-auto px-6 py-12">
-        <h1 className="text-4xl font-bold text-[#E8DDB5] mb-2" style={{ fontFamily: 'Chivo, sans-serif' }}>
+        <h1 className="text-4xl font-bold mb-2" style={{ color: headingColor, fontFamily: 'Chivo, sans-serif' }}>
           Blog
         </h1>
-        <p className="text-gray-400 mb-8">Insights and updates on cybersecurity training</p>
+        <p className="mb-8" style={{ color: textColor, opacity: 0.7 }}>Insights and updates on cybersecurity training</p>
 
         {loading ? (
           <div className="flex justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-[#D4A836]" />
+            <Loader2 className="w-8 h-8 animate-spin" style={{ color: primaryColor }} />
           </div>
         ) : posts.length === 0 ? (
           <p className="text-gray-500 text-center py-12">No blog posts yet. Check back soon!</p>
@@ -69,7 +75,8 @@ export function BlogList() {
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {posts.map((post) => (
               <Link key={post.post_id} to={`/blog/${post.slug}`} 
-                className="group bg-[#0f0f15] border border-[#D4A836]/20 rounded-xl overflow-hidden hover:border-[#D4A836]/50 transition-colors">
+                className="group bg-[#0f0f15] border rounded-xl overflow-hidden hover:opacity-90 transition-all"
+                style={{ borderColor: `${primaryColor}33` }}>
                 {post.featured_image && (
                   <div className="aspect-video bg-[#1a1a24]">
                     <img src={post.featured_image} alt={post.title} className="w-full h-full object-cover" />
@@ -83,14 +90,14 @@ export function BlogList() {
                     <User className="w-3 h-3" />
                     {post.author_name}
                   </div>
-                  <h2 className="text-xl font-bold text-[#E8DDB5] group-hover:text-[#D4A836] transition-colors mb-2">
+                  <h2 className="text-xl font-bold transition-colors mb-2" style={{ color: headingColor }}>
                     {post.title}
                   </h2>
-                  <p className="text-gray-400 text-sm line-clamp-2">{post.excerpt}</p>
+                  <p className="text-sm line-clamp-2" style={{ color: textColor, opacity: 0.7 }}>{post.excerpt}</p>
                   {post.tags?.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-4">
                       {post.tags.slice(0, 3).map((tag) => (
-                        <Badge key={tag} className="bg-[#D4A836]/10 text-[#D4A836]">{tag}</Badge>
+                        <Badge key={tag} style={{ backgroundColor: `${accentColor}15`, color: accentColor }}>{tag}</Badge>
                       ))}
                     </div>
                   )}
@@ -121,10 +128,16 @@ export function BlogPost() {
     }).catch(() => {}).finally(() => setLoading(false));
   }, [slug]);
 
+  // Dynamic colors
+  const textColor = branding?.text_color || '#E8DDB5';
+  const headingColor = branding?.heading_color || '#FFFFFF';
+  const accentColor = branding?.accent_color || '#D4A836';
+  const primaryColor = branding?.primary_color || '#D4A836';
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#D4A836]" />
+        <Loader2 className="w-8 h-8 animate-spin" style={{ color: primaryColor }} />
       </div>
     );
   }
@@ -132,8 +145,8 @@ export function BlogPost() {
   if (!post) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex flex-col items-center justify-center">
-        <h1 className="text-2xl text-[#E8DDB5] mb-4">Post not found</h1>
-        <Link to="/blog"><Button className="bg-[#D4A836] text-black">Back to Blog</Button></Link>
+        <h1 className="text-2xl mb-4" style={{ color: textColor }}>Post not found</h1>
+        <Link to="/blog"><Button className="text-black" style={{ backgroundColor: primaryColor }}>Back to Blog</Button></Link>
       </div>
     );
   }
@@ -141,19 +154,19 @@ export function BlogPost() {
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
       {/* Header */}
-      <header className="border-b border-[#D4A836]/10">
+      <header className="border-b" style={{ borderColor: `${primaryColor}15` }}>
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <Logo branding={branding} />
           <nav className="flex items-center gap-6">
-            <Link to="/blog" className="text-gray-400 hover:text-[#E8DDB5]">Blog</Link>
-            <Link to="/videos" className="text-gray-400 hover:text-[#E8DDB5]">Videos</Link>
-            <Link to="/about" className="text-gray-400 hover:text-[#E8DDB5]">About</Link>
+            <Link to="/blog" className="text-gray-400 hover:opacity-80">Blog</Link>
+            <Link to="/videos" className="text-gray-400 hover:opacity-80">Videos</Link>
+            <Link to="/about" className="text-gray-400 hover:opacity-80">About</Link>
           </nav>
         </div>
       </header>
 
       <main className="container mx-auto px-6 py-12 max-w-4xl">
-        <Link to="/blog" className="flex items-center gap-2 text-gray-400 hover:text-[#E8DDB5] mb-8">
+        <Link to="/blog" className="flex items-center gap-2 mb-8 hover:opacity-80" style={{ color: textColor }}>
           <ArrowLeft className="w-4 h-4" />Back to Blog
         </Link>
 
@@ -168,14 +181,14 @@ export function BlogPost() {
           <span className="flex items-center gap-1"><User className="w-4 h-4" />{post.author_name}</span>
         </div>
 
-        <h1 className="text-4xl font-bold text-[#E8DDB5] mb-4" style={{ fontFamily: 'Chivo, sans-serif' }}>
+        <h1 className="text-4xl font-bold mb-4" style={{ color: headingColor, fontFamily: 'Chivo, sans-serif' }}>
           {post.title}
         </h1>
 
         {post.tags?.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-8">
             {post.tags.map((tag) => (
-              <Badge key={tag} className="bg-[#D4A836]/10 text-[#D4A836]">
+              <Badge key={tag} style={{ backgroundColor: `${accentColor}15`, color: accentColor }}>
                 <Tag className="w-3 h-3 mr-1" />{tag}
               </Badge>
             ))}
@@ -183,7 +196,8 @@ export function BlogPost() {
         )}
 
         <div 
-          className="prose prose-invert prose-lg max-w-none text-gray-300"
+          className="prose prose-invert prose-lg max-w-none"
+          style={{ color: textColor }}
           dangerouslySetInnerHTML={{ __html: post.content }}
         />
       </main>
