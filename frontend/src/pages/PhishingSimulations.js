@@ -605,14 +605,14 @@ export default function PhishingSimulations() {
 
         {/* New Template Dialog */}
         <Dialog open={showNewTemplate} onOpenChange={setShowNewTemplate}>
-          <DialogContent className="bg-[#161B22] border-[#30363D] sm:max-w-2xl">
+          <DialogContent className="bg-[#161B22] border-[#30363D] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-[#E8DDB5]">Create Email Template</DialogTitle>
               <DialogDescription className="text-gray-400">
-                Design a phishing email template. Use {'{{USER_NAME}}'} for personalization and {'{{TRACKING_LINK}}'} for the tracked link.
+                Design a phishing email template. The tracking link button will be automatically added.
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+            <div className="space-y-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-gray-400">Template Name</Label>
@@ -629,7 +629,7 @@ export default function PhishingSimulations() {
                   <Input
                     value={newTemplate.subject}
                     onChange={(e) => setNewTemplate({...newTemplate, subject: e.target.value})}
-                    placeholder="Urgent: Action Required"
+                    placeholder="Urgent: Action Required - {{USER_NAME}}"
                     className="bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5]"
                     data-testid="template-subject-input"
                   />
@@ -637,35 +637,54 @@ export default function PhishingSimulations() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-gray-400">Sender Name</Label>
+                  <Label className="text-gray-400">Sender Display Name</Label>
                   <Input
                     value={newTemplate.sender_name}
                     onChange={(e) => setNewTemplate({...newTemplate, sender_name: e.target.value})}
-                    placeholder="IT Support"
+                    placeholder="IT Support Team"
                     className="bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5]"
                     data-testid="template-sender-name-input"
                   />
+                  <p className="text-xs text-gray-500">This name appears as the sender in email clients</p>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-gray-400">Sender Email</Label>
+                  <Label className="text-gray-400">Fake Sender Email (Reply-To)</Label>
                   <Input
                     value={newTemplate.sender_email}
                     onChange={(e) => setNewTemplate({...newTemplate, sender_email: e.target.value})}
-                    placeholder="support@company-it.net"
+                    placeholder="support@company-secure.net"
                     className="bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5]"
                     data-testid="template-sender-email-input"
                   />
+                  <p className="text-xs text-gray-500">Fake email for phishing simulation (Reply-To header)</p>
                 </div>
               </div>
+              
+              {/* Button Text for CTA */}
               <div className="space-y-2">
-                <Label className="text-gray-400">Email Body (HTML)</Label>
-                <textarea
-                  value={newTemplate.body_html}
-                  onChange={(e) => setNewTemplate({...newTemplate, body_html: e.target.value})}
-                  placeholder={'<html><body>\n<h2>Hello {{USER_NAME}},</h2>\n<p>Please click the link below:</p>\n<a href="{{TRACKING_LINK}}">Click Here</a>\n</body></html>'}
-                  className="w-full h-48 bg-[#0f0f15] border border-[#D4A836]/30 text-[#E8DDB5] rounded-md p-3 font-mono text-sm"
-                  data-testid="template-body-input"
+                <Label className="text-gray-400">Call-to-Action Button Text</Label>
+                <Input
+                  value={newTemplate.button_text || ''}
+                  onChange={(e) => setNewTemplate({...newTemplate, button_text: e.target.value})}
+                  placeholder="Click Here to Verify"
+                  className="bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5]"
+                  data-testid="template-button-text-input"
                 />
+                <p className="text-xs text-gray-500">This button will contain the tracking link</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-gray-400">Email Body</Label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Use <code className="bg-[#0f0f15] px-1 rounded">{'{{USER_NAME}}'}</code> to personalize with recipient's name
+                </p>
+                <Suspense fallback={<div className="h-48 bg-[#0f0f15] rounded-lg flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-[#D4A836]" /></div>}>
+                  <RichTextEditor
+                    value={newTemplate.body_html}
+                    onChange={(html) => setNewTemplate({...newTemplate, body_html: html})}
+                    placeholder="Write your phishing email content here..."
+                  />
+                </Suspense>
               </div>
             </div>
             <DialogFooter>
