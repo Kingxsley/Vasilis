@@ -264,32 +264,32 @@ export default function PageEditor() {
             </TabsTrigger>
             <TabsTrigger 
               value="features"
-              className="data-[state=active]:bg-[#D4A836]/20 data-[state=active]:text-[#D4A836]"
+              className="data-[state=active]:bg-[#D4A836]/20 data-[state=active]:text-[#D4A836] text-xs sm:text-sm"
             >
-              <Sparkles className="w-4 h-4 mr-2" />
+              <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
               Features
             </TabsTrigger>
             <TabsTrigger 
               value="platform"
-              className="data-[state=active]:bg-[#D4A836]/20 data-[state=active]:text-[#D4A836]"
+              className="data-[state=active]:bg-[#D4A836]/20 data-[state=active]:text-[#D4A836] text-xs sm:text-sm"
             >
-              <Image className="w-4 h-4 mr-2" />
+              <Image className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
               Platform
             </TabsTrigger>
           </TabsList>
 
           {/* Hero Section Tab */}
-          <TabsContent value="hero" className="space-y-6">
+          <TabsContent value="hero" className="space-y-4 sm:space-y-6">
             <Card className="bg-[#161B22] border-[#30363D]">
-              <CardHeader>
-                <CardTitle className="text-[#E8DDB5]">Hero Section</CardTitle>
-                <CardDescription className="text-gray-400">
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-[#E8DDB5] text-lg sm:text-xl">Hero Section</CardTitle>
+                <CardDescription className="text-gray-400 text-sm">
                   Edit the main headline and call-to-action of your landing page
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6 pt-0 sm:pt-0">
                 <div className="space-y-2">
-                  <Label className="text-gray-400">Badge Text</Label>
+                  <Label className="text-gray-400 text-sm">Badge Text</Label>
                   <Input
                     value={content.hero?.badge_text || ''}
                     onChange={(e) => updateHero('badge_text', e.target.value)}
