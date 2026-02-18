@@ -558,6 +558,82 @@ export default function Settings() {
             </CardContent>
           </Card>
 
+          {/* Footer Settings */}
+          <Card className="bg-[#0f0f15] border-[#D4A836]/20">
+            <CardHeader>
+              <CardTitle className="text-[#E8DDB5] flex items-center gap-2">
+                <Globe className="w-5 h-5" />
+                Footer Settings
+              </CardTitle>
+              <CardDescription>Customize footer copyright text and social media links</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <Label className="text-gray-400">Copyright Text</Label>
+                <Input
+                  value={branding.footer_copyright || ''}
+                  onChange={(e) => setBranding({ ...branding, footer_copyright: e.target.value })}
+                  placeholder={`© ${new Date().getFullYear()} ${branding.company_name}. All rights reserved.`}
+                  className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]"
+                  data-testid="footer-copyright-input"
+                />
+                <p className="text-xs text-gray-500 mt-1">Leave empty to use default copyright text</p>
+              </div>
+              
+              <div>
+                <Label className="text-gray-400 mb-3 block">Social Media Links</Label>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-gray-500 text-xs">Facebook</Label>
+                    <Input
+                      value={branding.social_facebook || ''}
+                      onChange={(e) => setBranding({ ...branding, social_facebook: e.target.value })}
+                      placeholder="https://facebook.com/yourpage"
+                      className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-gray-500 text-xs">Twitter/X</Label>
+                    <Input
+                      value={branding.social_twitter || ''}
+                      onChange={(e) => setBranding({ ...branding, social_twitter: e.target.value })}
+                      placeholder="https://twitter.com/yourhandle"
+                      className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-gray-500 text-xs">LinkedIn</Label>
+                    <Input
+                      value={branding.social_linkedin || ''}
+                      onChange={(e) => setBranding({ ...branding, social_linkedin: e.target.value })}
+                      placeholder="https://linkedin.com/company/yourcompany"
+                      className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-gray-500 text-xs">Instagram</Label>
+                    <Input
+                      value={branding.social_instagram || ''}
+                      onChange={(e) => setBranding({ ...branding, social_instagram: e.target.value })}
+                      placeholder="https://instagram.com/yourhandle"
+                      className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-gray-500 text-xs">YouTube</Label>
+                    <Input
+                      value={branding.social_youtube || ''}
+                      onChange={(e) => setBranding({ ...branding, social_youtube: e.target.value })}
+                      placeholder="https://youtube.com/c/yourchannel"
+                      className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]"
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-3">Social links will appear in the footer when URLs are provided</p>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Password Policy */}
           <Card className="bg-[#0f0f15] border-[#D4A836]/20">
             <CardHeader>
