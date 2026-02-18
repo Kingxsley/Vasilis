@@ -145,7 +145,8 @@ async def update_landing_page_content(content: LandingPageContent, request: Requ
     if content.features:
         update_doc["features"] = [f.dict() for f in content.features]
     if content.platform_image is not None:
-        update_doc["platform_image"] = content.platform_image
+        # Allow empty string to clear the image, or a valid base64/URL
+        update_doc["platform_image"] = content.platform_image if content.platform_image else None
     if content.footer_text:
         update_doc["footer_text"] = content.footer_text
     
