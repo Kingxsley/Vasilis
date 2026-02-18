@@ -242,20 +242,20 @@ export default function LandingPage() {
             <div className="animate-slide-up">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border mb-6" style={{ backgroundColor: `${primaryColor}15`, borderColor: `${primaryColor}50` }}>
                 <Zap className="w-4 h-4" style={{ color: accentColor }} />
-                <span className="text-sm" style={{ color: accentColor }}>{hero.badge_text}</span>
+                <span className="text-sm" style={{ color: accentColor }}>{hero.subtitle || hero.badge_text || branding?.tagline || "Human + AI Powered Security Training"}</span>
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight mb-6" style={{ color: headingColor, fontFamily: 'Chivo, sans-serif' }}>
-                {hero.title_line1}
-                <span style={{ color: accentColor }}> {hero.title_highlight} </span>
-                {hero.title_line2}
+                {hero.title || `${hero.title_line1 || "Train Your Team to"} `}
+                {hero.title?.includes("Defend") ? null : <span style={{ color: accentColor }}> {hero.title_highlight || "Defend"} </span>}
+                {hero.title ? null : (hero.title_line2 || "Against Cyber Threats")}
               </h1>
               <p className="text-lg mb-8 max-w-xl" style={{ color: textColor, opacity: 0.8 }}>
-                {hero.subtitle}
+                {hero.description || hero.subtitle}
               </p>
               <div className="flex flex-wrap gap-4">
-                <Link to={hero.cta_primary_link || "/auth"}>
+                <Link to={hero.button_link || hero.cta_primary_link || "/auth"}>
                   <Button size="lg" className="text-black font-semibold px-8" style={{ backgroundColor: primaryColor }} data-testid="hero-cta-btn">
-                    {hero.cta_primary_text}
+                    {hero.button_text || hero.cta_primary_text || "Start Free Trial"}
                     <ChevronRight className="w-5 h-5 ml-2" />
                   </Button>
                 </Link>
