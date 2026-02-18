@@ -387,7 +387,7 @@ export default function ContentManager() {
 
             {/* Blog Dialog */}
             <Dialog open={blogDialogOpen} onOpenChange={setBlogDialogOpen}>
-              <DialogContent className="bg-[#0f0f15] border-[#D4A836]/20 max-w-3xl max-h-[90vh] overflow-y-auto">
+              <DialogContent className="bg-[#0f0f15] border-[#D4A836]/20 max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle className="text-[#E8DDB5]">{editingPost ? 'Edit Post' : 'New Blog Post'}</DialogTitle>
                 </DialogHeader>
@@ -403,9 +403,14 @@ export default function ContentManager() {
                       className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]" rows={2} required />
                   </div>
                   <div>
-                    <Label className="text-gray-400">Content (HTML supported)</Label>
-                    <Textarea value={blogForm.content} onChange={(e) => setBlogForm({...blogForm, content: e.target.value})}
-                      className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5] font-mono text-sm" rows={10} required />
+                    <Label className="text-gray-400">Content</Label>
+                    <Suspense fallback={<div className="h-64 bg-[#1a1a24] rounded-lg flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-[#D4A836]" /></div>}>
+                      <RichTextEditor 
+                        value={blogForm.content} 
+                        onChange={(value) => setBlogForm({...blogForm, content: value})}
+                        placeholder="Write your blog post content..."
+                      />
+                    </Suspense>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
