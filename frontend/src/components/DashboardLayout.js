@@ -20,12 +20,26 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 // Logo Component - fetches custom logo from settings
 const Logo = ({ className = "h-8" }) => {
   const [branding, setBranding] = useState(null);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     axios.get(`${API}/settings/branding`)
-      .then(res => setBranding(res.data))
-      .catch(() => {});
+      .then(res => {
+        setBranding(res.data);
+        setLoaded(true);
+      })
+      .catch(() => setLoaded(true));
   }, []);
+
+  // Show placeholder while loading to prevent flickering
+  if (!loaded) {
+    return (
+      <div className={`flex items-center gap-2 ${className}`}>
+        <div className="w-7 h-7 bg-[#D4A836]/20 rounded animate-pulse" />
+        <div className="w-28 h-5 bg-[#D4A836]/20 rounded animate-pulse" />
+      </div>
+    );
+  }
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
