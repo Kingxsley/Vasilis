@@ -235,3 +235,91 @@ async def send_password_reset_email(user_email: str, user_name: str, new_passwor
     except Exception as e:
         logger.error(f"Failed to send password reset email to {user_email}: {e}")
         return False
+
+
+async def send_forgot_password_email(user_email: str, user_name: str, reset_token: str, db=None):
+    """Send forgot password email with reset link"""
+    
+    sendgrid_api_key = os.environ.get('SENDGRID_API_KEY')
+    sender_email = os.environ.get('SENDER_EMAIL')
+    
+    if not sendgrid_api_key or not sender_email:
+        logger.warning(f"Email not configured - skipping forgot password email to {user_email}")
+        return False
+    
+    # Get branding settings
+    branding = {"company_name": "Vasilis NetShield", "logo_url": None, "primary_color": "#D4A836"}
+    if db:
+        branding = await get_branding_settings(db)
+    
+    company_name = branding["company_name"]
+    logo_url = branding["logo_url"]
+    primary_color = branding["primary_color"]
+    
+    frontend_url = os.environ.get('FRONTEND_URL', '')
+    if not frontend_url:
+        backend_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://vasilisnetshield.net')
+        frontend_url = backend_url.replace('/api', '')
+    
+    reset_url = f"{frontend_url}/auth?reset_token={reset_token}"
+    
+    # Create logo HTML
+    if logo_url and logo_url.startswith('data:'):
+        logo_html = f'<img src="{logo_url}" alt="{company_name}" style="height: 60px; max-width: 200px; object-fit: contain;" />'
+    else:
+        logo_html = '<span style="font-size: 50px;">🔐</span>'
+    
+    html_content = f"""
+    <html>
+    <body style="font-family: Arial, sans-serif; background-color: #0f0f15; color: #E8DDB5; padding: 20px; margin: 0;">
+        <div style="max-width: 600px; margin: 0 auto; background: #1a1a24; border-radius: 10px; padding: 30px; border: 1px solid {primary_color};">
+            <div style="text-align: center; margin-bottom: 20px;">
+                {logo_html}
+            </div>
+            <h1 style="color: {primary_color}; margin-bottom: 10px; text-align: center;">Password Reset Request</h1>
+            
+            <p style="color: #E8DDB5; line-height: 1.6;">Hello <strong>{user_name}</strong>,</p>
+            <p style="color: #E8DDB5; line-height: 1.6;">We received a request to reset your password. Click the button below to set a new password:</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{reset_url}" style="display: inline-block; background: {primary_color}; color: #000; text-decoration: none; padding: 14px 40px; border-radius: 8px; font-weight: bold;">Reset Password</a>
+            </div>
+            
+            <p style="color: #888; font-size: 14px; text-align: center;">
+                This link will expire in 1 hour.
+            </p>
+            
+            <div style="background: #2a2a34; border-radius: 8px; padding: 15px; margin: 20px 0;">
+                <p style="color: #FF6B6B; margin: 0; font-size: 14px;">
+                    <strong>⚠️</strong> If you didn't request this password reset, you can safely ignore this email.
+                </p>
+            </div>
+            
+            <p style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #333; color: #666; font-size: 12px; text-align: center;">
+                {company_name} Security Training Platform
+            </p>
+        </div>
+    </body>
+    </html>
+    """
+    
+    message = Mail(
+        from_email=Email(sender_email, company_name),
+        to_emails=To(user_email),
+        subject=f"{company_name} - Password Reset Request",
+        html_content=Content("text/html", html_content)
+    )
+    
+    try:
+        sg = SendGridAPIClient(sendgrid_api_key)
+        response = sg.send(message)
+        
+        if response.status_code == 202:
+            logger.info(f"Forgot password email sent to {user_email}")
+            return True
+        else:
+            logger.error(f"SendGrid returned status {response.status_code}")
+            return False
+    except Exception as e:
+        logger.error(f"Failed to send forgot password email to {user_email}: {e}")
+        return False
