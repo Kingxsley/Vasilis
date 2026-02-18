@@ -101,7 +101,13 @@ export default function Settings() {
         show_blog: branding.show_blog,
         show_videos: branding.show_videos,
         show_news: branding.show_news,
-        show_about: branding.show_about
+        show_about: branding.show_about,
+        footer_copyright: branding.footer_copyright,
+        social_facebook: branding.social_facebook,
+        social_twitter: branding.social_twitter,
+        social_linkedin: branding.social_linkedin,
+        social_instagram: branding.social_instagram,
+        social_youtube: branding.social_youtube
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
