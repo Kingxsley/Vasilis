@@ -1051,8 +1051,38 @@ async def submit_answer(session_id: str, data: SubmitAnswerRequest, user: dict =
     )
 
 async def generate_scenario(module_type: str, index: int) -> dict:
-    """Generate a training scenario using AI or fallback to templates"""
+    """Generate a training scenario - tries custom DB scenarios first, then AI, then templates"""
     scenario_id = f"scen_{uuid.uuid4().hex[:12]}"
+    
+    # Map module types to scenario types
+    type_mapping = {
+        "phishing email": "phishing_email",
+        "malicious ads": "malicious_ads",
+        "social engineering": "social_engineering",
+    }
+    mapped_type = type_mapping.get(module_type.lower(), module_type.replace(" ", "_"))
+    
+    # First, try to get custom scenarios from database
+    try:
+        custom_scenarios = await db.scenarios.find(
+            {"scenario_type": mapped_type, "is_active": True},
+            {"_id": 0}
+        ).to_list(100)
+        
+        if custom_scenarios:
+            # Use custom scenario based on index (cycle through them)
+            scenario = custom_scenarios[index % len(custom_scenarios)]
+            return {
+                "scenario_id": scenario.get("scenario_id", scenario_id),
+                "scenario_type": scenario["scenario_type"],
+                "title": scenario["title"],
+                "content": scenario["content"],
+                "correct_answer": scenario["correct_answer"],
+                "explanation": scenario["explanation"],
+                "difficulty": scenario["difficulty"]
+            }
+    except Exception as e:
+        logging.warning(f"Failed to fetch custom scenarios: {e}")
     
     # Try AI generation with OpenAI API (optional - set OPENAI_API_KEY in .env)
     openai_key = os.environ.get('OPENAI_API_KEY')
