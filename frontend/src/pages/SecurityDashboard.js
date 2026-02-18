@@ -1,0 +1,475 @@
+import React, { useEffect, useState } from 'react';
+import { DashboardLayout } from '../components/DashboardLayout';
+import { useAuth } from '../App';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Badge } from '../components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../components/ui/select';
+import { Input } from '../components/ui/input';
+import { Shield, AlertTriangle, CheckCircle, Lock, Unlock, RefreshCw, Search, Activity, Users, Key, Globe, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import axios from 'axios';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
+
+export default function SecurityDashboard() {
+  const { token, user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [dashboard, setDashboard] = useState(null);
+  const [logs, setLogs] = useState([]);
+  const [logsTotal, setLogsTotal] = useState(0);
+  const [logsPage, setLogsPage] = useState(0);
+  const [loginHistory, setLoginHistory] = useState([]);
+  const [filters, setFilters] = useState({
+    action: '',
+    severity: '',
+    search: ''
+  });
+
+  useEffect(() => {
+    fetchDashboard();
+    fetchLogs();
+    fetchLoginHistory();
+  }, []);
+
+  useEffect(() => {
+    fetchLogs();
+  }, [logsPage, filters]);
+
+  const fetchDashboard = async () => {
+    try {
+      const res = await axios.get(`${API}/security/dashboard`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setDashboard(res.data);
+    } catch (err) {
+      toast.error('Failed to load security dashboard');
+    }
+  };
+
+  const fetchLogs = async () => {
+    try {
+      const params = new URLSearchParams({
+        limit: '20',
+        offset: String(logsPage * 20)
+      });
+      if (filters.action) params.append('action', filters.action);
+      if (filters.severity) params.append('severity', filters.severity);
+      if (filters.search) params.append('user_email', filters.search);
+      
+      const res = await axios.get(`${API}/security/audit-logs?${params}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setLogs(res.data.logs);
+      setLogsTotal(res.data.total);
+    } catch (err) {
+      console.error('Failed to load audit logs');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchLoginHistory = async () => {
+    try {
+      const res = await axios.get(`${API}/security/login-history?days=7`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setLoginHistory(res.data.history);
+    } catch (err) {
+      console.error('Failed to load login history');
+    }
+  };
+
+  const unlockAccount = async (email) => {
+    try {
+      await axios.post(`${API}/security/unlock-account?email=${encodeURIComponent(email)}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success(`Account ${email} unlocked`);
+      fetchDashboard();
+    } catch (err) {
+      toast.error('Failed to unlock account');
+    }
+  };
+
+  const getSeverityBadge = (severity) => {
+    const colors = {
+      critical: 'bg-red-500/20 text-red-400 border-red-500/30',
+      warning: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+      info: 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+    };
+    return colors[severity] || colors.info;
+  };
+
+  const getActionLabel = (action) => {
+    const labels = {
+      login_success: 'Login Success',
+      login_failed_user_not_found: 'Login Failed (Unknown User)',
+      login_failed_wrong_password: 'Login Failed (Wrong Password)',
+      login_blocked_lockout: 'Login Blocked (Lockout)',
+      login_failed_inactive: 'Login Failed (Inactive)',
+      password_reset_completed: 'Password Reset',
+      forgot_password_requested: 'Forgot Password',
+      admin_unlock_account: 'Admin Unlock'
+    };
+    return labels[action] || action;
+  };
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 animate-spin text-[#D4A836]" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  return (
+    <DashboardLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-[#E8DDB5]">Security Dashboard</h1>
+            <p className="text-gray-400">Monitor security events and manage account access</p>
+          </div>
+          <Button 
+            onClick={() => { fetchDashboard(); fetchLogs(); }}
+            variant="outline"
+            className="border-[#D4A836]/30"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
+
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <Card className="bg-[#0f0f15] border-[#D4A836]/20">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-400">Successful Logins (24h)</p>
+                  <p className="text-2xl font-bold text-green-400">
+                    {dashboard?.summary?.successful_logins_24h || 0}
+                  </p>
+                </div>
+                <CheckCircle className="w-8 h-8 text-green-400/40" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-[#0f0f15] border-[#D4A836]/20">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-400">Failed Logins (24h)</p>
+                  <p className="text-2xl font-bold text-red-400">
+                    {dashboard?.summary?.failed_logins_24h || 0}
+                  </p>
+                </div>
+                <AlertTriangle className="w-8 h-8 text-red-400/40" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-[#0f0f15] border-[#D4A836]/20">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-400">Account Lockouts (24h)</p>
+                  <p className="text-2xl font-bold text-yellow-400">
+                    {dashboard?.summary?.account_lockouts_24h || 0}
+                  </p>
+                </div>
+                <Lock className="w-8 h-8 text-yellow-400/40" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-[#0f0f15] border-[#D4A836]/20">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-400">Password Resets (24h)</p>
+                  <p className="text-2xl font-bold text-blue-400">
+                    {dashboard?.summary?.password_resets_24h || 0}
+                  </p>
+                </div>
+                <Key className="w-8 h-8 text-blue-400/40" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-[#0f0f15] border-[#D4A836]/20">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-400">Active Lockouts</p>
+                  <p className="text-2xl font-bold text-orange-400">
+                    {dashboard?.summary?.active_lockouts || 0}
+                  </p>
+                </div>
+                <Shield className="w-8 h-8 text-orange-400/40" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Active Lockouts & Suspicious IPs */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Active Lockouts */}
+          <Card className="bg-[#0f0f15] border-[#D4A836]/20">
+            <CardHeader>
+              <CardTitle className="text-[#E8DDB5] flex items-center gap-2">
+                <Lock className="w-5 h-5 text-yellow-400" />
+                Active Lockouts
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {dashboard?.active_lockouts?.length === 0 ? (
+                <p className="text-gray-500 text-center py-4">No active lockouts</p>
+              ) : (
+                <div className="space-y-3">
+                  {dashboard?.active_lockouts?.map((lockout, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 bg-[#1a1a24] rounded-lg">
+                      <div>
+                        <p className="text-[#E8DDB5] font-medium">{lockout.email}</p>
+                        <p className="text-xs text-gray-500">
+                          {lockout.attempts} failed attempts • IP: {lockout.last_ip}
+                        </p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-green-500/30 text-green-400 hover:bg-green-500/10"
+                        onClick={() => unlockAccount(lockout.email)}
+                      >
+                        <Unlock className="w-4 h-4 mr-1" />
+                        Unlock
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Suspicious IPs */}
+          <Card className="bg-[#0f0f15] border-[#D4A836]/20">
+            <CardHeader>
+              <CardTitle className="text-[#E8DDB5] flex items-center gap-2">
+                <Globe className="w-5 h-5 text-red-400" />
+                Suspicious IPs (24h)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {dashboard?.suspicious_ips?.length === 0 ? (
+                <p className="text-gray-500 text-center py-4">No suspicious activity detected</p>
+              ) : (
+                <div className="space-y-3">
+                  {dashboard?.suspicious_ips?.map((ip, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 bg-[#1a1a24] rounded-lg">
+                      <div>
+                        <p className="text-[#E8DDB5] font-mono">{ip.ip}</p>
+                        <p className="text-xs text-gray-500">
+                          {ip.failed_attempts} failed attempts targeting {ip.emails_targeted} email(s)
+                        </p>
+                      </div>
+                      <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
+                        {ip.failed_attempts} attempts
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Login History Chart */}
+        <Card className="bg-[#0f0f15] border-[#D4A836]/20">
+          <CardHeader>
+            <CardTitle className="text-[#E8DDB5] flex items-center gap-2">
+              <Activity className="w-5 h-5 text-[#D4A836]" />
+              Login Activity (Last 7 Days)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-end gap-2 h-32">
+              {loginHistory.map((day, idx) => {
+                const maxValue = Math.max(...loginHistory.map(d => d.successful + d.failed), 1);
+                const successHeight = (day.successful / maxValue) * 100;
+                const failHeight = (day.failed / maxValue) * 100;
+                
+                return (
+                  <div key={idx} className="flex-1 flex flex-col items-center gap-1">
+                    <div className="flex-1 w-full flex flex-col justify-end gap-0.5">
+                      <div 
+                        className="w-full bg-green-500/60 rounded-t"
+                        style={{ height: `${successHeight}%`, minHeight: day.successful > 0 ? '4px' : 0 }}
+                        title={`${day.successful} successful`}
+                      />
+                      <div 
+                        className="w-full bg-red-500/60 rounded-b"
+                        style={{ height: `${failHeight}%`, minHeight: day.failed > 0 ? '4px' : 0 }}
+                        title={`${day.failed} failed`}
+                      />
+                    </div>
+                    <span className="text-[10px] text-gray-500">
+                      {new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="flex justify-center gap-6 mt-4">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-green-500/60 rounded" />
+                <span className="text-xs text-gray-400">Successful</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-red-500/60 rounded" />
+                <span className="text-xs text-gray-400">Failed</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Audit Logs */}
+        <Card className="bg-[#0f0f15] border-[#D4A836]/20">
+          <CardHeader>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <CardTitle className="text-[#E8DDB5]">Audit Logs</CardTitle>
+              <div className="flex flex-wrap gap-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <Input
+                    placeholder="Search by email..."
+                    value={filters.search}
+                    onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                    className="pl-9 w-48 bg-[#1a1a24] border-[#D4A836]/20"
+                  />
+                </div>
+                <Select value={filters.action} onValueChange={(v) => setFilters({ ...filters, action: v })}>
+                  <SelectTrigger className="w-40 bg-[#1a1a24] border-[#D4A836]/20">
+                    <SelectValue placeholder="All Actions" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Actions</SelectItem>
+                    <SelectItem value="login_success">Login Success</SelectItem>
+                    <SelectItem value="login_failed_wrong_password">Login Failed</SelectItem>
+                    <SelectItem value="login_blocked_lockout">Lockout</SelectItem>
+                    <SelectItem value="password_reset_completed">Password Reset</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={filters.severity} onValueChange={(v) => setFilters({ ...filters, severity: v })}>
+                  <SelectTrigger className="w-32 bg-[#1a1a24] border-[#D4A836]/20">
+                    <SelectValue placeholder="Severity" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All</SelectItem>
+                    <SelectItem value="critical">Critical</SelectItem>
+                    <SelectItem value="warning">Warning</SelectItem>
+                    <SelectItem value="info">Info</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-[#D4A836]/20">
+                    <TableHead className="text-gray-400">Timestamp</TableHead>
+                    <TableHead className="text-gray-400">Action</TableHead>
+                    <TableHead className="text-gray-400">Email</TableHead>
+                    <TableHead className="text-gray-400">IP Address</TableHead>
+                    <TableHead className="text-gray-400">Severity</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {logs.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-gray-500 py-8">
+                        No audit logs found
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    logs.map((log, idx) => (
+                      <TableRow key={idx} className="border-[#D4A836]/10">
+                        <TableCell className="text-gray-400 text-sm">
+                          {new Date(log.timestamp).toLocaleString()}
+                        </TableCell>
+                        <TableCell className="text-[#E8DDB5]">
+                          {getActionLabel(log.action)}
+                        </TableCell>
+                        <TableCell className="text-gray-400">
+                          {log.user_email || '-'}
+                        </TableCell>
+                        <TableCell className="text-gray-400 font-mono text-sm">
+                          {log.ip_address || '-'}
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getSeverityBadge(log.severity)}>
+                            {log.severity}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+            
+            {/* Pagination */}
+            {logsTotal > 20 && (
+              <div className="flex items-center justify-between mt-4">
+                <p className="text-sm text-gray-500">
+                  Showing {logsPage * 20 + 1}-{Math.min((logsPage + 1) * 20, logsTotal)} of {logsTotal}
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={logsPage === 0}
+                    onClick={() => setLogsPage(logsPage - 1)}
+                    className="border-[#D4A836]/30"
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={(logsPage + 1) * 20 >= logsTotal}
+                    onClick={() => setLogsPage(logsPage + 1)}
+                    className="border-[#D4A836]/30"
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </DashboardLayout>
+  );
+}
