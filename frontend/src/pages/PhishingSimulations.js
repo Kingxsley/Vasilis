@@ -71,8 +71,21 @@ export default function PhishingSimulations() {
     sender_name: '',
     sender_email: '',
     body_html: '',
-    button_text: ''
+    button_text: '',
+    attachments: []
   });
+  
+  // Preview and Image Library states
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState('');
+  const [showImageLibrary, setShowImageLibrary] = useState(false);
+  const [mediaImages, setMediaImages] = useState([]);
+  const [loadingMedia, setLoadingMedia] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
+  
+  // Campaign filter states
+  const [campaignFilter, setCampaignFilter] = useState('all');
 
   const headers = { Authorization: `Bearer ${token}` };
 
