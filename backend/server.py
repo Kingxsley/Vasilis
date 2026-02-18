@@ -110,6 +110,19 @@ class UserRegister(BaseModel):
     email: EmailStr
     password: str
     name: str
+    
+    @field_validator('password')
+    @classmethod
+    def validate_password(cls, v):
+        is_valid, error = PasswordPolicy.validate(v)
+        if not is_valid:
+            raise ValueError(error)
+        return v
+    
+    @field_validator('name')
+    @classmethod
+    def sanitize_name(cls, v):
+        return sanitize_string(v, max_length=100)
 
 class UserLogin(BaseModel):
     email: EmailStr
