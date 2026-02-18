@@ -500,14 +500,25 @@ export default function ContentManager() {
 
           {/* VIDEOS TAB */}
           <TabsContent value="videos">
-            <div className="flex justify-end mb-4">
-              <Button onClick={() => setVideoDialogOpen(true)} className="bg-[#D4A836] hover:bg-[#C49A30] text-black">
+            <div className="flex justify-between items-center mb-4">
+              <Select value={videoFilter} onValueChange={setVideoFilter}>
+                <SelectTrigger className="w-48 bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]">
+                  <SelectValue placeholder="Filter by category" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#1a1a24] border-[#D4A836]/30">
+                  <SelectItem value="all" className="text-[#E8DDB5]">All Categories</SelectItem>
+                  {VIDEO_CATEGORIES.map(cat => (
+                    <SelectItem key={cat.value} value={cat.value} className="text-[#E8DDB5]">{cat.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button onClick={() => { setEditingVideo(null); setVideoDialogOpen(true); }} className="bg-[#D4A836] hover:bg-[#C49A30] text-black">
                 <Youtube className="w-4 h-4 mr-2" />Add Video
               </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {videos.map((video) => (
+              {videos.filter(v => videoFilter === 'all' || v.category === videoFilter).map((video) => (
                 <Card key={video.video_id} className="bg-[#0f0f15] border-[#D4A836]/20 overflow-hidden">
                   <div className="aspect-video bg-black relative">
                     <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover" />
