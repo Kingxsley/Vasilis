@@ -294,7 +294,7 @@ async def list_news(limit: int = 10, include_rss: bool = True):
     # Sort by date (approximate, since RSS dates vary)
     try:
         combined_news.sort(key=lambda x: x.get("created_at", ""), reverse=True)
-    except:
+    except Exception:
         pass
     
     return {"news": combined_news[:limit * 2]}  # Return more items since we have mixed sources
