@@ -392,7 +392,7 @@ export default function UsersPage() {
                       </TableCell>
                       <TableCell>
                         <span className={`px-2 py-1 rounded text-xs font-medium ${getRoleBadgeColor(user.role)}`}>
-                          {user.role === 'super_admin' && <Shield className="w-3 h-3 inline mr-1" />}
+                          {user.role === 'super_admin' && <Award className="w-3 h-3 inline mr-1" />}
                           {getRoleLabel(user.role)}
                         </span>
                       </TableCell>
