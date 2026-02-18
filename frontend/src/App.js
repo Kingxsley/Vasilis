@@ -275,6 +275,23 @@ const LoadingFallback = () => (
   </div>
 );
 
+// Ad Tracker Wrapper - routes campaign IDs to AdTracker
+// Checks if the path looks like a campaign ID (starts with "adcamp_")
+// If not a campaign ID, redirect to home
+const AdTrackerWrapper = () => {
+  const params = useParams();
+  const campaignId = params.campaignId;
+  
+  // Check if this looks like a valid campaign ID
+  // Campaign IDs start with "adcamp_" 
+  if (campaignId && campaignId.startsWith('adcamp_')) {
+    return <AdTracker />;
+  }
+  
+  // Not a valid campaign ID - redirect to home
+  return <Navigate to="/" replace />;
+};
+
 // App Router
 const AppRouter = () => {
   const location = useLocation();
