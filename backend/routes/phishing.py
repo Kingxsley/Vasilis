@@ -762,3 +762,79 @@ async def seed_default_templates(request: Request):
         "message": f"Created {len(new_templates)} default templates",
         "templates_created": [t["name"] for t in new_templates]
     }
+
+
+# ============== MEDIA/IMAGE ROUTES ==============
+
+@router.post("/media/upload")
+async def upload_phishing_media(request: Request, file: UploadFile = File(...)):
+    """Upload an image for use in phishing email templates"""
+    user = await require_admin(request)
+    db = get_db()
+    
+    allowed_types = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Invalid file type. Allowed: PNG, JPEG, WebP, GIF")
+    
+    contents = await file.read()
+    if len(contents) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File too large. Max 5MB")
+    
+    image_id = f"phimg_{uuid.uuid4().hex[:12]}"
+    base64_data = base64.b64encode(contents).decode('utf-8')
+    data_url = f"data:{file.content_type};base64,{base64_data}"
+    
+    image_doc = {
+        "image_id": image_id,
+        "filename": file.filename,
+        "content_type": file.content_type,
+        "data_url": data_url,
+        "size": len(contents),
+        "uploaded_by": user["user_id"],
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.phishing_media.insert_one(image_doc)
+    
+    return {
+        "image_id": image_id,
+        "filename": file.filename,
+        "data_url": data_url,
+        "message": "Image uploaded successfully"
+    }
+
+
+@router.get("/media")
+async def list_phishing_media(request: Request, limit: int = 50):
+    """List all uploaded images for phishing templates"""
+    await require_admin(request)
+    db = get_db()
+    
+    images = await db.phishing_media.find({}, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
+    return {"images": images}
+
+
+@router.get("/media/{image_id}")
+async def get_phishing_media(image_id: str, request: Request):
+    """Get a specific image"""
+    await require_admin(request)
+    db = get_db()
+    
+    image = await db.phishing_media.find_one({"image_id": image_id}, {"_id": 0})
+    if not image:
+        raise HTTPException(status_code=404, detail="Image not found")
+    
+    return image
+
+
+@router.delete("/media/{image_id}")
+async def delete_phishing_media(image_id: str, request: Request):
+    """Delete an image from the library"""
+    await require_admin(request)
+    db = get_db()
+    
+    result = await db.phishing_media.delete_one({"image_id": image_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Image not found")
+    
+    return {"message": "Image deleted"}
