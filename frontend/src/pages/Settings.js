@@ -60,7 +60,11 @@ export default function Settings() {
         secondary_color: branding.secondary_color,
         text_color: branding.text_color,
         heading_color: branding.heading_color,
-        accent_color: branding.accent_color
+        accent_color: branding.accent_color,
+        show_blog: branding.show_blog,
+        show_videos: branding.show_videos,
+        show_news: branding.show_news,
+        show_about: branding.show_about
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
