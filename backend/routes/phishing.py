@@ -317,7 +317,7 @@ async def launch_campaign(campaign_id: str, request: Request):
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
     
-    if campaign.get("status") not in ["draft", "paused"]:
+    if campaign.get("status") not in ["draft", "paused", "scheduled"]:
         raise HTTPException(status_code=400, detail=f"Campaign cannot be launched from {campaign.get('status')} status")
     
     template = await db.phishing_templates.find_one({"template_id": campaign["template_id"]}, {"_id": 0})
