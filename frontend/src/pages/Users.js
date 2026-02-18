@@ -247,6 +247,7 @@ export default function UsersPage() {
                     </SelectTrigger>
                     <SelectContent className="bg-[#161B22] border-[#30363D]">
                       <SelectItem value="trainee">Trainee</SelectItem>
+                      <SelectItem value="media_manager">Media Manager</SelectItem>
                       <SelectItem value="org_admin">Organization Admin</SelectItem>
                       {currentUser?.role === 'super_admin' && (
                         <SelectItem value="super_admin">Super Admin</SelectItem>
