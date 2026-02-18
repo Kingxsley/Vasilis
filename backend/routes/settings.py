@@ -3,8 +3,51 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, timezone
 import base64
+import io
+from PIL import Image
 
 router = APIRouter(prefix="/settings", tags=["Settings"])
+
+
+def optimize_image(image_data: bytes, max_size: tuple = (800, 800), quality: int = 85) -> bytes:
+    """
+    Optimize an image for web display.
+    - Resizes to fit within max_size while maintaining aspect ratio
+    - Compresses with specified quality
+    - Converts to WebP for better compression (falls back to PNG for transparency)
+    """
+    try:
+        # Open image from bytes
+        img = Image.open(io.BytesIO(image_data))
+        
+        # Convert RGBA to RGB if no transparency needed
+        if img.mode == 'RGBA':
+            # Check if image has actual transparency
+            if img.split()[3].getextrema()[0] < 255:
+                # Has transparency - keep RGBA
+                pass
+            else:
+                # No transparency - convert to RGB
+                img = img.convert('RGB')
+        elif img.mode != 'RGB':
+            img = img.convert('RGB')
+        
+        # Resize if larger than max_size
+        img.thumbnail(max_size, Image.Resampling.LANCZOS)
+        
+        # Save to bytes
+        output = io.BytesIO()
+        if img.mode == 'RGBA':
+            img.save(output, format='PNG', optimize=True)
+            mime_type = 'image/png'
+        else:
+            img.save(output, format='WEBP', quality=quality, optimize=True)
+            mime_type = 'image/webp'
+        
+        return output.getvalue(), mime_type
+    except Exception as e:
+        print(f"Image optimization failed: {e}")
+        return image_data, 'image/png'
 
 
 def get_db():
