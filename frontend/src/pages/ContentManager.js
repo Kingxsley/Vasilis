@@ -505,28 +505,81 @@ export default function ContentManager() {
 
           {/* NEWS TAB */}
           <TabsContent value="news">
-            <div className="flex justify-end mb-4">
-              <Button onClick={() => setNewsDialogOpen(true)} className="bg-[#D4A836] hover:bg-[#C49A30] text-black">
-                <Plus className="w-4 h-4 mr-2" />Post News
-              </Button>
-            </div>
-
-            <div className="grid gap-4">
-              {news.map((item) => (
-                <Card key={item.news_id} className="bg-[#0f0f15] border-[#D4A836]/20">
-                  <CardContent className="p-4 flex justify-between items-start">
-                    <div>
-                      <h3 className="text-[#E8DDB5] font-medium">{item.title}</h3>
-                      <p className="text-gray-400 text-sm mt-1">{item.content}</p>
-                      <p className="text-gray-500 text-xs mt-2">{new Date(item.created_at).toLocaleDateString()}</p>
+            <div className="space-y-6">
+              {/* RSS Feeds Section */}
+              <Card className="bg-[#0f0f15] border-[#D4A836]/20">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-[#E8DDB5] text-lg flex items-center gap-2">
+                    <Rss className="w-5 h-5 text-[#D4A836]" />
+                    RSS Feed Sources
+                  </CardTitle>
+                  <Button size="sm" onClick={() => setRssFeedDialogOpen(true)} className="bg-[#D4A836] hover:bg-[#C49A30] text-black">
+                    <Plus className="w-4 h-4 mr-1" />Add Feed
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  {rssFeeds.length === 0 ? (
+                    <p className="text-gray-500 text-sm">No RSS feeds configured. Add external news sources to display news from other sites.</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {rssFeeds.map((feed) => (
+                        <div key={feed.feed_id} className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${feed.enabled ? 'bg-[#1a1a24] border-[#D4A836]/30' : 'bg-[#1a1a24]/50 border-gray-600'}`}>
+                          <Globe className={`w-4 h-4 ${feed.enabled ? 'text-[#D4A836]' : 'text-gray-500'}`} />
+                          <span className={`text-sm ${feed.enabled ? 'text-[#E8DDB5]' : 'text-gray-500'}`}>{feed.name}</span>
+                          <button onClick={() => toggleRssFeed(feed)} className={`p-1 rounded ${feed.enabled ? 'text-green-400 hover:bg-green-500/10' : 'text-gray-500 hover:bg-gray-500/10'}`}>
+                            {feed.enabled ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                          </button>
+                          <button onClick={() => deleteRssFeed(feed.feed_id)} className="text-gray-400 hover:text-red-400 p-1">
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
                     </div>
-                    <Button size="sm" variant="ghost" onClick={() => deleteNews(item.news_id)} className="text-gray-400 hover:text-red-400">
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-              {news.length === 0 && <p className="text-center text-gray-500 py-8">No news yet</p>}
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* News Posts Section */}
+              <div className="flex justify-between items-center">
+                <h3 className="text-[#E8DDB5] font-medium">All News (Local + RSS)</h3>
+                <Button onClick={() => setNewsDialogOpen(true)} className="bg-[#D4A836] hover:bg-[#C49A30] text-black">
+                  <Plus className="w-4 h-4 mr-2" />Post News
+                </Button>
+              </div>
+
+              <div className="grid gap-4">
+                {news.map((item) => (
+                  <Card key={item.news_id} className="bg-[#0f0f15] border-[#D4A836]/20">
+                    <CardContent className="p-4 flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="text-[#E8DDB5] font-medium">{item.title}</h3>
+                          {item.source_type === 'rss' ? (
+                            <Badge className="bg-blue-500/20 text-blue-400 text-xs">{item.source}</Badge>
+                          ) : (
+                            <Badge className="bg-green-500/20 text-green-400 text-xs">Local</Badge>
+                          )}
+                        </div>
+                        <p className="text-gray-400 text-sm mt-1">{item.content}</p>
+                        <div className="flex items-center gap-4 mt-2">
+                          <p className="text-gray-500 text-xs">{new Date(item.created_at).toLocaleDateString()}</p>
+                          {item.link && (
+                            <a href={item.link} target="_blank" rel="noopener noreferrer" className="text-[#D4A836] text-xs flex items-center gap-1 hover:underline">
+                              <ExternalLink className="w-3 h-3" /> Read More
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                      {item.source !== 'rss' && item.source_type !== 'rss' && (
+                        <Button size="sm" variant="ghost" onClick={() => deleteNews(item.news_id)} className="text-gray-400 hover:text-red-400">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+                {news.length === 0 && <p className="text-center text-gray-500 py-8">No news yet</p>}
+              </div>
             </div>
 
             {/* News Dialog */}
@@ -553,6 +606,32 @@ export default function ContentManager() {
                     <Button type="button" variant="outline" onClick={() => setNewsDialogOpen(false)} className="border-[#D4A836]/30 text-[#E8DDB5]">Cancel</Button>
                     <Button type="submit" disabled={saving} className="bg-[#D4A836] hover:bg-[#C49A30] text-black">
                       {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}Post
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+
+            {/* RSS Feed Dialog */}
+            <Dialog open={rssFeedDialogOpen} onOpenChange={setRssFeedDialogOpen}>
+              <DialogContent className="bg-[#0f0f15] border-[#D4A836]/20">
+                <DialogHeader><DialogTitle className="text-[#E8DDB5]">Add RSS Feed</DialogTitle></DialogHeader>
+                <form onSubmit={handleRssFeedSubmit} className="space-y-4 mt-4">
+                  <div>
+                    <Label className="text-gray-400">Feed Name</Label>
+                    <Input value={rssFeedForm.name} onChange={(e) => setRssFeedForm({...rssFeedForm, name: e.target.value})}
+                      placeholder="TechCrunch Security" className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]" required />
+                  </div>
+                  <div>
+                    <Label className="text-gray-400">RSS Feed URL</Label>
+                    <Input value={rssFeedForm.url} onChange={(e) => setRssFeedForm({...rssFeedForm, url: e.target.value})}
+                      placeholder="https://feeds.example.com/rss" className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]" required />
+                    <p className="text-xs text-gray-500 mt-1">Enter the RSS or Atom feed URL</p>
+                  </div>
+                  <div className="flex justify-end gap-3">
+                    <Button type="button" variant="outline" onClick={() => setRssFeedDialogOpen(false)} className="border-[#D4A836]/30 text-[#E8DDB5]">Cancel</Button>
+                    <Button type="submit" disabled={saving} className="bg-[#D4A836] hover:bg-[#C49A30] text-black">
+                      {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}Add Feed
                     </Button>
                   </div>
                 </form>
