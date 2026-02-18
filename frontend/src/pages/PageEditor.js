@@ -235,29 +235,31 @@ export default function PageEditor() {
             <Button 
               onClick={saveContent}
               disabled={saving}
+              size="sm"
               className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
             >
-              {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-              Save Changes
+              {saving ? <Loader2 className="w-4 h-4 mr-1 sm:mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-1 sm:mr-2" />}
+              Save
             </Button>
           </div>
         </div>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-[#161B22] border border-[#30363D]">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+          <TabsList className="bg-[#161B22] border border-[#30363D] flex-wrap h-auto p-1">
             <TabsTrigger 
               value="hero" 
-              className="data-[state=active]:bg-[#D4A836]/20 data-[state=active]:text-[#D4A836]"
+              className="data-[state=active]:bg-[#D4A836]/20 data-[state=active]:text-[#D4A836] text-xs sm:text-sm"
             >
-              <Layout className="w-4 h-4 mr-2" />
-              Hero Section
+              <Layout className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Hero Section</span>
+              <span className="sm:hidden">Hero</span>
             </TabsTrigger>
             <TabsTrigger 
               value="stats"
-              className="data-[state=active]:bg-[#D4A836]/20 data-[state=active]:text-[#D4A836]"
+              className="data-[state=active]:bg-[#D4A836]/20 data-[state=active]:text-[#D4A836] text-xs sm:text-sm"
             >
-              <BarChart3 className="w-4 h-4 mr-2" />
+              <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
               Stats
             </TabsTrigger>
             <TabsTrigger 
