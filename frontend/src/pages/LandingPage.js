@@ -412,7 +412,7 @@ export default function LandingPage() {
             
             <div className="grid md:grid-cols-3 gap-8">
               {defaultFeatures.map((feature, index) => {
-                const IconComponent = iconMap[feature.icon] || Shield;
+                const IconComponent = iconMap[feature.icon] || Zap;
                 return (
                   <div key={index} className="group card-dark rounded-xl p-8 card-hover" data-testid={`feature-${index}`}>
                     <div 
