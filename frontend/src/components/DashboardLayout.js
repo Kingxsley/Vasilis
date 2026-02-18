@@ -65,6 +65,7 @@ const navGroups = [
     items: [
       { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, adminOnly: true },
       { path: '/analytics', label: 'Analytics', icon: BarChart3, adminOnly: true },
+      { path: '/advanced-analytics', label: 'Advanced Analytics', icon: TrendingUp, adminOnly: true },
     ]
   },
   {
@@ -111,6 +112,7 @@ const navGroups = [
     icon: Cog,
     items: [
       { path: '/settings', label: 'Settings', icon: Settings, adminOnly: true },
+      { path: '/email-templates', label: 'Email Templates', icon: MailIcon, adminOnly: true },
       { path: '/security', label: 'Security', icon: ShieldAlert, adminOnly: true },
     ]
   },
