@@ -24,7 +24,8 @@ import {
 } from '../components/ui/select';
 import { 
   Monitor, Plus, Eye, MousePointer, Users, Trash2, 
-  BarChart3, AlertTriangle, FileText, Loader2, RefreshCw, Code
+  BarChart3, AlertTriangle, FileText, Loader2, RefreshCw, Code,
+  Play, Pause, Clock, Calendar
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
@@ -44,6 +45,9 @@ export default function AdSimulations() {
   const [campaignTargets, setCampaignTargets] = useState([]);
   const [campaignStats, setCampaignStats] = useState(null);
   
+  // Campaign filter state
+  const [campaignFilter, setCampaignFilter] = useState('all');
+  
   const [showNewCampaign, setShowNewCampaign] = useState(false);
   const [showNewTemplate, setShowNewTemplate] = useState(false);
   const [showCampaignDetails, setShowCampaignDetails] = useState(false);
@@ -52,7 +56,9 @@ export default function AdSimulations() {
     name: '',
     organization_id: '',
     template_id: '',
-    target_user_ids: []
+    target_user_ids: [],
+    status: 'active',
+    scheduled_at: ''
   });
   
   const [newTemplate, setNewTemplate] = useState({
