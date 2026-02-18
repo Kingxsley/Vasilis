@@ -61,6 +61,7 @@ export default function LandingPage() {
   const [content, setContent] = useState(null);
   const [branding, setBranding] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     Promise.all([
