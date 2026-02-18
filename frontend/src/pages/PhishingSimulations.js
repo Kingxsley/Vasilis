@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { useAuth } from '../App';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
@@ -26,10 +26,13 @@ import {
 import { 
   Mail, Plus, Play, Pause, CheckCircle, Eye, MousePointer, 
   Send, Users, Building2, Trash2, BarChart3, AlertTriangle,
-  FileText, Loader2, RefreshCw, Download, FileSpreadsheet
+  FileText, Loader2, RefreshCw, Download, FileSpreadsheet, Link, Bold, Italic
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
+
+// Lazy load the RichTextEditor
+const RichTextEditor = lazy(() => import('../components/RichTextEditor'));
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
