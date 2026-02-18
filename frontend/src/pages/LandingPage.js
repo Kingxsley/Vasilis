@@ -145,6 +145,22 @@ export default function LandingPage() {
   const faqSection = findSection('faq');
   const faqContent = faqSection?.content || null;
 
+  // Get Pricing section
+  const pricingSection = findSection('pricing');
+  const pricingContent = pricingSection?.content || null;
+
+  // Get Testimonials section
+  const testimonialsSection = findSection('testimonials');
+  const testimonialsContent = testimonialsSection?.content || null;
+
+  // Get Team section
+  const teamSection = findSection('team');
+  const teamContent = teamSection?.content || null;
+
+  // Get Stats section
+  const statsSection = findSection('stats');
+  const statsContent = statsSection?.content || null;
+
   // Navigation visibility from branding settings
   const showBlog = branding?.show_blog !== false;
   const showVideos = branding?.show_videos !== false;
