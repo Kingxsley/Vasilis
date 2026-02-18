@@ -1,17 +1,34 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Mail, MousePointerClick, Users, BarChart3, Lock, ChevronRight, Zap, Target, Award, Shield } from 'lucide-react';
+import axios from 'axios';
 
-// Logo Component (self-hosted - no external dependencies)
-const Logo = ({ className = "h-10" }) => (
-  <div className={`flex items-center gap-2 ${className}`}>
-    <Shield className="w-8 h-8 text-[#D4A836]" />
-    <span className="text-xl font-bold text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
-      VasilisNetShield
-    </span>
-  </div>
-);
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+// Logo Component - fetches custom logo from settings
+const Logo = ({ className = "h-10" }) => {
+  const [branding, setBranding] = useState(null);
+
+  useEffect(() => {
+    axios.get(`${API}/settings/branding`)
+      .then(res => setBranding(res.data))
+      .catch(() => {});
+  }, []);
+
+  return (
+    <div className={`flex items-center gap-2 ${className}`}>
+      {branding?.logo_url ? (
+        <img src={branding.logo_url} alt="Logo" className="w-8 h-8 object-contain" />
+      ) : (
+        <Shield className="w-8 h-8 text-[#D4A836]" />
+      )}
+      <span className="text-xl font-bold text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
+        {branding?.company_name || 'VasilisNetShield'}
+      </span>
+    </div>
+  );
+};
 
 export default function LandingPage() {
   return (
