@@ -539,14 +539,14 @@ export default function LandingPage() {
       <section className="py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
-            Ready to Strengthen Your Security?
+            {cta.title}
           </h2>
           <p className="text-gray-500 mb-8 max-w-2xl mx-auto">
-            Join hundreds of organizations already using Vasilis NetShield to build a security-conscious workforce.
+            {cta.description}
           </p>
-          <Link to="/auth">
+          <Link to={cta.button_link || "/auth"}>
             <Button size="lg" className="bg-[#D4A836] hover:bg-[#C49A30] text-black font-semibold px-12" data-testid="cta-start-btn">
-              Start Training Today
+              {cta.button_text || "Start Training Today"}
               <ChevronRight className="w-5 h-5 ml-2" />
             </Button>
           </Link>
