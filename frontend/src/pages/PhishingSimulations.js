@@ -385,6 +385,12 @@ export default function PhishingSimulations() {
                               <MousePointer className="w-4 h-4" />
                               {campaign.links_clicked} clicked
                             </span>
+                            {campaign.scheduled_at && campaign.status === 'scheduled' && (
+                              <span className="flex items-center gap-1 text-purple-400">
+                                <Clock className="w-4 h-4" />
+                                Scheduled: {new Date(campaign.scheduled_at).toLocaleString()}
+                              </span>
+                            )}
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
