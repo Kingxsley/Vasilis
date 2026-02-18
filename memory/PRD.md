@@ -59,6 +59,13 @@ Build a scalable cybersecurity training application with:
 - Scheduled campaign launching
 - SendGrid integration for email delivery
 
+### Ad Simulations
+- Malicious ad template creation with custom HTML/CSS
+- Campaign management with status filters (All, Active, Scheduled, Draft, Completed)
+- Scheduled campaign launching
+- Target user selection by organization
+- View/click tracking and statistics
+
 ### Reports & Exports
 - Excel/PDF report generation
 - Bulk user import via CSV
