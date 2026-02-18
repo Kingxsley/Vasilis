@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
-import { Mail, MousePointerClick, Users, BarChart3, Lock, ChevronRight, Zap, Target, Award, Shield, Loader2 } from 'lucide-react';
+import { Mail, MousePointerClick, Users, BarChart3, Lock, ChevronRight, Zap, Target, Award, Shield, Loader2, Menu, X } from 'lucide-react';
 import axios from 'axios';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
