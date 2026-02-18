@@ -200,6 +200,29 @@ Build a scalable cybersecurity training application with:
 - **User Creation Fix** (Complete):
   - Improved feedback on email send status
 
+## Cron Job Setup (Vercel)
+
+To enable scheduled campaigns and password expiry reminders, add the following to your `vercel.json` file:
+
+```json
+{
+  "crons": [
+    {
+      "path": "/api/cron/check-scheduled-campaigns",
+      "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/cron/check-password-expiry",
+      "schedule": "0 9 * * *"
+    }
+  ]
+}
+```
+
+**Endpoints:**
+- `/api/cron/check-scheduled-campaigns` - Checks and launches scheduled phishing/ad campaigns (run every 15 mins)
+- `/api/cron/check-password-expiry` - Checks for expiring passwords and sends reminder emails (run daily at 9 AM)
+
 ## Pending/Upcoming Tasks
 
 ### P0 - Critical
