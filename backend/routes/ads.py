@@ -154,14 +154,14 @@ async def list_ad_templates(request: Request):
         result.append(AdTemplateResponse(
             template_id=t["template_id"],
             name=t["name"],
-            ad_type=t["ad_type"],
-            headline=t["headline"],
-            description=t["description"],
+            ad_type=t.get("ad_type", "banner"),
+            headline=t.get("headline", ""),
+            description=t.get("description", ""),
             image_url=t.get("image_url"),
-            call_to_action=t["call_to_action"],
+            call_to_action=t.get("call_to_action", ""),
             style_css=t.get("style_css"),
             created_at=created_at,
-            created_by=t["created_by"]
+            created_by=t.get("created_by", "")
         ))
     return result
 
