@@ -103,6 +103,8 @@ const PhishingSimulations = React.lazy(() => import('./pages/PhishingSimulations
 const AdSimulations = React.lazy(() => import('./pages/AdSimulations'));
 const UserImport = React.lazy(() => import('./pages/UserImport'));
 const Certificates = React.lazy(() => import('./pages/Certificates'));
+const ScenarioManager = React.lazy(() => import('./pages/ScenarioManager'));
+const Settings = React.lazy(() => import('./pages/Settings'));
 
 // Auth Callback Handler
 const AuthCallback = () => {
