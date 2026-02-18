@@ -23,20 +23,30 @@ const useFavicon = () => {
         const faviconUrl = response.data?.favicon_url;
         
         if (faviconUrl) {
-          // Find existing favicon link or create new one
-          let link = document.querySelector("link[rel*='icon']");
-          if (!link) {
-            link = document.createElement('link');
-            link.rel = 'icon';
-            document.head.appendChild(link);
-          }
-          link.href = faviconUrl;
+          // Remove all existing favicons
+          const existingFavicons = document.querySelectorAll("link[rel*='icon']");
+          existingFavicons.forEach(el => el.remove());
           
-          // Also update apple-touch-icon if exists
-          let appleLink = document.querySelector("link[rel='apple-touch-icon']");
-          if (appleLink) {
-            appleLink.href = faviconUrl;
-          }
+          // Create new favicon link with type
+          const link = document.createElement('link');
+          link.rel = 'icon';
+          link.type = faviconUrl.startsWith('data:image/png') ? 'image/png' : 
+                      faviconUrl.startsWith('data:image/svg') ? 'image/svg+xml' : 
+                      faviconUrl.startsWith('data:image/x-icon') ? 'image/x-icon' : 'image/png';
+          link.href = faviconUrl;
+          document.head.appendChild(link);
+          
+          // Create shortcut icon for older browsers
+          const shortcutLink = document.createElement('link');
+          shortcutLink.rel = 'shortcut icon';
+          shortcutLink.href = faviconUrl;
+          document.head.appendChild(shortcutLink);
+          
+          // Also update apple-touch-icon
+          const appleLink = document.createElement('link');
+          appleLink.rel = 'apple-touch-icon';
+          appleLink.href = faviconUrl;
+          document.head.appendChild(appleLink);
         }
       } catch (error) {
         // Silently fail - use default favicon
