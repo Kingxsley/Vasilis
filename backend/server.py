@@ -579,6 +579,8 @@ async def delete_organization(org_id: str, user: dict = Depends(require_super_ad
 
 # ============== USER MANAGEMENT ROUTES ==============
 
+from services.email_service import send_welcome_email
+
 @user_router.post("", response_model=UserResponse)
 async def create_user(data: UserCreate, admin: dict = Depends(require_admin)):
     existing = await db.users.find_one({"email": data.email}, {"_id": 0})
@@ -598,6 +600,13 @@ async def create_user(data: UserCreate, admin: dict = Depends(require_admin)):
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.users.insert_one(user_doc)
+    
+    # Send welcome email with login credentials
+    await send_welcome_email(
+        user_email=data.email,
+        user_name=data.name,
+        password=data.password  # Send the plain password before it was hashed
+    )
     
     return UserResponse(
         user_id=user_id,
