@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../App';
 import { Button } from '../components/ui/button';
@@ -6,10 +6,14 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Mail, Lock, User, ArrowLeft, Loader2, Shield } from 'lucide-react';
 import { toast } from 'sonner';
+import axios from 'axios';
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [branding, setBranding] = useState(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -21,6 +25,13 @@ export default function AuthPage() {
   const { login, register, isAdmin } = useAuth();
   
   const from = location.state?.from?.pathname || '/dashboard';
+
+  useEffect(() => {
+    // Fetch branding settings
+    axios.get(`${API}/settings/branding`)
+      .then(res => setBranding(res.data))
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
