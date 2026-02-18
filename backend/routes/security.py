@@ -26,7 +26,7 @@ def init_security_routes(database, admin_dep, logger, lockout):
 @router.get("/dashboard")
 async def get_security_dashboard(user: dict = Depends(lambda: require_super_admin)):
     """Get security dashboard overview"""
-    if not db:
+    if db is None:
         raise HTTPException(status_code=500, detail="Database not initialized")
     
     now = datetime.now(timezone.utc)
