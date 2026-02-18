@@ -26,7 +26,13 @@ export default function Settings() {
     show_blog: true,
     show_videos: true,
     show_news: true,
-    show_about: true
+    show_about: true,
+    footer_copyright: '',
+    social_facebook: '',
+    social_twitter: '',
+    social_linkedin: '',
+    social_instagram: '',
+    social_youtube: ''
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
