@@ -245,24 +245,62 @@ To enable scheduled campaigns and password expiry reminders, add the following t
 - [x] ~~Advanced analytics dashboard~~ (Completed)
 - [x] ~~Password expiry settings~~ (Completed)
 - [x] ~~Collapsible sidebar~~ (Completed)
-- [x] ~~Favicon fix~~ (Completed)
+- [x] ~~Favicon fix~~ (Completed - removed shield flash, uses cached favicon)
+- [x] ~~Certificate Template Editor~~ (Completed - drag & drop with signatures/logos)
+- [x] ~~Landing Page Layout Editor~~ (Completed - add/reorder/hide sections)
+- [x] ~~Mobile menu flash fix~~ (Completed - waits for branding to load)
+- [x] ~~Ad Simulation Copy URL feature~~ (Completed - masked URLs /track/{campaign_id})
 - [ ] Setup cron job for:
   - Scheduled campaign launching (Vercel Crons)
   - Password expiry reminder emails
 
 ### P1 - Important  
-- [ ] Password expiry cron job to check and send reminder emails
+- [ ] JWT refresh token implementation (access token lifetime shortened but refresh not implemented)
+- [ ] Cron job setup guide for Vercel
 
 ### P2 - Nice to Have
 - [ ] Full end-to-end testing on production domain (vasilisnetshield.net)
 
 ### Future Enhancements
 - [ ] Multi-language support
-- [ ] Advanced analytics dashboard
 - [ ] Mobile app version
+- [ ] Certificate drag-and-drop resize handles
+- [ ] More landing page section templates
+
+## Recent Changes (Feb 18, 2026)
+
+### Certificate Template Editor
+- Created `/certificate-templates` page with drag-and-drop canvas
+- Support for text, logo, signature, and certifying body elements
+- Pre-built templates: Classic Professional, Modern Minimal, Corporate Blue
+- Asset management for signatures and certifying bodies
+- Backend routes: `/api/certificate-templates/*`
+
+### Landing Page Layout Editor
+- Created `/landing-editor` page
+- Support for 11 section types: hero, features, stats, testimonials, CTA, FAQ, team, pricing, gallery, text, custom
+- Drag reorder, visibility toggle, delete functionality
+- Real-time preview link
+- Backend routes: `/api/landing-layouts/*`
+
+### Copy Tracking URL (Ad Simulations)
+- Added "Copy URL" button to campaign cards
+- Uses masked URL format: `{domain}/track/{campaign_id}?u={tracking_code}`
+- Clipboard API with fallback
+- Visual feedback on copy (green check, "Copied!" text)
+
+### Favicon Flash Fix
+- Removed default shield favicon from index.html
+- Implemented localStorage caching for instant favicon load
+- No more flash of default icon before custom favicon loads
+
+### Mobile Menu Flash Fix
+- Added `isReady` state that waits for branding data before rendering nav items
+- Hamburger menu only appears after branding is loaded
+- Prevents flash of all menu items before visibility settings are applied
 
 ## Test Credentials
-- **Super Admin**: testadmin@netshield.com / AdminTest123!
+- **Super Admin**: admin@test.com / Admin123!
 - **Media Manager**: media@netshield.com / MediaManager123!
 
 ## Deployment
