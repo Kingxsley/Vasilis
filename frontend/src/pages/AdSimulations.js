@@ -114,14 +114,46 @@ export default function AdSimulations() {
     }
     
     try {
-      await axios.post(`${API}/ads/campaigns`, newCampaign, { headers });
+      const campaignData = {
+        ...newCampaign,
+        status: newCampaign.scheduled_at ? 'scheduled' : 'active'
+      };
+      await axios.post(`${API}/ads/campaigns`, campaignData, { headers });
       toast.success('Ad campaign created successfully');
       setShowNewCampaign(false);
-      setNewCampaign({ name: '', organization_id: '', template_id: '', target_user_ids: [] });
+      setNewCampaign({ name: '', organization_id: '', template_id: '', target_user_ids: [], status: 'active', scheduled_at: '' });
       fetchData();
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Failed to create campaign');
     }
+  };
+
+  // Filter campaigns by status
+  const filteredCampaigns = campaigns.filter(c => {
+    if (campaignFilter === 'all') return true;
+    if (campaignFilter === 'active') return c.status === 'active';
+    if (campaignFilter === 'completed') return c.status === 'completed';
+    if (campaignFilter === 'scheduled') return c.status === 'scheduled';
+    if (campaignFilter === 'draft') return c.status === 'draft';
+    return true;
+  });
+
+  // Get status badge
+  const getStatusBadge = (status) => {
+    const statusConfig = {
+      active: { color: 'bg-green-500/20 text-green-400', icon: Play },
+      completed: { color: 'bg-gray-500/20 text-gray-400', icon: Pause },
+      scheduled: { color: 'bg-blue-500/20 text-blue-400', icon: Clock },
+      draft: { color: 'bg-yellow-500/20 text-yellow-400', icon: FileText }
+    };
+    const config = statusConfig[status] || statusConfig.active;
+    const Icon = config.icon;
+    return (
+      <Badge className={config.color}>
+        <Icon className="w-3 h-3 mr-1" />
+        {status}
+      </Badge>
+    );
   };
 
   const createTemplate = async () => {
