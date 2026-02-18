@@ -414,6 +414,80 @@ async def complete_campaign(campaign_id: str, request: Request):
     return {"message": "Campaign completed"}
 
 
+@router.post("/campaigns/check-scheduled")
+async def check_scheduled_campaigns(request: Request):
+    """Check and launch any scheduled campaigns that are due"""
+    user = await require_admin(request)
+    db = get_db()
+    
+    now = datetime.now(timezone.utc)
+    
+    # Find scheduled campaigns that are due
+    scheduled_campaigns = await db.phishing_campaigns.find({
+        "status": "scheduled",
+        "scheduled_at": {"$lte": now.isoformat()}
+    }, {"_id": 0}).to_list(100)
+    
+    launched_count = 0
+    for campaign in scheduled_campaigns:
+        # Get template
+        template = await db.phishing_templates.find_one(
+            {"template_id": campaign["template_id"]}, 
+            {"_id": 0}
+        )
+        if not template:
+            continue
+        
+        # Get base URL
+        import os
+        frontend_url = os.environ.get('FRONTEND_URL', 'https://vasilisnetshield.com')
+        
+        # Update status to active
+        await db.phishing_campaigns.update_one(
+            {"campaign_id": campaign["campaign_id"]},
+            {
+                "$set": {
+                    "status": "active",
+                    "started_at": now.isoformat()
+                }
+            }
+        )
+        
+        # Get and send to targets
+        targets = await db.phishing_targets.find(
+            {"campaign_id": campaign["campaign_id"], "email_sent": False},
+            {"_id": 0}
+        ).to_list(10000)
+        
+        sent_count = 0
+        for target in targets:
+            success = await send_phishing_email(db, target, template, frontend_url)
+            if success:
+                await db.phishing_targets.update_one(
+                    {"target_id": target["target_id"]},
+                    {
+                        "$set": {
+                            "email_sent": True,
+                            "email_sent_at": now.isoformat()
+                        }
+                    }
+                )
+                sent_count += 1
+        
+        # Update campaign stats
+        await db.phishing_campaigns.update_one(
+            {"campaign_id": campaign["campaign_id"]},
+            {"$set": {"emails_sent": sent_count}}
+        )
+        
+        launched_count += 1
+    
+    return {
+        "message": f"Checked scheduled campaigns. Launched {launched_count} campaigns.",
+        "launched_count": launched_count
+    }
+
+
 @router.delete("/campaigns/{campaign_id}")
 async def delete_campaign(campaign_id: str, request: Request):
     """Delete a campaign and its targets"""
