@@ -69,7 +69,7 @@ class SectionCreate(BaseModel):
 
 @router.get("")
 async def get_landing_layout(request: Request):
-    """Get the current landing page layout"""
+    """Get the current landing page layout (public endpoint)"""
     db = get_db()
     
     layout = await db.landing_layout.find_one({"layout_id": "main"}, {"_id": 0})
@@ -82,6 +82,29 @@ async def get_landing_layout(request: Request):
         }
     
     return layout
+
+
+@router.get("/public")
+async def get_public_landing_layout():
+    """Get the landing page layout for public display (no auth required)"""
+    db = get_db()
+    
+    layout = await db.landing_layout.find_one({"layout_id": "main"}, {"_id": 0})
+    
+    if not layout:
+        return {
+            "layout_id": "main",
+            "sections": get_default_sections()
+        }
+    
+    # Filter to only return visible sections
+    visible_sections = [s for s in layout.get("sections", []) if s.get("visible", True)]
+    visible_sections.sort(key=lambda s: s.get("order", 0))
+    
+    return {
+        "layout_id": "main",
+        "sections": visible_sections
+    }
 
 
 @router.put("")
