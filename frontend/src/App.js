@@ -157,8 +157,8 @@ const AuthCallback = () => {
 };
 
 // Protected Route
-const ProtectedRoute = ({ children, adminOnly = false }) => {
-  const { user, loading, isAdmin } = useAuth();
+const ProtectedRoute = ({ children, adminOnly = false, contentManager = false }) => {
+  const { user, loading, isAdmin, canManageContent } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -174,6 +174,14 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
   }
 
   if (adminOnly && !isAdmin) {
+    // Media managers can access content page but not admin pages
+    if (canManageContent) {
+      return <Navigate to="/content" replace />;
+    }
+    return <Navigate to="/training" replace />;
+  }
+
+  if (contentManager && !canManageContent) {
     return <Navigate to="/training" replace />;
   }
 
