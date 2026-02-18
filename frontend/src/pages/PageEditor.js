@@ -302,6 +302,7 @@ export default function PageEditor() {
                       placeholder="Start Free Trial"
                       className="bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5]"
                     />
+                    <p className="text-xs text-gray-500">Links to signup/login page</p>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-gray-400">Secondary Button Text</Label>
@@ -312,6 +313,17 @@ export default function PageEditor() {
                       className="bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5]"
                     />
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-gray-400">Demo Video URL (YouTube, Vimeo, etc.)</Label>
+                  <Input
+                    value={content.hero?.cta_secondary_link || ''}
+                    onChange={(e) => updateHero('cta_secondary_link', e.target.value)}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    className="bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5]"
+                  />
+                  <p className="text-xs text-gray-500">Leave empty to hide the button, or add a video URL</p>
                 </div>
 
                 {/* Preview */}
