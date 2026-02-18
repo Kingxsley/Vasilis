@@ -1642,6 +1642,98 @@ async def get_training_analytics(
         "recent_sessions": recent
     }
 
+@api_router.get("/analytics/overview")
+async def get_analytics_overview(
+    days: int = 30,
+    user: dict = Depends(require_admin)
+):
+    """Get comprehensive analytics overview for the Advanced Analytics page"""
+    from datetime import timedelta
+    cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
+    
+    # Count phishing campaigns
+    phishing_campaigns = await db.phishing_campaigns.count_documents({})
+    phishing_active = await db.phishing_campaigns.count_documents({"status": "active"})
+    
+    # Count ad campaigns
+    ad_campaigns = await db.ad_campaigns.count_documents({})
+    ad_active = await db.ad_campaigns.count_documents({"status": "active"})
+    
+    # Get phishing stats
+    phishing_targets = await db.phishing_targets.find({}).to_list(10000)
+    total_sent = len(phishing_targets)
+    total_opened = sum(1 for t in phishing_targets if t.get("opened_at"))
+    total_clicked = sum(1 for t in phishing_targets if t.get("clicked_at"))
+    total_submitted = sum(1 for t in phishing_targets if t.get("submitted_at"))
+    
+    # Get ad stats
+    ad_targets = await db.ad_targets.find({}).to_list(10000)
+    ads_viewed = sum(1 for t in ad_targets if t.get("viewed_at"))
+    ads_clicked = sum(1 for t in ad_targets if t.get("clicked_at"))
+    
+    # Training stats
+    training_sessions = await db.training_sessions.count_documents({})
+    training_completed = await db.training_sessions.count_documents({"status": "completed"})
+    
+    return {
+        "campaigns_launched": phishing_campaigns + ad_campaigns,
+        "active_campaigns": phishing_active + ad_active,
+        "emails_sent": total_sent,
+        "emails_opened": total_opened,
+        "links_clicked": total_clicked + ads_clicked,
+        "credentials_submitted": total_submitted,
+        "ads_viewed": ads_viewed,
+        "ads_clicked": ads_clicked,
+        "training_sessions": training_sessions,
+        "training_completed": training_completed,
+        "period_days": days
+    }
+
+@api_router.get("/phishing/stats")
+async def get_phishing_stats(
+    days: int = 30,
+    user: dict = Depends(require_admin)
+):
+    """Get detailed phishing statistics for analytics"""
+    from datetime import timedelta
+    cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
+    
+    # Count campaigns
+    total_campaigns = await db.phishing_campaigns.count_documents({})
+    active_campaigns = await db.phishing_campaigns.count_documents({"status": "active"})
+    completed_campaigns = await db.phishing_campaigns.count_documents({"status": "completed"})
+    
+    # Get all targets for stats calculation
+    targets = await db.phishing_targets.find({}).to_list(10000)
+    
+    total_sent = len(targets)
+    total_opened = sum(1 for t in targets if t.get("opened_at"))
+    total_clicked = sum(1 for t in targets if t.get("clicked_at"))
+    total_submitted = sum(1 for t in targets if t.get("submitted_at"))
+    
+    # Calculate rates
+    open_rate = (total_opened / total_sent * 100) if total_sent > 0 else 0
+    click_rate = (total_clicked / total_sent * 100) if total_sent > 0 else 0
+    submission_rate = (total_submitted / total_sent * 100) if total_sent > 0 else 0
+    
+    # Click to open rate
+    click_to_open_rate = (total_clicked / total_opened * 100) if total_opened > 0 else 0
+    
+    return {
+        "total_campaigns": total_campaigns,
+        "active_campaigns": active_campaigns,
+        "completed_campaigns": completed_campaigns,
+        "total_sent": total_sent,
+        "total_opened": total_opened,
+        "total_clicked": total_clicked,
+        "total_submitted": total_submitted,
+        "open_rate": round(open_rate, 2),
+        "click_rate": round(click_rate, 2),
+        "submission_rate": round(submission_rate, 2),
+        "click_to_open_rate": round(click_to_open_rate, 2),
+        "period_days": days
+    }
+
 # ============== ROOT ROUTE ==============
 
 @api_router.get("/")
