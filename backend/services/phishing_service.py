@@ -80,18 +80,11 @@ async def send_phishing_email(
             from sendgrid import SendGridAPIClient
             from sendgrid.helpers.mail import Mail, Email, To, Content, ReplyTo
             
-            # For phishing simulations, use the template's fake sender info as the display name
-            # This makes the email appear to come from the fake address while actually sending from verified address
-            fake_sender_email = template.get('sender_email', '')
-            fake_sender_name = template.get('sender_name', 'Security Team')
+            # Use template's sender_name as display name (e.g., "IT Security Team")
+            # The actual email address will be the verified sender
+            display_name = template.get('sender_name', 'Security Team')
             
-            # Format: "Fake Name <fake@email.com>" as the display name
-            if fake_sender_email:
-                display_name = f"{fake_sender_name} <{fake_sender_email}>"
-            else:
-                display_name = fake_sender_name
-            
-            # Create the email message with masked sender
+            # Create the email message
             message = Mail(
                 from_email=Email(sender_email, display_name),
                 to_emails=To(target['user_email']),
@@ -99,9 +92,10 @@ async def send_phishing_email(
                 html_content=Content("text/html", html_body)
             )
             
-            # Add reply-to with the fake email so replies go nowhere useful
+            # Set reply-to to the fake email address from template
+            fake_sender_email = template.get('sender_email', '')
             if fake_sender_email:
-                message.reply_to = ReplyTo(fake_sender_email, fake_sender_name)
+                message.reply_to = ReplyTo(fake_sender_email, display_name)
             
             # Add plain text version if available
             if template.get('body_text'):
