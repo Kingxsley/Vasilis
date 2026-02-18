@@ -42,6 +42,11 @@ class BrandingSettings(BaseModel):
     text_color: Optional[str] = "#E8DDB5"
     heading_color: Optional[str] = "#FFFFFF"
     accent_color: Optional[str] = "#D4A836"
+    # Navigation menu visibility
+    show_blog: Optional[bool] = True
+    show_videos: Optional[bool] = True
+    show_news: Optional[bool] = True
+    show_about: Optional[bool] = True
 
 
 class BrandingUpdate(BaseModel):
@@ -52,6 +57,10 @@ class BrandingUpdate(BaseModel):
     text_color: Optional[str] = None
     heading_color: Optional[str] = None
     accent_color: Optional[str] = None
+    show_blog: Optional[bool] = None
+    show_videos: Optional[bool] = None
+    show_news: Optional[bool] = None
+    show_about: Optional[bool] = None
 
 
 # ============== ROUTES ==============
@@ -74,7 +83,11 @@ async def get_branding():
             "secondary_color": "#0f3460",
             "text_color": "#E8DDB5",
             "heading_color": "#FFFFFF",
-            "accent_color": "#D4A836"
+            "accent_color": "#D4A836",
+            "show_blog": True,
+            "show_videos": True,
+            "show_news": True,
+            "show_about": True
         }
     
     return {
@@ -86,7 +99,11 @@ async def get_branding():
         "secondary_color": settings.get("secondary_color", "#0f3460"),
         "text_color": settings.get("text_color", "#E8DDB5"),
         "heading_color": settings.get("heading_color", "#FFFFFF"),
-        "accent_color": settings.get("accent_color", "#D4A836")
+        "accent_color": settings.get("accent_color", "#D4A836"),
+        "show_blog": settings.get("show_blog", True),
+        "show_videos": settings.get("show_videos", True),
+        "show_news": settings.get("show_news", True),
+        "show_about": settings.get("show_about", True)
     }
 
 
