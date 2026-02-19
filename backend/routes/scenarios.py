@@ -83,12 +83,17 @@ VALID_SCENARIO_TYPES = [
     "social_engineering",
     # New simulation types
     "qr_code_phishing",
+    "qr_phishing",
     "usb_drop",
     "mfa_fatigue",
     "bec_scenario",
+    "bec",
+    "credential_harvest",
     "data_handling_trap",
     "ransomware_readiness",
-    "shadow_it_detection"
+    "shadow_it_detection",
+    "smishing",
+    "malicious_ad"
 ]
 
 
