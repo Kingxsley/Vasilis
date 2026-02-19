@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
-import { Loader2, ExternalLink, Calendar, Rss, ArrowRight } from 'lucide-react';
+import { Loader2, ExternalLink, Calendar, Rss } from 'lucide-react';
 import { PublicNav } from '../components/PublicNav';
 import { PublicFooter } from '../components/PublicFooter';
+import { DynamicSidebar } from '../components/DynamicSidebar';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
