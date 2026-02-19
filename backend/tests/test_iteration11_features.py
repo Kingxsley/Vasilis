@@ -39,7 +39,7 @@ def super_admin_token(api_client):
         "password": SUPER_ADMIN_PASSWORD
     })
     if response.status_code == 200:
-        return response.json().get("access_token")
+        return response.json().get("token")  # Note: API returns 'token', not 'access_token'
     pytest.skip(f"Super admin authentication failed: {response.status_code} - {response.text}")
 
 
@@ -51,7 +51,7 @@ def org_admin_token(api_client):
         "password": ORG_ADMIN_PASSWORD
     })
     if response.status_code == 200:
-        return response.json().get("access_token")
+        return response.json().get("token")  # Note: API returns 'token', not 'access_token'
     pytest.skip(f"Org admin authentication failed: {response.status_code} - {response.text}")
 
 
