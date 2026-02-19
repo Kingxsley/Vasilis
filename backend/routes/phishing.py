@@ -626,57 +626,6 @@ async def get_campaign_statistics(campaign_id: str, request: Request):
     )
 
 
-# ============== AGGREGATED STATS (for Analytics Dashboard) ==============
-
-@router.get("/stats")
-async def get_phishing_stats(request: Request, days: int = 30):
-    """Get aggregated phishing statistics for analytics dashboard"""
-    await require_admin(request)
-    db = get_db()
-    
-    from datetime import timedelta
-    
-    # Calculate date filter
-    cutoff_date = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
-    
-    # Get all campaigns (optionally filtered by date)
-    query = {}
-    if days < 365:  # Only filter by date for shorter periods
-        query["created_at"] = {"$gte": cutoff_date}
-    
-    campaigns = await db.phishing_campaigns.find(query, {"_id": 0}).to_list(1000)
-    
-    # Get all targets for these campaigns
-    campaign_ids = [c["campaign_id"] for c in campaigns]
-    targets = await db.phishing_targets.find(
-        {"campaign_id": {"$in": campaign_ids}} if campaign_ids else {},
-        {"_id": 0}
-    ).to_list(100000)
-    
-    # Calculate totals
-    total_campaigns = len(campaigns)
-    total_sent = sum(1 for t in targets if t.get("email_sent"))
-    total_opened = sum(1 for t in targets if t.get("email_opened"))
-    total_clicked = sum(1 for t in targets if t.get("link_clicked"))
-    
-    # Calculate rates
-    open_rate = (total_opened / total_sent * 100) if total_sent > 0 else 0
-    click_rate = (total_clicked / total_sent * 100) if total_sent > 0 else 0
-    submission_rate = 0  # We don't track submissions yet
-    
-    return {
-        "total_campaigns": total_campaigns,
-        "total_sent": total_sent,
-        "total_opened": total_opened,
-        "total_clicked": total_clicked,
-        "total_submitted": 0,
-        "open_rate": round(open_rate, 1),
-        "click_rate": round(click_rate, 1),
-        "submission_rate": submission_rate,
-        "period_days": days
-    }
-
-
 # ============== TRACKING ROUTES (Public) ==============
 
 @router.get("/track/open/{tracking_code}")
