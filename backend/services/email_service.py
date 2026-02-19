@@ -172,7 +172,7 @@ async def send_password_reset_email(user_email: str, user_name: str, new_passwor
     if not login_url:
         frontend_url = os.environ.get('FRONTEND_URL', '')
         if not frontend_url:
-            backend_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://vasilisnetshield.net')
+            backend_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://vasilisnetshield.com')
             frontend_url = backend_url.replace('/api', '')
         login_url = f"{frontend_url}/auth"
     
@@ -258,7 +258,7 @@ async def send_forgot_password_email(user_email: str, user_name: str, reset_toke
     
     frontend_url = os.environ.get('FRONTEND_URL', '')
     if not frontend_url:
-        backend_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://vasilisnetshield.net')
+        backend_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://vasilisnetshield.com')
         frontend_url = backend_url.replace('/api', '')
     
     reset_url = f"{frontend_url}/auth?reset_token={reset_token}"
@@ -346,7 +346,7 @@ async def send_password_expiry_reminder(user_email: str, user_name: str, days_re
     
     frontend_url = os.environ.get('FRONTEND_URL', '')
     if not frontend_url:
-        backend_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://vasilisnetshield.net')
+        backend_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://vasilisnetshield.com')
         frontend_url = backend_url.replace('/api', '')
     
     login_url = f"{frontend_url}/auth"
