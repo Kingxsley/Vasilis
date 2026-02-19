@@ -2171,3 +2171,55 @@ async def cron_check_password_expiry():
         "reminders_sent": reminders_sent
     }
 
+
+
+# ============== SITEMAP ENDPOINT ==============
+@api_router.get("/sitemap.xml")
+async def get_sitemap():
+    """Generate dynamic sitemap.xml for SEO"""
+    from datetime import datetime
+    
+    base_url = "https://vasilisnetshield.net"
+    now = datetime.now().strftime("%Y-%m-%d")
+    
+    # Static pages
+    pages = [
+        {"url": "/", "priority": "1.0", "changefreq": "weekly"},
+        {"url": "/blog", "priority": "0.8", "changefreq": "daily"},
+        {"url": "/news", "priority": "0.8", "changefreq": "daily"},
+        {"url": "/videos", "priority": "0.7", "changefreq": "weekly"},
+        {"url": "/about", "priority": "0.6", "changefreq": "monthly"},
+    ]
+    
+    # Get blog posts
+    try:
+        blog_posts = await db.blog_posts.find(
+            {"published": True},
+            {"_id": 0, "slug": 1, "updated_at": 1}
+        ).to_list(100)
+        
+        for post in blog_posts:
+            pages.append({
+                "url": f"/blog/{post['slug']}",
+                "priority": "0.7",
+                "changefreq": "monthly",
+                "lastmod": post.get("updated_at", now)[:10] if post.get("updated_at") else now
+            })
+    except:
+        pass
+    
+    # Build XML
+    xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    xml_content += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    
+    for page in pages:
+        xml_content += "  <url>\n"
+        xml_content += f"    <loc>{base_url}{page['url']}</loc>\n"
+        xml_content += f"    <lastmod>{page.get('lastmod', now)}</lastmod>\n"
+        xml_content += f"    <changefreq>{page['changefreq']}</changefreq>\n"
+        xml_content += f"    <priority>{page['priority']}</priority>\n"
+        xml_content += "  </url>\n"
+    
+    xml_content += "</urlset>"
+    
+    return Response(content=xml_content, media_type="application/xml")
