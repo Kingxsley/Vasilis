@@ -964,6 +964,26 @@ async def create_user(data: UserCreate, admin: dict = Depends(require_admin)):
         db=db
     )
     
+    # Audit log for user creation
+    await audit_logger.log(
+        action="user_created",
+        user_id=admin["user_id"],
+        user_email=admin.get("email"),
+        user_name=admin.get("name"),
+        details={
+            "actor_id": admin["user_id"],
+            "actor_email": admin.get("email"),
+            "actor_role": admin.get("role"),
+            "created_user_id": user_id,
+            "created_user_email": data.email,
+            "created_user_name": data.name,
+            "created_user_role": data.role,
+            "organization_id": data.organization_id,
+            "welcome_email_sent": email_sent
+        },
+        severity="info"
+    )
+    
     created_at = datetime.fromisoformat(user_doc["created_at"])
     
     return {
