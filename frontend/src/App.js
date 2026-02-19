@@ -499,6 +499,14 @@ const AppRouter = () => {
           }
         />
         <Route
+          path="/simulation-builder"
+          element={
+            <ProtectedRoute adminOnly>
+              <SimulationBuilder />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/user-import"
           element={
             <ProtectedRoute adminOnly>
