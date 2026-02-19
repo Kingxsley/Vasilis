@@ -269,6 +269,8 @@ class DashboardStats(BaseModel):
     active_campaigns: int
     total_training_sessions: int
     average_score: float
+    total_scenarios: int = 0
+    scenario_types: dict = {}
 
 # ============== HELPERS ==============
 
