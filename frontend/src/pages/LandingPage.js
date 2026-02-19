@@ -194,6 +194,11 @@ export default function LandingPage() {
     showVideos && { to: '/videos', label: 'Videos' },
     showNews && { to: '/news', label: 'News' },
     showAbout && { to: '/about', label: 'About' },
+    // Add custom pages
+    ...customPages.map(page => ({
+      to: `/page/${page.slug}`,
+      label: page.title
+    }))
   ].filter(Boolean) : [];
 
   return (
