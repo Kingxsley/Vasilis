@@ -52,10 +52,28 @@ const Logo = ({ branding }) => {
 
 export const PublicNav = ({ branding, isLoading = false }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [customPages, setCustomPages] = useState([]);
   const location = useLocation();
   
   const textColor = branding?.text_color || '#E8DDB5';
   const primaryColor = branding?.primary_color || '#D4A836';
+  
+  // Fetch custom pages that should show in nav
+  useEffect(() => {
+    const fetchCustomPages = async () => {
+      try {
+        const res = await axios.get(`${API}/pages/custom`);
+        // Only show published pages with show_in_nav = true
+        const navPages = (res.data.pages || []).filter(
+          p => p.is_published && p.show_in_nav
+        );
+        setCustomPages(navPages);
+      } catch (error) {
+        console.error('Failed to fetch custom pages:', error);
+      }
+    };
+    fetchCustomPages();
+  }, []);
   
   // Navigation visibility
   const showBlog = branding?.show_blog !== false;
@@ -69,6 +87,11 @@ export const PublicNav = ({ branding, isLoading = false }) => {
     showVideos && { to: '/videos', label: 'Videos' },
     showNews && { to: '/news', label: 'News' },
     showAbout && { to: '/about', label: 'About' },
+    // Add custom pages
+    ...customPages.map(page => ({
+      to: `/page/${page.slug}`,
+      label: page.title
+    }))
   ].filter(Boolean);
   
   // Filter out current page from nav
