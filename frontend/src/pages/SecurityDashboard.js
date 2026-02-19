@@ -124,7 +124,7 @@ export default function SecurityDashboard() {
             <p className="text-gray-400">Monitor security events and manage account access</p>
           </div>
           <Button 
-            onClick={() => { fetchDashboard(); fetchLogs(); }}
+            onClick={() => { fetchDashboard(); fetchRecentLogs(); }}
             variant="outline"
             className="border-[#D4A836]/30"
           >
