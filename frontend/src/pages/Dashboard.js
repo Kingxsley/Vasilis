@@ -2,11 +2,25 @@ import React, { useEffect, useState } from 'react';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { useAuth } from '../App';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Building2, Users, Target, BookOpen, TrendingUp, Activity, Award } from 'lucide-react';
+import { Building2, Users, Target, BookOpen, TrendingUp, Activity, Award, Shield, QrCode, Usb, AlertTriangle, Mail, FileWarning, Lock, Eye } from 'lucide-react';
 import axios from 'axios';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
+
+// Map scenario types to icons and colors
+const SCENARIO_TYPE_META = {
+  phishing_email: { icon: Mail, color: '#FF6B6B', label: 'Email Phishing' },
+  malicious_ads: { icon: AlertTriangle, color: '#FFB300', label: 'Malicious Ads' },
+  social_engineering: { icon: Users, color: '#2979FF', label: 'Social Engineering' },
+  qr_code_phishing: { icon: QrCode, color: '#9C27B0', label: 'QR Code Phishing' },
+  usb_drop: { icon: Usb, color: '#00BCD4', label: 'USB Drop' },
+  mfa_fatigue: { icon: Lock, color: '#E91E63', label: 'MFA Fatigue' },
+  bec_scenario: { icon: Mail, color: '#FF5722', label: 'Business Email Compromise' },
+  data_handling_trap: { icon: FileWarning, color: '#795548', label: 'Data Handling' },
+  ransomware_readiness: { icon: Shield, color: '#f44336', label: 'Ransomware' },
+  shadow_it_detection: { icon: Eye, color: '#607D8B', label: 'Shadow IT' }
+};
 
 export default function Dashboard() {
   const { user, token } = useAuth();
