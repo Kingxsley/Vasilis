@@ -637,14 +637,38 @@ export default function PhishingSimulations() {
                             Details
                           </Button>
                           {campaign.status === 'draft' && (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => editCampaign(campaign)}
+                                className="border-[#D4A836]/30 text-[#E8DDB5]"
+                                data-testid={`edit-campaign-${campaign.campaign_id}`}
+                              >
+                                <Edit className="w-4 h-4 mr-1" />
+                                Edit
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => launchCampaign(campaign.campaign_id)}
+                                className="bg-green-600 hover:bg-green-700"
+                                data-testid={`launch-campaign-${campaign.campaign_id}`}
+                              >
+                                <Play className="w-4 h-4 mr-1" />
+                                Launch
+                              </Button>
+                            </>
+                          )}
+                          {campaign.status === 'scheduled' && (
                             <Button
                               size="sm"
-                              onClick={() => launchCampaign(campaign.campaign_id)}
-                              className="bg-green-600 hover:bg-green-700"
-                              data-testid={`launch-campaign-${campaign.campaign_id}`}
+                              variant="outline"
+                              onClick={() => editCampaign(campaign)}
+                              className="border-[#D4A836]/30 text-[#E8DDB5]"
+                              data-testid={`edit-campaign-${campaign.campaign_id}`}
                             >
-                              <Play className="w-4 h-4 mr-1" />
-                              Launch
+                              <Edit className="w-4 h-4 mr-1" />
+                              Edit
                             </Button>
                           )}
                           {campaign.status === 'active' && (
