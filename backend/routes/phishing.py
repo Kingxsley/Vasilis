@@ -426,8 +426,9 @@ async def update_campaign(campaign_id: str, request: Request):
 @router.post("/campaigns/{campaign_id}/launch")
 async def launch_campaign(campaign_id: str, request: Request):
     """Launch a phishing campaign - sends emails to all targets"""
-    await require_admin(request)
+    user = await require_admin(request)
     db = get_db()
+    audit_logger = get_audit_logger()
     
     campaign = await db.phishing_campaigns.find_one({"campaign_id": campaign_id}, {"_id": 0})
     if not campaign:
@@ -482,6 +483,24 @@ async def launch_campaign(campaign_id: str, request: Request):
     await db.phishing_campaigns.update_one(
         {"campaign_id": campaign_id},
         {"$set": {"emails_sent": sent_count}}
+    )
+    
+    # Audit log for campaign launch
+    await audit_logger.log(
+        action="phishing_campaign_launched",
+        user_id=user["user_id"],
+        user_email=user.get("email"),
+        user_name=user.get("name"),
+        details={
+            "actor_id": user["user_id"],
+            "actor_email": user.get("email"),
+            "actor_role": user.get("role"),
+            "campaign_id": campaign_id,
+            "campaign_name": campaign.get("name"),
+            "emails_sent": sent_count,
+            "total_targets": len(targets)
+        },
+        severity="info"
     )
     
     return {
