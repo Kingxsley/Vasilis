@@ -17,34 +17,20 @@ import axios from 'axios';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-// Logo Component - fetches custom logo from settings
+// Logo Component - shows logo directly without loading skeleton
 const Logo = ({ collapsed = false }) => {
   const [branding, setBranding] = useState(null);
-  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     axios.get(`${API}/settings/branding`)
-      .then(res => {
-        setBranding(res.data);
-        setLoaded(true);
-      })
-      .catch(() => setLoaded(true));
+      .then(res => setBranding(res.data))
+      .catch(() => {});
   }, []);
 
-  // Handle click - refresh the page
   const handleClick = (e) => {
     e.preventDefault();
     window.location.href = '/';
   };
-
-  if (!loaded) {
-    return (
-      <a href="/" onClick={handleClick} className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
-        <div className="w-8 h-8 bg-[#D4A836]/20 rounded animate-pulse" />
-        {!collapsed && <div className="w-24 h-5 bg-[#D4A836]/20 rounded animate-pulse" />}
-      </a>
-    );
-  }
 
   return (
     <a href="/" onClick={handleClick} className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" data-testid="logo-home-link">
