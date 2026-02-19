@@ -82,28 +82,119 @@ const useFavicon = () => {
   }, []);
 };
 
-// Auth Provider
+// Auth Provider with automatic token refresh
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
+  const refreshIntervalRef = useRef(null);
+
+  // Decode JWT to get expiration time
+  const getTokenExpiration = (tokenStr) => {
+    try {
+      const payload = JSON.parse(atob(tokenStr.split('.')[1]));
+      return payload.exp * 1000; // Convert to milliseconds
+    } catch {
+      return null;
+    }
+  };
+
+  // Refresh the token
+  const refreshToken = async () => {
+    try {
+      const currentToken = localStorage.getItem('token');
+      if (!currentToken) return;
+
+      const response = await axios.post(`${API}/auth/refresh`, {}, {
+        headers: { Authorization: `Bearer ${currentToken}` }
+      });
+      
+      const { token: newToken, user: userData } = response.data;
+      localStorage.setItem('token', newToken);
+      setToken(newToken);
+      setUser(userData);
+      
+      // Schedule next refresh
+      scheduleTokenRefresh(newToken);
+      
+      return newToken;
+    } catch (err) {
+      // If refresh fails, logout
+      console.error('Token refresh failed:', err);
+      localStorage.removeItem('token');
+      setToken(null);
+      setUser(null);
+      return null;
+    }
+  };
+
+  // Schedule automatic token refresh (5 minutes before expiration)
+  const scheduleTokenRefresh = (tokenStr) => {
+    // Clear existing interval
+    if (refreshIntervalRef.current) {
+      clearTimeout(refreshIntervalRef.current);
+    }
+
+    const expiration = getTokenExpiration(tokenStr);
+    if (!expiration) return;
+
+    const now = Date.now();
+    const timeUntilExpiry = expiration - now;
+    const refreshTime = timeUntilExpiry - (5 * 60 * 1000); // 5 minutes before expiry
+
+    if (refreshTime > 0) {
+      refreshIntervalRef.current = setTimeout(() => {
+        refreshToken();
+      }, refreshTime);
+    } else if (timeUntilExpiry > 0) {
+      // Token expires in less than 5 minutes, refresh immediately
+      refreshToken();
+    }
+  };
 
   useEffect(() => {
     checkAuth();
+    
+    // Cleanup on unmount
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearTimeout(refreshIntervalRef.current);
+      }
+    };
   }, []);
 
   const checkAuth = async () => {
     try {
       if (token) {
+        // Check if token is expired or about to expire
+        const expiration = getTokenExpiration(token);
+        const now = Date.now();
+        
+        if (expiration && expiration - now < 5 * 60 * 1000) {
+          // Token expires in less than 5 minutes, try to refresh
+          const newToken = await refreshToken();
+          if (!newToken) {
+            setLoading(false);
+            return;
+          }
+        }
+        
         const response = await axios.get(`${API}/auth/me`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setUser(response.data);
+        
+        // Schedule token refresh
+        scheduleTokenRefresh(token);
       }
     } catch (err) {
-      localStorage.removeItem('token');
-      setToken(null);
-      setUser(null);
+      // Try to refresh if auth check fails (might be expired token)
+      const newToken = await refreshToken();
+      if (!newToken) {
+        localStorage.removeItem('token');
+        setToken(null);
+        setUser(null);
+      }
     } finally {
       setLoading(false);
     }
