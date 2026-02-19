@@ -196,9 +196,14 @@ class AccountLockoutManager:
     def __init__(self):
         self.failed_attempts = defaultdict(list)
         self.locked_accounts = {}
-        self.max_attempts = 5
+        self.max_attempts = 3  # Lock after 3 failed attempts per user request
         self.lockout_duration_minutes = 15
         self.attempt_window_minutes = 10
+        self.notification_callback = None  # Set by server.py for admin notifications
+    
+    def set_notification_callback(self, callback):
+        """Set callback function for admin notifications"""
+        self.notification_callback = callback
     
     def record_failed_attempt(self, email: str, ip: str = None):
         """Record a failed login attempt"""
@@ -216,12 +221,20 @@ class AccountLockoutManager:
         
         # Check if should lock
         if len(self.failed_attempts[key]) >= self.max_attempts:
-            self.lock_account(email)
+            self.lock_account(email, ip)
             return True
         
         return False
     
-    def lock_account(self, email: str):
+    async def notify_admins_async(self, email: str, ip: str):
+        """Send async notification to admins about account lockout"""
+        if self.notification_callback:
+            try:
+                await self.notification_callback(email, ip)
+            except Exception as e:
+                logger.error(f"Failed to notify admins about lockout: {e}")
+    
+    def lock_account(self, email: str, ip: str = None):
         """Lock an account"""
         key = email.lower()
         unlock_time = time.time() + (self.lockout_duration_minutes * 60)
