@@ -450,8 +450,14 @@ async def create_video(data: VideoCreate, request: Request):
 
 
 @router.get("/videos")
-async def list_videos(category: Optional[str] = None, published_only: bool = True, limit: int = 20):
-    """List videos (public endpoint)"""
+async def list_videos(
+    category: Optional[str] = None, 
+    published_only: bool = True, 
+    limit: int = 10,
+    skip: int = 0,
+    search: str = None
+):
+    """List videos with pagination and search (public endpoint)"""
     db = get_db()
     
     query = {}
@@ -459,9 +465,16 @@ async def list_videos(category: Optional[str] = None, published_only: bool = Tru
         query["published"] = True
     if category:
         query["category"] = category
+    if search:
+        query["$or"] = [
+            {"title": {"$regex": search, "$options": "i"}},
+            {"description": {"$regex": search, "$options": "i"}}
+        ]
     
-    videos = await db.videos.find(query, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
-    return {"videos": videos}
+    total = await db.videos.count_documents(query)
+    videos = await db.videos.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    return {"videos": videos, "total": total, "skip": skip, "limit": limit}
 
 
 @router.patch("/videos/{video_id}")
