@@ -251,23 +251,40 @@ async def create_news(data: NewsCreate, request: Request):
 
 
 @router.get("/news")
-async def list_news(limit: int = 10, include_rss: bool = True):
-    """List news items including RSS feeds (public endpoint)"""
+async def list_news(
+    limit: int = 10, 
+    skip: int = 0,
+    search: str = None,
+    include_rss: bool = True
+):
+    """List news items with pagination and search (public endpoint)"""
     db = get_db()
     import httpx
     import xml.etree.ElementTree as ET
     
-    # Get local news
-    local_news = await db.news.find({"published": True}, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
+    # Build query for local news
+    query = {"published": True}
+    if search:
+        query["$or"] = [
+            {"title": {"$regex": search, "$options": "i"}},
+            {"content": {"$regex": search, "$options": "i"}}
+        ]
+    
+    # Get total count for local news
+    local_total = await db.news.count_documents(query)
+    
+    # Get local news with pagination
+    local_news = await db.news.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
     
     # Add source indicator
     for item in local_news:
         item["source"] = "local"
     
     combined_news = list(local_news)
+    rss_count = 0
     
-    # Fetch RSS feeds if requested
-    if include_rss:
+    # Fetch RSS feeds if requested and we have room
+    if include_rss and len(combined_news) < limit and not search:
         rss_feeds = await db.rss_feeds.find({"enabled": True}, {"_id": 0}).to_list(20)
         
         for feed in rss_feeds:
@@ -277,11 +294,9 @@ async def list_news(limit: int = 10, include_rss: bool = True):
                     if response.status_code == 200:
                         root = ET.fromstring(response.content)
                         
-                        # Handle both RSS and Atom feeds
                         items = root.findall(".//item") or root.findall(".//{http://www.w3.org/2005/Atom}entry")
                         
-                        for item in items[:5]:  # Limit to 5 items per feed
-                            # RSS format
+                        for item in items[:3]:
                             title = item.findtext("title") or item.findtext("{http://www.w3.org/2005/Atom}title")
                             description = item.findtext("description") or item.findtext("{http://www.w3.org/2005/Atom}summary")
                             link = item.findtext("link")
@@ -298,23 +313,31 @@ async def list_news(limit: int = 10, include_rss: bool = True):
                                     "title": title.strip() if title else "No title",
                                     "content": (description[:200] + "..." if description and len(description) > 200 else description) if description else "",
                                     "link": link,
-                                    "source": feed.get("name", "RSS Feed"),
-                                    "source_type": "rss",
+                                    "source": "rss",
+                                    "source_name": feed.get("name", "RSS Feed"),
                                     "published": True,
                                     "created_at": pub_date or datetime.now(timezone.utc).isoformat()
                                 })
+                                rss_count += 1
             except Exception as e:
-                # Log error but continue
                 print(f"Failed to fetch RSS feed {feed.get('name')}: {e}")
                 continue
     
-    # Sort by date (approximate, since RSS dates vary)
+    # Sort by date
     try:
         combined_news.sort(key=lambda x: x.get("created_at", ""), reverse=True)
     except Exception:
         pass
     
-    return {"news": combined_news[:limit * 2]}  # Return more items since we have mixed sources
+    # Limit the results
+    combined_news = combined_news[:limit]
+    
+    return {
+        "news": combined_news, 
+        "total": local_total + rss_count,
+        "skip": skip, 
+        "limit": limit
+    }
 
 
 @router.post("/news/rss-feeds")
