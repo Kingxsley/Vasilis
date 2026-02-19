@@ -763,6 +763,7 @@ export default function ContentManager() {
                         value={about.content || ''} 
                         onChange={(value) => setAbout({...about, content: value})}
                         placeholder="Write about your company..."
+                        token={token}
                       />
                     </Suspense>
                   </div>
