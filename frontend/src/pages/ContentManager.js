@@ -748,6 +748,38 @@ export default function ContentManager() {
                 ))}
                 {news.length === 0 && <p className="text-center text-gray-500 py-8">No news yet</p>}
               </div>
+
+              {/* News Pagination */}
+              {newsTotal > NEWS_LIMIT && (
+                <div className="flex items-center justify-between mt-4 pt-4 border-t border-[#30363D]">
+                  <p className="text-sm text-gray-400">
+                    Showing {((newsPage - 1) * NEWS_LIMIT) + 1}-{Math.min(newsPage * NEWS_LIMIT, newsTotal)} of {newsTotal} news items
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setNewsPage(p => Math.max(1, p - 1))}
+                      disabled={newsPage === 1}
+                      className="border-[#30363D] text-gray-400"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </Button>
+                    <span className="text-sm text-gray-400">
+                      Page {newsPage} of {Math.ceil(newsTotal / NEWS_LIMIT)}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setNewsPage(p => Math.min(Math.ceil(newsTotal / NEWS_LIMIT), p + 1))}
+                      disabled={newsPage >= Math.ceil(newsTotal / NEWS_LIMIT)}
+                      className="border-[#30363D] text-gray-400"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* News Dialog */}
