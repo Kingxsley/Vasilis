@@ -598,6 +598,18 @@ export default function PhishingSimulations() {
                     <SelectItem value="past">Completed</SelectItem>
                   </SelectContent>
                 </Select>
+                {selectedCampaignIds.length > 0 && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setShowBulkDeleteConfirm(true)}
+                    className="bg-red-600 hover:bg-red-700"
+                    data-testid="bulk-delete-campaigns-btn"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete ({selectedCampaignIds.length})
+                  </Button>
+                )}
               </div>
               <Button 
                 onClick={() => setShowNewCampaign(true)}
