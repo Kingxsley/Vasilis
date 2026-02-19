@@ -1012,16 +1012,26 @@ export default function SimulationBuilder() {
                   data-testid="preview-simulation-btn"
                 >
                   <Eye className="w-4 h-4 mr-2" />
-                  Full Preview
+                  Preview
                 </Button>
                 <Button
-                  onClick={saveSimulation}
+                  variant="outline"
+                  onClick={() => saveSimulation(false)}
                   disabled={saving || !simulationName || selectedBlocks.length === 0}
-                  className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
+                  className="border-[#30363D] text-[#E8DDB5]"
                   data-testid="save-simulation-btn"
                 >
                   {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-                  Save Simulation
+                  Save
+                </Button>
+                <Button
+                  onClick={() => saveSimulation(true)}
+                  disabled={saving || !simulationName || selectedBlocks.length === 0}
+                  className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
+                  data-testid="save-and-launch-btn"
+                >
+                  {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Play className="w-4 h-4 mr-2" />}
+                  Save & Launch
                 </Button>
               </>
             )}
