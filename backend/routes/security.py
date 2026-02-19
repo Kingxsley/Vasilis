@@ -458,7 +458,7 @@ async def get_rate_limit_status(user: dict = Depends(require_super_admin)):
             "default": {"limit": 100, "window": "1 minute"}
         },
         "account_lockout": {
-            "max_attempts": 5,
+            "max_attempts": 3,
             "lockout_duration": "15 minutes",
             "attempt_window": "10 minutes"
         },
