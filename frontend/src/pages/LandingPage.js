@@ -69,6 +69,7 @@ export default function LandingPage() {
   const [layout, setLayout] = useState(null);
   const [branding, setBranding] = useState(null);
   const [pageContent, setPageContent] = useState(null);
+  const [customPages, setCustomPages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -76,7 +77,9 @@ export default function LandingPage() {
     Promise.all([
       axios.get(`${API}/landing-layouts/public`).catch(() => ({ data: null })),
       axios.get(`${API}/settings/branding`).catch(() => ({ data: null })),
-      axios.get(`${API}/pages/landing`).catch(() => ({ data: null }))
+      axios.get(`${API}/pages/landing`).catch(() => ({ data: null })),
+      axios.get(`${API}/pages/custom`).catch(() => ({ data: { pages: [] } }))
+    ])
     ])
       .then(([layoutRes, brandingRes, pageRes]) => {
         setLayout(layoutRes.data);
