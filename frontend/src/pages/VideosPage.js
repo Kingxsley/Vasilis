@@ -30,11 +30,11 @@ export default function VideosPage() {
   const primaryColor = branding?.primary_color || '#D4A836';
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-[#0a0a0f] flex flex-col">
       {/* Header */}
       <PublicNav branding={branding} />
 
-      <main className="container mx-auto px-6 py-12">
+      <main className="container mx-auto px-6 py-12 flex-1">
         <h1 className="text-4xl font-bold mb-2" style={{ color: headingColor, fontFamily: 'Chivo, sans-serif' }}>
           Videos
         </h1>
