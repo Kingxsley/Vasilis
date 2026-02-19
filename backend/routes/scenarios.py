@@ -75,6 +75,23 @@ class ScenarioUpdate(BaseModel):
     is_active: Optional[bool] = None
 
 
+# Valid scenario types including new simulation types
+VALID_SCENARIO_TYPES = [
+    # Original types
+    "phishing_email",
+    "malicious_ads",
+    "social_engineering",
+    # New simulation types
+    "qr_code_phishing",
+    "usb_drop",
+    "mfa_fatigue",
+    "bec_scenario",
+    "data_handling_trap",
+    "ransomware_readiness",
+    "shadow_it_detection"
+]
+
+
 class ScenarioResponse(BaseModel):
     scenario_id: str
     title: str
