@@ -6,6 +6,7 @@ Notifications sent to all super admins
 """
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, EmailStr
+from typing import Optional
 from datetime import datetime, timezone
 import uuid
 import logging
