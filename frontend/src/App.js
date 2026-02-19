@@ -297,6 +297,7 @@ const PermissionsPage = React.lazy(() => import('./pages/PermissionsPage'));
 const AuditLogs = React.lazy(() => import('./pages/AuditLogs'));
 const PasswordPolicyPage = React.lazy(() => import('./pages/PasswordPolicyPage'));
 const CustomPage = React.lazy(() => import('./pages/CustomPage'));
+const ActivityLogs = React.lazy(() => import('./pages/ActivityLogs'));
 
 // Auth Callback Handler
 const AuthCallback = () => {
