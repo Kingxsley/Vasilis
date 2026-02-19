@@ -456,56 +456,258 @@ export default function SimulationBuilder() {
   };
 
   // Save simulation
-  const saveSimulation = async () => {
+  const saveSimulation = async (andLaunch = false) => {
     if (!simulationType || !simulationName) {
       toast.error('Please select a simulation type and name');
-      return;
+      return null;
     }
     
     if (selectedBlocks.length === 0) {
       toast.error('Add at least one building block');
-      return;
+      return null;
     }
 
     setSaving(true);
     try {
-      const content = {
-        blocks: selectedBlocks.map(block => ({
-          id: block.id,
-          type: block.type,
-          value: blockValues[block.instanceId] || ''
-        })),
-        metadata: {
-          simulationType: simulationType.id,
-          difficulty,
-          templateUsed: selectedTemplate?.id,
-          createdAt: new Date().toISOString()
-        }
-      };
-
-      const scenarioData = {
-        title: simulationName,
-        scenario_type: simulationType.id,
-        difficulty,
-        correct_answer: 'unsafe',
-        explanation: `This ${simulationType.name} simulation tests security awareness`,
-        content
-      };
-
-      await axios.post(`${API}/scenarios`, scenarioData, { headers });
-      toast.success('Simulation saved!');
+      // Build email content from blocks
+      const emailSubject = blockValues[selectedBlocks.find(b => b.type === 'subject')?.instanceId] || simulationName;
+      const senderInfo = blockValues[selectedBlocks.find(b => b.type === 'sender')?.instanceId] || 'Security Team <security@company.com>';
       
-      // Reset
+      // Build HTML body from blocks
+      let bodyHtml = '';
+      selectedBlocks.forEach(block => {
+        const value = blockValues[block.instanceId] || '';
+        switch (block.type) {
+          case 'header':
+            bodyHtml += `<h1 style="font-size: 24px; margin-bottom: 16px;">${value}</h1>`;
+            break;
+          case 'textarea':
+            bodyHtml += `<p style="margin-bottom: 16px; white-space: pre-wrap;">${value.replace(/\n/g, '<br>')}</p>`;
+            break;
+          case 'signature':
+            bodyHtml += `<div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #ddd;">${value.replace(/\n/g, '<br>')}</div>`;
+            break;
+          case 'urgency':
+            bodyHtml += `<div style="background: #fee2e2; border-left: 4px solid #ef4444; padding: 12px; margin: 16px 0; color: #991b1b;">${value}</div>`;
+            break;
+          case 'deadline':
+            bodyHtml += `<p style="color: #f97316; font-weight: 500; margin: 16px 0;">⏰ ${value}</p>`;
+            break;
+          case 'threat':
+            bodyHtml += `<p style="color: #ef4444; margin: 16px 0;">⚠️ ${value}</p>`;
+            break;
+          case 'button':
+            bodyHtml += `<div style="text-align: center; margin: 24px 0;"><a href="{{TRACKING_URL}}" style="display: inline-block; background: #2563eb; color: white; padding: 12px 32px; text-decoration: none; border-radius: 8px; font-weight: 500;">${value || 'Click Here'}</a></div>`;
+            break;
+          case 'link':
+            bodyHtml += `<p><a href="{{TRACKING_URL}}" style="color: #2563eb;">${value}</a></p>`;
+            break;
+          case 'form_input':
+          case 'password_input':
+            bodyHtml += `<div style="margin: 12px 0;"><input type="${block.type === 'password_input' ? 'password' : 'text'}" placeholder="${value}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></div>`;
+            break;
+          case 'submit_button':
+            bodyHtml += `<div style="margin: 16px 0;"><a href="{{TRACKING_URL}}" style="display: block; text-align: center; background: #2563eb; color: white; padding: 10px; text-decoration: none; border-radius: 4px;">${value || 'Submit'}</a></div>`;
+            break;
+          case 'qr_code':
+            bodyHtml += `<div style="text-align: center; margin: 24px 0;"><div style="display: inline-block; padding: 16px; background: #f3f4f6; border-radius: 8px;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{TRACKING_URL}}" alt="QR Code" style="width: 150px; height: 150px;"><p style="font-size: 12px; color: #6b7280; margin-top: 8px;">Scan to continue</p></div></div>`;
+            break;
+          case 'image':
+            bodyHtml += `<div style="text-align: center; margin: 16px 0;"><img src="${value || 'https://via.placeholder.com/200'}" alt="Image" style="max-width: 200px; border-radius: 8px;"></div>`;
+            break;
+          case 'divider':
+            bodyHtml += `<hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;">`;
+            break;
+          case 'mfa_prompt':
+            bodyHtml += `<div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 16px; text-align: center; margin: 16px 0;"><p style="font-weight: 500;">${value || 'Sign-in Request'}</p></div>`;
+            break;
+          case 'mfa_buttons':
+            bodyHtml += `<div style="display: flex; gap: 12px; margin: 16px 0;"><a href="{{TRACKING_URL}}" style="flex: 1; text-align: center; background: #22c55e; color: white; padding: 12px; text-decoration: none; border-radius: 8px;">Approve</a><a href="#" style="flex: 1; text-align: center; background: #ef4444; color: white; padding: 12px; text-decoration: none; border-radius: 8px;">Deny</a></div>`;
+            break;
+          case 'usb_device':
+            bodyHtml += `<div style="background: #1f2937; color: white; padding: 16px; border-radius: 8px; margin: 16px 0;"><strong>📁 ${value || 'USB Drive'}</strong><br><small style="color: #9ca3af;">Removable Disk</small></div>`;
+            break;
+          case 'file_list':
+            const files = (value || 'file.txt').split('\n').map(f => `<div style="padding: 4px 0;"><span style="color: #2563eb;">📄</span> ${f}</div>`).join('');
+            bodyHtml += `<div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 4px; padding: 12px; margin: 16px 0;">${files}</div>`;
+            break;
+          default:
+            if (value) bodyHtml += `<p>${value}</p>`;
+        }
+      });
+      
+      // Create phishing template first
+      const templateData = {
+        name: simulationName,
+        subject: emailSubject,
+        sender_name: senderInfo.split('<')[0].trim() || 'Security Team',
+        sender_email: senderInfo.match(/<(.+)>/)?.[1] || 'security@company.com',
+        body_html: bodyHtml || '<p>{{TRACKING_URL}}</p>',
+        body_text: selectedBlocks.map(b => blockValues[b.instanceId] || '').join('\n'),
+        difficulty,
+        scenario_type: simulationType.id
+      };
+      
+      const templateRes = await axios.post(`${API}/phishing/templates`, templateData, { headers });
+      const templateId = templateRes.data.template_id;
+      
+      toast.success('Simulation template created!');
+      
+      if (andLaunch) {
+        // Open launch dialog
+        setCampaignToLaunch({
+          name: simulationName,
+          template_id: templateId,
+          type: simulationType
+        });
+        setShowLaunchDialog(true);
+      } else {
+        // Reset builder
+        setSimulationType(null);
+        setSimulationName('');
+        setSelectedBlocks([]);
+        setBlockValues({});
+        setSelectedTemplate(null);
+      }
+      
+      fetchSavedSimulations();
+      return templateId;
+    } catch (err) {
+      console.error('Save error:', err);
+      toast.error(err.response?.data?.detail || 'Failed to save simulation');
+      return null;
+    } finally {
+      setSaving(false);
+    }
+  };
+  
+  // Launch campaign
+  const launchCampaign = async () => {
+    if (!campaignToLaunch) {
+      toast.error('No campaign to launch');
+      return;
+    }
+    
+    if (selectedTargets.length === 0) {
+      toast.error('Please select at least one target user');
+      return;
+    }
+    
+    setLaunching(true);
+    try {
+      // Get organization ID from first selected user
+      const firstUser = availableUsers.find(u => selectedTargets.includes(u.user_id));
+      const orgId = firstUser?.organization_id || 'org_default';
+      
+      // Create campaign
+      const campaignData = {
+        name: campaignToLaunch.name,
+        organization_id: orgId,
+        template_id: campaignToLaunch.template_id,
+        target_user_ids: selectedTargets
+      };
+      
+      const campaignRes = await axios.post(`${API}/phishing/campaigns`, campaignData, { headers });
+      const campaignId = campaignRes.data.campaign_id;
+      
+      // Launch immediately
+      const launchRes = await axios.post(`${API}/phishing/campaigns/${campaignId}/launch`, {}, { headers });
+      
+      toast.success(`Campaign launched! ${launchRes.data.emails_sent} emails sent to ${launchRes.data.total_targets} targets.`);
+      
+      // Reset everything
+      setShowLaunchDialog(false);
+      setCampaignToLaunch(null);
+      setSelectedTargets([]);
       setSimulationType(null);
       setSimulationName('');
       setSelectedBlocks([]);
       setBlockValues({});
       setSelectedTemplate(null);
-      fetchSavedSimulations();
+      
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Failed to save');
+      console.error('Launch error:', err);
+      toast.error(err.response?.data?.detail || 'Failed to launch campaign');
     } finally {
-      setSaving(false);
+      setLaunching(false);
+    }
+  };
+  
+  // Toggle target selection
+  const toggleTarget = (userId) => {
+    setSelectedTargets(prev => 
+      prev.includes(userId) 
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    );
+  };
+  
+  // Select all targets
+  const selectAllTargets = () => {
+    if (selectedTargets.length === availableUsers.length) {
+      setSelectedTargets([]);
+    } else {
+      setSelectedTargets(availableUsers.map(u => u.user_id));
+    }
+  };
+  
+  // Launch saved simulation
+  const launchSavedSimulation = async (simulation) => {
+    // Check if template already exists for this simulation
+    try {
+      const templatesRes = await axios.get(`${API}/phishing/templates`, { headers });
+      const existingTemplate = templatesRes.data.find(t => t.name === simulation.title);
+      
+      if (existingTemplate) {
+        setCampaignToLaunch({
+          name: simulation.title,
+          template_id: existingTemplate.template_id,
+          type: SIMULATION_TYPES.find(t => t.id === simulation.scenario_type) || SIMULATION_TYPES[0]
+        });
+        setShowLaunchDialog(true);
+      } else {
+        // Need to create template from simulation content
+        toast.info('Creating campaign template...');
+        
+        // Build content from simulation
+        const content = simulation.content || {};
+        let bodyHtml = '<p>This is a security awareness test.</p>';
+        
+        if (content.blocks) {
+          bodyHtml = content.blocks.map(block => {
+            switch (block.type) {
+              case 'header': return `<h1>${block.value}</h1>`;
+              case 'textarea': return `<p>${block.value?.replace(/\n/g, '<br>') || ''}</p>`;
+              case 'button': return `<a href="{{TRACKING_URL}}" style="display:inline-block;background:#2563eb;color:white;padding:12px 24px;text-decoration:none;border-radius:4px;">${block.value || 'Click Here'}</a>`;
+              case 'link': return `<a href="{{TRACKING_URL}}">${block.value}</a>`;
+              case 'urgency': return `<div style="background:#fee2e2;padding:12px;color:#991b1b;">${block.value}</div>`;
+              default: return block.value ? `<p>${block.value}</p>` : '';
+            }
+          }).join('\n');
+        }
+        
+        const templateData = {
+          name: simulation.title,
+          subject: simulation.title,
+          sender_name: 'Security Team',
+          sender_email: 'security@company.com',
+          body_html: bodyHtml,
+          body_text: simulation.explanation || 'Security test',
+          difficulty: simulation.difficulty || 'medium'
+        };
+        
+        const templateRes = await axios.post(`${API}/phishing/templates`, templateData, { headers });
+        
+        setCampaignToLaunch({
+          name: simulation.title,
+          template_id: templateRes.data.template_id,
+          type: SIMULATION_TYPES.find(t => t.id === simulation.scenario_type) || SIMULATION_TYPES[0]
+        });
+        setShowLaunchDialog(true);
+      }
+    } catch (err) {
+      console.error('Error preparing launch:', err);
+      toast.error('Failed to prepare campaign launch');
     }
   };
 
