@@ -157,6 +157,15 @@ export default function UsersPage() {
     return matchesSearch && matchesOrg;
   });
 
+  // Paginate the filtered results
+  const totalUsers = filteredUsers.length;
+  const paginatedUsers = filteredUsers.slice((page - 1) * pageSize, page * pageSize);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [search, filterOrg]);
+
   const getRoleBadgeColor = (role) => {
     switch (role) {
       case 'super_admin': return 'bg-[#FF3B30]/20 text-[#FF3B30]';
