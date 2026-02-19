@@ -104,7 +104,7 @@ async def get_activity_logs(
 @router.get("/stats")
 async def get_activity_stats(request: Request, days: int = 30):
     """Get activity statistics (super admin only)"""
-    user = await get_current_user_from_request(request)
+    user = await get_current_user(request)
     
     if user.get("role") != "super_admin":
         raise HTTPException(status_code=403, detail="Only super admins can view activity stats")
@@ -162,7 +162,7 @@ async def get_activity_stats(request: Request, days: int = 30):
 @router.delete("/{activity_id}")
 async def delete_activity_log(activity_id: str, request: Request):
     """Delete an activity log (super admin only)"""
-    user = await get_current_user_from_request(request)
+    user = await get_current_user(request)
     
     if user.get("role") != "super_admin":
         raise HTTPException(status_code=403, detail="Only super admins can delete activity logs")
@@ -179,7 +179,7 @@ async def delete_activity_log(activity_id: str, request: Request):
 @router.delete("")
 async def bulk_delete_activity_logs(request: Request):
     """Bulk delete activity logs (super admin only)"""
-    user = await get_current_user_from_request(request)
+    user = await get_current_user(request)
     
     if user.get("role") != "super_admin":
         raise HTTPException(status_code=403, detail="Only super admins can delete activity logs")
