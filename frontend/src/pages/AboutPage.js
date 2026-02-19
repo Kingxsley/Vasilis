@@ -38,11 +38,11 @@ export default function AboutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-[#0a0a0f] flex flex-col">
       {/* Header */}
       <PublicNav branding={branding} />
 
-      <main className="container mx-auto px-6 py-12">
+      <main className="container mx-auto px-6 py-12 flex-1">
         {/* Hero */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h1 className="text-5xl font-bold mb-4" style={{ color: headingColor, fontFamily: 'Chivo, sans-serif' }}>
