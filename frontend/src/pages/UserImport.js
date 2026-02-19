@@ -197,17 +197,17 @@ export default function UserImport() {
           {/* Instructions */}
           <Card className="bg-[#161B22] border-[#30363D]">
             <CardHeader>
-              <CardTitle className="text-[#E8DDB5]">CSV Format</CardTitle>
+              <CardTitle className="text-[#E8DDB5]">CSV Format (V2)</CardTitle>
               <CardDescription className="text-gray-400">
-                Required columns and format
+                Passwords auto-generated & emailed to users
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="bg-[#0f0f15] rounded-lg p-4 font-mono text-sm overflow-x-auto">
-                  <div className="text-gray-400">name,email,role,organization_name,password</div>
-                  <div className="text-[#E8DDB5]">John Doe,john@example.com,trainee,Acme Corp,pass123</div>
-                  <div className="text-[#E8DDB5]">Jane Smith,jane@example.com,org_admin,Acme Corp,pass456</div>
+                  <div className="text-gray-400">name,email,role,organization_name</div>
+                  <div className="text-[#E8DDB5]">John Doe,john@example.com,trainee,Acme Corp</div>
+                  <div className="text-[#E8DDB5]">Jane Smith,jane@example.com,org_admin,Acme Corp</div>
                 </div>
                 
                 <div className="space-y-2">
@@ -215,10 +215,15 @@ export default function UserImport() {
                   <ul className="text-sm text-gray-400 space-y-1">
                     <li><span className="text-[#D4A836]">name</span> - User's full name (required)</li>
                     <li><span className="text-[#D4A836]">email</span> - Email address (required, unique)</li>
-                    <li><span className="text-[#D4A836]">role</span> - trainee, org_admin, or super_admin</li>
-                    <li><span className="text-[#D4A836]">organization_name</span> - Org name (created if new)</li>
-                    <li><span className="text-[#D4A836]">password</span> - Temporary password (min 6 chars)</li>
+                    <li><span className="text-[#D4A836]">role</span> - trainee, org_admin, manager, or super_admin</li>
+                    <li><span className="text-[#D4A836]">organization_name</span> - Org name (created if not exists)</li>
                   </ul>
+                </div>
+
+                <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
+                  <p className="text-sm text-green-400">
+                    <strong>New in V2:</strong> Passwords are auto-generated and secure. Each user receives a welcome email with their login credentials.
+                  </p>
                 </div>
               </div>
             </CardContent>
