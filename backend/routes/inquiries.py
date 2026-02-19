@@ -34,6 +34,13 @@ async def require_admin(request: Request) -> dict:
     return user
 
 
+async def require_super_admin(request: Request) -> dict:
+    user = await get_current_user(request)
+    if user.get("role") != UserRole.SUPER_ADMIN:
+        raise HTTPException(status_code=403, detail="Super admin access required")
+    return user
+
+
 # ============== MODELS ==============
 
 class InquiryCreate(BaseModel):
@@ -182,23 +189,13 @@ async def list_inquiries(
     skip: int = 0,
     limit: int = 50
 ):
-    """List all inquiries (admin only)"""
-    user = await require_admin(request)
+    """List all inquiries (super admin only)"""
+    user = await require_super_admin(request)
     db = get_db()
     
     query = {}
     if status:
         query["status"] = status
-    
-    # Org admins can only see inquiries for their organization
-    if user.get("role") == UserRole.ORG_ADMIN:
-        org = await db.organizations.find_one(
-            {"organization_id": user.get("organization_id")},
-            {"_id": 0, "domain": 1}
-        )
-        if org and org.get("domain"):
-            # Filter by email domain matching organization
-            query["email"] = {"$regex": f"@{org['domain']}$", "$options": "i"}
     
     inquiries = await db.inquiries.find(
         query,
@@ -217,45 +214,24 @@ async def list_inquiries(
 
 @router.get("/stats")
 async def get_inquiry_stats(request: Request):
-    """Get inquiry statistics (admin only)"""
-    user = await require_admin(request)
+    """Get inquiry statistics (super admin only)"""
+    user = await require_super_admin(request)
     db = get_db()
     
-    base_query = {}
+    total = await db.inquiries.count_documents({})
+    pending = await db.inquiries.count_documents({"status": "pending"})
+    contacted = await db.inquiries.count_documents({"status": "contacted"})
+    approved = await db.inquiries.count_documents({"status": "approved"})
+    rejected = await db.inquiries.count_documents({"status": "rejected"})
     
-    # Org admins get stats only for their organization
-    if user.get("role") == UserRole.ORG_ADMIN:
-        org = await db.organizations.find_one(
-            {"organization_id": user.get("organization_id")},
-            {"_id": 0, "domain": 1}
-        )
-        if org and org.get("domain"):
-            base_query["email"] = {"$regex": f"@{org['domain']}$", "$options": "i"}
-    
-    total = await db.inquiries.count_documents(base_query)
-    
-    pending_query = {**base_query, "status": "pending"}
-    pending = await db.inquiries.count_documents(pending_query)
-    
-    contacted_query = {**base_query, "status": "contacted"}
-    contacted = await db.inquiries.count_documents(contacted_query)
-    
-    approved_query = {**base_query, "status": "approved"}
-    approved = await db.inquiries.count_documents(approved_query)
-    
-    rejected_query = {**base_query, "status": "rejected"}
-    rejected = await db.inquiries.count_documents(rejected_query)
-    
-    # Get country breakdown for super admins
-    countries = []
-    if user.get("role") == UserRole.SUPER_ADMIN:
-        pipeline = [
-            {"$match": {"country": {"$exists": True, "$ne": "Unknown"}}},
-            {"$group": {"_id": "$country", "count": {"$sum": 1}}},
-            {"$sort": {"count": -1}},
-            {"$limit": 10}
-        ]
-        countries = await db.inquiries.aggregate(pipeline).to_list(10)
+    # Get country breakdown
+    pipeline = [
+        {"$match": {"country": {"$exists": True, "$ne": "Unknown"}}},
+        {"$group": {"_id": "$country", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 10}
+    ]
+    countries = await db.inquiries.aggregate(pipeline).to_list(10)
     
     return {
         "total": total,
@@ -269,8 +245,8 @@ async def get_inquiry_stats(request: Request):
 
 @router.get("/{inquiry_id}")
 async def get_inquiry(inquiry_id: str, request: Request):
-    """Get a specific inquiry (admin only)"""
-    await require_admin(request)
+    """Get a specific inquiry (super admin only)"""
+    await require_super_admin(request)
     db = get_db()
     
     inquiry = await db.inquiries.find_one({"inquiry_id": inquiry_id}, {"_id": 0})
@@ -282,8 +258,8 @@ async def get_inquiry(inquiry_id: str, request: Request):
 
 @router.patch("/{inquiry_id}")
 async def update_inquiry(inquiry_id: str, data: InquiryUpdate, request: Request):
-    """Update inquiry status (admin only)"""
-    user = await require_admin(request)
+    """Update inquiry status (super admin only)"""
+    user = await require_super_admin(request)
     db = get_db()
     
     valid_statuses = ["pending", "contacted", "approved", "rejected"]
