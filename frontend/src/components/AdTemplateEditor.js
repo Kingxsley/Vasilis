@@ -583,12 +583,12 @@ export default function AdTemplateEditor({
                   <Label className="text-gray-400 mb-2 block">Color Presets</Label>
                   <div className="flex flex-wrap gap-2">
                     {[
-                      { bg: '#dc2626', text: '#fff', btn: '#fbbf24', name: 'Danger Red' },
-                      { bg: '#ff6b35', text: '#fff', btn: '#ffcc00', name: 'Warning Orange' },
-                      { bg: '#1e3a5f', text: '#fff', btn: '#3b82f6', name: 'Corporate Blue' },
-                      { bg: '#15803d', text: '#fff', btn: '#fbbf24', name: 'Money Green' },
-                      { bg: '#7c3aed', text: '#fff', btn: '#fbbf24', name: 'Tech Purple' },
-                      { bg: '#0D1117', text: '#fff', btn: '#D4A836', name: 'Dark Mode' }
+                      { bg: '#dc2626', text: '#ffffff', btn: '#fbbf24', name: 'Danger Red' },
+                      { bg: '#ff6b35', text: '#ffffff', btn: '#ffcc00', name: 'Warning Orange' },
+                      { bg: '#1e3a5f', text: '#ffffff', btn: '#3b82f6', name: 'Corporate Blue' },
+                      { bg: '#15803d', text: '#ffffff', btn: '#fbbf24', name: 'Money Green' },
+                      { bg: '#7c3aed', text: '#ffffff', btn: '#fbbf24', name: 'Tech Purple' },
+                      { bg: '#0D1117', text: '#ffffff', btn: '#D4A836', name: 'Dark Mode' }
                     ].map((preset, i) => (
                       <button
                         key={i}
