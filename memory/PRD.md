@@ -9,28 +9,33 @@ Build a full-featured cybersecurity training platform for vasilisnetshield.com w
 - Dynamic navigation menu management
 - Dynamic Page Builder for creating custom pages without code
 
-## What's Been Implemented (Latest Session - Feb 2026)
+## What's Been Implemented (Latest Session - Feb 19, 2026)
+
+### CRITICAL FIXES THIS SESSION ✅
+- [x] **Phishing Link Tracking FIXED** - Clicks now show phishing landing page, NOT homepage
+  - Root cause: SendGrid was wrapping links. User disabled it in their dashboard.
+  - Campaigns must have targets assigned for tracking to work
+- [x] **Backwards Typing Bug FIXED** - RichTextEditor no longer types backwards
+  - Root cause: `dangerouslySetInnerHTML` was resetting cursor on every render
+  - Fixed by setting innerHTML only once on mount
+- [x] **File Upload "Invalid Token" FIXED** - Removed explicit Content-Type header for multipart
+- [x] **Page Builder Moved to Content Section** - Now under Content menu in sidebar
+- [x] **Custom Pages in Public Nav** - Pages with `show_in_nav=true` appear in navigation
+- [x] **Campaign Edit/Duplicate** - Can now edit draft campaigns and duplicate any campaign
 
 ### Dynamic Page Builder
 - [x] Full CRUD for custom pages at `/page-builder`
 - [x] 9 block types: heading, text, button, image, divider, hero, contact_form, event_registration, cards
 - [x] Page types: custom, contact, event, info
-- [x] Show in navigation option
+- [x] Show in navigation option - **NOW WORKING in public nav**
 - [x] Publish/unpublish functionality
 - [x] Public page renderer at `/page/:slug`
 
-### Advanced Analytics Enhancements (NEW)
-- [x] **Click Details Table** - Shows who clicked phishing links with:
-  - User name, email, organization (for super_admin)
-  - Campaign name, click time, IP address
-- [x] **Best Performing Campaigns** - Shows campaigns with lowest click rates
-  - Ranked by click rate (lower = better)
-  - Shows status, emails sent, clicks
-
-### Campaign Management
-- [x] **Duplicate Campaign** - Copy any campaign for editing
-  - Creates new draft campaign with "(Copy)" suffix
-  - Preserves all settings except targets
+### Campaign Management (UPDATED)
+- [x] **Edit Campaign** - Edit button for draft/scheduled campaigns
+- [x] **Update Campaign API** - `PUT /api/phishing/campaigns/{id}` to modify campaigns
+- [x] **Duplicate Campaign** - Copy any campaign, opens edit dialog for modification
+- [x] **Target User Management** - Add/remove users in campaign before launch
 
 ### RBAC Updates (THIS SESSION)
 - [x] Settings section: **super_admin only**
