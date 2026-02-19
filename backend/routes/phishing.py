@@ -791,7 +791,6 @@ async def track_link_click(tracking_code: str, request: Request):
     result = await record_link_click(db, tracking_code, request_info)
     
     # Get campaign and target info for personalized message
-    campaign_name = "Security Training"
     user_name = "User"
     user_email = ""
     scenario_type = "phishing_email"
