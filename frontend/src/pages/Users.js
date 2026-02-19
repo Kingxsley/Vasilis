@@ -393,6 +393,28 @@ export default function UsersPage() {
           </Select>
         </div>
 
+        {/* Bulk Actions */}
+        {selectedUsers.length > 0 && (
+          <div className="flex items-center gap-4 p-4 bg-[#161B22] border border-[#D4A836]/30 rounded-lg">
+            <span className="text-[#E8DDB5]">{selectedUsers.length} user(s) selected</span>
+            <Button
+              onClick={() => setShowBulkDeleteConfirm(true)}
+              variant="destructive"
+              className="bg-red-600 hover:bg-red-700"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete Selected
+            </Button>
+            <Button
+              onClick={() => setSelectedUsers([])}
+              variant="outline"
+              className="border-[#D4A836]/30"
+            >
+              Clear Selection
+            </Button>
+          </div>
+        )}
+
         {/* Users Table */}
         <Card className="bg-[#161B22] border-[#30363D]">
           <CardContent className="p-0">
@@ -412,6 +434,12 @@ export default function UsersPage() {
               <Table>
                 <TableHeader>
                   <TableRow className="border-[#30363D] hover:bg-transparent">
+                    <TableHead className="w-10">
+                      <Checkbox
+                        checked={selectedUsers.length === paginatedUsers.filter(u => u.user_id !== currentUser.user_id).length && paginatedUsers.length > 0}
+                        onCheckedChange={selectAllUsers}
+                      />
+                    </TableHead>
                     <TableHead className="text-gray-400">User</TableHead>
                     <TableHead className="text-gray-400">Role</TableHead>
                     <TableHead className="text-gray-400">Organization</TableHead>
