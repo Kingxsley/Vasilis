@@ -143,6 +143,28 @@ async def create_scenario(data: ScenarioCreate, request: Request):
     )
 
 
+@router.get("/types")
+async def get_scenario_types(request: Request):
+    """Get all available scenario types"""
+    await require_admin(request)
+    
+    return {
+        "types": VALID_SCENARIO_TYPES,
+        "descriptions": {
+            "phishing_email": "Email phishing detection training",
+            "malicious_ads": "Malicious advertisement recognition",
+            "social_engineering": "Social engineering defense scenarios",
+            "qr_code_phishing": "QR code phishing awareness",
+            "usb_drop": "USB drop attack simulation",
+            "mfa_fatigue": "Multi-factor authentication fatigue attacks",
+            "bec_scenario": "Business email compromise scenarios",
+            "data_handling_trap": "Data handling and privacy traps",
+            "ransomware_readiness": "Ransomware preparedness drills",
+            "shadow_it_detection": "Shadow IT detection training"
+        }
+    }
+
+
 @router.get("", response_model=List[ScenarioResponse])
 async def list_scenarios(
     scenario_type: Optional[str] = None,
