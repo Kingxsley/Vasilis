@@ -35,6 +35,23 @@ When a user clicks a phishing link:
 ### Contact Form Email Routing (NEW) ✅
 - [x] Contact form submissions sent to `info@vasilisnetshield.com`
 - [x] Professional HTML email template with reply-to set to submitter
+- [x] Email service properly loads .env variables via dotenv
+
+### Advanced Analytics Enhancements ✅
+- [x] **Custom Date Range Filter** - From/To date picker with Apply/Reset buttons
+- [x] Quick filters: Last 7 days, 30 days, 90 days, Last year
+
+### Bulk Delete with Confirmation ✅
+- [x] **Users Page** - Checkbox selection for multiple users, confirmation dialog
+- [x] **Activity Logs** - Bulk selection and delete with confirmation
+
+### User Activity Logging (NEW) ✅
+- [x] New Activity Logs page at `/activity-logs` (super admin only)
+- [x] Tracks all user activities across the platform
+- [x] Stats cards: Total Activities, Most Active User, Top Action, Top Resource
+- [x] Filters: Action type, Resource type, Date range
+- [x] Bulk delete with confirmation
+- [x] Pagination support
 
 ### Dynamic Page Builder
 - [x] Full CRUD for custom pages at `/page-builder`
