@@ -7,32 +7,43 @@ Build a full-featured cybersecurity training platform for vasilisnetshield.com w
 - Organization & user management with RBAC
 - Certificate generation and email campaigns
 - Dynamic navigation menu management
+- Dynamic Page Builder for creating custom pages without code
 
-## What's Been Implemented (Latest Session - Dec 2025)
+## What's Been Implemented (Latest Session - Feb 2026)
 
-### Enhanced Phishing Landing Page (NEW - This Session)
-- [x] Personalized "You've Been Phished" page when users click simulation links
-- [x] Scenario-type specific messaging (phishing, QR code, BEC, USB drop, MFA fatigue, etc.)
-- [x] "What Could Have Happened" risk explanation
-- [x] Auto-redirect countdown (10 seconds) to training page
-- [x] "Start Training Now" button
-- [x] Professional dark theme matching platform branding
-- [x] User name personalization when available
+### Dynamic Page Builder (NEW - This Session)
+- [x] Full CRUD for custom pages at `/page-builder`
+- [x] 9 block types: heading, text, button, image, divider, hero, contact_form, event_registration, cards
+- [x] Page types: custom, contact, event, info
+- [x] Show in navigation option
+- [x] Publish/unpublish functionality
+- [x] Public page renderer at `/page/:slug`
+- [x] Block-specific content editors
 
-### Training Failure Tracking (NEW - This Session)
-- [x] Training failures recorded in database when users click phishing links
-- [x] `/api/phishing/training-failures` - List failures with pagination
-- [x] `/api/phishing/training-failures/stats` - Stats by scenario type, status, repeat offenders
-- [x] `/api/phishing/training-failures/{id}/complete` - Mark training as completed
-- [x] Org admins see only their organization's failures
-- [x] Super admins see all failures with org filter option
+### Phishing Stats Fix (NEW - This Session)
+- [x] Fixed route ordering issue - `/api/phishing/stats` now correctly returns aggregated statistics
+- [x] Returns: total_campaigns, active_campaigns, completed_campaigns, total_sent, total_opened, total_clicked, open_rate, click_rate
+- [x] Supports `days` parameter for filtering
 
-### Page Alignment Fixes (NEW - This Session)
-- [x] Advanced Analytics page proper padding (p-4 lg:p-6)
-- [x] Responsive layout fixes
-- [x] Sidebar navigation properly aligned
+### SendGrid Click Tracking Fix (NEW - This Session)
+- [x] Disabled SendGrid click tracking in phishing emails
+- [x] Added TrackingSettings to disable ClickTracking and OpenTracking
+- [x] Phishing links now use platform's own tracking system
+
+### Account Lockout Email Notifications (NEW - This Session)
+- [x] `send_account_lockout_notification()` function in email_service.py
+- [x] Sends email to all super_admins when user account is locked
+- [x] Includes locked email, IP address, timestamp, lockout duration
+- [x] Professional HTML email template with security alert styling
+
+### UI Improvements (NEW - This Session)
+- [x] Menu Manager tab removed from CMS (functionality in Settings page)
+- [x] Export button colors improved: Excel (emerald/green), PDF (gold)
+- [x] Page Builder added to sidebar under Settings
 
 ### Previous Session Features
+- [x] Enhanced Phishing Landing Page with personalized messaging
+- [x] Training Failure Tracking system
 - [x] Dynamic Menu Manager in CMS
 - [x] Media Manager role permissions
 - [x] Password Policy page in Security section
@@ -42,11 +53,22 @@ Build a full-featured cybersecurity training platform for vasilisnetshield.com w
 
 ## API Endpoints
 
+### Page Builder (NEW)
+- `GET /api/pages/custom` - List all custom pages
+- `POST /api/pages/custom` - Create new page
+- `GET /api/pages/custom/{slug}` - Get page by slug (public if published)
+- `PATCH /api/pages/custom/{page_id}` - Update page
+- `DELETE /api/pages/custom/{page_id}` - Delete page
+- `GET /api/pages/block-templates` - Get available block templates
+
+### Phishing Stats (FIXED)
+- `GET /api/phishing/stats?days=30` - Aggregated phishing statistics
+
 ### Phishing Tracking
 - `GET /api/phishing/track/click/{tracking_code}` - Show "You've Been Phished" page
 - `GET /api/phishing/track/open/{tracking_code}` - Track email opens (pixel)
 
-### Training Failures (NEW)
+### Training Failures
 - `GET /api/phishing/training-failures` - List failures (paginated, role-filtered)
 - `GET /api/phishing/training-failures/stats` - Aggregated statistics
 - `PATCH /api/phishing/training-failures/{id}/complete` - Mark as completed
