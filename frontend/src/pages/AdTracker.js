@@ -9,8 +9,8 @@ const API = `${BACKEND_URL}/api`;
  * This is a public passthrough page that renders ad content for tracking URLs.
  * URL format: /{campaign_id}?u={tracking_code}
  * 
- * This allows clean URLs like vasilisnetshield.net/abc123?u=xyz789
- * instead of vasilisnetshield.net/api/track/abc123?u=xyz789
+ * This allows clean URLs like vasilisnetshield.com/abc123?u=xyz789
+ * instead of vasilisnetshield.com/api/track/abc123?u=xyz789
  */
 export default function AdTracker() {
   const [content, setContent] = useState(null);

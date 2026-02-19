@@ -60,7 +60,7 @@ User-agent: *
 Allow: /
 
 # Sitemap location
-Sitemap: https://vasilisnetshield.net/sitemap.xml
+Sitemap: https://vasilisnetshield.com/sitemap.xml
 
 # Disallow admin areas
 Disallow: /dashboard
@@ -70,7 +70,7 @@ Disallow: /campaigns
 Disallow: /analytics`,
         google_analytics_id: '',
         google_search_console: '',
-        canonical_url: 'https://vasilisnetshield.net'
+        canonical_url: 'https://vasilisnetshield.com'
       });
     } finally {
       setLoading(false);

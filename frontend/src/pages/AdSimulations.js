@@ -161,7 +161,7 @@ export default function AdSimulations() {
   // Uses clean URL: {domain}/{campaign_id}
   const copyTrackingUrl = async (campaignId) => {
     // Build the masked tracking URL using the website's domain
-    // Format: vasilisnetshield.net/{campaign_id}
+    // Format: vasilisnetshield.com/{campaign_id}
     const baseUrl = window.location.origin;
     const trackingUrl = `${baseUrl}/${campaignId}`;
     
