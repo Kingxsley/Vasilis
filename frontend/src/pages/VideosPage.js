@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Loader2, Play, X, Film } from 'lucide-react';
 import { PublicNav } from '../components/PublicNav';
+import { PublicFooter } from '../components/PublicFooter';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
