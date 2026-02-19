@@ -944,7 +944,16 @@ async def list_users(
     user: dict = Depends(require_admin)
 ):
     query = {}
-    if organization_id:
+    
+    # Org admins can only see users in their organization
+    if user.get("role") == "org_admin":
+        if user.get("organization_id"):
+            query["organization_id"] = user["organization_id"]
+        else:
+            # Org admin without org - return empty
+            return []
+    elif organization_id:
+        # Super admin can filter by any org
         query["organization_id"] = organization_id
     
     users = await db.users.find(query, {"_id": 0, "password_hash": 0}).to_list(1000)
@@ -971,6 +980,11 @@ async def get_user(user_id: str, admin: dict = Depends(require_admin)):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
+    # Org admin can only view users in their organization
+    if admin.get("role") == "org_admin":
+        if user.get("organization_id") != admin.get("organization_id"):
+            raise HTTPException(status_code=403, detail="You can only view users in your organization")
+    
     created_at = user.get("created_at")
     if isinstance(created_at, str):
         created_at = datetime.fromisoformat(created_at)
@@ -987,6 +1001,19 @@ async def get_user(user_id: str, admin: dict = Depends(require_admin)):
 
 @user_router.patch("/{user_id}", response_model=UserResponse)
 async def update_user(user_id: str, data: UserUpdate, admin: dict = Depends(require_admin)):
+    # Get target user first
+    target_user = await db.users.find_one({"user_id": user_id}, {"_id": 0})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Org admin can only update users in their organization
+    if admin.get("role") == "org_admin":
+        if target_user.get("organization_id") != admin.get("organization_id"):
+            raise HTTPException(status_code=403, detail="You can only modify users in your organization")
+        # Org admin cannot change someone to super_admin
+        if data.role == "super_admin":
+            raise HTTPException(status_code=403, detail="You cannot assign super_admin role")
+    
     update_data = {k: v for k, v in data.model_dump().items() if v is not None}
     if not update_data:
         raise HTTPException(status_code=400, detail="No update data provided")
