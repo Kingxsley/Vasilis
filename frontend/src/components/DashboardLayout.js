@@ -226,6 +226,7 @@ export const DashboardLayout = ({ children }) => {
         {/* Navigation - Scrollable */}
         <nav className="flex-1 p-2 overflow-y-auto">
           {navGroups.map((group) => {
+            if (!isGroupVisible(group)) return null;
             const filteredItems = filterItems(group.items);
             if (filteredItems.length === 0) return null;
             
