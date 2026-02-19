@@ -535,6 +535,222 @@ export default function AdvancedAnalytics() {
           </CardContent>
         </Card>
 
+        {/* All Campaigns Analytics - Multi-select */}
+        <Card className="bg-[#0f0f15] border-[#D4A836]/20">
+          <CardHeader>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <CardTitle className="text-[#E8DDB5] flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-[#D4A836]" />
+                All Simulation Campaigns
+                {campaignSummary && (
+                  <Badge className="ml-2 bg-[#D4A836]/20 text-[#D4A836]">
+                    {campaignSummary.total_campaigns} Total
+                  </Badge>
+                )}
+              </CardTitle>
+              <div className="flex items-center gap-3">
+                <Select value={campaignTypeFilter} onValueChange={setCampaignTypeFilter}>
+                  <SelectTrigger className="w-44 bg-[#1a1a24] border-[#D4A836]/20">
+                    <Filter className="w-4 h-4 mr-2" />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Types</SelectItem>
+                    <SelectItem value="phishing">Phishing Emails</SelectItem>
+                    <SelectItem value="ad">Malicious Ads</SelectItem>
+                  </SelectContent>
+                </Select>
+                {selectedCampaignIds.length > 0 && (
+                  <Badge className="bg-[#D4A836] text-black">
+                    {selectedCampaignIds.length} Selected
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {/* Summary Stats */}
+            {campaignSummary && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg text-center">
+                  <Mail className="w-6 h-6 text-blue-400 mx-auto mb-2" />
+                  <p className="text-xl font-bold text-blue-400">{campaignSummary.phishing_campaigns}</p>
+                  <p className="text-xs text-gray-400">Phishing Campaigns</p>
+                </div>
+                <div className="p-4 bg-purple-500/10 border border-purple-500/30 rounded-lg text-center">
+                  <Monitor className="w-6 h-6 text-purple-400 mx-auto mb-2" />
+                  <p className="text-xl font-bold text-purple-400">{campaignSummary.ad_campaigns}</p>
+                  <p className="text-xs text-gray-400">Ad Campaigns</p>
+                </div>
+                <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg text-center">
+                  <Eye className="w-6 h-6 text-green-400 mx-auto mb-2" />
+                  <p className="text-xl font-bold text-green-400">{campaignSummary.overall_open_rate}%</p>
+                  <p className="text-xs text-gray-400">Overall Open Rate</p>
+                </div>
+                <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-center">
+                  <MousePointerClick className="w-6 h-6 text-red-400 mx-auto mb-2" />
+                  <p className="text-xl font-bold text-red-400">{campaignSummary.overall_click_rate}%</p>
+                  <p className="text-xs text-gray-400">Overall Click Rate</p>
+                </div>
+              </div>
+            )}
+
+            {/* Campaign List with Checkboxes */}
+            {allCampaigns.length === 0 ? (
+              <div className="text-center py-8 text-gray-400">
+                <BarChart3 className="w-12 h-12 mx-auto mb-3 text-gray-600" />
+                <p>No campaigns found</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-[#D4A836]/20">
+                      <TableHead className="w-12">
+                        <Checkbox
+                          checked={selectedCampaignIds.length === allCampaigns.filter(c => 
+                            campaignTypeFilter === 'all' || c.type === campaignTypeFilter
+                          ).length && allCampaigns.length > 0}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedCampaignIds(
+                                allCampaigns
+                                  .filter(c => campaignTypeFilter === 'all' || c.type === campaignTypeFilter)
+                                  .map(c => c.campaign_id)
+                              );
+                            } else {
+                              setSelectedCampaignIds([]);
+                            }
+                          }}
+                          className="border-[#30363D] data-[state=checked]:bg-[#D4A836]"
+                        />
+                      </TableHead>
+                      <TableHead className="text-gray-400">Type</TableHead>
+                      <TableHead className="text-gray-400">Campaign Name</TableHead>
+                      <TableHead className="text-gray-400">Status</TableHead>
+                      <TableHead className="text-gray-400 text-center">Targets</TableHead>
+                      <TableHead className="text-gray-400 text-center">Sent</TableHead>
+                      <TableHead className="text-gray-400 text-center">Opened</TableHead>
+                      <TableHead className="text-gray-400 text-center">Clicked</TableHead>
+                      <TableHead className="text-gray-400 text-center">Open Rate</TableHead>
+                      <TableHead className="text-gray-400 text-center">Click Rate</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {allCampaigns
+                      .filter(c => campaignTypeFilter === 'all' || c.type === campaignTypeFilter)
+                      .map((campaign) => (
+                        <TableRow 
+                          key={campaign.campaign_id} 
+                          className={`border-[#D4A836]/10 ${
+                            selectedCampaignIds.includes(campaign.campaign_id) ? 'bg-[#D4A836]/10' : ''
+                          }`}
+                        >
+                          <TableCell>
+                            <Checkbox
+                              checked={selectedCampaignIds.includes(campaign.campaign_id)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedCampaignIds([...selectedCampaignIds, campaign.campaign_id]);
+                                } else {
+                                  setSelectedCampaignIds(selectedCampaignIds.filter(id => id !== campaign.campaign_id));
+                                }
+                              }}
+                              className="border-[#30363D] data-[state=checked]:bg-[#D4A836]"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={
+                              campaign.type === 'phishing' 
+                                ? 'bg-blue-500/20 text-blue-400' 
+                                : 'bg-purple-500/20 text-purple-400'
+                            }>
+                              {campaign.type === 'phishing' ? (
+                                <><Mail className="w-3 h-3 mr-1" /> Phishing</>
+                              ) : (
+                                <><Monitor className="w-3 h-3 mr-1" /> Ad</>
+                              )}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-[#E8DDB5] font-medium">{campaign.name}</TableCell>
+                          <TableCell>
+                            <Badge className={
+                              campaign.status === 'active' ? 'bg-green-500/20 text-green-400' :
+                              campaign.status === 'draft' ? 'bg-gray-500/20 text-gray-400' :
+                              campaign.status === 'completed' ? 'bg-blue-500/20 text-blue-400' :
+                              'bg-yellow-500/20 text-yellow-400'
+                            }>
+                              {campaign.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-center text-gray-300">{campaign.total_targets}</TableCell>
+                          <TableCell className="text-center text-gray-300">{campaign.sent}</TableCell>
+                          <TableCell className="text-center text-green-400">{campaign.opened}</TableCell>
+                          <TableCell className="text-center text-red-400">{campaign.clicked}</TableCell>
+                          <TableCell className="text-center">
+                            <span className={campaign.open_rate >= 50 ? 'text-green-400' : campaign.open_rate >= 25 ? 'text-yellow-400' : 'text-gray-400'}>
+                              {campaign.open_rate}%
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <span className={campaign.click_rate <= 5 ? 'text-green-400' : campaign.click_rate <= 15 ? 'text-yellow-400' : 'text-red-400'}>
+                              {campaign.click_rate}%
+                            </span>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
+
+                {/* Selected Campaigns Comparison */}
+                {selectedCampaignIds.length > 1 && (
+                  <div className="mt-6 p-4 bg-[#1a1a24] rounded-lg border border-[#D4A836]/30">
+                    <h4 className="text-sm font-medium text-[#E8DDB5] mb-4 flex items-center gap-2">
+                      <BarChart3 className="w-4 h-4 text-[#D4A836]" />
+                      Selected Campaigns Comparison ({selectedCampaignIds.length} campaigns)
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                      {(() => {
+                        const selected = allCampaigns.filter(c => selectedCampaignIds.includes(c.campaign_id));
+                        const totalSent = selected.reduce((sum, c) => sum + c.sent, 0);
+                        const totalOpened = selected.reduce((sum, c) => sum + c.opened, 0);
+                        const totalClicked = selected.reduce((sum, c) => sum + c.clicked, 0);
+                        const avgOpenRate = totalSent > 0 ? (totalOpened / totalSent * 100).toFixed(1) : 0;
+                        const avgClickRate = totalSent > 0 ? (totalClicked / totalSent * 100).toFixed(1) : 0;
+                        
+                        return (
+                          <>
+                            <div className="text-center">
+                              <p className="text-2xl font-bold text-[#E8DDB5]">{selectedCampaignIds.length}</p>
+                              <p className="text-xs text-gray-400">Campaigns</p>
+                            </div>
+                            <div className="text-center">
+                              <p className="text-2xl font-bold text-blue-400">{totalSent}</p>
+                              <p className="text-xs text-gray-400">Total Sent</p>
+                            </div>
+                            <div className="text-center">
+                              <p className="text-2xl font-bold text-green-400">{totalOpened}</p>
+                              <p className="text-xs text-gray-400">Total Opened</p>
+                            </div>
+                            <div className="text-center">
+                              <p className="text-2xl font-bold text-red-400">{totalClicked}</p>
+                              <p className="text-xs text-gray-400">Total Clicked</p>
+                            </div>
+                            <div className="text-center">
+                              <p className="text-2xl font-bold text-[#D4A836]">{avgClickRate}%</p>
+                              <p className="text-xs text-gray-400">Avg Click Rate</p>
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Best Performing Campaigns */}
         {user?.role === 'super_admin' && (
           <Card className="bg-[#0f0f15] border-[#D4A836]/20">
