@@ -384,6 +384,16 @@ export default function PhishingSimulations() {
     }
   };
 
+  const duplicateCampaign = async (campaignId) => {
+    try {
+      const res = await axios.post(`${API}/phishing/campaigns/${campaignId}/duplicate`, {}, { headers });
+      toast.success(`Campaign duplicated: ${res.data.name}`);
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to duplicate campaign');
+    }
+  };
+
   const deleteTemplate = async (templateId) => {
     if (!window.confirm('Are you sure you want to delete this template?')) return;
     
