@@ -1036,11 +1036,9 @@ async def track_link_click(tracking_code: str, request: Request):
                     
             except Exception as e:
                 logger.error(f"Error in automatic retraining flow: {e}")
-        
-        # Redirect to custom landing page if specified
-        landing_url = campaign.get("landing_page_url")
-        if landing_url:
-            return RedirectResponse(url=landing_url, status_code=302)
+    
+    # IMPORTANT: Always show the phishing awareness page when someone clicks
+    # Do NOT redirect to custom landing page - that defeats the purpose
     
     # Build personalized landing page with auto-redirect
     scenario_messages = {
