@@ -51,25 +51,16 @@ const Logo = ({ branding }) => {
 
 export const PublicNav = ({ branding, isLoading = false }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const location = useLocation();
-  
-  // Prevent flash by waiting for mount and branding
-  useEffect(() => {
-    // Small delay to ensure branding is loaded
-    const timer = setTimeout(() => setMounted(true), 50);
-    return () => clearTimeout(timer);
-  }, []);
   
   const textColor = branding?.text_color || '#E8DDB5';
   const primaryColor = branding?.primary_color || '#D4A836';
   
-  // Navigation visibility - default to false until loaded to prevent flash
-  const isReady = mounted && !isLoading;
-  const showBlog = isReady && branding?.show_blog !== false;
-  const showVideos = isReady && branding?.show_videos !== false;
-  const showNews = isReady && branding?.show_news !== false;
-  const showAbout = isReady && branding?.show_about !== false;
+  // Navigation visibility
+  const showBlog = branding?.show_blog !== false;
+  const showVideos = branding?.show_videos !== false;
+  const showNews = branding?.show_news !== false;
+  const showAbout = branding?.show_about !== false;
   
   // Build visible nav items (exclude current page)
   const allNavItems = [
@@ -86,11 +77,11 @@ export const PublicNav = ({ branding, isLoading = false }) => {
     <header className="border-b" style={{ borderColor: `${primaryColor}15` }}>
       <div className="container mx-auto px-4 sm:px-6 py-4">
         <div className="flex justify-between items-center">
-          <Logo branding={branding} isLoading={isLoading || !mounted} />
+          <Logo branding={branding} />
           
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
-            {isReady && navItems.map((item) => (
+            {navItems.map((item) => (
               <Link 
                 key={item.to}
                 to={item.to} 
@@ -110,8 +101,7 @@ export const PublicNav = ({ branding, isLoading = false }) => {
             <Link to="/auth">
               <Button size="sm" className="text-black" style={{ backgroundColor: primaryColor }}>Login</Button>
             </Link>
-            {/* Only show hamburger menu after branding is loaded AND there are nav items */}
-            {isReady && navItems.length > 0 && (
+            {navItems.length > 0 && (
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="p-2 text-gray-400 hover:text-[#E8DDB5]"
@@ -124,7 +114,7 @@ export const PublicNav = ({ branding, isLoading = false }) => {
         </div>
         
         {/* Mobile Menu Dropdown */}
-        {mobileMenuOpen && isReady && (
+        {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t mt-4" style={{ borderColor: `${primaryColor}20` }}>
             <div className="flex flex-col gap-2">
               {navItems.map((item) => (
