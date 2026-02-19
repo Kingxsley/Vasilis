@@ -84,7 +84,7 @@ async def send_phishing_email(
         
         if sendgrid_api_key and sender_email:
             from sendgrid import SendGridAPIClient
-            from sendgrid.helpers.mail import Mail, Email, To, Content, ReplyTo, TrackingSettings, ClickTracking, OpenTracking
+            from sendgrid.helpers.mail import Mail, Email, To, Content, ReplyTo
             
             # Use template's sender_name as display name (e.g., "IT Security Team")
             # The actual email address will be the verified sender
@@ -98,12 +98,9 @@ async def send_phishing_email(
                 html_content=Content("text/html", html_body)
             )
             
-            # IMPORTANT: Disable SendGrid's click and open tracking
-            # We use our own tracking system for phishing simulations
-            tracking_settings = TrackingSettings()
-            tracking_settings.click_tracking = ClickTracking(enable=False, enable_text=False)
-            tracking_settings.open_tracking = OpenTracking(enable=False)
-            message.tracking_settings = tracking_settings
+            # CRITICAL: Disable ALL SendGrid tracking via ASM settings
+            # This is the most reliable way to disable link wrapping
+            message.asm = None
             
             # Set reply-to to the fake email address from template
             fake_sender_email = template.get('sender_email', '')
@@ -117,9 +114,26 @@ async def send_phishing_email(
                 text_body = text_body.replace('{{TRACKING_LINK}}', generate_tracking_link(base_url, target['tracking_code']))
                 message.add_content(Content("text/plain", text_body))
             
-            # Send via SendGrid API
-            sg = SendGridAPIClient(sendgrid_api_key)
-            response = sg.send(message)
+            # Build JSON payload with tracking disabled at API level
+            mail_json = message.get()
+            
+            # Explicitly add tracking_settings to disable all tracking
+            mail_json['tracking_settings'] = {
+                'click_tracking': {'enable': False, 'enable_text': False},
+                'open_tracking': {'enable': False},
+                'subscription_tracking': {'enable': False}
+            }
+            
+            # Send via SendGrid API with raw JSON
+            import requests
+            response = requests.post(
+                'https://api.sendgrid.com/v3/mail/send',
+                headers={
+                    'Authorization': f'Bearer {sendgrid_api_key}',
+                    'Content-Type': 'application/json'
+                },
+                json=mail_json
+            )
             
             if response.status_code in [200, 201, 202]:
                 logger.info(f"Phishing email sent to {target['user_email']} via SendGrid (status: {response.status_code})")
