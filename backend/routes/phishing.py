@@ -943,13 +943,16 @@ async def track_link_click(tracking_code: str, request: Request):
         campaign = result.get("campaign", {})
         target = result.get("target", {})
         user_name = target.get("user_name", "User")
-        user_email = target.get("email", "")
+        user_email = target.get("user_email", "")  # Fixed: was looking for "email" but field is "user_email"
         scenario_type = campaign.get("scenario_type", "phishing_email")
         organization_id = campaign.get("organization_id")
         campaign_id = campaign.get("campaign_id")
         
-        # Look up user_id from email
-        if user_email:
+        # Get user_id directly from target (already stored there)
+        user_id = target.get("user_id")
+        
+        # If not in target, look up from users collection
+        if not user_id and user_email:
             user_doc = await db.users.find_one({"email": user_email}, {"_id": 0, "user_id": 1, "organization_id": 1})
             if user_doc:
                 user_id = user_doc.get("user_id")
