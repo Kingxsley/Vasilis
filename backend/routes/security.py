@@ -304,7 +304,7 @@ async def export_audit_logs(
 @router.get("/audit-logs/stats")
 async def get_audit_stats(
     days: int = Query(7, le=30),
-    user: dict = Depends(lambda: require_super_admin)
+    user: dict = Depends(require_super_admin)
 ):
     """Get audit log statistics"""
     if db is None:
@@ -367,7 +367,7 @@ async def get_audit_stats(
 @router.get("/login-history")
 async def get_login_history(
     days: int = Query(7, le=30),
-    user: dict = Depends(lambda: require_super_admin)
+    user: dict = Depends(require_super_admin)
 ):
     """Get login history grouped by day"""
     if db is None:
@@ -410,7 +410,7 @@ async def get_login_history(
 @router.post("/unlock-account")
 async def unlock_account(
     email: str,
-    user: dict = Depends(lambda: require_super_admin)
+    user: dict = Depends(require_super_admin)
 ):
     """Manually unlock a locked account"""
     if account_lockout:
@@ -429,7 +429,7 @@ async def unlock_account(
 
 
 @router.post("/cleanup-logs")
-async def cleanup_old_logs(user: dict = Depends(lambda: require_super_admin)):
+async def cleanup_old_logs(user: dict = Depends(require_super_admin)):
     """Manually trigger cleanup of logs older than 30 days"""
     if audit_logger:
         deleted_count = await audit_logger.cleanup_old_logs()
@@ -448,7 +448,7 @@ async def cleanup_old_logs(user: dict = Depends(lambda: require_super_admin)):
 
 
 @router.get("/rate-limit-status")
-async def get_rate_limit_status(user: dict = Depends(lambda: require_super_admin)):
+async def get_rate_limit_status(user: dict = Depends(require_super_admin)):
     """Get current rate limit configuration"""
     return {
         "endpoints": {
@@ -470,7 +470,7 @@ async def get_rate_limit_status(user: dict = Depends(lambda: require_super_admin
 
 
 @router.get("/security-headers")
-async def get_security_headers_config(user: dict = Depends(lambda: require_super_admin)):
+async def get_security_headers_config(user: dict = Depends(require_super_admin)):
     """Get current security headers configuration"""
     import os
     return {
