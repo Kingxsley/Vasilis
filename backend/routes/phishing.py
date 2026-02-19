@@ -598,43 +598,278 @@ async def track_link_click(tracking_code: str, request: Request):
     
     result = await record_link_click(db, tracking_code, request_info)
     
+    # Get campaign and target info for personalized message
+    campaign_name = "Security Training"
+    user_name = "User"
+    user_email = ""
+    scenario_type = "phishing_email"
+    organization_id = None
+    user_id = None
+    campaign_id = None
+    
     if result:
-        # Redirect to landing page or default phishing awareness page
-        landing_url = result.get("campaign", {}).get("landing_page_url")
+        campaign = result.get("campaign", {})
+        target = result.get("target", {})
+        campaign_name = campaign.get("name", "Security Training")
+        user_name = target.get("user_name", "User")
+        user_email = target.get("email", "")
+        scenario_type = campaign.get("scenario_type", "phishing_email")
+        organization_id = campaign.get("organization_id")
+        campaign_id = campaign.get("campaign_id")
+        
+        # Look up user_id from email
+        if user_email:
+            user_doc = await db.users.find_one({"email": user_email}, {"_id": 0, "user_id": 1, "organization_id": 1})
+            if user_doc:
+                user_id = user_doc.get("user_id")
+                if not organization_id:
+                    organization_id = user_doc.get("organization_id")
+        
+        # Record training failure for the user
+        if user_id:
+            failure_record = {
+                "failure_id": f"fail_{uuid.uuid4().hex[:12]}",
+                "user_id": user_id,
+                "user_email": user_email,
+                "organization_id": organization_id,
+                "campaign_id": campaign_id,
+                "scenario_type": scenario_type,
+                "failure_type": "clicked_phishing_link",
+                "tracking_code": tracking_code,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "status": "pending_training"  # Will be updated when user completes training
+            }
+            await db.training_failures.insert_one(failure_record)
+        
+        # Redirect to custom landing page if specified
+        landing_url = campaign.get("landing_page_url")
         if landing_url:
             return RedirectResponse(url=landing_url, status_code=302)
     
-    # Default landing page - phishing awareness message
-    html = """
+    # Build personalized landing page with auto-redirect
+    scenario_messages = {
+        "phishing_email": {
+            "title": "Phishing Email Detected",
+            "risk": "Your login credentials, personal data, or financial information could have been stolen.",
+            "icon": "&#9888;",  # Warning sign
+            "color": "#FF6B6B"
+        },
+        "qr_code_phishing": {
+            "title": "QR Code Phishing Attempt",
+            "risk": "Malicious websites could have harvested your credentials or installed malware.",
+            "icon": "&#9888;",
+            "color": "#9C27B0"
+        },
+        "bec_scenario": {
+            "title": "Business Email Compromise",
+            "risk": "Unauthorized wire transfers, data theft, or impersonation attacks could have occurred.",
+            "icon": "&#128176;",  # Money bag
+            "color": "#FF5722"
+        },
+        "usb_drop": {
+            "title": "USB Drop Attack",
+            "risk": "Malware could have been installed on your device, compromising the entire network.",
+            "icon": "&#128187;",  # Computer
+            "color": "#00BCD4"
+        },
+        "mfa_fatigue": {
+            "title": "MFA Fatigue Attack",
+            "risk": "Your account could have been compromised despite multi-factor authentication.",
+            "icon": "&#128274;",  # Lock
+            "color": "#E91E63"
+        },
+        "data_handling_trap": {
+            "title": "Data Handling Violation",
+            "risk": "Sensitive company or customer data could have been exposed to unauthorized parties.",
+            "icon": "&#128196;",  # Document
+            "color": "#795548"
+        },
+        "ransomware_readiness": {
+            "title": "Ransomware Attempt",
+            "risk": "Your files and entire systems could have been encrypted and held for ransom.",
+            "icon": "&#128274;",  # Lock
+            "color": "#f44336"
+        },
+        "shadow_it_detection": {
+            "title": "Shadow IT Risk",
+            "risk": "Unauthorized applications could have exposed company data or created compliance violations.",
+            "icon": "&#9729;",  # Cloud
+            "color": "#607D8B"
+        }
+    }
+    
+    msg = scenario_messages.get(scenario_type, scenario_messages["phishing_email"])
+    
+    # Default landing page - phishing awareness message with auto-redirect
+    html = f"""
     <!DOCTYPE html>
     <html>
     <head>
         <title>Security Training Alert</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <style>
-            body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; text-align: center; background: #f5f5f5; }
-            .container { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-            h1 { color: #D4A836; }
-            .alert { background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 5px; margin: 20px 0; }
-            .success { color: #28a745; font-size: 48px; }
+            * {{ box-sizing: border-box; }}
+            body {{ 
+                font-family: 'Segoe UI', Arial, sans-serif; 
+                margin: 0; 
+                padding: 20px; 
+                background: linear-gradient(135deg, #0D1117 0%, #161B22 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }}
+            .container {{ 
+                background: #161B22;
+                padding: 40px; 
+                border-radius: 16px; 
+                box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+                max-width: 600px;
+                width: 100%;
+                text-align: center;
+                border: 1px solid #30363D;
+            }}
+            .icon {{ 
+                font-size: 64px; 
+                margin-bottom: 20px;
+            }}
+            h1 {{ 
+                color: {msg['color']}; 
+                margin: 0 0 10px 0;
+                font-size: 28px;
+            }}
+            .subtitle {{
+                color: #8B949E;
+                margin-bottom: 30px;
+            }}
+            .alert {{ 
+                background: rgba(255, 107, 107, 0.1); 
+                border: 1px solid {msg['color']}40;
+                padding: 20px; 
+                border-radius: 12px; 
+                margin: 20px 0;
+                text-align: left;
+            }}
+            .alert h3 {{
+                color: {msg['color']};
+                margin: 0 0 10px 0;
+            }}
+            .alert p {{
+                color: #E6EDF3;
+                margin: 0;
+                line-height: 1.6;
+            }}
+            .risk-box {{
+                background: #0D1117;
+                border: 1px solid #30363D;
+                border-radius: 8px;
+                padding: 20px;
+                margin: 20px 0;
+            }}
+            .risk-box h4 {{
+                color: #D4A836;
+                margin: 0 0 10px 0;
+            }}
+            .risk-box ul {{
+                text-align: left;
+                color: #8B949E;
+                margin: 0;
+                padding-left: 20px;
+            }}
+            .risk-box li {{
+                margin: 8px 0;
+            }}
+            .countdown {{
+                background: #D4A836;
+                color: #000;
+                padding: 15px 30px;
+                border-radius: 8px;
+                font-weight: bold;
+                display: inline-block;
+                margin: 20px 0;
+            }}
+            .countdown span {{
+                font-size: 24px;
+            }}
+            .btn {{
+                background: #D4A836;
+                color: #000;
+                padding: 15px 40px;
+                border: none;
+                border-radius: 8px;
+                font-size: 16px;
+                font-weight: bold;
+                cursor: pointer;
+                text-decoration: none;
+                display: inline-block;
+                transition: all 0.3s;
+            }}
+            .btn:hover {{
+                background: #C49A30;
+                transform: translateY(-2px);
+            }}
+            .footer {{
+                margin-top: 30px;
+                color: #484F58;
+                font-size: 14px;
+            }}
+            .user-info {{
+                color: #D4A836;
+                font-weight: bold;
+            }}
         </style>
     </head>
     <body>
         <div class="container">
-            <div class="success">&#10003;</div>
-            <h1>This Was a Security Training Exercise</h1>
+            <div class="icon">{msg['icon']}</div>
+            <h1>{msg['title']}</h1>
+            <p class="subtitle">This was a simulated security test</p>
+            
             <div class="alert">
-                <strong>You clicked on a simulated phishing link!</strong><br><br>
-                This was part of a security awareness training exercise conducted by your organization.
+                <h3>&#9888; You Clicked on a Test Link</h3>
+                <p>
+                    Hi <span class="user-info">{user_name}</span>, this was a security awareness exercise 
+                    conducted by your organization. In a real attack scenario:
+                </p>
             </div>
-            <p>In a real attack, clicking this link could have:</p>
-            <ul style="text-align: left;">
-                <li>Downloaded malware to your device</li>
-                <li>Stolen your login credentials</li>
-                <li>Compromised sensitive company data</li>
-            </ul>
-            <p><strong>Remember:</strong> Always verify links before clicking, especially in unexpected emails.</p>
-            <p style="margin-top: 30px; color: #666;">Powered by Vasilis NetShield Security Training</p>
+            
+            <div class="risk-box">
+                <h4>&#128161; What Could Have Happened</h4>
+                <p style="color: #E6EDF3; margin-bottom: 15px;">{msg['risk']}</p>
+                <ul>
+                    <li>Attackers could have gained access to your account</li>
+                    <li>Sensitive data could have been compromised</li>
+                    <li>Malware could have been installed on your device</li>
+                    <li>Your organization's network could have been breached</li>
+                </ul>
+            </div>
+            
+            <div class="countdown">
+                Redirecting to training in <span id="timer">10</span> seconds...
+            </div>
+            
+            <br><br>
+            
+            <a href="/training" class="btn" id="trainingBtn">Start Training Now</a>
+            
+            <p class="footer">
+                Powered by Vasilis NetShield Security Training<br>
+                <small>Building cyber-aware organizations</small>
+            </p>
         </div>
+        
+        <script>
+            let seconds = 10;
+            const timer = document.getElementById('timer');
+            const countdown = setInterval(() => {{
+                seconds--;
+                timer.textContent = seconds;
+                if (seconds <= 0) {{
+                    clearInterval(countdown);
+                    window.location.href = '/training';
+                }}
+            }}, 1000);
+        </script>
     </body>
     </html>
     """
