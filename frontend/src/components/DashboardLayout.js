@@ -159,6 +159,7 @@ export const DashboardLayout = ({ children }) => {
   // Filter items based on user role
   const filterItems = (items) => {
     return items.filter(item => {
+      if (item.superAdminOnly) return user?.role === 'super_admin';
       if (item.contentManager) return canManageContent;
       if (item.adminOnly) return isAdmin;
       return true;
