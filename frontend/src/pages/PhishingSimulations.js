@@ -155,7 +155,8 @@ export default function PhishingSimulations() {
 
     try {
       const res = await axios.post(`${API}/phishing/media/upload`, formData, {
-        headers: { ...headers, 'Content-Type': 'multipart/form-data' }
+        headers: { Authorization: `Bearer ${token}` }
+        // Don't set Content-Type - let axios handle multipart/form-data boundary
       });
       toast.success('Image uploaded');
       fetchMediaImages();
