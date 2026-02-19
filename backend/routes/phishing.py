@@ -610,7 +610,6 @@ async def track_link_click(tracking_code: str, request: Request):
     if result:
         campaign = result.get("campaign", {})
         target = result.get("target", {})
-        campaign_name = campaign.get("name", "Security Training")
         user_name = target.get("user_name", "User")
         user_email = target.get("email", "")
         scenario_type = campaign.get("scenario_type", "phishing_email")
