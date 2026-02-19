@@ -178,6 +178,12 @@ export const DashboardLayout = ({ children }) => {
     });
   };
 
+  // Check if group should be visible based on role
+  const isGroupVisible = (group) => {
+    if (group.superAdminOnly && user?.role !== 'super_admin') return false;
+    return filterItems(group.items).length > 0;
+  };
+
   // Check if current path is in a group
   const isGroupActive = (group) => {
     return group.items.some(item => location.pathname === item.path);
