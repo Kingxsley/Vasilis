@@ -160,7 +160,7 @@ When a user clicks a phishing link:
 - Org Admin: `orgadmin@test.com` / `Test123!`
 
 ## Working Test Tracking URL
-- `https://cyber-training-hub-3.preview.emergentagent.com/api/phishing/track/click/bKqgQ-jZl3hVJIdkIWjIkg`
+- `https://security-training-31.preview.emergentagent.com/api/phishing/track/click/bKqgQ-jZl3hVJIdkIWjIkg`
 
 ## Test Campaign Results
 - **EMAIL_TEST_CAMPAIGN**: 5 targets, 5 emails sent ✅
