@@ -473,6 +473,68 @@ async def login(data: UserLogin, request: Request):
     
     return TokenResponse(token=token, user=user_response)
 
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
+
+
+@auth_router.post("/refresh")
+async def refresh_access_token(request: Request):
+    """Refresh access token using a valid refresh token or existing access token"""
+    
+    # Get the current token from Authorization header
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="No token provided")
+    
+    old_token = auth_header.split(" ")[1]
+    
+    try:
+        # Decode the token - allow expired tokens for refresh
+        try:
+            payload = jwt.decode(old_token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        except jwt.ExpiredSignatureError:
+            # Decode without verification to get user info from expired token
+            payload = jwt.decode(old_token, JWT_SECRET, algorithms=[JWT_ALGORITHM], options={"verify_exp": False})
+        
+        user_id = payload.get("user_id")
+        email = payload.get("sub")
+        
+        if not user_id or not email:
+            raise HTTPException(status_code=401, detail="Invalid token payload")
+        
+        # Verify user still exists and is active
+        user = await db.users.find_one({"user_id": user_id, "email": email}, {"_id": 0})
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        
+        if not user.get("is_active", True):
+            raise HTTPException(status_code=401, detail="Account is disabled")
+        
+        # Generate new access token
+        new_token = create_jwt_token(user_id, email, user["role"])
+        
+        # Build user response
+        created_at = user.get("created_at")
+        if isinstance(created_at, str):
+            created_at = datetime.fromisoformat(created_at)
+        
+        user_response = UserResponse(
+            user_id=user["user_id"],
+            email=user["email"],
+            name=user["name"],
+            role=user["role"],
+            organization_id=user.get("organization_id"),
+            picture=user.get("picture"),
+            created_at=created_at
+        )
+        
+        return TokenResponse(token=new_token, user=user_response)
+        
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+
 @auth_router.post("/session")
 async def exchange_session(request: Request, response: Response):
     """Exchange Emergent OAuth session_id for app session"""
