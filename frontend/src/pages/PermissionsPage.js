@@ -71,6 +71,7 @@ export default function PermissionsPage() {
   const selectUser = async (user) => {
     setSelectedUser(user);
     setPendingChanges({ grants: [], revokes: [] });
+    setUserPermissions(null);
     
     try {
       const headers = { Authorization: `Bearer ${token}` };
@@ -78,7 +79,20 @@ export default function PermissionsPage() {
       setUserPermissions(res.data);
       setDialogOpen(true);
     } catch (err) {
-      toast.error('Failed to load user permissions');
+      console.error('Failed to load user permissions:', err);
+      toast.error(err.response?.data?.detail || 'Failed to load user permissions');
+      // Still open dialog with basic info
+      setUserPermissions({
+        user_id: user.user_id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        role_permissions: [],
+        custom_grants: [],
+        denied_permissions: [],
+        effective_permissions: []
+      });
+      setDialogOpen(true);
     }
   };
 
