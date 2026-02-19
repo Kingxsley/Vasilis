@@ -455,6 +455,13 @@ export default function UsersPage() {
                       data-testid={`user-row-${user.user_id}`}
                     >
                       <TableCell>
+                        <Checkbox
+                          checked={selectedUsers.includes(user.user_id)}
+                          onCheckedChange={() => toggleSelectUser(user.user_id)}
+                          disabled={user.user_id === currentUser.user_id}
+                        />
+                      </TableCell>
+                      <TableCell>
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-[#2979FF]/20 flex items-center justify-center overflow-hidden">
                             {user.picture ? (
