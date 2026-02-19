@@ -2243,7 +2243,7 @@ async def get_sitemap():
     """Generate dynamic sitemap.xml for SEO"""
     from datetime import datetime
     
-    base_url = "https://vasilisnetshield.net"
+    base_url = os.environ.get('FRONTEND_URL', 'https://vasilisnetshield.com')
     now = datetime.now().strftime("%Y-%m-%d")
     
     # Static pages
