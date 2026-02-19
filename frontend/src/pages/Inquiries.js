@@ -110,7 +110,18 @@ export default function Inquiries() {
       }
     } catch (err) {
       console.error('Update error:', err);
-      toast.error(err.response?.data?.detail || 'Failed to update inquiry');
+      // Handle validation errors from Pydantic
+      const errorDetail = err.response?.data?.detail;
+      let errorMessage = 'Failed to update inquiry';
+      if (typeof errorDetail === 'string') {
+        errorMessage = errorDetail;
+      } else if (Array.isArray(errorDetail)) {
+        // Pydantic validation errors come as array
+        errorMessage = errorDetail.map(e => e.msg || e.message || String(e)).join(', ');
+      } else if (errorDetail && typeof errorDetail === 'object') {
+        errorMessage = errorDetail.msg || errorDetail.message || JSON.stringify(errorDetail);
+      }
+      toast.error(errorMessage);
     } finally {
       setUpdating(false);
     }
