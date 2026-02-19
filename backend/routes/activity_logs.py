@@ -5,8 +5,12 @@ from fastapi import APIRouter, HTTPException, Request, Query
 from typing import Optional
 from datetime import datetime, timezone, timedelta
 import uuid
+import sys
+from pathlib import Path
 
-from database import get_db
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from server import get_db
 from auth import get_current_user_from_request
 
 router = APIRouter(prefix="/activity-logs", tags=["Activity Logs"])
