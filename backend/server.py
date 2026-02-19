@@ -1058,12 +1058,49 @@ async def update_user(user_id: str, data: UserUpdate, admin: dict = Depends(requ
     if not update_data:
         raise HTTPException(status_code=400, detail="No update data provided")
     
+    # Track changes for audit log
+    changes = {}
+    for key, new_value in update_data.items():
+        old_value = target_user.get(key)
+        if old_value != new_value:
+            changes[key] = {"old": old_value, "new": new_value}
+    
     result = await db.users.update_one(
         {"user_id": user_id},
         {"$set": update_data}
     )
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="User not found")
+    
+    # Log the user update with detailed info
+    if changes:
+        # Determine the action type
+        if "role" in changes:
+            action = "user_role_changed"
+            severity = "warning"
+        elif "is_active" in changes:
+            action = "user_status_changed"
+            severity = "warning"
+        else:
+            action = "user_updated"
+            severity = "info"
+        
+        await audit_logger.log(
+            action=action,
+            user_id=admin["user_id"],
+            user_email=admin.get("email"),
+            user_name=admin.get("name"),
+            details={
+                "actor_id": admin["user_id"],
+                "actor_email": admin.get("email"),
+                "actor_role": admin.get("role"),
+                "target_user_id": user_id,
+                "target_user_email": target_user.get("email"),
+                "target_user_name": target_user.get("name"),
+                "changes": changes
+            },
+            severity=severity
+        )
     
     return await get_user(user_id, admin)
 
