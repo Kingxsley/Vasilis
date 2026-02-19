@@ -462,6 +462,92 @@ export default function ContentManager() {
     }
   };
 
+  // ============== MENU MANAGER HANDLERS ==============
+  const resetNavForm = () => {
+    setNavForm({
+      label: '',
+      link_type: 'internal',
+      path: '',
+      icon: 'Link',
+      section_id: 'main',
+      visible_to: ['all'],
+      open_in_new_tab: false,
+      sort_order: 100,
+      is_active: true
+    });
+    setEditingNavItem(null);
+  };
+
+  const handleNavSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      if (editingNavItem) {
+        await axios.patch(`${API}/navigation/${editingNavItem.item_id}`, navForm, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        toast.success('Menu item updated');
+      } else {
+        await axios.post(`${API}/navigation`, navForm, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        toast.success('Menu item created');
+      }
+      setNavDialogOpen(false);
+      resetNavForm();
+      fetchNavItems();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to save menu item');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const editNavItem = (item) => {
+    setEditingNavItem(item);
+    setNavForm({
+      label: item.label,
+      link_type: item.link_type,
+      path: item.path,
+      icon: item.icon || 'Link',
+      section_id: item.section_id,
+      visible_to: item.visible_to || ['all'],
+      open_in_new_tab: item.open_in_new_tab || false,
+      sort_order: item.sort_order || 100,
+      is_active: item.is_active !== false
+    });
+    setNavDialogOpen(true);
+  };
+
+  const deleteNavItem = async (itemId) => {
+    if (!window.confirm('Delete this menu item?')) return;
+    try {
+      await axios.delete(`${API}/navigation/${itemId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Menu item deleted');
+      fetchNavItems();
+    } catch (error) {
+      toast.error('Failed to delete menu item');
+    }
+  };
+
+  const toggleNavItemRole = (roleId) => {
+    setNavForm(prev => {
+      const roles = prev.visible_to || [];
+      if (roles.includes(roleId)) {
+        return { ...prev, visible_to: roles.filter(r => r !== roleId) };
+      } else {
+        // If adding 'all', remove specific roles
+        if (roleId === 'all') {
+          return { ...prev, visible_to: ['all'] };
+        }
+        // If adding specific role, remove 'all'
+        return { ...prev, visible_to: [...roles.filter(r => r !== 'all'), roleId] };
+      }
+    });
+  };
+
   if (loading) {
     return (
       <DashboardLayout>
