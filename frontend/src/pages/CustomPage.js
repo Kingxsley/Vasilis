@@ -440,25 +440,17 @@ export default function CustomPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0B0E14]">
-      {/* Header */}
-      <header className="bg-[#0f0f15] border-b border-[#D4A836]/20 sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate('/')}
-            className="text-gray-400 hover:text-[#E8DDB5]"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-          <div className="text-[#E8DDB5] font-semibold">{page.title}</div>
-          <div className="w-20" /> {/* Spacer for centering */}
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#0B0E14] flex flex-col">
+      {/* Public Navigation - same as landing page */}
+      <PublicNav branding={branding} />
 
       {/* Content */}
-      <main className="max-w-5xl mx-auto px-4 py-8">
+      <main className="flex-1 max-w-5xl mx-auto px-4 py-8 w-full">
+        {/* Page Title */}
+        <h1 className="text-3xl md:text-4xl font-bold text-[#E8DDB5] mb-8 text-center">
+          {page.title}
+        </h1>
+        
         {page.blocks && page.blocks.length > 0 ? (
           <div className="space-y-6">
             {page.blocks.sort((a, b) => a.order - b.order).map(renderBlock)}
@@ -470,12 +462,8 @@ export default function CustomPage() {
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="bg-[#0f0f15] border-t border-[#D4A836]/20 py-6 mt-12">
-        <div className="max-w-5xl mx-auto px-4 text-center text-gray-500 text-sm">
-          © {new Date().getFullYear()} Vasilis NetShield. All rights reserved.
-        </div>
-      </footer>
+      {/* Public Footer */}
+      <PublicFooter branding={branding} />
     </div>
   );
 }
