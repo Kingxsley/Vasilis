@@ -547,6 +547,17 @@ export default function UsersPage() {
                           <Button
                             size="sm"
                             variant="ghost"
+                            onClick={() => openRoleChange(user)}
+                            className="text-gray-400 hover:text-[#D4A836]"
+                            disabled={user.user_id === currentUser.user_id}
+                            title="Change Role"
+                            data-testid={`role-user-${user.user_id}`}
+                          >
+                            <ShieldCheck className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
                             onClick={() => handleEdit(user)}
                             className="text-gray-400 hover:text-white"
                             data-testid={`edit-user-${user.user_id}`}
@@ -585,6 +596,68 @@ export default function UsersPage() {
             />
           </div>
         )}
+
+        {/* Role Change Dialog */}
+        <Dialog open={showRoleDialog} onOpenChange={setShowRoleDialog}>
+          <DialogContent className="bg-[#161B22] border-[#30363D] sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-[#E8DDB5] flex items-center gap-2">
+                <UserCog className="w-5 h-5 text-[#D4A836]" />
+                Change User Role
+              </DialogTitle>
+              <DialogDescription className="text-gray-400">
+                Modify privileges for {roleChangeUser?.name}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="flex items-center gap-3 p-3 bg-[#0D1117] rounded-lg">
+                <div className="w-10 h-10 rounded-full bg-[#D4A836]/20 flex items-center justify-center">
+                  <Users className="w-5 h-5 text-[#D4A836]" />
+                </div>
+                <div>
+                  <div className="text-white font-medium">{roleChangeUser?.name}</div>
+                  <div className="text-gray-400 text-sm">{roleChangeUser?.email}</div>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-gray-400">Current Role</Label>
+                <div className="text-white font-medium">{roleChangeUser?.role?.replace('_', ' ').toUpperCase()}</div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-gray-400">New Role</Label>
+                <Select value={newRole} onValueChange={setNewRole}>
+                  <SelectTrigger className="bg-[#0D1117] border-[#30363D]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#161B22] border-[#30363D]">
+                    <SelectItem value="trainee">Trainee</SelectItem>
+                    <SelectItem value="media_manager">Media Manager</SelectItem>
+                    <SelectItem value="org_admin">Organization Admin</SelectItem>
+                    {currentUser?.role === 'super_admin' && (
+                      <SelectItem value="super_admin">Super Admin</SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowRoleDialog(false)}
+                className="border-[#30363D] text-gray-400"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={changeUserRole}
+                className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
+                disabled={newRole === roleChangeUser?.role}
+              >
+                Change Role
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Bulk Delete Confirmation Dialog */}
         <Dialog open={showBulkDeleteConfirm} onOpenChange={setShowBulkDeleteConfirm}>
