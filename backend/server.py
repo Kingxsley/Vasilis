@@ -1733,13 +1733,27 @@ async def get_dashboard_stats(user: dict = Depends(require_admin)):
     result = await db.training_sessions.aggregate(pipeline).to_list(1)
     avg_score = result[0]["avg_score"] if result else 0
     
+    # Get scenario/simulation stats
+    total_scenarios = await db.scenarios.count_documents({"is_active": True})
+    
+    # Get breakdown by scenario type
+    scenario_type_pipeline = [
+        {"$match": {"is_active": True}},
+        {"$group": {"_id": "$scenario_type", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}}
+    ]
+    scenario_type_results = await db.scenarios.aggregate(scenario_type_pipeline).to_list(20)
+    scenario_types = {r["_id"]: r["count"] for r in scenario_type_results if r["_id"]}
+    
     return DashboardStats(
         total_organizations=total_orgs,
         total_users=total_users,
         total_campaigns=total_campaigns,
         active_campaigns=active_campaigns,
         total_training_sessions=total_sessions,
-        average_score=round(avg_score, 1) if avg_score else 0
+        average_score=round(avg_score, 1) if avg_score else 0,
+        total_scenarios=total_scenarios,
+        scenario_types=scenario_types
     )
 
 @api_router.get("/analytics/training")
