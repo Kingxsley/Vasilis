@@ -145,7 +145,7 @@ async def preview_user_import(request: Request, file: UploadFile = File(...)):
     except UnicodeDecodeError:
         try:
             decoded = content.decode('latin-1')
-        except:
+        except Exception:
             raise HTTPException(status_code=400, detail="Unable to decode file. Please use UTF-8 encoding.")
     
     reader = csv.DictReader(io.StringIO(decoded))
