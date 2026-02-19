@@ -262,12 +262,12 @@ export default function ActivityLogs() {
               </div>
               <div>
                 <Label className="text-gray-400 text-xs">Resource Type</Label>
-                <Select value={resourceFilter} onValueChange={setResourceFilter}>
+                <Select value={resourceFilter || 'all'} onValueChange={(v) => setResourceFilter(v === 'all' ? '' : v)}>
                   <SelectTrigger className="bg-[#1a1a24] border-[#D4A836]/20">
                     <SelectValue placeholder="All resources" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All</SelectItem>
+                    <SelectItem value="all">All</SelectItem>
                     <SelectItem value="user">User</SelectItem>
                     <SelectItem value="campaign">Campaign</SelectItem>
                     <SelectItem value="organization">Organization</SelectItem>
