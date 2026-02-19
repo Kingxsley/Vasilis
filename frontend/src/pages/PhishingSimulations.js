@@ -50,6 +50,10 @@ export default function PhishingSimulations() {
   const [campaignTargets, setCampaignTargets] = useState([]);
   const [campaignStats, setCampaignStats] = useState(null);
   
+  // Bulk selection states
+  const [selectedCampaignIds, setSelectedCampaignIds] = useState([]);
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+  
   // Dialog states
   const [showNewCampaign, setShowNewCampaign] = useState(false);
   const [showNewTemplate, setShowNewTemplate] = useState(false);
