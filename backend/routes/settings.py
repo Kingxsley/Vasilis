@@ -463,3 +463,34 @@ async def update_seo_settings(data: SEOSettings, request: Request):
     )
     
     return {"message": "SEO settings saved"}
+
+
+@router.get("/seo/public")
+async def get_public_seo_settings():
+    """Get public SEO settings (no auth required) - for GA and meta tags"""
+    db = get_db()
+    
+    settings = await db.settings.find_one({"type": "seo"}, {"_id": 0})
+    
+    if not settings:
+        return {
+            "site_title": "Vasilis NetShield | Security Training Platform",
+            "site_description": "Human + AI Powered Security Training",
+            "google_analytics_id": None
+        }
+    
+    # Only return public-safe fields
+    return {
+        "site_title": settings.get("site_title"),
+        "site_description": settings.get("site_description"),
+        "site_keywords": settings.get("site_keywords"),
+        "og_title": settings.get("og_title"),
+        "og_description": settings.get("og_description"),
+        "og_image": settings.get("og_image"),
+        "twitter_title": settings.get("twitter_title"),
+        "twitter_description": settings.get("twitter_description"),
+        "twitter_image": settings.get("twitter_image"),
+        "canonical_url": settings.get("canonical_url"),
+        "google_analytics_id": settings.get("google_analytics_id"),
+        "google_search_console": settings.get("google_search_console")
+    }
