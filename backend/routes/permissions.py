@@ -121,7 +121,7 @@ async def get_user_permissions(user_id: str, request: Request):
     """Get permissions for a specific user"""
     user = await get_current_user_from_request(request)
     
-    if not db or not rbac_manager:
+    if db is None or rbac_manager is None:
         raise HTTPException(status_code=500, detail="Service not initialized")
     
     # Get target user
