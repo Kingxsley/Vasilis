@@ -2153,6 +2153,87 @@ async def public_masked_tracking(campaign_id: str, u: str = None, request: Reque
     return HTMLResponse(content=ad_html)
 
 
+# ============== DYNAMIC SITEMAP ==============
+@api_router.get("/sitemap.xml", response_class=Response)
+async def generate_sitemap_api():
+    """Generate dynamic sitemap.xml based on public content"""
+    
+    # Get base URL from environment or use default
+    frontend_url = os.environ.get('FRONTEND_URL', 'https://vasilisnetshield.com')
+    
+    # Start XML
+    xml_parts = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+    ]
+    
+    # Static pages
+    static_pages = [
+        {"loc": "/", "priority": "1.0", "changefreq": "daily"},
+        {"loc": "/auth", "priority": "0.8", "changefreq": "monthly"},
+        {"loc": "/about", "priority": "0.7", "changefreq": "monthly"},
+        {"loc": "/news", "priority": "0.6", "changefreq": "weekly"},
+        {"loc": "/videos", "priority": "0.6", "changefreq": "weekly"},
+        {"loc": "/request-access", "priority": "0.5", "changefreq": "monthly"},
+    ]
+    
+    for pg in static_pages:
+        xml_parts.append(f"""  <url>
+    <loc>{frontend_url}{pg['loc']}</loc>
+    <changefreq>{pg['changefreq']}</changefreq>
+    <priority>{pg['priority']}</priority>
+  </url>""")
+    
+    # Get dynamic content - blog posts
+    try:
+        blog_posts = await db.blog_posts.find(
+            {"status": "published"},
+            {"_id": 0, "slug": 1, "updated_at": 1}
+        ).sort("updated_at", -1).limit(100).to_list(100)
+        
+        for post in blog_posts:
+            if post.get("slug"):
+                lastmod = post.get("updated_at", "")[:10] if post.get("updated_at") else ""
+                xml_parts.append(f"""  <url>
+    <loc>{frontend_url}/blog/{post['slug']}</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    {f'<lastmod>{lastmod}</lastmod>' if lastmod else ''}
+  </url>""")
+    except Exception as e:
+        logger.warning(f"Failed to fetch blog posts for sitemap: {e}")
+    
+    # Get dynamic content - news articles
+    try:
+        news_articles = await db.news.find(
+            {"status": "published"},
+            {"_id": 0, "slug": 1, "updated_at": 1}
+        ).sort("updated_at", -1).limit(100).to_list(100)
+        
+        for article in news_articles:
+            if article.get("slug"):
+                lastmod = article.get("updated_at", "")[:10] if article.get("updated_at") else ""
+                xml_parts.append(f"""  <url>
+    <loc>{frontend_url}/news/{article['slug']}</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+    {f'<lastmod>{lastmod}</lastmod>' if lastmod else ''}
+  </url>""")
+    except Exception as e:
+        logger.warning(f"Failed to fetch news articles for sitemap: {e}")
+    
+    # Close XML
+    xml_parts.append('</urlset>')
+    
+    xml_content = '\n'.join(xml_parts)
+    
+    return Response(
+        content=xml_content,
+        media_type="application/xml",
+        headers={"Cache-Control": "public, max-age=3600"}  # Cache for 1 hour
+    )
+
+
 app.include_router(api_router)
 
 # CORS - Tighten origins for production
