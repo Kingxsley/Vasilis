@@ -13,17 +13,14 @@ export default function NewsPage() {
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [branding, setBranding] = useState(null);
-  const [sidebarContent, setSidebarContent] = useState(null);
 
   useEffect(() => {
     Promise.all([
       axios.get(`${API}/content/news?include_rss=true`),
-      axios.get(`${API}/settings/branding`),
-      axios.get(`${API}/content/sidebar/news`).catch(() => ({ data: null }))
-    ]).then(([newsRes, brandingRes, sidebarRes]) => {
+      axios.get(`${API}/settings/branding`)
+    ]).then(([newsRes, brandingRes]) => {
       setNews(newsRes.data.news || []);
       setBranding(brandingRes.data);
-      setSidebarContent(sidebarRes.data);
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
