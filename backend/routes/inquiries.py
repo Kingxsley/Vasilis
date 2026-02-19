@@ -229,7 +229,7 @@ async def list_inquiries(
 @router.get("/stats")
 async def get_inquiry_stats(request: Request):
     """Get inquiry statistics (super admin only)"""
-    user = await require_super_admin(request)
+    await require_super_admin(request)
     db = get_db()
     
     total = await db.inquiries.count_documents({})
