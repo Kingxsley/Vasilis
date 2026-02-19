@@ -215,6 +215,17 @@ export default function LandingPage() {
               {isReady && showVideos && <Link to="/videos" className="text-gray-400 hover:text-[#E8DDB5] transition-colors" style={{ '--hover-color': textColor }}>Videos</Link>}
               {isReady && showNews && <Link to="/news" className="text-gray-400 hover:text-[#E8DDB5] transition-colors" style={{ '--hover-color': textColor }}>News</Link>}
               {isReady && showAbout && <Link to="/about" className="text-gray-400 hover:text-[#E8DDB5] transition-colors" style={{ '--hover-color': textColor }}>About</Link>}
+              {/* Custom Pages */}
+              {isReady && customPages.map(page => (
+                <Link 
+                  key={page.slug}
+                  to={`/page/${page.slug}`} 
+                  className="text-gray-400 hover:text-[#E8DDB5] transition-colors" 
+                  style={{ '--hover-color': textColor }}
+                >
+                  {page.title}
+                </Link>
+              ))}
               <Link to="/auth">
                 <Button variant="ghost" className="hover:text-white hover:bg-white/10" style={{ color: textColor }} data-testid="login-btn">
                   Login
