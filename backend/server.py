@@ -1092,8 +1092,16 @@ async def list_campaigns(
     user: dict = Depends(require_admin)
 ):
     query = {}
-    if organization_id:
+    
+    # Org admins can only see campaigns for their organization
+    if user.get("role") == "org_admin":
+        if user.get("organization_id"):
+            query["organization_id"] = user["organization_id"]
+        else:
+            return []
+    elif organization_id:
         query["organization_id"] = organization_id
+    
     if status:
         query["status"] = status
     
