@@ -571,6 +571,38 @@ export default function ContentManager() {
               </Table>
             </div>
 
+            {/* Blog Pagination */}
+            {blogTotal > BLOG_LIMIT && (
+              <div className="flex items-center justify-between mt-4 pt-4 border-t border-[#30363D]">
+                <p className="text-sm text-gray-400">
+                  Showing {((blogPage - 1) * BLOG_LIMIT) + 1}-{Math.min(blogPage * BLOG_LIMIT, blogTotal)} of {blogTotal} posts
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setBlogPage(p => Math.max(1, p - 1))}
+                    disabled={blogPage === 1}
+                    className="border-[#30363D] text-gray-400"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  <span className="text-sm text-gray-400">
+                    Page {blogPage} of {Math.ceil(blogTotal / BLOG_LIMIT)}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setBlogPage(p => Math.min(Math.ceil(blogTotal / BLOG_LIMIT), p + 1))}
+                    disabled={blogPage >= Math.ceil(blogTotal / BLOG_LIMIT)}
+                    className="border-[#30363D] text-gray-400"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {/* Blog Dialog */}
             <Dialog open={blogDialogOpen} onOpenChange={setBlogDialogOpen}>
               <DialogContent className="bg-[#0f0f15] border-[#D4A836]/20 max-w-4xl max-h-[90vh] overflow-y-auto">
