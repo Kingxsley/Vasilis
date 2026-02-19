@@ -223,6 +223,45 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Simulation Types Breakdown */}
+        {stats?.scenario_types && Object.keys(stats.scenario_types).length > 0 && (
+          <Card className="bg-[#161B22] border-[#30363D] mt-6">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Shield className="w-5 h-5 text-[#9C27B0]" />
+                Simulation Templates by Type
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                {Object.entries(stats.scenario_types).map(([type, count]) => {
+                  const meta = SCENARIO_TYPE_META[type] || { 
+                    icon: Shield, 
+                    color: '#888', 
+                    label: type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) 
+                  };
+                  const Icon = meta.icon;
+                  return (
+                    <div 
+                      key={type}
+                      className="bg-[#21262D]/50 border border-[#30363D] rounded-lg p-4 text-center"
+                    >
+                      <div 
+                        className="w-10 h-10 rounded-lg mx-auto mb-2 flex items-center justify-center"
+                        style={{ backgroundColor: `${meta.color}20` }}
+                      >
+                        <Icon className="w-5 h-5" style={{ color: meta.color }} />
+                      </div>
+                      <p className="text-2xl font-bold text-white">{count}</p>
+                      <p className="text-xs text-gray-500 truncate" title={meta.label}>{meta.label}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </DashboardLayout>
   );
