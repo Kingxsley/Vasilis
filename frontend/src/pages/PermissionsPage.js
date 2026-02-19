@@ -230,21 +230,22 @@ export default function PermissionsPage() {
         {/* User List */}
         <Card className="bg-[#161B22] border-[#30363D]">
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <CardTitle className="text-white flex items-center gap-2">
                   <Users className="w-5 h-5" />
-                  Users
+                  Users ({filteredUsers.length})
                 </CardTitle>
                 <CardDescription>Select a user to manage their permissions</CardDescription>
               </div>
-              <div className="relative w-64">
+              <div className="relative w-full sm:w-72">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Search users..."
+                  placeholder="Search by name or email..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-10 bg-[#0D1117] border-[#30363D]"
+                  data-testid="permissions-search"
                 />
               </div>
             </div>
@@ -254,24 +255,32 @@ export default function PermissionsPage() {
               <div className="flex justify-center py-8">
                 <Loader2 className="w-6 h-6 animate-spin text-[#D4A836]" />
               </div>
+            ) : filteredUsers.length === 0 ? (
+              <div className="text-center py-8">
+                <Users className="w-12 h-12 mx-auto text-gray-600 mb-3" />
+                <p className="text-gray-400">
+                  {search ? 'No users match your search' : 'No users found'}
+                </p>
+              </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-2 max-h-[500px] overflow-y-auto">
                 {filteredUsers.map((user) => (
                   <div
                     key={user.user_id}
                     onClick={() => selectUser(user)}
                     className="flex items-center justify-between p-4 rounded-lg bg-[#0D1117] border border-[#30363D] hover:border-[#D4A836]/50 cursor-pointer transition-colors"
+                    data-testid={`permission-user-${user.user_id}`}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-[#D4A836]/20 flex items-center justify-center text-[#D4A836] font-medium">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="w-10 h-10 rounded-full bg-[#D4A836]/20 flex items-center justify-center text-[#D4A836] font-medium flex-shrink-0">
                         {user.name?.charAt(0)?.toUpperCase() || 'U'}
                       </div>
-                      <div>
-                        <p className="text-white font-medium">{user.name}</p>
-                        <p className="text-gray-400 text-sm">{user.email}</p>
+                      <div className="min-w-0">
+                        <p className="text-white font-medium truncate">{user.name}</p>
+                        <p className="text-gray-400 text-sm truncate">{user.email}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 flex-shrink-0 ml-4">
                       <Badge className={getRoleBadgeColor(user.role)}>
                         {user.role?.replace('_', ' ')}
                       </Badge>
