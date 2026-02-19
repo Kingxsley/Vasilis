@@ -1689,24 +1689,43 @@ async def generate_ai_content(data: AIGenerateRequest, user: dict = Depends(requ
 
 @api_router.get("/dashboard/stats", response_model=DashboardStats)
 async def get_dashboard_stats(user: dict = Depends(require_admin)):
-    total_orgs = await db.organizations.count_documents({})
-    total_users = await db.users.count_documents({})
+    # Org admins only see stats for their organization
+    org_filter = {}
+    if user.get("role") == "org_admin" and user.get("organization_id"):
+        org_filter = {"organization_id": user["organization_id"]}
     
-    # Count all campaign types
-    phishing_campaigns = await db.phishing_campaigns.count_documents({})
-    ad_campaigns = await db.ad_campaigns.count_documents({})
+    if user.get("role") == "super_admin":
+        total_orgs = await db.organizations.count_documents({})
+        total_users = await db.users.count_documents({})
+    else:
+        total_orgs = 1 if user.get("organization_id") else 0
+        total_users = await db.users.count_documents(org_filter)
+    
+    # Count all campaign types (org-scoped for org_admins)
+    phishing_campaigns = await db.phishing_campaigns.count_documents(org_filter)
+    ad_campaigns = await db.ad_campaigns.count_documents(org_filter)
     total_campaigns = phishing_campaigns + ad_campaigns
     
     # Active campaigns
-    active_phishing = await db.phishing_campaigns.count_documents({"status": "active"})
-    active_ads = await db.ad_campaigns.count_documents({"status": "active"})
+    active_filter = {**org_filter, "status": "active"}
+    active_phishing = await db.phishing_campaigns.count_documents(active_filter)
+    active_ads = await db.ad_campaigns.count_documents(active_filter)
     active_campaigns = active_phishing + active_ads
     
-    total_sessions = await db.training_sessions.count_documents({})
+    # Training sessions - need to join with users for org filtering
+    if org_filter:
+        # Get user IDs in this org
+        org_users = await db.users.find(org_filter, {"user_id": 1}).to_list(10000)
+        org_user_ids = [u["user_id"] for u in org_users]
+        session_filter = {"user_id": {"$in": org_user_ids}}
+    else:
+        session_filter = {}
+    
+    total_sessions = await db.training_sessions.count_documents(session_filter)
     
     # Calculate average score
     pipeline = [
-        {"$match": {"status": "completed"}},
+        {"$match": {**session_filter, "status": "completed"}},
         {"$group": {"_id": None, "avg_score": {"$avg": "$score"}}}
     ]
     result = await db.training_sessions.aggregate(pipeline).to_list(1)
