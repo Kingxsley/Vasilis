@@ -1968,6 +1968,7 @@ api_router.include_router(inquiries_router)
 api_router.include_router(media_router)
 api_router.include_router(sidebar_router)
 api_router.include_router(permissions_router)
+api_router.include_router(navigation_router)
 
 # ============== PUBLIC TRACKING ROUTE (Masked URL) ==============
 # This route provides a clean, masked URL for ad tracking
