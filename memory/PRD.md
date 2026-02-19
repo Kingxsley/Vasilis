@@ -125,8 +125,29 @@ Build a full-featured cybersecurity training platform for vasilisnetshield.com w
 - [ ] Email notification for account lockouts
 
 ## Test Credentials
-- Super Admin: `kingsley@vasilisnetshield.com` / `Test123!`
+- Super Admin: `testuser123@vasilisnetshield.com` / `TestAdmin123!`
+- Original Admin: `kingsley@vasilisnetshield.com` (may be locked)
 - Org Admin: `orgadmin@test.com` / `Test123!`
+
+## Working Test Tracking URL
+- `https://cyber-training-hub-3.preview.emergentagent.com/api/phishing/track/click/bKqgQ-jZl3hVJIdkIWjIkg`
+
+## Remaining Issues/Tasks
+
+### P0 - Still Pending
+- [ ] **Contact Form Email Routing** - Send submissions to `info@vasilisnetshield.com` via SendGrid
+- [ ] **Automatic Retraining Flow** - When user clicks simulation:
+  - Send retrain email
+  - Reset training progress
+  - Notify super_admin and org_admin
+
+### P1 - Still Pending
+- [ ] **No-Code Ad Simulation Editor** - Template editor for ad simulations
+- [ ] **Email "Opened" Status Tracking** - Fix display of opened status
+- [ ] **Logo Display Issue** - Recurring branding bug
+
+### P2 - Still Pending
+- [ ] **Final User Documentation** - Create after all features complete
 
 ## Training Failure Record Structure
 ```json
