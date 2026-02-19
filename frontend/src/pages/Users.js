@@ -145,6 +145,42 @@ export default function UsersPage() {
     }
   };
 
+  const toggleSelectUser = (userId) => {
+    if (userId === currentUser.user_id) return; // Can't select self
+    setSelectedUsers(prev => 
+      prev.includes(userId) 
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    );
+  };
+
+  const selectAllUsers = () => {
+    const selectableUsers = paginatedUsers.filter(u => u.user_id !== currentUser.user_id);
+    if (selectedUsers.length === selectableUsers.length) {
+      setSelectedUsers([]);
+    } else {
+      setSelectedUsers(selectableUsers.map(u => u.user_id));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    try {
+      await Promise.all(
+        selectedUsers.map(userId => 
+          axios.delete(`${API}/users/${userId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        )
+      );
+      toast.success(`Deleted ${selectedUsers.length} users`);
+      setSelectedUsers([]);
+      setShowBulkDeleteConfirm(false);
+      fetchData();
+    } catch (err) {
+      toast.error('Failed to delete some users');
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       name: '',
