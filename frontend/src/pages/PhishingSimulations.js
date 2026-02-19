@@ -391,6 +391,41 @@ export default function PhishingSimulations() {
     }
   };
 
+  // Toggle selection for bulk delete
+  const toggleCampaignSelection = (campaignId) => {
+    setSelectedCampaignIds(prev => 
+      prev.includes(campaignId)
+        ? prev.filter(id => id !== campaignId)
+        : [...prev, campaignId]
+    );
+  };
+
+  // Select all visible campaigns
+  const selectAllCampaigns = () => {
+    if (selectedCampaignIds.length === filteredCampaigns.length) {
+      setSelectedCampaignIds([]);
+    } else {
+      setSelectedCampaignIds(filteredCampaigns.map(c => c.campaign_id));
+    }
+  };
+
+  // Bulk delete campaigns
+  const bulkDeleteCampaigns = async () => {
+    try {
+      // Delete campaigns one by one (backend doesn't have bulk delete endpoint yet)
+      for (const campaignId of selectedCampaignIds) {
+        await axios.delete(`${API}/phishing/campaigns/${campaignId}`, { headers });
+      }
+      toast.success(`${selectedCampaignIds.length} campaign(s) deleted`);
+      setSelectedCampaignIds([]);
+      setShowBulkDeleteConfirm(false);
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to delete some campaigns');
+      fetchData();
+    }
+  };
+
   const duplicateCampaign = async (campaignId) => {
     try {
       const res = await axios.post(`${API}/phishing/campaigns/${campaignId}/duplicate`, {}, { headers });
