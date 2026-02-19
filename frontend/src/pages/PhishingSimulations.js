@@ -631,6 +631,16 @@ export default function PhishingSimulations() {
                           <Button
                             size="sm"
                             variant="outline"
+                            onClick={() => duplicateCampaign(campaign.campaign_id)}
+                            className="border-[#D4A836]/30 text-[#D4A836] hover:bg-[#D4A836]/10"
+                            data-testid={`duplicate-campaign-${campaign.campaign_id}`}
+                            title="Duplicate campaign"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
                             onClick={() => deleteCampaign(campaign.campaign_id)}
                             className="border-red-500/30 text-red-400 hover:bg-red-500/10"
                             data-testid={`delete-campaign-${campaign.campaign_id}`}
