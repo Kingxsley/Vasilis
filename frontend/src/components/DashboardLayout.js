@@ -103,13 +103,13 @@ const navGroups = [
     id: 'content',
     label: 'Content',
     icon: FileText,
-    superAdminOnly: true,
+    contentManager: true, // media_manager can access
     items: [
-      { path: '/content', label: 'CMS', icon: FileText, superAdminOnly: true },
-      { path: '/page-editor', label: 'Page Editor', icon: Layout, superAdminOnly: true },
-      { path: '/landing-editor', label: 'Landing Page', icon: Layout, superAdminOnly: true },
-      { path: '/sidebar-customizer', label: 'Sidebar', icon: Layout, superAdminOnly: true },
-      { path: '/media-library', label: 'Media Library', icon: Image, superAdminOnly: true },
+      { path: '/content', label: 'CMS', icon: FileText, contentManager: true },
+      { path: '/page-editor', label: 'Page Editor', icon: Layout, contentManager: true },
+      { path: '/landing-editor', label: 'Landing Page', icon: Layout, contentManager: true },
+      { path: '/sidebar-customizer', label: 'Sidebar', icon: Layout, contentManager: true },
+      { path: '/media-library', label: 'Media Library', icon: Image, contentManager: true },
     ]
   },
   {
@@ -126,12 +126,12 @@ const navGroups = [
     id: 'settings',
     label: 'Settings',
     icon: Cog,
-    superAdminOnly: true,
+    contentManager: true, // media_manager can access
     items: [
-      { path: '/settings', label: 'Settings', icon: Settings, superAdminOnly: true },
+      { path: '/settings', label: 'Settings', icon: Settings, contentManager: true },
       { path: '/permissions', label: 'Permissions', icon: ShieldAlert, superAdminOnly: true },
-      { path: '/seo-settings', label: 'SEO', icon: Search, superAdminOnly: true },
-      { path: '/email-templates', label: 'Email Templates', icon: MailIcon, superAdminOnly: true },
+      { path: '/seo-settings', label: 'SEO', icon: Search, contentManager: true },
+      { path: '/email-templates', label: 'Email Templates', icon: MailIcon, contentManager: true },
     ]
   },
   {
@@ -142,6 +142,7 @@ const navGroups = [
     items: [
       { path: '/security', label: 'Dashboard', icon: ShieldAlert, superAdminOnly: true },
       { path: '/audit-logs', label: 'Audit Logs', icon: FileText, superAdminOnly: true },
+      { path: '/password-policy', label: 'Password Policy', icon: ShieldAlert, superAdminOnly: true },
     ]
   },
 ];
