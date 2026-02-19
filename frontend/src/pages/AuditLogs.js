@@ -315,7 +315,8 @@ export default function AuditLogs() {
                     <TableRow className="border-[#D4A836]/20 hover:bg-transparent">
                       <TableHead className="text-gray-400 font-semibold w-[160px]">Timestamp</TableHead>
                       <TableHead className="text-gray-400 font-semibold w-[200px]">Action</TableHead>
-                      <TableHead className="text-gray-400 font-semibold min-w-[200px]">Email</TableHead>
+                      <TableHead className="text-gray-400 font-semibold min-w-[150px]">User</TableHead>
+                      <TableHead className="text-gray-400 font-semibold min-w-[180px]">Email</TableHead>
                       <TableHead className="text-gray-400 font-semibold w-[140px]">IP Address</TableHead>
                       <TableHead className="text-gray-400 font-semibold w-[120px]">Country</TableHead>
                       <TableHead className="text-gray-400 font-semibold w-[100px] text-center">Severity</TableHead>
@@ -324,7 +325,7 @@ export default function AuditLogs() {
                   <TableBody>
                     {logs.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center text-gray-500 py-16">
+                        <TableCell colSpan={7} className="text-center text-gray-500 py-16">
                           <FileText className="w-12 h-12 mx-auto mb-3 text-gray-600" />
                           <p>No audit logs found</p>
                           {hasActiveFilters && (
@@ -344,6 +345,9 @@ export default function AuditLogs() {
                           </TableCell>
                           <TableCell className="text-[#E8DDB5] font-medium">
                             {getActionLabel(log.action)}
+                          </TableCell>
+                          <TableCell className="text-[#D4A836] font-medium">
+                            {log.user_name || '-'}
                           </TableCell>
                           <TableCell className="text-gray-300">
                             {log.user_email || '-'}
