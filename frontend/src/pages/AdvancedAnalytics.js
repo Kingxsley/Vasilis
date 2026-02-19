@@ -6,6 +6,7 @@ import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
+import { Checkbox } from '../components/ui/checkbox';
 import {
   Table,
   TableBody,
@@ -24,7 +25,7 @@ import {
 import { 
   BarChart3, TrendingUp, TrendingDown, Users, Mail, MousePointerClick, 
   Target, Award, AlertTriangle, CheckCircle, Clock, RefreshCw, Loader2,
-  PieChart, Activity, Building2, Trophy, Calendar, Filter
+  PieChart, Activity, Building2, Trophy, Calendar, Filter, Eye, Monitor
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
@@ -43,6 +44,12 @@ export default function AdvancedAnalytics() {
   const [trainingStats, setTrainingStats] = useState(null);
   const [userStats, setUserStats] = useState(null);
   const [clickDetails, setClickDetails] = useState([]);
+  
+  // New: All campaigns data with multi-select
+  const [allCampaigns, setAllCampaigns] = useState([]);
+  const [campaignSummary, setCampaignSummary] = useState(null);
+  const [selectedCampaignIds, setSelectedCampaignIds] = useState([]);
+  const [campaignTypeFilter, setCampaignTypeFilter] = useState('all'); // all, phishing, ad
   const [bestCampaigns, setBestCampaigns] = useState([]);
 
   useEffect(() => {
