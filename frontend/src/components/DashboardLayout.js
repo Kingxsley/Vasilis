@@ -106,6 +106,7 @@ const navGroups = [
       { path: '/content', label: 'CMS', icon: FileText, contentManager: true },
       { path: '/page-editor', label: 'Page Editor', icon: Layout, adminOnly: true },
       { path: '/landing-editor', label: 'Landing Page', icon: Layout, adminOnly: true },
+      { path: '/media-library', label: 'Media Library', icon: Image, adminOnly: true },
     ]
   },
   {
