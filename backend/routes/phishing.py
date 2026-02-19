@@ -876,6 +876,134 @@ async def track_link_click(tracking_code: str, request: Request):
     return HTMLResponse(content=html)
 
 
+# ============== TRAINING FAILURES API ==============
+
+@router.get("/training-failures")
+async def get_training_failures(
+    request: Request,
+    skip: int = 0,
+    limit: int = 50,
+    status: str = None,
+    organization_id: str = None
+):
+    """Get training failures for dashboard tracking
+    - Super admins see all failures
+    - Org admins see only their organization's failures
+    """
+    user = await require_admin(request)
+    db = get_db()
+    
+    query = {}
+    
+    # Role-based filtering
+    if user.get("role") == UserRole.ORG_ADMIN:
+        # Org admins can only see their organization's failures
+        query["organization_id"] = user.get("organization_id")
+    elif organization_id:
+        # Super admin can filter by org
+        query["organization_id"] = organization_id
+    
+    if status:
+        query["status"] = status
+    
+    failures = await db.training_failures.find(
+        query,
+        {"_id": 0}
+    ).sort("timestamp", -1).skip(skip).limit(limit).to_list(limit)
+    
+    total = await db.training_failures.count_documents(query)
+    
+    # Get stats
+    pending_count = await db.training_failures.count_documents({**query, "status": "pending_training"})
+    completed_count = await db.training_failures.count_documents({**query, "status": "completed_training"})
+    
+    return {
+        "failures": failures,
+        "total": total,
+        "pending": pending_count,
+        "completed": completed_count,
+        "skip": skip,
+        "limit": limit
+    }
+
+
+@router.get("/training-failures/stats")
+async def get_training_failure_stats(
+    request: Request,
+    organization_id: str = None
+):
+    """Get aggregated stats on training failures"""
+    user = await require_admin(request)
+    db = get_db()
+    
+    query = {}
+    
+    if user.get("role") == UserRole.ORG_ADMIN:
+        query["organization_id"] = user.get("organization_id")
+    elif organization_id:
+        query["organization_id"] = organization_id
+    
+    # By scenario type
+    by_type_pipeline = [
+        {"$match": query},
+        {"$group": {"_id": "$scenario_type", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}}
+    ]
+    by_type = await db.training_failures.aggregate(by_type_pipeline).to_list(20)
+    
+    # By status
+    by_status_pipeline = [
+        {"$match": query},
+        {"$group": {"_id": "$status", "count": {"$sum": 1}}}
+    ]
+    by_status = await db.training_failures.aggregate(by_status_pipeline).to_list(10)
+    
+    # Recent failures (last 7 days)
+    from datetime import timedelta
+    seven_days_ago = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+    recent_query = {**query, "timestamp": {"$gte": seven_days_ago}}
+    recent_count = await db.training_failures.count_documents(recent_query)
+    
+    # Repeat offenders (users who failed multiple times)
+    repeat_pipeline = [
+        {"$match": query},
+        {"$group": {"_id": "$user_email", "failures": {"$sum": 1}}},
+        {"$match": {"failures": {"$gt": 1}}},
+        {"$count": "repeat_offenders"}
+    ]
+    repeat_result = await db.training_failures.aggregate(repeat_pipeline).to_list(1)
+    repeat_offenders = repeat_result[0]["repeat_offenders"] if repeat_result else 0
+    
+    return {
+        "by_scenario_type": {item["_id"]: item["count"] for item in by_type if item["_id"]},
+        "by_status": {item["_id"]: item["count"] for item in by_status if item["_id"]},
+        "recent_failures": recent_count,
+        "repeat_offenders": repeat_offenders
+    }
+
+
+@router.patch("/training-failures/{failure_id}/complete")
+async def mark_training_completed(failure_id: str, request: Request):
+    """Mark a training failure as completed (user finished remedial training)"""
+    await require_admin(request)
+    db = get_db()
+    
+    result = await db.training_failures.update_one(
+        {"failure_id": failure_id},
+        {
+            "$set": {
+                "status": "completed_training",
+                "completed_at": datetime.now(timezone.utc).isoformat()
+            }
+        }
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Failure record not found")
+    
+    return {"message": "Training marked as completed", "failure_id": failure_id}
+
+
 # ============== DEFAULT TEMPLATES ==============
 
 @router.post("/templates/seed-defaults")
