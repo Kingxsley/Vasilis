@@ -570,6 +570,14 @@ const AppRouter = () => {
           }
         />
         <Route
+          path="/activity-logs"
+          element={
+            <ProtectedRoute adminOnly>
+              <ActivityLogs />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/password-policy"
           element={
             <ProtectedRoute adminOnly>
