@@ -224,7 +224,7 @@ async def export_audit_logs(
     country: Optional[str] = None,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
-    user: dict = Depends(lambda: require_super_admin)
+    user: dict = Depends(require_super_admin)
 ):
     """Export audit logs as CSV or JSON (last 30 days max)"""
     if db is None:
