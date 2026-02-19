@@ -77,7 +77,7 @@ export default function AdvancedAnalytics() {
     setLoading(true);
     const dateParams = getDateParams();
     try {
-      const [analyticsRes, phishingRes, usersRes, clickRes, bestRes] = await Promise.all([
+      const [analyticsRes, phishingRes, usersRes, clickRes, bestRes, allCampaignsRes] = await Promise.all([
         axios.get(`${API}/analytics/overview?${dateParams}`, {
           headers: { Authorization: `Bearer ${token}` }
         }).catch(() => ({ data: null })),
@@ -92,13 +92,20 @@ export default function AdvancedAnalytics() {
         }).catch(() => ({ data: { click_details: [] } })),
         axios.get(`${API}/phishing/best-performing?limit=5`, {
           headers: { Authorization: `Bearer ${token}` }
-        }).catch(() => ({ data: { campaigns: [] } }))
+        }).catch(() => ({ data: { campaigns: [] } })),
+        axios.get(`${API}/analytics/all-campaigns?${dateParams}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }).catch(() => ({ data: { campaigns: [], summary: null } }))
       ]);
 
       setAnalytics(analyticsRes.data);
       setPhishingStats(phishingRes.data);
       setClickDetails(clickRes.data?.click_details || []);
       setBestCampaigns(bestRes.data?.campaigns || []);
+      
+      // Set all campaigns data
+      setAllCampaigns(allCampaignsRes.data?.campaigns || []);
+      setCampaignSummary(allCampaignsRes.data?.summary || null);
       
       // Calculate user stats from users list
       // API returns array directly, not { users: [] }
