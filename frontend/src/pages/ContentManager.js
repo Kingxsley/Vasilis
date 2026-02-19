@@ -78,22 +78,30 @@ const ROLE_OPTIONS = [
 ];
 
 export default function ContentManager() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [activeTab, setActiveTab] = useState('blog');
   const [loading, setLoading] = useState(true);
   
-  // Blog state
+  // Blog state with pagination
   const [blogPosts, setBlogPosts] = useState([]);
   const [blogDialogOpen, setBlogDialogOpen] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
   const [blogForm, setBlogForm] = useState({
     title: '', excerpt: '', content: '', tags: '', featured_image: '', published: false
   });
+  const [blogPage, setBlogPage] = useState(1);
+  const [blogTotal, setBlogTotal] = useState(0);
+  const [blogSearch, setBlogSearch] = useState('');
+  const BLOG_LIMIT = 10;
   
-  // News state
+  // News state with pagination
   const [news, setNews] = useState([]);
   const [newsDialogOpen, setNewsDialogOpen] = useState(false);
   const [newsForm, setNewsForm] = useState({ title: '', content: '', link: '', published: true });
+  const [newsPage, setNewsPage] = useState(1);
+  const [newsTotal, setNewsTotal] = useState(0);
+  const [newsSearch, setNewsSearch] = useState('');
+  const NEWS_LIMIT = 10;
   
   // RSS Feeds state
   const [rssFeeds, setRssFeeds] = useState([]);
@@ -113,6 +121,23 @@ export default function ContentManager() {
   const [about, setAbout] = useState({ title: '', content: '', mission: '', vision: '', team_members: [] });
   const [teamMemberForm, setTeamMemberForm] = useState({ name: '', role: '', bio: '', image: '' });
   const [teamDialogOpen, setTeamDialogOpen] = useState(false);
+  
+  // Menu Manager state
+  const [navItems, setNavItems] = useState([]);
+  const [navDialogOpen, setNavDialogOpen] = useState(false);
+  const [editingNavItem, setEditingNavItem] = useState(null);
+  const [navForm, setNavForm] = useState({
+    label: '',
+    link_type: 'internal',
+    path: '',
+    icon: 'Link',
+    section_id: 'main',
+    visible_to: ['all'],
+    open_in_new_tab: false,
+    sort_order: 100,
+    is_active: true
+  });
+  const [cmsPages, setCmsPages] = useState([]);
   
   // Media state
   const [media, setMedia] = useState([]);
