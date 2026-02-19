@@ -603,6 +603,143 @@ async def get_phishing_stats(request: Request, days: int = 30):
     }
 
 
+@router.get("/click-details")
+async def get_click_details(request: Request, days: int = 30, org_id: str = None):
+    """Get detailed information about users who clicked on phishing links"""
+    user = await require_admin(request)
+    db = get_db()
+    
+    from datetime import timedelta
+    
+    cutoff_date = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    
+    # Get targets who clicked
+    query = {"link_clicked": True}
+    
+    targets = await db.phishing_targets.find(query, {"_id": 0}).to_list(10000)
+    
+    # Get campaign and user details for each click
+    click_details = []
+    for target in targets:
+        # Get campaign info
+        campaign = await db.phishing_campaigns.find_one(
+            {"campaign_id": target["campaign_id"]}, {"_id": 0}
+        )
+        
+        # Get user info
+        user_info = await db.users.find_one(
+            {"user_id": target.get("user_id")}, {"_id": 0, "name": 1, "email": 1, "organization_id": 1}
+        )
+        
+        # Get organization info
+        org_info = None
+        if user_info and user_info.get("organization_id"):
+            org_info = await db.organizations.find_one(
+                {"organization_id": user_info["organization_id"]}, {"_id": 0, "name": 1}
+            )
+        
+        # Filter by org_id if specified
+        if org_id and user_info and user_info.get("organization_id") != org_id:
+            continue
+            
+        # For org_admin, only show their organization's data
+        if user.get("role") == "org_admin" and user_info:
+            if user_info.get("organization_id") != user.get("organization_id"):
+                continue
+        
+        click_details.append({
+            "user_name": user_info.get("name") if user_info else target.get("user_name", "Unknown"),
+            "user_email": target.get("user_email"),
+            "organization_name": org_info.get("name") if org_info else "Unknown",
+            "organization_id": user_info.get("organization_id") if user_info else None,
+            "campaign_name": campaign.get("name") if campaign else "Unknown Campaign",
+            "campaign_id": target.get("campaign_id"),
+            "clicked_at": target.get("link_clicked_at"),
+            "click_ip": target.get("click_ip"),
+            "click_user_agent": target.get("click_user_agent")
+        })
+    
+    # Sort by click time descending
+    click_details.sort(key=lambda x: x.get("clicked_at") or "", reverse=True)
+    
+    return {
+        "click_details": click_details,
+        "total": len(click_details)
+    }
+
+
+@router.get("/best-performing")
+async def get_best_performing_campaigns(request: Request, limit: int = 10):
+    """Get best performing phishing campaigns (lowest click rates)"""
+    await require_admin(request)
+    db = get_db()
+    
+    campaigns = await db.phishing_campaigns.find({}, {"_id": 0}).to_list(1000)
+    
+    # Calculate stats for each campaign
+    campaign_stats = []
+    for campaign in campaigns:
+        targets = await db.phishing_targets.find(
+            {"campaign_id": campaign["campaign_id"]}, {"_id": 0}
+        ).to_list(10000)
+        
+        total_sent = sum(1 for t in targets if t.get("email_sent"))
+        total_clicked = sum(1 for t in targets if t.get("link_clicked"))
+        click_rate = (total_clicked / total_sent * 100) if total_sent > 0 else 0
+        
+        campaign_stats.append({
+            "campaign_id": campaign["campaign_id"],
+            "name": campaign.get("name"),
+            "organization_id": campaign.get("organization_id"),
+            "status": campaign.get("status"),
+            "total_sent": total_sent,
+            "total_clicked": total_clicked,
+            "click_rate": round(click_rate, 1),
+            "created_at": campaign.get("created_at")
+        })
+    
+    # Sort by click rate (lower is better for security awareness)
+    campaign_stats.sort(key=lambda x: (x["click_rate"], -x["total_sent"]))
+    
+    return {
+        "campaigns": campaign_stats[:limit],
+        "total": len(campaign_stats)
+    }
+
+
+@router.post("/campaigns/{campaign_id}/duplicate")
+async def duplicate_campaign(campaign_id: str, request: Request):
+    """Duplicate an existing campaign for editing"""
+    await require_admin(request)
+    db = get_db()
+    
+    # Get original campaign
+    original = await db.phishing_campaigns.find_one({"campaign_id": campaign_id}, {"_id": 0})
+    if not original:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    
+    # Create new campaign with copy
+    new_campaign_id = f"camp_{uuid.uuid4().hex[:12]}"
+    new_campaign = {
+        **original,
+        "campaign_id": new_campaign_id,
+        "name": f"{original.get('name', 'Campaign')} (Copy)",
+        "status": "draft",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "launched_at": None,
+        "total_targets": 0
+    }
+    
+    await db.phishing_campaigns.insert_one(new_campaign)
+    
+    return {
+        "message": "Campaign duplicated successfully",
+        "campaign_id": new_campaign_id,
+        "name": new_campaign["name"]
+    }
+
+
 @router.get("/campaigns/{campaign_id}/stats", response_model=PhishingStatsResponse)
 async def get_campaign_statistics(campaign_id: str, request: Request):
     """Get detailed statistics for a campaign"""
