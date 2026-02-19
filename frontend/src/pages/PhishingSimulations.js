@@ -398,13 +398,23 @@ export default function PhishingSimulations() {
     }
   };
 
-  const editCampaign = (campaign) => {
+  const editCampaign = async (campaign) => {
     setEditingCampaign(campaign);
+    
+    // Fetch existing targets for this campaign
+    let existingTargetIds = [];
+    try {
+      const targetsRes = await axios.get(`${API}/phishing/campaigns/${campaign.campaign_id}/targets`, { headers });
+      existingTargetIds = targetsRes.data.map(t => t.user_id);
+    } catch (err) {
+      console.error('Failed to load campaign targets:', err);
+    }
+    
     setNewCampaign({
       name: campaign.name,
       organization_id: campaign.organization_id || '',
       template_id: campaign.template_id || '',
-      target_user_ids: campaign.target_user_ids || [],
+      target_user_ids: existingTargetIds,
       scheduled_at: campaign.scheduled_at || '',
       launch_immediately: false
     });
