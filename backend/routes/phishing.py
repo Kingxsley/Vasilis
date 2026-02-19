@@ -5,6 +5,9 @@ from datetime import datetime, timezone
 import uuid
 import secrets
 import base64
+import logging
+
+logger = logging.getLogger(__name__)
 
 from models import (
     PhishingTemplateCreate, PhishingTemplateResponse,
