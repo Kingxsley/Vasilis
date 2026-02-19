@@ -82,7 +82,7 @@ const navGroups = [
     label: 'Management',
     icon: Building2,
     items: [
-      { path: '/organizations', label: 'Organizations', icon: Building2, adminOnly: true },
+      { path: '/organizations', label: 'Organizations', icon: Building2, superAdminOnly: true },
       { path: '/users', label: 'Users', icon: Users, adminOnly: true },
       { path: '/user-import', label: 'Import Users', icon: Upload, adminOnly: true },
       { path: '/inquiries', label: 'Access Requests', icon: MessageSquare, adminOnly: true },
@@ -92,22 +92,24 @@ const navGroups = [
     id: 'simulations',
     label: 'Simulations',
     icon: Crosshair,
+    superAdminOnly: true,
     items: [
-      { path: '/phishing', label: 'Phishing Sim', icon: Mail, adminOnly: true },
-      { path: '/ads', label: 'Ad Simulation', icon: Monitor, adminOnly: true },
-      { path: '/scenarios', label: 'Scenarios', icon: FileText, adminOnly: true },
+      { path: '/phishing', label: 'Phishing Sim', icon: Mail, superAdminOnly: true },
+      { path: '/ads', label: 'Ad Simulation', icon: Monitor, superAdminOnly: true },
+      { path: '/scenarios', label: 'Scenarios', icon: FileText, superAdminOnly: true },
     ]
   },
   {
     id: 'content',
     label: 'Content',
     icon: FileText,
+    superAdminOnly: true,
     items: [
-      { path: '/content', label: 'CMS', icon: FileText, contentManager: true },
-      { path: '/page-editor', label: 'Page Editor', icon: Layout, adminOnly: true },
-      { path: '/landing-editor', label: 'Landing Page', icon: Layout, adminOnly: true },
-      { path: '/sidebar-customizer', label: 'Sidebar', icon: Layout, adminOnly: true },
-      { path: '/media-library', label: 'Media Library', icon: Image, adminOnly: true },
+      { path: '/content', label: 'CMS', icon: FileText, superAdminOnly: true },
+      { path: '/page-editor', label: 'Page Editor', icon: Layout, superAdminOnly: true },
+      { path: '/landing-editor', label: 'Landing Page', icon: Layout, superAdminOnly: true },
+      { path: '/sidebar-customizer', label: 'Sidebar', icon: Layout, superAdminOnly: true },
+      { path: '/media-library', label: 'Media Library', icon: Image, superAdminOnly: true },
     ]
   },
   {
@@ -116,20 +118,30 @@ const navGroups = [
     icon: GraduationCap,
     items: [
       { path: '/training', label: 'My Training', icon: BookOpen, adminOnly: false },
-      { path: '/certificates', label: 'Certificates', icon: Award, adminOnly: false },
-      { path: '/certificate-templates', label: 'Cert Templates', icon: Award, adminOnly: true },
+      { path: '/certificates', label: 'Certificates', icon: Award, superAdminOnly: true },
+      { path: '/certificate-templates', label: 'Cert Templates', icon: Award, superAdminOnly: true },
     ]
   },
   {
     id: 'settings',
     label: 'Settings',
     icon: Cog,
+    superAdminOnly: true,
     items: [
-      { path: '/settings', label: 'Settings', icon: Settings, adminOnly: true },
+      { path: '/settings', label: 'Settings', icon: Settings, superAdminOnly: true },
       { path: '/permissions', label: 'Permissions', icon: ShieldAlert, superAdminOnly: true },
-      { path: '/seo-settings', label: 'SEO', icon: Search, adminOnly: true },
-      { path: '/email-templates', label: 'Email Templates', icon: MailIcon, adminOnly: true },
-      { path: '/security', label: 'Security', icon: ShieldAlert, superAdminOnly: true },
+      { path: '/seo-settings', label: 'SEO', icon: Search, superAdminOnly: true },
+      { path: '/email-templates', label: 'Email Templates', icon: MailIcon, superAdminOnly: true },
+    ]
+  },
+  {
+    id: 'security',
+    label: 'Security',
+    icon: ShieldAlert,
+    superAdminOnly: true,
+    items: [
+      { path: '/security', label: 'Dashboard', icon: ShieldAlert, superAdminOnly: true },
+      { path: '/audit-logs', label: 'Audit Logs', icon: FileText, superAdminOnly: true },
     ]
   },
 ];
