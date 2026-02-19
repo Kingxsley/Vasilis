@@ -352,84 +352,58 @@ export default function SecurityDashboard() {
           </CardContent>
         </Card>
 
-        {/* Audit Logs */}
+        {/* Quick Audit Log Preview & Link */}
         <Card className="bg-[#0f0f15] border-[#D4A836]/20">
           <CardHeader>
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <CardTitle className="text-[#E8DDB5]">Audit Logs</CardTitle>
-              <div className="flex flex-wrap gap-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                  <Input
-                    placeholder="Search by email..."
-                    value={filters.search}
-                    onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                    className="pl-9 w-48 bg-[#1a1a24] border-[#D4A836]/20"
-                  />
-                </div>
-                <Select value={filters.action || "all"} onValueChange={(v) => setFilters({ ...filters, action: v === "all" ? "" : v })}>
-                  <SelectTrigger className="w-40 bg-[#1a1a24] border-[#D4A836]/20">
-                    <SelectValue placeholder="All Actions" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Actions</SelectItem>
-                    <SelectItem value="login_success">Login Success</SelectItem>
-                    <SelectItem value="login_failed_wrong_password">Login Failed</SelectItem>
-                    <SelectItem value="login_blocked_lockout">Lockout</SelectItem>
-                    <SelectItem value="password_reset_completed">Password Reset</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={filters.severity || "all"} onValueChange={(v) => setFilters({ ...filters, severity: v === "all" ? "" : v })}>
-                  <SelectTrigger className="w-32 bg-[#1a1a24] border-[#D4A836]/20">
-                    <SelectValue placeholder="Severity" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="critical">Critical</SelectItem>
-                    <SelectItem value="warning">Warning</SelectItem>
-                    <SelectItem value="info">Info</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-[#E8DDB5]">Recent Audit Logs</CardTitle>
+              <Button 
+                variant="outline" 
+                className="border-[#D4A836]/30 text-[#D4A836] hover:bg-[#D4A836]/10"
+                onClick={() => window.location.href = '/audit-logs'}
+                data-testid="view-all-logs-btn"
+              >
+                View All Logs
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-[#D4A836]/20">
-                    <TableHead className="text-gray-400">Timestamp</TableHead>
-                    <TableHead className="text-gray-400">Action</TableHead>
-                    <TableHead className="text-gray-400">Email</TableHead>
-                    <TableHead className="text-gray-400">IP Address</TableHead>
-                    <TableHead className="text-gray-400">Severity</TableHead>
+                  <TableRow className="border-[#D4A836]/20 hover:bg-transparent">
+                    <TableHead className="text-gray-400 font-semibold w-[160px]">Timestamp</TableHead>
+                    <TableHead className="text-gray-400 font-semibold w-[200px]">Action</TableHead>
+                    <TableHead className="text-gray-400 font-semibold min-w-[180px]">Email</TableHead>
+                    <TableHead className="text-gray-400 font-semibold w-[130px]">IP Address</TableHead>
+                    <TableHead className="text-gray-400 font-semibold w-[90px] text-center">Severity</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {logs.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={5} className="text-center text-gray-500 py-8">
-                        No audit logs found
+                        No recent audit logs
                       </TableCell>
                     </TableRow>
                   ) : (
-                    logs.map((log, idx) => (
-                      <TableRow key={idx} className="border-[#D4A836]/10">
-                        <TableCell className="text-gray-400 text-sm">
+                    logs.slice(0, 10).map((log, idx) => (
+                      <TableRow key={idx} className="border-[#D4A836]/10 hover:bg-white/5">
+                        <TableCell className="text-gray-400 text-sm font-mono whitespace-nowrap">
                           {new Date(log.timestamp).toLocaleString()}
                         </TableCell>
-                        <TableCell className="text-[#E8DDB5]">
+                        <TableCell className="text-[#E8DDB5] font-medium">
                           {getActionLabel(log.action)}
                         </TableCell>
-                        <TableCell className="text-gray-400">
+                        <TableCell className="text-gray-300">
                           {log.user_email || '-'}
                         </TableCell>
                         <TableCell className="text-gray-400 font-mono text-sm">
                           {log.ip_address || '-'}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="text-center">
                           <Badge className={getSeverityBadge(log.severity)}>
-                            {log.severity}
+                            {log.severity || 'info'}
                           </Badge>
                         </TableCell>
                       </TableRow>
@@ -438,34 +412,10 @@ export default function SecurityDashboard() {
                 </TableBody>
               </Table>
             </div>
-            
-            {/* Pagination */}
-            {logsTotal > 20 && (
-              <div className="flex items-center justify-between mt-4">
-                <p className="text-sm text-gray-500">
-                  Showing {logsPage * 20 + 1}-{Math.min((logsPage + 1) * 20, logsTotal)} of {logsTotal}
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={logsPage === 0}
-                    onClick={() => setLogsPage(logsPage - 1)}
-                    className="border-[#D4A836]/30"
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={(logsPage + 1) * 20 >= logsTotal}
-                    onClick={() => setLogsPage(logsPage + 1)}
-                    className="border-[#D4A836]/30"
-                  >
-                    Next
-                  </Button>
-                </div>
-              </div>
+            {logsTotal > 10 && (
+              <p className="text-sm text-gray-500 mt-4 text-center">
+                Showing 10 of {logsTotal} logs. <a href="/audit-logs" className="text-[#D4A836] hover:underline">View all</a>
+              </p>
             )}
           </CardContent>
         </Card>
