@@ -232,9 +232,23 @@ export default function AuthPage() {
             {branding?.logo_url ? (
               <img src={branding.logo_url} alt="Logo" className="w-10 h-10 object-contain" />
             ) : (
-              <div className="w-10 h-10 bg-[#D4A836]/30 rounded flex items-center justify-center">
-                <span className="text-[#D4A836] font-bold text-lg">{(branding?.company_name || 'V')[0]}</span>
-              </div>
+              <svg viewBox="0 0 100 100" className="w-10 h-10">
+                <defs>
+                  <linearGradient id="authFormShieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#D4A836" />
+                    <stop offset="100%" stopColor="#C49A30" />
+                  </linearGradient>
+                </defs>
+                <path 
+                  d="M50 5 L90 20 L90 50 C90 75 70 90 50 95 C30 90 10 75 10 50 L10 20 Z" 
+                  fill="url(#authFormShieldGrad)" 
+                />
+                <rect x="38" y="42" width="24" height="20" rx="3" fill="#0a0a0f" opacity="0.9" />
+                <path d="M42 42 L42 35 C42 30 46 26 50 26 C54 26 58 30 58 35 L58 42" 
+                      stroke="#0a0a0f" strokeWidth="4" fill="none" opacity="0.9" />
+                <circle cx="50" cy="52" r="3" fill="#D4A836" />
+                <rect x="49" y="52" width="2" height="6" fill="#D4A836" />
+              </svg>
             )}
             <span className="text-2xl font-bold text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
               {branding?.company_name || 'Vasilis NetShield'}
