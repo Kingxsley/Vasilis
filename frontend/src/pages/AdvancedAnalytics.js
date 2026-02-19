@@ -5,6 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../components/ui/table';
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -14,7 +22,7 @@ import {
 import { 
   BarChart3, TrendingUp, TrendingDown, Users, Mail, MousePointerClick, 
   Target, Award, AlertTriangle, CheckCircle, Clock, RefreshCw, Loader2,
-  PieChart, Activity
+  PieChart, Activity, Building2, Trophy
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
@@ -22,13 +30,15 @@ import axios from 'axios';
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function AdvancedAnalytics() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('30');
   const [analytics, setAnalytics] = useState(null);
   const [phishingStats, setPhishingStats] = useState(null);
   const [trainingStats, setTrainingStats] = useState(null);
   const [userStats, setUserStats] = useState(null);
+  const [clickDetails, setClickDetails] = useState([]);
+  const [bestCampaigns, setBestCampaigns] = useState([]);
 
   useEffect(() => {
     fetchAllData();
@@ -37,7 +47,7 @@ export default function AdvancedAnalytics() {
   const fetchAllData = async () => {
     setLoading(true);
     try {
-      const [analyticsRes, phishingRes, usersRes] = await Promise.all([
+      const [analyticsRes, phishingRes, usersRes, clickRes, bestRes] = await Promise.all([
         axios.get(`${API}/analytics/overview?days=${timeRange}`, {
           headers: { Authorization: `Bearer ${token}` }
         }).catch(() => ({ data: null })),
@@ -46,11 +56,19 @@ export default function AdvancedAnalytics() {
         }).catch(() => ({ data: null })),
         axios.get(`${API}/users`, {
           headers: { Authorization: `Bearer ${token}` }
-        }).catch(() => ({ data: [] }))
+        }).catch(() => ({ data: [] })),
+        axios.get(`${API}/phishing/click-details?days=${timeRange}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }).catch(() => ({ data: { click_details: [] } })),
+        axios.get(`${API}/phishing/best-performing?limit=5`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }).catch(() => ({ data: { campaigns: [] } }))
       ]);
 
       setAnalytics(analyticsRes.data);
       setPhishingStats(phishingRes.data);
+      setClickDetails(clickRes.data?.click_details || []);
+      setBestCampaigns(bestRes.data?.campaigns || []);
       
       // Calculate user stats from users list
       // API returns array directly, not { users: [] }
