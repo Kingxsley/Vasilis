@@ -381,6 +381,133 @@ export default function AdvancedAnalytics() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Click Details Section - Who clicked */}
+        <Card className="bg-[#0f0f15] border-[#D4A836]/20">
+          <CardHeader>
+            <CardTitle className="text-[#E8DDB5] flex items-center gap-2">
+              <MousePointerClick className="w-5 h-5 text-red-400" />
+              Users Who Clicked Phishing Links
+              {clickDetails.length > 0 && (
+                <Badge className="ml-2 bg-red-500/20 text-red-400">{clickDetails.length}</Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {clickDetails.length === 0 ? (
+              <div className="text-center py-8 text-gray-400">
+                <CheckCircle className="w-12 h-12 mx-auto mb-3 text-green-500/50" />
+                <p>No users clicked on phishing links in this period</p>
+                <p className="text-sm text-gray-500 mt-1">Great security awareness!</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-[#D4A836]/20">
+                      <TableHead className="text-gray-400">User Name</TableHead>
+                      <TableHead className="text-gray-400">Email</TableHead>
+                      {user?.role === 'super_admin' && (
+                        <TableHead className="text-gray-400">Organization</TableHead>
+                      )}
+                      <TableHead className="text-gray-400">Campaign</TableHead>
+                      <TableHead className="text-gray-400">Clicked At</TableHead>
+                      <TableHead className="text-gray-400">IP Address</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {clickDetails.slice(0, 20).map((click, idx) => (
+                      <TableRow key={idx} className="border-[#D4A836]/10">
+                        <TableCell className="text-[#E8DDB5] font-medium">{click.user_name}</TableCell>
+                        <TableCell className="text-gray-400">{click.user_email}</TableCell>
+                        {user?.role === 'super_admin' && (
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Building2 className="w-4 h-4 text-[#D4A836]" />
+                              <span className="text-gray-300">{click.organization_name}</span>
+                            </div>
+                          </TableCell>
+                        )}
+                        <TableCell className="text-gray-400">{click.campaign_name}</TableCell>
+                        <TableCell className="text-gray-500 text-sm">
+                          {click.clicked_at ? new Date(click.clicked_at).toLocaleString() : '-'}
+                        </TableCell>
+                        <TableCell className="text-gray-500 font-mono text-sm">{click.click_ip || '-'}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                {clickDetails.length > 20 && (
+                  <p className="text-center text-gray-500 text-sm mt-4">
+                    Showing 20 of {clickDetails.length} clicks
+                  </p>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Best Performing Campaigns */}
+        {user?.role === 'super_admin' && (
+          <Card className="bg-[#0f0f15] border-[#D4A836]/20">
+            <CardHeader>
+              <CardTitle className="text-[#E8DDB5] flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-[#D4A836]" />
+                Best Performing Campaigns
+                <span className="text-sm font-normal text-gray-500">(Lowest click rates)</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {bestCampaigns.length === 0 ? (
+                <div className="text-center py-8 text-gray-400">
+                  <Mail className="w-12 h-12 mx-auto mb-3 text-gray-600" />
+                  <p>No campaigns found</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-[#D4A836]/20">
+                        <TableHead className="text-gray-400 w-12">#</TableHead>
+                        <TableHead className="text-gray-400">Campaign Name</TableHead>
+                        <TableHead className="text-gray-400">Status</TableHead>
+                        <TableHead className="text-gray-400 text-center">Emails Sent</TableHead>
+                        <TableHead className="text-gray-400 text-center">Clicks</TableHead>
+                        <TableHead className="text-gray-400 text-center">Click Rate</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {bestCampaigns.map((campaign, idx) => (
+                        <TableRow key={campaign.campaign_id} className="border-[#D4A836]/10">
+                          <TableCell className="text-[#D4A836] font-bold">
+                            {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : idx + 1}
+                          </TableCell>
+                          <TableCell className="text-[#E8DDB5] font-medium">{campaign.name}</TableCell>
+                          <TableCell>
+                            <Badge className={
+                              campaign.status === 'completed' ? 'bg-green-500/20 text-green-400' :
+                              campaign.status === 'running' ? 'bg-blue-500/20 text-blue-400' :
+                              'bg-gray-500/20 text-gray-400'
+                            }>
+                              {campaign.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-center text-gray-300">{campaign.total_sent}</TableCell>
+                          <TableCell className="text-center text-red-400">{campaign.total_clicked}</TableCell>
+                          <TableCell className="text-center">
+                            <span className={campaign.click_rate <= 5 ? 'text-green-400' : campaign.click_rate <= 15 ? 'text-yellow-400' : 'text-red-400'}>
+                              {campaign.click_rate}%
+                            </span>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
     </DashboardLayout>
   );
