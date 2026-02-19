@@ -431,10 +431,10 @@ async def get_seo_settings(request: Request):
             "twitter_title": "Vasilis NetShield",
             "twitter_description": "Human + AI Powered Security Training",
             "twitter_image": "",
-            "robots_txt": "User-agent: *\nAllow: /\n\nSitemap: https://vasilisnetshield.net/sitemap.xml",
+            "robots_txt": "User-agent: *\nAllow: /\n\nSitemap: https://vasilisnetshield.com/sitemap.xml",
             "google_analytics_id": "",
             "google_search_console": "",
-            "canonical_url": "https://vasilisnetshield.net"
+            "canonical_url": "https://vasilisnetshield.com"
         }
     
     # Remove internal fields
