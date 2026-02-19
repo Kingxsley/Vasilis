@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import DashboardLayout from '../components/DashboardLayout';
+import { DashboardLayout } from '../components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
@@ -21,10 +21,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../components/ui/dialog';
-import { Checkbox } from '../components/ui/checkbox';
 import { toast } from 'sonner';
 import axios from 'axios';
-import { Shield, Users, Search, ChevronRight, Check, X, Loader2, AlertTriangle } from 'lucide-react';
+import { Shield, Users, Search, ChevronRight, Check, Loader2, AlertTriangle } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
