@@ -1,7 +1,12 @@
 import os
 import logging
+from pathlib import Path
+from dotenv import load_dotenv
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail, Email, To, Content, TrackingSettings, ClickTracking
+
+# Load environment variables
+load_dotenv(Path(__file__).parent.parent / '.env')
 
 logger = logging.getLogger(__name__)
 
