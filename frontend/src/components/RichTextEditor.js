@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useState } from 'react';
+import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Bold, Italic, Underline, List, ListOrdered, Link2, Image, Quote, Code, Heading1, Heading2, Upload, Loader2 } from 'lucide-react';
 import axios from 'axios';
@@ -10,6 +10,25 @@ const RichTextEditor = ({ value, onChange, placeholder = "Write your content..."
   const editorRef = useRef(null);
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
+  const isInitialized = useRef(false);
+
+  // Set initial value only once on mount or when value changes externally
+  useEffect(() => {
+    if (editorRef.current && !isInitialized.current) {
+      editorRef.current.innerHTML = value || '';
+      isInitialized.current = true;
+    }
+  }, []);
+
+  // Handle external value changes (e.g., form reset)
+  useEffect(() => {
+    if (editorRef.current && isInitialized.current) {
+      // Only update if the value is empty (form reset) or significantly different
+      if (value === '' && editorRef.current.innerHTML !== '') {
+        editorRef.current.innerHTML = '';
+      }
+    }
+  }, [value]);
 
   const execCommand = useCallback((command, cmdValue = null) => {
     document.execCommand(command, false, cmdValue);
