@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { useAuth } from '../App';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
@@ -27,7 +27,9 @@ import {
   Plus, GripVertical, Trash2, Mail, Monitor, Phone, Shield, AlertTriangle,
   FileText, Image, Link, Type, MessageSquare, Users, Clock, Target,
   Save, Eye, Sparkles, Settings, Play, ChevronUp, ChevronDown,
-  Layout, MousePointerClick, QrCode, Usb, Lock, Briefcase, Database, Cloud
+  Layout, MousePointerClick, QrCode, Usb, Lock, Briefcase, Database, Cloud,
+  Smartphone, Bell, KeyRound, FormInput, Square, Circle, Palette,
+  Copy, Check, X, Loader2, Zap, FileWarning, CreditCard, Download
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
@@ -41,159 +43,257 @@ const SIMULATION_TYPES = [
     name: 'Phishing Email', 
     icon: Mail, 
     color: 'bg-blue-500',
-    description: 'Create fake emails to test user awareness'
+    description: 'Classic email phishing tests'
   },
   { 
-    id: 'malicious_ad', 
-    name: 'Malicious Ad', 
-    icon: Monitor, 
-    color: 'bg-purple-500',
-    description: 'Design deceptive advertisements'
-  },
-  { 
-    id: 'smishing', 
-    name: 'SMS Phishing', 
-    icon: Phone, 
-    color: 'bg-green-500',
-    description: 'Create SMS-based phishing simulations'
+    id: 'credential_harvest', 
+    name: 'Credential Harvest', 
+    icon: KeyRound, 
+    color: 'bg-red-500',
+    description: 'Track password submission attempts'
   },
   { 
     id: 'qr_phishing', 
-    name: 'QR Code Attack', 
+    name: 'QR Code Phishing', 
     icon: QrCode, 
     color: 'bg-orange-500',
-    description: 'Generate malicious QR code scenarios'
+    description: 'Fake QR codes that redirect'
+  },
+  { 
+    id: 'mfa_fatigue', 
+    name: 'MFA Fatigue', 
+    icon: Bell, 
+    color: 'bg-yellow-500',
+    description: 'Repeated push notification attacks'
   },
   { 
     id: 'usb_drop', 
     name: 'USB Drop', 
     icon: Usb, 
-    color: 'bg-red-500',
-    description: 'USB device baiting scenarios'
+    color: 'bg-purple-500',
+    description: 'Physical security awareness'
   },
   { 
-    id: 'mfa_fatigue', 
-    name: 'MFA Fatigue', 
-    icon: Lock, 
-    color: 'bg-yellow-500',
-    description: 'Test MFA bombardment resilience'
+    id: 'smishing', 
+    name: 'SMS Phishing', 
+    icon: Smartphone, 
+    color: 'bg-green-500',
+    description: 'Text message based attacks'
   },
   { 
     id: 'bec', 
     name: 'Business Email Compromise', 
     icon: Briefcase, 
     color: 'bg-indigo-500',
-    description: 'Executive impersonation scenarios'
+    description: 'Executive impersonation'
   },
   { 
-    id: 'data_handling', 
-    name: 'Data Handling Test', 
-    icon: Database, 
-    color: 'bg-teal-500',
-    description: 'Test data security practices'
-  },
-  { 
-    id: 'shadow_it', 
-    name: 'Shadow IT Detection', 
-    icon: Cloud, 
+    id: 'malicious_ad', 
+    name: 'Malicious Ad', 
+    icon: Monitor, 
     color: 'bg-pink-500',
-    description: 'Unauthorized software scenarios'
+    description: 'Deceptive advertisement tests'
   },
 ];
 
-// Draggable building blocks
+// Pre-built templates
+const PREBUILT_TEMPLATES = {
+  mfa_fatigue: [
+    {
+      id: 'mfa_okta',
+      name: 'Okta MFA Bombardment',
+      description: 'Simulate repeated Okta push notifications',
+      preview: 'okta-mfa',
+      blocks: [
+        { id: 'mfa_header', type: 'header', value: 'Okta Verify' },
+        { id: 'mfa_notification', type: 'mfa_prompt', value: 'Sign In Attempt' },
+        { id: 'body_text', type: 'textarea', value: 'A sign-in attempt requires your approval.\n\nLocation: New York, NY\nDevice: Chrome on Windows\nTime: Just now' },
+        { id: 'mfa_buttons', type: 'mfa_buttons', value: 'approve' },
+      ]
+    },
+    {
+      id: 'mfa_microsoft',
+      name: 'Microsoft 365 MFA Attack',
+      description: 'Microsoft Authenticator push simulation',
+      preview: 'ms-mfa',
+      blocks: [
+        { id: 'mfa_header', type: 'header', value: 'Microsoft' },
+        { id: 'mfa_notification', type: 'mfa_prompt', value: 'Approve sign in?' },
+        { id: 'body_text', type: 'textarea', value: 'john.doe@company.com is trying to sign in.\n\nNumber shown: 42' },
+        { id: 'mfa_buttons', type: 'mfa_buttons', value: 'approve' },
+      ]
+    },
+  ],
+  usb_drop: [
+    {
+      id: 'usb_payroll',
+      name: 'Payroll USB Drive',
+      description: 'USB labeled with enticing payroll content',
+      preview: 'usb-payroll',
+      blocks: [
+        { id: 'usb_label', type: 'usb_device', value: 'Payroll Q4 2024' },
+        { id: 'file_list', type: 'file_list', value: 'Salary_Adjustments.xlsx\nBonus_Allocations.pdf\nEmployee_Reviews.docx' },
+        { id: 'warning_text', type: 'text', value: 'CONFIDENTIAL - HR USE ONLY' },
+      ]
+    },
+    {
+      id: 'usb_photos',
+      name: 'Personal Photos USB',
+      description: 'USB appearing to contain personal photos',
+      preview: 'usb-photos',
+      blocks: [
+        { id: 'usb_label', type: 'usb_device', value: 'Vacation Photos 2024' },
+        { id: 'file_list', type: 'file_list', value: 'Beach_Day.jpg\nFamily_Reunion.png\nIMG_2847.jpg' },
+      ]
+    },
+  ],
+  qr_phishing: [
+    {
+      id: 'qr_parking',
+      name: 'Parking Payment QR',
+      description: 'Fake parking meter QR code',
+      preview: 'qr-parking',
+      blocks: [
+        { id: 'qr_header', type: 'header', value: 'PAY HERE' },
+        { id: 'qr_code', type: 'qr_code', value: 'https://fake-parking.com/pay' },
+        { id: 'qr_instructions', type: 'text', value: 'Scan to pay for parking\nFast, contactless payment' },
+        { id: 'qr_logo', type: 'image', value: 'parking-logo' },
+      ]
+    },
+    {
+      id: 'qr_policy',
+      name: 'HR Policy Update QR',
+      description: 'Office poster with policy update QR',
+      preview: 'qr-policy',
+      blocks: [
+        { id: 'qr_header', type: 'header', value: 'IMPORTANT: New Policy Update' },
+        { id: 'body_text', type: 'textarea', value: 'Effective January 1st, 2025\n\nAll employees must review and acknowledge the updated remote work policy.' },
+        { id: 'qr_code', type: 'qr_code', value: 'https://company-policy.fake/update' },
+        { id: 'qr_instructions', type: 'text', value: 'Scan to read and sign' },
+      ]
+    },
+  ],
+  credential_harvest: [
+    {
+      id: 'cred_microsoft',
+      name: 'Microsoft Login Page',
+      description: 'Fake Microsoft 365 login',
+      preview: 'cred-microsoft',
+      blocks: [
+        { id: 'login_logo', type: 'image', value: 'microsoft-logo' },
+        { id: 'login_header', type: 'header', value: 'Sign in' },
+        { id: 'email_input', type: 'form_input', value: 'Email, phone, or Skype' },
+        { id: 'password_input', type: 'form_input', value: 'Password' },
+        { id: 'submit_button', type: 'submit_button', value: 'Sign in' },
+        { id: 'forgot_link', type: 'link', value: 'Forgot password?' },
+      ]
+    },
+    {
+      id: 'cred_google',
+      name: 'Google Sign In',
+      description: 'Fake Google account login',
+      preview: 'cred-google',
+      blocks: [
+        { id: 'login_logo', type: 'image', value: 'google-logo' },
+        { id: 'login_header', type: 'header', value: 'Sign in' },
+        { id: 'login_subtext', type: 'text', value: 'Use your Google Account' },
+        { id: 'email_input', type: 'form_input', value: 'Email or phone' },
+        { id: 'next_button', type: 'submit_button', value: 'Next' },
+        { id: 'create_link', type: 'link', value: 'Create account' },
+      ]
+    },
+    {
+      id: 'cred_bank',
+      name: 'Bank Portal Login',
+      description: 'Generic banking login page',
+      preview: 'cred-bank',
+      blocks: [
+        { id: 'login_header', type: 'header', value: 'Secure Banking Login' },
+        { id: 'alert_message', type: 'urgency', value: 'Session expired. Please sign in again.' },
+        { id: 'account_input', type: 'form_input', value: 'Account Number' },
+        { id: 'password_input', type: 'form_input', value: 'Password' },
+        { id: 'remember_checkbox', type: 'checkbox', value: 'Remember this device' },
+        { id: 'submit_button', type: 'submit_button', value: 'Log In' },
+      ]
+    },
+  ],
+  phishing_email: [
+    {
+      id: 'email_password_reset',
+      name: 'IT Password Reset',
+      description: 'Urgent password reset request',
+      preview: 'email-it',
+      blocks: [
+        { id: 'sender', type: 'sender', value: 'IT Support <it-support@company-secure.net>' },
+        { id: 'subject', type: 'subject', value: 'Urgent: Password Reset Required' },
+        { id: 'body_text', type: 'textarea', value: 'Dear {{USER_NAME}},\n\nOur security system has detected that your password has not been updated in 90 days. For security purposes, you must reset your password within 24 hours or your account will be temporarily locked.' },
+        { id: 'call_to_action', type: 'button', value: 'Reset Password Now' },
+        { id: 'signature', type: 'signature', value: 'Best regards,\nIT Support Team' },
+      ]
+    },
+    {
+      id: 'email_delivery',
+      name: 'Package Delivery',
+      description: 'Failed delivery notification',
+      preview: 'email-delivery',
+      blocks: [
+        { id: 'sender', type: 'sender', value: 'Delivery Express <tracking@delivery-notify.com>' },
+        { id: 'subject', type: 'subject', value: 'Delivery Attempt Failed - Action Required' },
+        { id: 'urgency_message', type: 'urgency', value: 'We attempted to deliver your package but were unable to complete delivery.' },
+        { id: 'body_text', type: 'textarea', value: 'Your package is being held at our distribution center.\n\nTracking #: PKG-2024-847291\nStatus: Delivery Attempted' },
+        { id: 'call_to_action', type: 'button', value: 'Schedule Redelivery' },
+        { id: 'deadline', type: 'deadline', value: 'Package will be returned to sender in 5 days' },
+      ]
+    },
+  ],
+};
+
+// All available building blocks
 const BUILDING_BLOCKS = [
-  { 
-    id: 'subject', 
-    type: 'text', 
-    name: 'Subject Line', 
-    icon: Type, 
-    placeholder: 'Enter email subject...',
-    category: 'content'
-  },
-  { 
-    id: 'sender', 
-    type: 'text', 
-    name: 'Sender Info', 
-    icon: Users, 
-    placeholder: 'From: John Doe <john@company.com>',
-    category: 'content'
-  },
-  { 
-    id: 'body_text', 
-    type: 'textarea', 
-    name: 'Body Text', 
-    icon: FileText, 
-    placeholder: 'Enter the main message content...',
-    category: 'content'
-  },
-  { 
-    id: 'urgency_message', 
-    type: 'text', 
-    name: 'Urgency Message', 
-    icon: AlertTriangle, 
-    placeholder: 'ACTION REQUIRED: Your account will be suspended!',
-    category: 'tactics'
-  },
-  { 
-    id: 'call_to_action', 
-    type: 'text', 
-    name: 'Call to Action', 
-    icon: MousePointerClick, 
-    placeholder: 'Click here to verify your account',
-    category: 'tactics'
-  },
-  { 
-    id: 'fake_link', 
-    type: 'text', 
-    name: 'Phishing Link', 
-    icon: Link, 
-    placeholder: 'https://secure-login.company.com (actually malicious)',
-    category: 'tactics'
-  },
-  { 
-    id: 'image', 
-    type: 'image', 
-    name: 'Image/Logo', 
-    icon: Image, 
-    placeholder: 'Add company logo or image URL',
-    category: 'visual'
-  },
-  { 
-    id: 'signature', 
-    type: 'textarea', 
-    name: 'Signature Block', 
-    icon: MessageSquare, 
-    placeholder: 'Best regards,\nIT Security Team\nCompany Inc.',
-    category: 'content'
-  },
-  { 
-    id: 'deadline', 
-    type: 'text', 
-    name: 'Deadline/Timer', 
-    icon: Clock, 
-    placeholder: 'You have 24 hours to respond',
-    category: 'tactics'
-  },
-  { 
-    id: 'threat', 
-    type: 'text', 
-    name: 'Threat/Consequence', 
-    icon: Shield, 
-    placeholder: 'Failure to act will result in account termination',
-    category: 'tactics'
-  },
+  // Content blocks
+  { id: 'header', type: 'header', name: 'Header/Title', icon: Type, placeholder: 'Enter title...', category: 'content' },
+  { id: 'subject', type: 'subject', name: 'Email Subject', icon: Mail, placeholder: 'Email subject line...', category: 'content' },
+  { id: 'sender', type: 'sender', name: 'Sender Info', icon: Users, placeholder: 'From: Name <email@domain.com>', category: 'content' },
+  { id: 'body_text', type: 'textarea', name: 'Body Text', icon: FileText, placeholder: 'Main content...', category: 'content' },
+  { id: 'signature', type: 'signature', name: 'Signature', icon: MessageSquare, placeholder: 'Best regards,\nName\nTitle', category: 'content' },
+  
+  // Form blocks
+  { id: 'form_input', type: 'form_input', name: 'Input Field', icon: FormInput, placeholder: 'Field label (e.g., Email)', category: 'forms' },
+  { id: 'password_input', type: 'password_input', name: 'Password Field', icon: KeyRound, placeholder: 'Password', category: 'forms' },
+  { id: 'submit_button', type: 'submit_button', name: 'Submit Button', icon: MousePointerClick, placeholder: 'Button text...', category: 'forms' },
+  { id: 'checkbox', type: 'checkbox', name: 'Checkbox', icon: Square, placeholder: 'Checkbox label...', category: 'forms' },
+  
+  // Tactics blocks
+  { id: 'urgency', type: 'urgency', name: 'Urgency Message', icon: AlertTriangle, placeholder: 'ACTION REQUIRED!', category: 'tactics' },
+  { id: 'deadline', type: 'deadline', name: 'Deadline/Timer', icon: Clock, placeholder: 'You have 24 hours...', category: 'tactics' },
+  { id: 'threat', type: 'threat', name: 'Threat/Warning', icon: Shield, placeholder: 'Account will be suspended...', category: 'tactics' },
+  { id: 'button', type: 'button', name: 'CTA Button', icon: MousePointerClick, placeholder: 'Click Here', category: 'tactics' },
+  { id: 'link', type: 'link', name: 'Fake Link', icon: Link, placeholder: 'https://secure-login.com', category: 'tactics' },
+  
+  // Visual blocks
+  { id: 'image', type: 'image', name: 'Image/Logo', icon: Image, placeholder: 'Image URL or name...', category: 'visual' },
+  { id: 'qr_code', type: 'qr_code', name: 'QR Code', icon: QrCode, placeholder: 'URL for QR code...', category: 'visual' },
+  { id: 'divider', type: 'divider', name: 'Divider Line', icon: Square, placeholder: '', category: 'visual' },
+  
+  // Special blocks
+  { id: 'mfa_prompt', type: 'mfa_prompt', name: 'MFA Notification', icon: Bell, placeholder: 'Sign in attempt', category: 'special' },
+  { id: 'mfa_buttons', type: 'mfa_buttons', name: 'MFA Approve/Deny', icon: Check, placeholder: 'approve', category: 'special' },
+  { id: 'usb_device', type: 'usb_device', name: 'USB Label', icon: Usb, placeholder: 'USB drive label...', category: 'special' },
+  { id: 'file_list', type: 'file_list', name: 'File List', icon: FileText, placeholder: 'file1.xlsx\nfile2.pdf', category: 'special' },
+  { id: 'push_notification', type: 'push_notification', name: 'Push Notification', icon: Smartphone, placeholder: 'Notification text...', category: 'special' },
 ];
 
-// Group blocks by category
 const BLOCK_CATEGORIES = {
-  content: { name: 'Content Blocks', color: 'border-blue-500' },
-  tactics: { name: 'Phishing Tactics', color: 'border-red-500' },
-  visual: { name: 'Visual Elements', color: 'border-green-500' },
+  content: { name: 'Content', color: 'border-blue-500', icon: FileText },
+  forms: { name: 'Form Elements', color: 'border-green-500', icon: FormInput },
+  tactics: { name: 'Phishing Tactics', color: 'border-red-500', icon: AlertTriangle },
+  visual: { name: 'Visual Elements', color: 'border-purple-500', icon: Image },
+  special: { name: 'Special Elements', color: 'border-orange-500', icon: Zap },
 };
 
 export default function SimulationBuilder() {
   const { token } = useAuth();
+  const [activeTab, setActiveTab] = useState('builder');
   const [simulationType, setSimulationType] = useState(null);
   const [simulationName, setSimulationName] = useState('');
   const [difficulty, setDifficulty] = useState('medium');
@@ -203,7 +303,47 @@ export default function SimulationBuilder() {
   const [saving, setSaving] = useState(false);
   const [draggedBlock, setDraggedBlock] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [savedSimulations, setSavedSimulations] = useState([]);
+  const [loadingSimulations, setLoadingSimulations] = useState(false);
   const dropAreaRef = useRef(null);
+
+  const headers = { Authorization: `Bearer ${token}` };
+
+  // Fetch saved simulations
+  useEffect(() => {
+    fetchSavedSimulations();
+  }, []);
+
+  const fetchSavedSimulations = async () => {
+    setLoadingSimulations(true);
+    try {
+      const res = await axios.get(`${API}/scenarios`, { headers });
+      setSavedSimulations(res.data || []);
+    } catch (err) {
+      console.error('Failed to fetch simulations:', err);
+    } finally {
+      setLoadingSimulations(false);
+    }
+  };
+
+  // Load template
+  const loadTemplate = (template) => {
+    setSelectedTemplate(template);
+    const newBlocks = template.blocks.map((block, idx) => ({
+      ...BUILDING_BLOCKS.find(b => b.id === block.id || b.type === block.type) || { id: block.id, type: block.type, name: block.id, icon: FileText, category: 'content' },
+      instanceId: `${block.id}_${Date.now()}_${idx}`,
+      value: block.value,
+    }));
+    setSelectedBlocks(newBlocks);
+    
+    const values = {};
+    newBlocks.forEach(b => { values[b.instanceId] = b.value || ''; });
+    setBlockValues(values);
+    
+    setSimulationName(template.name);
+    toast.success(`Template "${template.name}" loaded!`);
+  };
 
   // Handle drag start from palette
   const handleDragStart = (e, block) => {
@@ -212,14 +352,14 @@ export default function SimulationBuilder() {
     e.dataTransfer.setData('text/plain', JSON.stringify(block));
   };
 
-  // Handle drag over the drop area
+  // Handle drag over
   const handleDragOver = (e, index = null) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'copy';
     setDragOverIndex(index !== null ? index : selectedBlocks.length);
   };
 
-  // Handle drop to add block
+  // Handle drop
   const handleDrop = (e, index = null) => {
     e.preventDefault();
     const data = e.dataTransfer.getData('text/plain');
@@ -227,23 +367,28 @@ export default function SimulationBuilder() {
     if (data) {
       try {
         const block = JSON.parse(data);
-        const newBlock = {
-          ...block,
-          instanceId: `${block.id}_${Date.now()}`
-        };
         
-        const insertIndex = index !== null ? index : selectedBlocks.length;
-        const newBlocks = [...selectedBlocks];
-        newBlocks.splice(insertIndex, 0, newBlock);
-        setSelectedBlocks(newBlocks);
-        
-        // Initialize value
-        setBlockValues(prev => ({
-          ...prev,
-          [newBlock.instanceId]: ''
-        }));
-        
-        toast.success(`Added ${block.name}`);
+        // Check if reordering existing block
+        if (block.reorder && block.fromIndex !== undefined) {
+          moveBlock(block.fromIndex, index !== null ? index : selectedBlocks.length);
+        } else {
+          const newBlock = {
+            ...block,
+            instanceId: `${block.id}_${Date.now()}`
+          };
+          
+          const insertIndex = index !== null ? index : selectedBlocks.length;
+          const newBlocks = [...selectedBlocks];
+          newBlocks.splice(insertIndex, 0, newBlock);
+          setSelectedBlocks(newBlocks);
+          
+          setBlockValues(prev => ({
+            ...prev,
+            [newBlock.instanceId]: ''
+          }));
+          
+          toast.success(`Added ${block.name}`);
+        }
       } catch (err) {
         console.error('Drop error:', err);
       }
@@ -253,17 +398,16 @@ export default function SimulationBuilder() {
     setDragOverIndex(null);
   };
 
-  // Handle drag end (cleanup)
   const handleDragEnd = () => {
     setDraggedBlock(null);
     setDragOverIndex(null);
   };
 
-  // Move block within canvas
+  // Move block
   const moveBlock = (fromIndex, toIndex) => {
     const newBlocks = [...selectedBlocks];
     const [moved] = newBlocks.splice(fromIndex, 1);
-    newBlocks.splice(toIndex, 0, moved);
+    newBlocks.splice(toIndex > fromIndex ? toIndex - 1 : toIndex, 0, moved);
     setSelectedBlocks(newBlocks);
   };
 
@@ -279,10 +423,7 @@ export default function SimulationBuilder() {
 
   // Update block value
   const updateBlockValue = (instanceId, value) => {
-    setBlockValues(prev => ({
-      ...prev,
-      [instanceId]: value
-    }));
+    setBlockValues(prev => ({ ...prev, [instanceId]: value }));
   };
 
   // Save simulation
@@ -293,21 +434,22 @@ export default function SimulationBuilder() {
     }
     
     if (selectedBlocks.length === 0) {
-      toast.error('Please add at least one building block');
+      toast.error('Add at least one building block');
       return;
     }
 
     setSaving(true);
     try {
-      // Build the content based on blocks
       const content = {
         blocks: selectedBlocks.map(block => ({
-          type: block.id,
+          id: block.id,
+          type: block.type,
           value: blockValues[block.instanceId] || ''
         })),
         metadata: {
           simulationType: simulationType.id,
           difficulty,
+          templateUsed: selectedTemplate?.id,
           createdAt: new Date().toISOString()
         }
       };
@@ -317,31 +459,87 @@ export default function SimulationBuilder() {
         scenario_type: simulationType.id,
         difficulty,
         correct_answer: 'unsafe',
-        explanation: `This ${simulationType.name} simulation tests user awareness`,
+        explanation: `This ${simulationType.name} simulation tests security awareness`,
         content
       };
 
-      await axios.post(`${API}/scenarios`, scenarioData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      toast.success('Simulation created successfully!');
+      await axios.post(`${API}/scenarios`, scenarioData, { headers });
+      toast.success('Simulation saved!');
       
-      // Reset form
+      // Reset
       setSimulationType(null);
       setSimulationName('');
       setSelectedBlocks([]);
       setBlockValues({});
+      setSelectedTemplate(null);
+      fetchSavedSimulations();
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Failed to save simulation');
+      toast.error(err.response?.data?.detail || 'Failed to save');
     } finally {
       setSaving(false);
     }
   };
 
+  // Render block input based on type
+  const renderBlockInput = (block) => {
+    const value = blockValues[block.instanceId] || '';
+    
+    switch (block.type) {
+      case 'textarea':
+      case 'signature':
+        return (
+          <Textarea
+            value={value}
+            onChange={(e) => updateBlockValue(block.instanceId, e.target.value)}
+            placeholder={block.placeholder}
+            className="bg-[#0D1117] border-[#30363D] text-white min-h-[80px] resize-none"
+          />
+        );
+      case 'file_list':
+        return (
+          <Textarea
+            value={value}
+            onChange={(e) => updateBlockValue(block.instanceId, e.target.value)}
+            placeholder="file1.xlsx&#10;file2.pdf&#10;file3.docx"
+            className="bg-[#0D1117] border-[#30363D] text-white min-h-[60px] resize-none font-mono text-sm"
+          />
+        );
+      case 'mfa_buttons':
+        return (
+          <div className="flex gap-2">
+            <Button 
+              size="sm" 
+              className={`flex-1 ${value === 'approve' ? 'bg-green-600' : 'bg-[#0D1117] border border-[#30363D]'}`}
+              onClick={() => updateBlockValue(block.instanceId, 'approve')}
+            >
+              <Check className="w-4 h-4 mr-1" /> Approve
+            </Button>
+            <Button 
+              size="sm" 
+              className={`flex-1 ${value === 'deny' ? 'bg-red-600' : 'bg-[#0D1117] border border-[#30363D]'}`}
+              onClick={() => updateBlockValue(block.instanceId, 'deny')}
+            >
+              <X className="w-4 h-4 mr-1" /> Deny
+            </Button>
+          </div>
+        );
+      case 'divider':
+        return <div className="h-1 bg-[#30363D] rounded my-2" />;
+      default:
+        return (
+          <Input
+            value={value}
+            onChange={(e) => updateBlockValue(block.instanceId, e.target.value)}
+            placeholder={block.placeholder}
+            className="bg-[#0D1117] border-[#30363D] text-white"
+          />
+        );
+    }
+  };
+
   // Render block in canvas
   const renderBlock = (block, index) => {
-    const Icon = block.icon;
+    const Icon = block.icon || FileText;
     const categoryColor = BLOCK_CATEGORIES[block.category]?.color || 'border-gray-500';
     
     return (
@@ -352,9 +550,9 @@ export default function SimulationBuilder() {
         }`}
         onDragOver={(e) => handleDragOver(e, index)}
         onDrop={(e) => handleDrop(e, index)}
+        data-testid={`canvas-block-${block.id}`}
       >
         <div className="flex items-start gap-3">
-          {/* Drag handle */}
           <div 
             className="cursor-move text-gray-500 hover:text-[#D4A836] mt-1"
             draggable
@@ -365,31 +563,14 @@ export default function SimulationBuilder() {
             <GripVertical className="w-5 h-5" />
           </div>
           
-          {/* Block content */}
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
               <Icon className="w-4 h-4 text-[#D4A836]" />
               <span className="text-sm font-medium text-[#E8DDB5]">{block.name}</span>
             </div>
-            
-            {block.type === 'textarea' ? (
-              <Textarea
-                value={blockValues[block.instanceId] || ''}
-                onChange={(e) => updateBlockValue(block.instanceId, e.target.value)}
-                placeholder={block.placeholder}
-                className="bg-[#0D1117] border-[#30363D] text-white min-h-[80px] resize-none"
-              />
-            ) : (
-              <Input
-                value={blockValues[block.instanceId] || ''}
-                onChange={(e) => updateBlockValue(block.instanceId, e.target.value)}
-                placeholder={block.placeholder}
-                className="bg-[#0D1117] border-[#30363D] text-white"
-              />
-            )}
+            {renderBlockInput(block)}
           </div>
           
-          {/* Actions */}
           <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
               size="sm"
@@ -423,256 +604,592 @@ export default function SimulationBuilder() {
     );
   };
 
+  // Render live preview
+  const renderLivePreview = () => {
+    const getPreviewStyle = () => {
+      if (!simulationType) return {};
+      switch (simulationType.id) {
+        case 'mfa_fatigue':
+          return { maxWidth: '380px', margin: '0 auto' };
+        case 'credential_harvest':
+          return { maxWidth: '450px', margin: '0 auto' };
+        case 'qr_phishing':
+          return { maxWidth: '400px', margin: '0 auto', textAlign: 'center' };
+        case 'usb_drop':
+          return { maxWidth: '300px', margin: '0 auto' };
+        default:
+          return { maxWidth: '600px', margin: '0 auto' };
+      }
+    };
+
+    return (
+      <div className="bg-white text-black p-6 rounded-lg" style={getPreviewStyle()}>
+        {selectedBlocks.map((block) => {
+          const value = blockValues[block.instanceId];
+          
+          switch (block.type) {
+            case 'header':
+              return <h1 key={block.instanceId} className="text-2xl font-bold mb-4 text-center">{value || 'Header'}</h1>;
+            case 'subject':
+              return <div key={block.instanceId} className="bg-gray-100 p-2 rounded mb-3 text-sm"><strong>Subject:</strong> {value}</div>;
+            case 'sender':
+              return <div key={block.instanceId} className="text-sm text-gray-600 mb-3">{value}</div>;
+            case 'textarea':
+              return <p key={block.instanceId} className="mb-4 whitespace-pre-wrap">{value}</p>;
+            case 'signature':
+              return <div key={block.instanceId} className="border-t pt-4 mt-4 text-sm text-gray-600 whitespace-pre-wrap">{value}</div>;
+            case 'urgency':
+              return <div key={block.instanceId} className="bg-red-100 border-l-4 border-red-500 text-red-800 p-3 rounded mb-4">{value}</div>;
+            case 'deadline':
+              return <p key={block.instanceId} className="text-orange-600 font-medium mb-4 flex items-center gap-2"><Clock className="w-4 h-4" /> {value}</p>;
+            case 'threat':
+              return <p key={block.instanceId} className="text-red-600 mb-4 flex items-center gap-2"><AlertTriangle className="w-4 h-4" /> {value}</p>;
+            case 'button':
+              return <button key={block.instanceId} className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium block mx-auto mb-4 hover:bg-blue-700">{value || 'Click Here'}</button>;
+            case 'submit_button':
+              return <button key={block.instanceId} className="w-full bg-blue-600 text-white px-4 py-2 rounded font-medium mb-3">{value || 'Submit'}</button>;
+            case 'link':
+              return <a key={block.instanceId} href="#" className="text-blue-600 underline block mb-4 text-sm">{value}</a>;
+            case 'form_input':
+              return (
+                <div key={block.instanceId} className="mb-3">
+                  <input 
+                    type="text" 
+                    placeholder={value || 'Input field'} 
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+              );
+            case 'password_input':
+              return (
+                <div key={block.instanceId} className="mb-3">
+                  <input 
+                    type="password" 
+                    placeholder={value || 'Password'} 
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+              );
+            case 'checkbox':
+              return (
+                <label key={block.instanceId} className="flex items-center gap-2 mb-3 text-sm">
+                  <input type="checkbox" className="w-4 h-4" />
+                  {value || 'Checkbox'}
+                </label>
+              );
+            case 'qr_code':
+              return (
+                <div key={block.instanceId} className="mb-4 flex flex-col items-center">
+                  <div className="w-48 h-48 bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center rounded">
+                    <QrCode className="w-24 h-24 text-gray-400" />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">QR: {value || 'URL'}</p>
+                </div>
+              );
+            case 'mfa_prompt':
+              return (
+                <div key={block.instanceId} className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 text-center">
+                  <Bell className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+                  <p className="font-medium">{value || 'Sign-in Request'}</p>
+                </div>
+              );
+            case 'mfa_buttons':
+              return (
+                <div key={block.instanceId} className="flex gap-3 mb-4">
+                  <button className="flex-1 bg-green-500 text-white py-3 rounded-lg font-medium">Approve</button>
+                  <button className="flex-1 bg-red-500 text-white py-3 rounded-lg font-medium">Deny</button>
+                </div>
+              );
+            case 'usb_device':
+              return (
+                <div key={block.instanceId} className="bg-gray-800 text-white p-4 rounded-lg mb-4 flex items-center gap-3">
+                  <Usb className="w-8 h-8" />
+                  <div>
+                    <p className="font-medium">{value || 'USB Drive'}</p>
+                    <p className="text-xs text-gray-400">Removable Disk</p>
+                  </div>
+                </div>
+              );
+            case 'file_list':
+              return (
+                <div key={block.instanceId} className="bg-gray-50 border rounded p-3 mb-4">
+                  {(value || 'file.txt').split('\n').map((file, i) => (
+                    <div key={i} className="flex items-center gap-2 py-1 text-sm">
+                      <FileText className="w-4 h-4 text-blue-600" />
+                      {file}
+                    </div>
+                  ))}
+                </div>
+              );
+            case 'image':
+              return (
+                <div key={block.instanceId} className="mb-4 text-center">
+                  <div className="w-32 h-32 bg-gray-100 rounded flex items-center justify-center mx-auto">
+                    <Image className="w-12 h-12 text-gray-400" />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">{value || 'Image'}</p>
+                </div>
+              );
+            case 'divider':
+              return <hr key={block.instanceId} className="my-4 border-gray-200" />;
+            case 'push_notification':
+              return (
+                <div key={block.instanceId} className="bg-gray-100 rounded-xl p-3 mb-4 flex items-start gap-3 shadow">
+                  <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                    <Bell className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">Notification</p>
+                    <p className="text-xs text-gray-600">{value || 'Notification content'}</p>
+                    <p className="text-xs text-gray-400 mt-1">now</p>
+                  </div>
+                </div>
+              );
+            default:
+              return value ? <p key={block.instanceId} className="mb-4">{value}</p> : null;
+          }
+        })}
+        {selectedBlocks.length === 0 && (
+          <div className="text-center text-gray-400 py-8">
+            <Eye className="w-12 h-12 mx-auto mb-3 opacity-30" />
+            <p>Preview will appear here</p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6" data-testid="simulation-builder">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-[#E8DDB5]">Create Simulation</h1>
-            <p className="text-gray-400 mt-1">Build custom security simulations with drag-and-drop</p>
+            <h1 className="text-3xl font-bold text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
+              Simulation Builder
+            </h1>
+            <p className="text-gray-400 mt-1">Create custom security simulations with drag-and-drop</p>
           </div>
           <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={() => setShowPreview(true)}
-              disabled={selectedBlocks.length === 0}
-              className="border-[#D4A836]/30 text-[#E8DDB5]"
-            >
-              <Eye className="w-4 h-4 mr-2" />
-              Preview
-            </Button>
-            <Button
-              onClick={saveSimulation}
-              disabled={saving || !simulationType || !simulationName || selectedBlocks.length === 0}
-              className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
-            >
-              {saving ? <><span className="animate-spin mr-2">⏳</span>Saving...</> : <><Save className="w-4 h-4 mr-2" />Save Simulation</>}
-            </Button>
+            {simulationType && (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowPreview(true)}
+                  disabled={selectedBlocks.length === 0}
+                  className="border-[#D4A836]/30 text-[#E8DDB5]"
+                  data-testid="preview-simulation-btn"
+                >
+                  <Eye className="w-4 h-4 mr-2" />
+                  Full Preview
+                </Button>
+                <Button
+                  onClick={saveSimulation}
+                  disabled={saving || !simulationName || selectedBlocks.length === 0}
+                  className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
+                  data-testid="save-simulation-btn"
+                >
+                  {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                  Save Simulation
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
-        {/* Step 1: Select Simulation Type */}
-        {!simulationType ? (
-          <Card className="bg-[#161B22] border-[#30363D]">
-            <CardHeader>
-              <CardTitle className="text-[#E8DDB5] flex items-center gap-2">
-                <Target className="w-5 h-5 text-[#D4A836]" />
-                Step 1: Choose Simulation Type
-              </CardTitle>
-              <CardDescription className="text-gray-400">
-                Select the type of security awareness test you want to create
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {SIMULATION_TYPES.map((type) => {
-                  const Icon = type.icon;
-                  return (
-                    <button
-                      key={type.id}
-                      onClick={() => setSimulationType(type)}
-                      className="p-4 bg-[#0D1117] border border-[#30363D] rounded-lg hover:border-[#D4A836] transition-all text-left group"
-                      data-testid={`sim-type-${type.id}`}
-                    >
-                      <div className={`w-10 h-10 ${type.color} rounded-lg flex items-center justify-center mb-3`}>
-                        <Icon className="w-5 h-5 text-white" />
-                      </div>
-                      <h3 className="font-medium text-[#E8DDB5] group-hover:text-[#D4A836]">
-                        {type.name}
-                      </h3>
-                      <p className="text-xs text-gray-500 mt-1">{type.description}</p>
-                    </button>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <>
-            {/* Selected Type Header */}
-            <Card className="bg-[#161B22] border-[#30363D]">
-              <CardContent className="py-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 ${simulationType.color} rounded-lg flex items-center justify-center`}>
-                      {React.createElement(simulationType.icon, { className: "w-6 h-6 text-white" })}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-3">
-                        <Input
-                          value={simulationName}
-                          onChange={(e) => setSimulationName(e.target.value)}
-                          placeholder="Enter simulation name..."
-                          className="bg-[#0D1117] border-[#30363D] text-white w-80"
-                        />
-                        <Select value={difficulty} onValueChange={setDifficulty}>
-                          <SelectTrigger className="w-32 bg-[#0D1117] border-[#30363D]">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="easy">Easy</SelectItem>
-                            <SelectItem value="medium">Medium</SelectItem>
-                            <SelectItem value="hard">Hard</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <p className="text-sm text-gray-400 mt-1">{simulationType.name}</p>
-                    </div>
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="bg-[#161B22] border border-[#30363D]">
+            <TabsTrigger 
+              value="builder" 
+              className="data-[state=active]:bg-[#D4A836]/20 data-[state=active]:text-[#D4A836]"
+              data-testid="builder-tab"
+            >
+              <Layout className="w-4 h-4 mr-2" />
+              Builder
+            </TabsTrigger>
+            <TabsTrigger 
+              value="templates"
+              className="data-[state=active]:bg-[#D4A836]/20 data-[state=active]:text-[#D4A836]"
+              data-testid="templates-tab"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Templates
+            </TabsTrigger>
+            <TabsTrigger 
+              value="saved"
+              className="data-[state=active]:bg-[#D4A836]/20 data-[state=active]:text-[#D4A836]"
+              data-testid="saved-tab"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Saved ({savedSimulations.length})
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Builder Tab */}
+          <TabsContent value="builder" className="space-y-6">
+            {/* Step 1: Select Type */}
+            {!simulationType ? (
+              <Card className="bg-[#161B22] border-[#30363D]">
+                <CardHeader>
+                  <CardTitle className="text-[#E8DDB5] flex items-center gap-2">
+                    <Target className="w-5 h-5 text-[#D4A836]" />
+                    Step 1: Choose Simulation Type
+                  </CardTitle>
+                  <CardDescription className="text-gray-400">
+                    Select the type of security test you want to create
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {SIMULATION_TYPES.map((type) => {
+                      const Icon = type.icon;
+                      return (
+                        <button
+                          key={type.id}
+                          onClick={() => setSimulationType(type)}
+                          className="p-4 bg-[#0D1117] border border-[#30363D] rounded-lg hover:border-[#D4A836] transition-all text-left group"
+                          data-testid={`sim-type-${type.id}`}
+                        >
+                          <div className={`w-10 h-10 ${type.color} rounded-lg flex items-center justify-center mb-3`}>
+                            <Icon className="w-5 h-5 text-white" />
+                          </div>
+                          <h3 className="font-medium text-[#E8DDB5] group-hover:text-[#D4A836] text-sm">
+                            {type.name}
+                          </h3>
+                          <p className="text-xs text-gray-500 mt-1">{type.description}</p>
+                        </button>
+                      );
+                    })}
                   </div>
-                  <Button
-                    variant="ghost"
-                    onClick={() => {
-                      setSimulationType(null);
-                      setSelectedBlocks([]);
-                      setBlockValues({});
-                    }}
-                    className="text-gray-400"
-                  >
-                    Change Type
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Builder Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              {/* Block Palette */}
-              <div className="lg:col-span-1 space-y-4">
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                {/* Selected Type Header */}
                 <Card className="bg-[#161B22] border-[#30363D]">
-                  <CardHeader className="py-3">
-                    <CardTitle className="text-sm text-[#E8DDB5]">Building Blocks</CardTitle>
-                    <CardDescription className="text-xs text-gray-500">
-                      Drag blocks to the canvas
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {Object.entries(BLOCK_CATEGORIES).map(([categoryId, category]) => (
-                      <div key={categoryId}>
-                        <h4 className="text-xs text-gray-400 mb-2 uppercase tracking-wider">
-                          {category.name}
-                        </h4>
-                        <div className="space-y-2">
-                          {BUILDING_BLOCKS.filter(b => b.category === categoryId).map((block) => {
-                            const Icon = block.icon;
-                            return (
-                              <div
-                                key={block.id}
-                                draggable
-                                onDragStart={(e) => handleDragStart(e, block)}
-                                onDragEnd={handleDragEnd}
-                                className={`flex items-center gap-2 p-2 bg-[#0D1117] border border-[#30363D] rounded cursor-grab hover:border-[#D4A836] transition-all ${
-                                  draggedBlock?.id === block.id ? 'opacity-50 scale-95' : ''
-                                }`}
-                              >
-                                <Icon className="w-4 h-4 text-[#D4A836]" />
-                                <span className="text-sm text-gray-300">{block.name}</span>
-                              </div>
-                            );
-                          })}
+                  <CardContent className="py-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-12 h-12 ${simulationType.color} rounded-lg flex items-center justify-center`}>
+                          {React.createElement(simulationType.icon, { className: "w-6 h-6 text-white" })}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Input
+                            value={simulationName}
+                            onChange={(e) => setSimulationName(e.target.value)}
+                            placeholder="Enter simulation name..."
+                            className="bg-[#0D1117] border-[#30363D] text-white w-72"
+                            data-testid="simulation-name-input"
+                          />
+                          <Select value={difficulty} onValueChange={setDifficulty}>
+                            <SelectTrigger className="w-28 bg-[#0D1117] border-[#30363D]" data-testid="difficulty-select">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="bg-[#161B22] border-[#30363D]">
+                              <SelectItem value="easy">Easy</SelectItem>
+                              <SelectItem value="medium">Medium</SelectItem>
+                              <SelectItem value="hard">Hard</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <Badge className="bg-[#D4A836]/20 text-[#D4A836]">{simulationType.name}</Badge>
                         </div>
                       </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Drop Canvas */}
-              <div className="lg:col-span-3">
-                <Card className="bg-[#161B22] border-[#30363D] min-h-[500px]">
-                  <CardHeader className="py-3 border-b border-[#30363D]">
-                    <CardTitle className="text-sm text-[#E8DDB5] flex items-center gap-2">
-                      <Layout className="w-4 h-4 text-[#D4A836]" />
-                      Simulation Canvas
-                      {selectedBlocks.length > 0 && (
-                        <Badge className="ml-2 bg-[#D4A836]/20 text-[#D4A836]">
-                          {selectedBlocks.length} blocks
-                        </Badge>
-                      )}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-4">
-                    <div
-                      ref={dropAreaRef}
-                      onDragOver={(e) => handleDragOver(e)}
-                      onDrop={(e) => handleDrop(e)}
-                      className={`min-h-[400px] rounded-lg border-2 border-dashed transition-colors ${
-                        draggedBlock 
-                          ? 'border-[#D4A836] bg-[#D4A836]/5' 
-                          : 'border-[#30363D]'
-                      } ${selectedBlocks.length === 0 ? 'flex items-center justify-center' : 'p-4'}`}
-                    >
-                      {selectedBlocks.length === 0 ? (
-                        <div className="text-center text-gray-500">
-                          <Sparkles className="w-12 h-12 mx-auto mb-3 text-[#D4A836]/30" />
-                          <p className="font-medium">Drag and drop blocks here</p>
-                          <p className="text-sm">Start building your simulation</p>
-                        </div>
-                      ) : (
-                        <>
-                          {selectedBlocks.map((block, index) => renderBlock(block, index))}
-                          {/* Drop zone at the end */}
-                          <div
-                            onDragOver={(e) => handleDragOver(e, selectedBlocks.length)}
-                            onDrop={(e) => handleDrop(e, selectedBlocks.length)}
-                            className={`h-12 rounded border-2 border-dashed transition-colors ${
-                              dragOverIndex === selectedBlocks.length
-                                ? 'border-[#D4A836] bg-[#D4A836]/10'
-                                : 'border-transparent'
-                            }`}
-                          />
-                        </>
-                      )}
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          setSimulationType(null);
+                          setSelectedBlocks([]);
+                          setBlockValues({});
+                          setSelectedTemplate(null);
+                          setSimulationName('');
+                        }}
+                        className="text-gray-400"
+                        data-testid="change-type-btn"
+                      >
+                        Change Type
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
-              </div>
-            </div>
-          </>
-        )}
 
-        {/* Preview Dialog */}
-        <Dialog open={showPreview} onOpenChange={setShowPreview}>
-          <DialogContent className="bg-[#161B22] border-[#30363D] max-w-2xl">
-            <DialogHeader>
-              <DialogTitle className="text-[#E8DDB5]">Simulation Preview</DialogTitle>
-              <DialogDescription className="text-gray-400">
-                This is how your simulation will appear
-              </DialogDescription>
-            </DialogHeader>
-            <div className="bg-white text-black p-6 rounded-lg max-h-[60vh] overflow-y-auto">
-              {selectedBlocks.map((block) => {
-                const value = blockValues[block.instanceId];
-                if (!value) return null;
+                {/* Quick Templates for this type */}
+                {PREBUILT_TEMPLATES[simulationType.id] && (
+                  <Card className="bg-[#161B22] border-[#30363D]">
+                    <CardHeader className="py-3">
+                      <CardTitle className="text-sm text-[#E8DDB5] flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-[#D4A836]" />
+                        Quick Start Templates
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="py-2">
+                      <div className="flex gap-3 overflow-x-auto pb-2">
+                        {PREBUILT_TEMPLATES[simulationType.id].map((template) => (
+                          <button
+                            key={template.id}
+                            onClick={() => loadTemplate(template)}
+                            className={`flex-shrink-0 p-3 bg-[#0D1117] border rounded-lg hover:border-[#D4A836] transition-all text-left min-w-[200px] ${
+                              selectedTemplate?.id === template.id ? 'border-[#D4A836]' : 'border-[#30363D]'
+                            }`}
+                            data-testid={`template-${template.id}`}
+                          >
+                            <h4 className="font-medium text-[#E8DDB5] text-sm">{template.name}</h4>
+                            <p className="text-xs text-gray-500 mt-1">{template.description}</p>
+                          </button>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Builder Grid with Live Preview */}
+                <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
+                  {/* Block Palette */}
+                  <div className="xl:col-span-1 space-y-4">
+                    <Card className="bg-[#161B22] border-[#30363D]">
+                      <CardHeader className="py-3">
+                        <CardTitle className="text-sm text-[#E8DDB5]">Building Blocks</CardTitle>
+                        <CardDescription className="text-xs text-gray-500">
+                          Drag to canvas
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
+                        {Object.entries(BLOCK_CATEGORIES).map(([categoryId, category]) => (
+                          <div key={categoryId}>
+                            <h4 className="text-xs text-gray-400 mb-2 uppercase tracking-wider flex items-center gap-1">
+                              {React.createElement(category.icon, { className: "w-3 h-3" })}
+                              {category.name}
+                            </h4>
+                            <div className="space-y-1">
+                              {BUILDING_BLOCKS.filter(b => b.category === categoryId).map((block) => {
+                                const Icon = block.icon;
+                                return (
+                                  <div
+                                    key={block.id}
+                                    draggable
+                                    onDragStart={(e) => handleDragStart(e, block)}
+                                    onDragEnd={handleDragEnd}
+                                    className={`flex items-center gap-2 p-2 bg-[#0D1117] border border-[#30363D] rounded cursor-grab hover:border-[#D4A836] transition-all text-xs ${
+                                      draggedBlock?.id === block.id ? 'opacity-50 scale-95' : ''
+                                    }`}
+                                    data-testid={`block-${block.id}`}
+                                  >
+                                    <Icon className="w-3 h-3 text-[#D4A836]" />
+                                    <span className="text-gray-300">{block.name}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Canvas */}
+                  <div className="xl:col-span-2">
+                    <Card className="bg-[#161B22] border-[#30363D] min-h-[500px]">
+                      <CardHeader className="py-3 border-b border-[#30363D]">
+                        <CardTitle className="text-sm text-[#E8DDB5] flex items-center gap-2">
+                          <Layout className="w-4 h-4 text-[#D4A836]" />
+                          Canvas
+                          {selectedBlocks.length > 0 && (
+                            <Badge className="ml-2 bg-[#D4A836]/20 text-[#D4A836]">
+                              {selectedBlocks.length} blocks
+                            </Badge>
+                          )}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4">
+                        <div
+                          ref={dropAreaRef}
+                          onDragOver={(e) => handleDragOver(e)}
+                          onDrop={(e) => handleDrop(e)}
+                          className={`min-h-[400px] rounded-lg border-2 border-dashed transition-colors ${
+                            draggedBlock 
+                              ? 'border-[#D4A836] bg-[#D4A836]/5' 
+                              : 'border-[#30363D]'
+                          } ${selectedBlocks.length === 0 ? 'flex items-center justify-center' : 'p-4'}`}
+                          data-testid="drop-canvas"
+                        >
+                          {selectedBlocks.length === 0 ? (
+                            <div className="text-center text-gray-500">
+                              <Sparkles className="w-12 h-12 mx-auto mb-3 text-[#D4A836]/30" />
+                              <p className="font-medium">Drag blocks here</p>
+                              <p className="text-sm">Or use a template above</p>
+                            </div>
+                          ) : (
+                            <>
+                              {selectedBlocks.map((block, index) => renderBlock(block, index))}
+                              <div
+                                onDragOver={(e) => handleDragOver(e, selectedBlocks.length)}
+                                onDrop={(e) => handleDrop(e, selectedBlocks.length)}
+                                className={`h-12 rounded border-2 border-dashed transition-colors ${
+                                  dragOverIndex === selectedBlocks.length
+                                    ? 'border-[#D4A836] bg-[#D4A836]/10'
+                                    : 'border-transparent'
+                                }`}
+                              />
+                            </>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Live Preview */}
+                  <div className="xl:col-span-2">
+                    <Card className="bg-[#161B22] border-[#30363D] min-h-[500px]">
+                      <CardHeader className="py-3 border-b border-[#30363D]">
+                        <CardTitle className="text-sm text-[#E8DDB5] flex items-center gap-2">
+                          <Eye className="w-4 h-4 text-[#D4A836]" />
+                          Live Preview
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4">
+                        <div className="min-h-[400px] rounded-lg bg-gray-50 overflow-auto">
+                          {renderLivePreview()}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </>
+            )}
+          </TabsContent>
+
+          {/* Templates Tab */}
+          <TabsContent value="templates" className="space-y-6">
+            <div className="grid gap-6">
+              {Object.entries(PREBUILT_TEMPLATES).map(([typeId, templates]) => {
+                const simType = SIMULATION_TYPES.find(t => t.id === typeId);
+                if (!simType) return null;
+                const Icon = simType.icon;
                 
-                switch (block.id) {
-                  case 'subject':
-                    return <h2 key={block.instanceId} className="text-xl font-bold mb-4">{value}</h2>;
-                  case 'sender':
-                    return <p key={block.instanceId} className="text-sm text-gray-600 mb-4">{value}</p>;
-                  case 'body_text':
-                    return <p key={block.instanceId} className="mb-4 whitespace-pre-wrap">{value}</p>;
-                  case 'urgency_message':
-                    return <div key={block.instanceId} className="bg-red-100 border border-red-300 text-red-800 p-3 rounded mb-4">{value}</div>;
-                  case 'call_to_action':
-                    return <button key={block.instanceId} className="bg-blue-600 text-white px-4 py-2 rounded mb-4 block">{value}</button>;
-                  case 'fake_link':
-                    return <a key={block.instanceId} href="#" className="text-blue-600 underline block mb-4">{value}</a>;
-                  case 'image':
-                    return <img key={block.instanceId} src={value} alt="Preview" className="max-w-full h-auto mb-4 rounded" onError={(e) => { e.target.style.display = 'none'; }} />;
-                  case 'signature':
-                    return <div key={block.instanceId} className="border-t pt-4 mt-4 text-sm text-gray-600 whitespace-pre-wrap">{value}</div>;
-                  case 'deadline':
-                    return <p key={block.instanceId} className="text-orange-600 font-medium mb-4">{value}</p>;
-                  case 'threat':
-                    return <p key={block.instanceId} className="text-red-600 mb-4">{value}</p>;
-                  default:
-                    return <p key={block.instanceId} className="mb-4">{value}</p>;
-                }
+                return (
+                  <Card key={typeId} className="bg-[#161B22] border-[#30363D]">
+                    <CardHeader>
+                      <CardTitle className="text-[#E8DDB5] flex items-center gap-3">
+                        <div className={`w-10 h-10 ${simType.color} rounded-lg flex items-center justify-center`}>
+                          <Icon className="w-5 h-5 text-white" />
+                        </div>
+                        {simType.name} Templates
+                      </CardTitle>
+                      <CardDescription className="text-gray-400">{simType.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {templates.map((template) => (
+                          <div
+                            key={template.id}
+                            className="p-4 bg-[#0D1117] border border-[#30363D] rounded-lg hover:border-[#D4A836] transition-all"
+                          >
+                            <h4 className="font-medium text-[#E8DDB5]">{template.name}</h4>
+                            <p className="text-sm text-gray-400 mt-1">{template.description}</p>
+                            <p className="text-xs text-gray-500 mt-2">{template.blocks.length} blocks</p>
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setSimulationType(simType);
+                                loadTemplate(template);
+                                setActiveTab('builder');
+                              }}
+                              className="mt-3 bg-[#D4A836] hover:bg-[#C49A30] text-black w-full"
+                              data-testid={`use-template-${template.id}`}
+                            >
+                              <Copy className="w-4 h-4 mr-2" />
+                              Use Template
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
               })}
             </div>
+          </TabsContent>
+
+          {/* Saved Tab */}
+          <TabsContent value="saved" className="space-y-6">
+            <Card className="bg-[#161B22] border-[#30363D]">
+              <CardHeader>
+                <CardTitle className="text-[#E8DDB5]">Saved Simulations</CardTitle>
+                <CardDescription className="text-gray-400">Your created simulations</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {loadingSimulations ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="w-8 h-8 animate-spin text-[#D4A836]" />
+                  </div>
+                ) : savedSimulations.length === 0 ? (
+                  <div className="text-center py-12">
+                    <FileText className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-[#E8DDB5] mb-2">No saved simulations</h3>
+                    <p className="text-gray-400 mb-4">Create your first simulation using the builder</p>
+                    <Button
+                      onClick={() => setActiveTab('builder')}
+                      className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Simulation
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {savedSimulations.map((sim) => {
+                      const simType = SIMULATION_TYPES.find(t => t.id === sim.scenario_type);
+                      const Icon = simType?.icon || FileText;
+                      return (
+                        <div
+                          key={sim.scenario_id || sim._id}
+                          className="p-4 bg-[#0D1117] border border-[#30363D] rounded-lg"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className={`w-10 h-10 ${simType?.color || 'bg-gray-500'} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                              <Icon className="w-5 h-5 text-white" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-medium text-[#E8DDB5] truncate">{sim.title}</h4>
+                              <p className="text-sm text-gray-400">{simType?.name || sim.scenario_type}</p>
+                              <div className="flex items-center gap-2 mt-2">
+                                <Badge className={`text-xs ${
+                                  sim.difficulty === 'easy' ? 'bg-green-500/20 text-green-400' :
+                                  sim.difficulty === 'hard' ? 'bg-red-500/20 text-red-400' :
+                                  'bg-yellow-500/20 text-yellow-400'
+                                }`}>
+                                  {sim.difficulty}
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        {/* Full Preview Dialog */}
+        <Dialog open={showPreview} onOpenChange={setShowPreview}>
+          <DialogContent className="bg-[#161B22] border-[#30363D] max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-[#E8DDB5] flex items-center gap-2">
+                <Eye className="w-5 h-5 text-[#D4A836]" />
+                {simulationName || 'Simulation'} Preview
+              </DialogTitle>
+              <DialogDescription className="text-gray-400">
+                This is how your simulation will appear to targets
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-4">
+              {renderLivePreview()}
+            </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowPreview(false)}>
+              <Button variant="outline" onClick={() => setShowPreview(false)} className="border-[#D4A836]/30 text-[#E8DDB5]">
                 Close
               </Button>
             </DialogFooter>
