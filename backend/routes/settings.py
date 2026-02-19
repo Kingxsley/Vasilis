@@ -392,3 +392,74 @@ async def update_password_policy(data: PasswordPolicySettings, request: Request)
     )
     
     return await get_password_policy(request)
+
+
+# ============== SEO SETTINGS ==============
+
+class SEOSettings(BaseModel):
+    site_title: Optional[str] = None
+    site_description: Optional[str] = None
+    site_keywords: Optional[str] = None
+    og_title: Optional[str] = None
+    og_description: Optional[str] = None
+    og_image: Optional[str] = None
+    twitter_title: Optional[str] = None
+    twitter_description: Optional[str] = None
+    twitter_image: Optional[str] = None
+    robots_txt: Optional[str] = None
+    google_analytics_id: Optional[str] = None
+    google_search_console: Optional[str] = None
+    canonical_url: Optional[str] = None
+
+
+@router.get("/seo")
+async def get_seo_settings(request: Request):
+    """Get SEO settings"""
+    await require_admin(request)
+    db = get_db()
+    
+    settings = await db.settings.find_one({"type": "seo"}, {"_id": 0})
+    
+    if not settings:
+        return {
+            "site_title": "Vasilis NetShield | Security Training Platform",
+            "site_description": "Human + AI Powered Security Training. Protect your organization with realistic phishing simulations.",
+            "site_keywords": "cybersecurity training, phishing simulation, security awareness",
+            "og_title": "Vasilis NetShield | Security Training Platform",
+            "og_description": "Human + AI Powered Security Training",
+            "og_image": "",
+            "twitter_title": "Vasilis NetShield",
+            "twitter_description": "Human + AI Powered Security Training",
+            "twitter_image": "",
+            "robots_txt": "User-agent: *\nAllow: /\n\nSitemap: https://vasilisnetshield.net/sitemap.xml",
+            "google_analytics_id": "",
+            "google_search_console": "",
+            "canonical_url": "https://vasilisnetshield.net"
+        }
+    
+    # Remove internal fields
+    settings.pop("type", None)
+    settings.pop("updated_at", None)
+    settings.pop("updated_by", None)
+    
+    return settings
+
+
+@router.post("/seo")
+async def update_seo_settings(data: SEOSettings, request: Request):
+    """Update SEO settings"""
+    user = await require_admin(request)
+    db = get_db()
+    
+    update_data = {k: v for k, v in data.model_dump().items() if v is not None}
+    update_data["type"] = "seo"
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    update_data["updated_by"] = user["user_id"]
+    
+    await db.settings.update_one(
+        {"type": "seo"},
+        {"$set": update_data},
+        upsert=True
+    )
+    
+    return {"message": "SEO settings saved"}
