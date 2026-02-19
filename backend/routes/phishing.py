@@ -609,10 +609,6 @@ async def get_click_details(request: Request, days: int = 30, org_id: str = None
     user = await require_admin(request)
     db = get_db()
     
-    from datetime import timedelta
-    
-    cutoff_date = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
-    
     # Get targets who clicked
     query = {"link_clicked": True}
     
