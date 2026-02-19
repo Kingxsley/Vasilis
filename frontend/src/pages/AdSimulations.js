@@ -487,12 +487,15 @@ export default function AdSimulations() {
                   Add Defaults
                 </Button>
                 <Button 
-                  onClick={() => setShowNewTemplate(true)}
+                  onClick={() => {
+                    setEditingTemplate(null);
+                    setShowVisualEditor(true);
+                  }}
                   className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
                   data-testid="new-template-btn"
                 >
-                  <Plus className="w-4 h-4 mr-2" />
-                  New Template
+                  <Paintbrush className="w-4 h-4 mr-2" />
+                  Visual Editor
                 </Button>
               </div>
             </div>
@@ -504,9 +507,9 @@ export default function AdSimulations() {
             ) : templates.length === 0 ? (
               <Card className="bg-[#161B22] border-[#30363D]">
                 <CardContent className="py-12 text-center">
-                  <FileText className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                  <Sparkles className="w-12 h-12 text-[#D4A836] mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-[#E8DDB5] mb-2">No ad templates yet</h3>
-                  <p className="text-gray-400 mb-4">Create malicious ad templates or add default ones</p>
+                  <p className="text-gray-400 mb-4">Create malicious ad templates using our visual editor or add defaults</p>
                   <div className="flex justify-center gap-3">
                     <Button 
                       variant="outline"
@@ -516,10 +519,14 @@ export default function AdSimulations() {
                       Add Default Templates
                     </Button>
                     <Button 
-                      onClick={() => setShowNewTemplate(true)}
+                      onClick={() => {
+                        setEditingTemplate(null);
+                        setShowVisualEditor(true);
+                      }}
                       className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
                     >
-                      Create Custom
+                      <Paintbrush className="w-4 h-4 mr-2" />
+                      Open Visual Editor
                     </Button>
                   </div>
                 </CardContent>
