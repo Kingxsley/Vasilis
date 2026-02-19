@@ -819,12 +819,22 @@ export default function PhishingSimulations() {
         </Tabs>
 
         {/* New Campaign Dialog */}
-        <Dialog open={showNewCampaign} onOpenChange={setShowNewCampaign}>
+        <Dialog open={showNewCampaign} onOpenChange={(open) => {
+          setShowNewCampaign(open);
+          if (!open) {
+            resetCampaignForm();
+          }
+        }}>
           <DialogContent className="bg-[#161B22] border-[#30363D] sm:max-w-lg">
             <DialogHeader>
-              <DialogTitle className="text-[#E8DDB5]">Create Phishing Campaign</DialogTitle>
+              <DialogTitle className="text-[#E8DDB5]">
+                {editingCampaign ? 'Edit Campaign' : 'Create Phishing Campaign'}
+              </DialogTitle>
               <DialogDescription className="text-gray-400">
-                Set up a new phishing simulation to test employee awareness
+                {editingCampaign 
+                  ? 'Modify campaign settings, template, and target users before launching'
+                  : 'Set up a new phishing simulation to test employee awareness'
+                }
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
