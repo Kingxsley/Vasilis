@@ -937,6 +937,71 @@ async def track_link_click(tracking_code: str, request: Request):
                 "status": "pending_training"  # Will be updated when user completes training
             }
             await db.training_failures.insert_one(failure_record)
+            
+            # ===== AUTOMATIC RETRAINING FLOW =====
+            try:
+                from services.email_service import (
+                    send_retraining_email, 
+                    send_training_failure_notification
+                )
+                
+                # 1. Send retraining email to the user
+                await send_retraining_email(
+                    user_email=user_email,
+                    user_name=user_name,
+                    scenario_type=scenario_type,
+                    db=db
+                )
+                logger.info(f"Retraining email sent to {user_email}")
+                
+                # 2. Reset user's training progress for this scenario
+                await db.training_progress.update_many(
+                    {"user_id": user_id, "scenario_type": scenario_type},
+                    {"$set": {"status": "reset", "reset_at": datetime.now(timezone.utc).isoformat()}}
+                )
+                logger.info(f"Training progress reset for {user_email}")
+                
+                # 3. Notify admins (org_admin and super_admin)
+                admin_emails = []
+                
+                # Get super admins
+                super_admins = await db.users.find(
+                    {"role": "super_admin", "is_active": True},
+                    {"_id": 0, "email": 1}
+                ).to_list(100)
+                admin_emails.extend([a["email"] for a in super_admins])
+                
+                # Get org admin for the user's organization
+                if organization_id:
+                    org_admins = await db.users.find(
+                        {"role": "org_admin", "organization_id": organization_id, "is_active": True},
+                        {"_id": 0, "email": 1}
+                    ).to_list(100)
+                    admin_emails.extend([a["email"] for a in org_admins])
+                
+                # Get organization name
+                org_name = None
+                if organization_id:
+                    org_doc = await db.organizations.find_one(
+                        {"organization_id": organization_id},
+                        {"_id": 0, "name": 1}
+                    )
+                    org_name = org_doc.get("name") if org_doc else None
+                
+                # Send notification to all admins
+                if admin_emails:
+                    await send_training_failure_notification(
+                        admin_emails=list(set(admin_emails)),  # Remove duplicates
+                        user_name=user_name,
+                        user_email=user_email,
+                        organization_name=org_name,
+                        scenario_type=scenario_type,
+                        db=db
+                    )
+                    logger.info(f"Training failure notification sent to {len(admin_emails)} admins")
+                    
+            except Exception as e:
+                logger.error(f"Error in automatic retraining flow: {e}")
         
         # Redirect to custom landing page if specified
         landing_url = campaign.get("landing_page_url")
