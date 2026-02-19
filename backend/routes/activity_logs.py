@@ -63,7 +63,7 @@ async def get_activity_logs(
     end_date: Optional[str] = None
 ):
     """Get activity logs (super admin only)"""
-    user = await get_current_user_from_request(request)
+    user = await get_current_user(request)
     
     if user.get("role") != "super_admin":
         raise HTTPException(status_code=403, detail="Only super admins can view activity logs")
