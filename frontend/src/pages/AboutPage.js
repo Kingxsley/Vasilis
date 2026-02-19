@@ -128,11 +128,7 @@ export default function AboutPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t mt-16 py-8" style={{ borderColor: `${primaryColor}15` }}>
-        <div className="container mx-auto px-6 text-center text-gray-500">
-          © {new Date().getFullYear()} {branding?.company_name || 'Vasilis NetShield'}. All rights reserved.
-        </div>
-      </footer>
+      <PublicFooter branding={branding} />
     </div>
   );
 }
