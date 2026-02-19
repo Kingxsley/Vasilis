@@ -1838,9 +1838,19 @@ from routes.landing_layouts import router as landing_layouts_router
 from routes.inquiries import router as inquiries_router
 from routes.media import router as media_router
 from routes.sidebar import router as sidebar_router
+from routes.permissions import router as permissions_router, init_permission_routes
+
+# Import RBAC manager
+from middleware.rbac import rbac_manager
+
+# Initialize RBAC with database
+rbac_manager.db = db
 
 # Initialize security routes with dependencies
 init_security_routes(db, require_super_admin, audit_logger, account_lockout)
+
+# Initialize permission routes
+init_permission_routes(db, get_current_user, rbac_manager, audit_logger)
 
 # Initialize email templates routes
 init_email_templates_routes(db, require_admin)
