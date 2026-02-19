@@ -591,6 +591,14 @@ const AppRouter = () => {
           }
         />
         <Route
+          path="/page-builder"
+          element={
+            <ProtectedRoute adminOnly>
+              <PageBuilder />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/security"
           element={
             <ProtectedRoute adminOnly>
