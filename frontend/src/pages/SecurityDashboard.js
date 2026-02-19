@@ -12,15 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '../components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../components/ui/select';
-import { Input } from '../components/ui/input';
-import { AlertTriangle, CheckCircle, Lock, Unlock, RefreshCw, Search, Activity, Users, Key, Globe, Loader2 } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Lock, Unlock, RefreshCw, Activity, Key, Globe, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 
