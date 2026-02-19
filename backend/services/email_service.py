@@ -52,7 +52,7 @@ async def send_welcome_email(user_email: str, user_name: str, password: str, log
         frontend_url = os.environ.get('FRONTEND_URL', '')
         if not frontend_url:
             # Fallback to REACT_APP_BACKEND_URL pattern
-            backend_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://vasilisnetshield.net')
+            backend_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://vasilisnetshield.com')
             frontend_url = backend_url.replace('/api', '')
         login_url = f"{frontend_url}/auth"
     
