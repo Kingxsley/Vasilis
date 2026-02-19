@@ -94,6 +94,7 @@ const navGroups = [
     icon: Crosshair,
     superAdminOnly: true,
     items: [
+      { path: '/simulation-builder', label: 'Create Sim', icon: Wand2, superAdminOnly: true },
       { path: '/phishing', label: 'Phishing Sim', icon: Mail, superAdminOnly: true },
       { path: '/ads', label: 'Ad Simulation', icon: Monitor, superAdminOnly: true },
       { path: '/scenarios', label: 'Scenarios', icon: FileText, superAdminOnly: true },
