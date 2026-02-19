@@ -1,12 +1,18 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useState } from 'react';
 import { Button } from './ui/button';
-import { Bold, Italic, Underline, List, ListOrdered, Link2, Image, Quote, Code, Heading1, Heading2 } from 'lucide-react';
+import { Bold, Italic, Underline, List, ListOrdered, Link2, Image, Quote, Code, Heading1, Heading2, Upload, Loader2 } from 'lucide-react';
+import axios from 'axios';
+import { toast } from 'sonner';
 
-const RichTextEditor = ({ value, onChange, placeholder = "Write your content..." }) => {
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+const RichTextEditor = ({ value, onChange, placeholder = "Write your content...", token }) => {
   const editorRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
 
-  const execCommand = useCallback((command, value = null) => {
-    document.execCommand(command, false, value);
+  const execCommand = useCallback((command, cmdValue = null) => {
+    document.execCommand(command, false, cmdValue);
     if (editorRef.current) {
       onChange(editorRef.current.innerHTML);
     }
@@ -25,10 +31,58 @@ const RichTextEditor = ({ value, onChange, placeholder = "Write your content..."
     }
   };
 
-  const insertImage = () => {
+  const insertImageUrl = () => {
     const url = prompt('Enter image URL:');
     if (url) {
       execCommand('insertImage', url);
+    }
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Invalid file type. Use PNG, JPEG, WebP, or GIF');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File too large. Max 10MB');
+      return;
+    }
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('category', 'content');
+    formData.append('alt_text', file.name);
+
+    try {
+      const response = await axios.post(`${API}/media/upload`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      // Insert the uploaded image into the editor
+      const imageUrl = response.data.media.data_url;
+      execCommand('insertImage', imageUrl);
+      
+      if (response.data.savings_percent > 0) {
+        toast.success(`Image uploaded & optimized (${response.data.savings_percent}% smaller)`);
+      } else {
+        toast.success('Image uploaded');
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to upload image');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -74,8 +128,29 @@ const RichTextEditor = ({ value, onChange, placeholder = "Write your content..."
         <Button type="button" variant="ghost" size="sm" onClick={insertLink} className="text-gray-400 hover:text-[#D4A836] h-8 w-8 p-0">
           <Link2 className="w-4 h-4" />
         </Button>
-        <Button type="button" variant="ghost" size="sm" onClick={insertImage} className="text-gray-400 hover:text-[#D4A836] h-8 w-8 p-0">
+        <Button type="button" variant="ghost" size="sm" onClick={insertImageUrl} className="text-gray-400 hover:text-[#D4A836] h-8 w-8 p-0" title="Insert image URL">
           <Image className="w-4 h-4" />
+        </Button>
+        
+        {/* Direct Image Upload */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleImageUpload}
+          className="hidden"
+        />
+        <Button 
+          type="button" 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          className="text-gray-400 hover:text-[#D4A836] h-8 px-2 gap-1"
+          title="Upload image"
+        >
+          {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+          <span className="text-xs">Upload</span>
         </Button>
       </div>
 
