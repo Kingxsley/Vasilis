@@ -11,6 +11,27 @@ Build a full-featured cybersecurity training platform for vasilisnetshield.com w
 
 ## What's Been Implemented (Latest Session - Feb 19, 2026)
 
+### Drag-and-Drop Simulation Builder (NEW - COMPLETED) ✅
+- [x] **8 Simulation Types** - Phishing Email, Credential Harvest, QR Code Phishing, MFA Fatigue, USB Drop, SMS Phishing, Business Email Compromise, Malicious Ad
+- [x] **Pre-Built Templates**:
+  - MFA Fatigue: Okta MFA Bombardment, Microsoft 365 MFA Attack
+  - USB Drop: Payroll USB Drive, Personal Photos USB
+  - QR Code Phishing: Parking Payment QR, HR Policy Update QR
+  - Credential Harvest: Microsoft Login Page, Google Sign In, Bank Portal Login
+  - Phishing Email: IT Password Reset, Package Delivery
+- [x] **Building Blocks Palette** - 5 categories:
+  - Content: Header/Title, Email Subject, Sender Info, Body Text, Signature
+  - Form Elements: Input Field, Password Field, Submit Button, Checkbox
+  - Phishing Tactics: Urgency Message, Deadline/Timer, Threat/Warning, CTA Button, Fake Link
+  - Visual Elements: Image/Logo, QR Code, Divider Line
+  - Special Elements: MFA Notification, MFA Approve/Deny, USB Label, File List, Push Notification
+- [x] **Live Preview** - Real-time rendering as blocks are added/modified
+- [x] **3 Tabs Navigation** - Builder, Templates, Saved (35+ existing simulations)
+- [x] **Quick Start Templates** - Context-specific templates based on selected simulation type
+- [x] **Save to Database** - Saves to /api/scenarios endpoint
+- [x] Files: `/app/frontend/src/pages/SimulationBuilder.js`, `/app/frontend/src/components/DashboardLayout.js` (sidebar nav), `/app/frontend/src/App.js` (route)
+- [x] Testing: 16/16 features passed (100% success rate)
+
 ### User Management Enhancements (NEW) ✅
 - [x] **Role Change Dialog** - Admins can now elevate/demote user privileges
   - Shield icon button added to Users table
