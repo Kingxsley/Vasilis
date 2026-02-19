@@ -3,9 +3,10 @@ import { Link, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
-import { ArrowLeft, ArrowRight, Calendar, User, Tag, Loader2 } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Tag, Loader2 } from 'lucide-react';
 import { PublicNav } from '../components/PublicNav';
 import { PublicFooter } from '../components/PublicFooter';
+import { DynamicSidebar } from '../components/DynamicSidebar';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -14,17 +15,14 @@ export function BlogList() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [branding, setBranding] = useState(null);
-  const [sidebarContent, setSidebarContent] = useState(null);
 
   useEffect(() => {
     Promise.all([
       axios.get(`${API}/content/blog`),
-      axios.get(`${API}/settings/branding`),
-      axios.get(`${API}/content/sidebar/blog`).catch(() => ({ data: null }))
-    ]).then(([postsRes, brandingRes, sidebarRes]) => {
+      axios.get(`${API}/settings/branding`)
+    ]).then(([postsRes, brandingRes]) => {
       setPosts(postsRes.data.posts || []);
       setBranding(brandingRes.data);
-      setSidebarContent(sidebarRes.data);
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
