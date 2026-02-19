@@ -148,13 +148,30 @@ const navGroups = [
 ];
 
 export const DashboardLayout = ({ children }) => {
-  const { user, logout, isAdmin, canManageContent } = useAuth();
+  const { user, logout, isAdmin, canManageContent, token } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // All groups expanded by default to reduce click times
   const [expandedGroups, setExpandedGroups] = useState(['main', 'simulations', 'content', 'training', 'settings', 'management', 'security']);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [customNavItems, setCustomNavItems] = useState([]);
+
+  // Fetch custom navigation items
+  useEffect(() => {
+    const fetchCustomNav = async () => {
+      if (!token) return;
+      try {
+        const res = await axios.get(`${API}/navigation/public`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setCustomNavItems(res.data.items || []);
+      } catch (error) {
+        console.error('Failed to fetch custom nav items:', error);
+      }
+    };
+    fetchCustomNav();
+  }, [token]);
 
   const handleLogout = async () => {
     await logout();
@@ -167,6 +184,13 @@ export const DashboardLayout = ({ children }) => {
         ? prev.filter(id => id !== groupId)
         : [...prev, groupId]
     );
+  };
+
+  // Get custom items for a section
+  const getCustomItemsForSection = (sectionId) => {
+    return customNavItems
+      .filter(item => item.section_id === sectionId && item.is_active)
+      .sort((a, b) => a.sort_order - b.sort_order);
   };
 
   // Filter items based on user role
@@ -183,7 +207,9 @@ export const DashboardLayout = ({ children }) => {
   const isGroupVisible = (group) => {
     if (group.superAdminOnly && user?.role !== 'super_admin') return false;
     if (group.contentManager && !canManageContent && user?.role !== 'super_admin' && user?.role !== 'media_manager') return false;
-    return filterItems(group.items).length > 0;
+    const filteredItems = filterItems(group.items);
+    const customItems = getCustomItemsForSection(group.id);
+    return filteredItems.length > 0 || customItems.length > 0;
   };
 
   // Check if current path is in a group
