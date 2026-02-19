@@ -292,7 +292,7 @@ async def get_custom_page(slug: str, request: Request = None):
     if not page.get("is_published"):
         try:
             await require_admin(request)
-        except:
+        except Exception:
             raise HTTPException(status_code=404, detail="Page not found")
     
     return page
