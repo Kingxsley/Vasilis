@@ -1774,6 +1774,7 @@ from routes.email_templates import router as email_templates_router, init_email_
 from routes.certificate_templates import router as certificate_templates_router
 from routes.landing_layouts import router as landing_layouts_router
 from routes.inquiries import router as inquiries_router
+from routes.media import router as media_router
 
 # Initialize security routes with dependencies
 init_security_routes(db, require_super_admin, audit_logger, account_lockout)
