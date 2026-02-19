@@ -2,7 +2,7 @@
 Security Dashboard Routes
 Provides audit logs, login attempts, blocked IPs, security metrics, and export functionality
 """
-from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, Request
 from fastapi.responses import StreamingResponse
 from datetime import datetime, timezone, timedelta
 from typing import Optional
@@ -14,20 +14,33 @@ router = APIRouter(prefix="/security", tags=["Security"])
 
 # Will be set by server.py
 db = None
-require_super_admin = None
+_require_super_admin_dep = None
 audit_logger = None
 account_lockout = None
 
 def init_security_routes(database, admin_dep, logger, lockout):
-    global db, require_super_admin, audit_logger, account_lockout
+    global db, _require_super_admin_dep, audit_logger, account_lockout
     db = database
-    require_super_admin = admin_dep
+    _require_super_admin_dep = admin_dep
     audit_logger = logger
     account_lockout = lockout
 
 
+async def require_super_admin(request: Request) -> dict:
+    """Wrapper dependency that calls the actual require_super_admin dependency"""
+    if _require_super_admin_dep is None:
+        raise HTTPException(status_code=500, detail="Security not initialized")
+    # Get the actual dependency function and call it with the request
+    from utils import get_current_user, security
+    credentials = await security(request)
+    user = await get_current_user(request, credentials)
+    if user.get("role") != "super_admin":
+        raise HTTPException(status_code=403, detail="Super admin access required")
+    return user
+
+
 @router.get("/dashboard")
-async def get_security_dashboard(user: dict = Depends(lambda: require_super_admin)):
+async def get_security_dashboard(user: dict = Depends(require_super_admin)):
     """Get security dashboard overview"""
     if db is None:
         raise HTTPException(status_code=500, detail="Database not initialized")
