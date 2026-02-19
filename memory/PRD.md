@@ -11,43 +11,40 @@ Build a full-featured cybersecurity training platform for vasilisnetshield.com w
 
 ## What's Been Implemented (Latest Session - Feb 19, 2026)
 
-### No-Code Ad Simulation Editor (NEW) ✅
+### User Management Enhancements (NEW) ✅
+- [x] **Role Change Dialog** - Admins can now elevate/demote user privileges
+  - Shield icon button added to Users table
+  - Shows current role, allows selecting new role (Trainee, Media Manager, Org Admin, Super Admin)
+  - Super Admin role only selectable by Super Admins
+  - Files: `/app/frontend/src/pages/Users.js`
+- [x] **Access Request → Create User Flow** - Approving access request now redirects to Users page with pre-filled data
+  - Files: `/app/frontend/src/pages/Inquiries.js`, `/app/frontend/src/pages/Users.js`
+
+### Bulk Operations (NEW) ✅
+- [x] **Bulk Delete Campaigns** - Select multiple campaigns and delete at once
+  - "Select All" checkbox at top
+  - Individual checkboxes per campaign
+  - Confirmation dialog before deletion
+  - Files: `/app/frontend/src/pages/PhishingSimulations.js`
+
+### No-Code Ad Simulation Editor ✅
 - [x] **Visual Template Editor** - Full no-code editor for creating malicious ad templates
   - Design tab: Template name, Ad type selector (Banner, Popup, Sidebar, Native)
   - Content tab: Headline, Description, CTA button, Image URL, Urgency banner toggle
   - Style tab: Color pickers (background, text, button), Font size slider, Border radius slider
   - Live Preview panel with desktop/mobile toggle
-- [x] **Quick Scam Templates** - 5 pre-designed scam templates:
-  - Prize/Giveaway Scam
-  - Fake Virus Alert  
-  - Fake Software Update
-  - Get Rich Quick
-  - Fake Tech Support
-- [x] **Color Presets** - 6 one-click color schemes: Danger Red, Warning Orange, Corporate Blue, Money Green, Tech Purple, Dark Mode
-- [x] **Edit Templates** - Edit button on template cards opens Visual Editor with existing data
+- [x] **Quick Scam Templates** - 5 pre-designed scam templates
+- [x] **Color Presets** - 6 one-click color schemes
 - [x] Files: `/app/frontend/src/components/AdTemplateEditor.js`, updated `AdSimulations.js`
 
 ### Phishing Tracking & Retraining Flow (FIXED) ✅
 - [x] **"You Have Been Phished" Page NOW SHOWS** - Click tracking shows awareness page directly
-  - Root cause: Was redirecting to custom `landing_page_url` instead of showing awareness HTML
-  - Fixed by removing the redirect and always showing the phishing awareness page
 - [x] **Email Open Tracking FIXED** - Tracking pixel correctly records email opens
-  - Verified: Returns 1x1 transparent GIF, updates `email_opened` field in database
-- [x] **Automatic Retraining Flow COMPLETE**:
-  - When user clicks phishing link:
-    1. Training failure recorded in database
-    2. Retraining email sent to user with "Start Training Now" button
-    3. User's training progress reset for that scenario
-    4. Notification emails sent to ALL super_admins and org_admins
-  - Bug fixed: Was looking for `target.email` but field was `target.user_email`
-  - Bug fixed: Now gets `user_id` directly from target instead of lookingit up
-- [x] Files: `/app/backend/routes/phishing.py` (lines 942-1040)
+- [x] **Automatic Retraining Flow COMPLETE** - Retraining emails + progress reset + admin notifications
+- [x] Files: `/app/backend/routes/phishing.py`
 
 ### CRITICAL FIXES THIS SESSION ✅
 - [x] **Phishing Campaign Duplication FIXED** - Duplicated campaigns now correctly copy all targets from original
-  - Root cause: Duplicate endpoint was setting `total_targets: 0` without copying target records
-  - Fixed: Now copies all target records with new tracking codes
-  - Verified: Duplicated TEST_TRACKING_CAMPAIGN now has 3 targets and sends 3 emails
 - [x] **Campaign Edit Target Loading FIXED** - Edit dialog now fetches existing targets from API
   - Root cause: Frontend was looking for `campaign.target_user_ids` which didn't exist in list response
   - Fixed: `editCampaign()` now calls API to fetch actual targets before populating form
