@@ -299,6 +299,7 @@ const PasswordPolicyPage = React.lazy(() => import('./pages/PasswordPolicyPage')
 const CustomPage = React.lazy(() => import('./pages/CustomPage'));
 const ActivityLogs = React.lazy(() => import('./pages/ActivityLogs'));
 const SimulationBuilder = React.lazy(() => import('./pages/SimulationBuilder'));
+const Documentation = React.lazy(() => import('./pages/Documentation'));
 
 // Auth Callback Handler
 const AuthCallback = () => {
