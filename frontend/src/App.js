@@ -206,6 +206,8 @@ const AuthProvider = ({ children }) => {
     localStorage.setItem('token', newToken);
     setToken(newToken);
     setUser(userData);
+    // Schedule automatic token refresh
+    scheduleTokenRefresh(newToken);
     return userData;
   };
 
@@ -215,6 +217,8 @@ const AuthProvider = ({ children }) => {
     localStorage.setItem('token', newToken);
     setToken(newToken);
     setUser(userData);
+    // Schedule automatic token refresh
+    scheduleTokenRefresh(newToken);
     return userData;
   };
 
