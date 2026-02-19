@@ -204,7 +204,7 @@ async def list_inquiries(
     limit: int = 50
 ):
     """List all inquiries (super admin only)"""
-    user = await require_super_admin(request)
+    await require_super_admin(request)
     db = get_db()
     
     query = {}
