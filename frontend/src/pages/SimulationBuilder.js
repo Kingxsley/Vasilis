@@ -1445,6 +1445,134 @@ export default function SimulationBuilder() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        
+        {/* Launch Campaign Dialog */}
+        <Dialog open={showLaunchDialog} onOpenChange={(open) => {
+          setShowLaunchDialog(open);
+          if (!open) {
+            setSelectedTargets([]);
+            setCampaignToLaunch(null);
+          }
+        }}>
+          <DialogContent className="bg-[#161B22] border-[#30363D] max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-[#E8DDB5] flex items-center gap-2">
+                <Play className="w-5 h-5 text-[#D4A836]" />
+                Launch Campaign
+              </DialogTitle>
+              <DialogDescription className="text-gray-400">
+                Select target users to receive this simulation
+              </DialogDescription>
+            </DialogHeader>
+            
+            {campaignToLaunch && (
+              <div className="space-y-4">
+                {/* Campaign Info */}
+                <Card className="bg-[#0D1117] border-[#30363D]">
+                  <CardContent className="py-3">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 ${campaignToLaunch.type?.color || 'bg-blue-500'} rounded-lg flex items-center justify-center`}>
+                        {campaignToLaunch.type?.icon && <campaignToLaunch.type.icon className="w-5 h-5 text-white" />}
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-[#E8DDB5]">{campaignToLaunch.name}</h4>
+                        <p className="text-sm text-gray-400">{campaignToLaunch.type?.name || 'Simulation'}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                {/* Target Selection */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <Label className="text-[#E8DDB5]">Select Target Users</Label>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={selectAllTargets}
+                      className="text-xs border-[#30363D] text-gray-400"
+                    >
+                      {selectedTargets.length === availableUsers.length ? 'Deselect All' : 'Select All'}
+                    </Button>
+                  </div>
+                  
+                  {loadingUsers ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="w-6 h-6 animate-spin text-[#D4A836]" />
+                    </div>
+                  ) : availableUsers.length === 0 ? (
+                    <div className="text-center py-8 text-gray-400">
+                      <Users className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                      <p>No users available</p>
+                      <p className="text-sm">Create users first in User Management</p>
+                    </div>
+                  ) : (
+                    <div className="max-h-[300px] overflow-y-auto border border-[#30363D] rounded-lg">
+                      {availableUsers.map((user) => (
+                        <div
+                          key={user.user_id}
+                          onClick={() => toggleTarget(user.user_id)}
+                          className={`flex items-center gap-3 p-3 cursor-pointer hover:bg-[#0D1117] border-b border-[#30363D] last:border-b-0 transition-colors ${
+                            selectedTargets.includes(user.user_id) ? 'bg-[#D4A836]/10' : ''
+                          }`}
+                        >
+                          <div className={`w-5 h-5 rounded border flex items-center justify-center ${
+                            selectedTargets.includes(user.user_id) 
+                              ? 'bg-[#D4A836] border-[#D4A836]' 
+                              : 'border-[#30363D]'
+                          }`}>
+                            {selectedTargets.includes(user.user_id) && (
+                              <Check className="w-3 h-3 text-black" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[#E8DDB5] truncate">{user.name || user.email}</p>
+                            <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                          </div>
+                          <Badge className="text-xs bg-[#30363D] text-gray-400">
+                            {user.role}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {selectedTargets.length > 0 && (
+                    <p className="text-sm text-[#D4A836] mt-2">
+                      {selectedTargets.length} user{selectedTargets.length !== 1 ? 's' : ''} selected
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            <DialogFooter className="gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowLaunchDialog(false);
+                  setSelectedTargets([]);
+                  setCampaignToLaunch(null);
+                }} 
+                className="border-[#30363D] text-gray-400"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={launchCampaign}
+                disabled={launching || selectedTargets.length === 0}
+                className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
+              >
+                {launching ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Play className="w-4 h-4 mr-2" />
+                )}
+                Launch to {selectedTargets.length} Target{selectedTargets.length !== 1 ? 's' : ''}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );
