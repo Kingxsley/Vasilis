@@ -566,6 +566,14 @@ const AppRouter = () => {
           }
         />
         <Route
+          path="/password-policy"
+          element={
+            <ProtectedRoute adminOnly>
+              <PasswordPolicyPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/content"
           element={
             <ProtectedRoute contentManager>
