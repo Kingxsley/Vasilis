@@ -173,7 +173,7 @@ export const DashboardLayout = ({ children }) => {
   const filterItems = (items) => {
     return items.filter(item => {
       if (item.superAdminOnly) return user?.role === 'super_admin';
-      if (item.contentManager) return canManageContent;
+      if (item.contentManager) return canManageContent || user?.role === 'super_admin' || user?.role === 'media_manager';
       if (item.adminOnly) return isAdmin;
       return true;
     });
@@ -182,6 +182,7 @@ export const DashboardLayout = ({ children }) => {
   // Check if group should be visible based on role
   const isGroupVisible = (group) => {
     if (group.superAdminOnly && user?.role !== 'super_admin') return false;
+    if (group.contentManager && !canManageContent && user?.role !== 'super_admin' && user?.role !== 'media_manager') return false;
     return filterItems(group.items).length > 0;
   };
 
