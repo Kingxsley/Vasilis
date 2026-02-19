@@ -423,6 +423,7 @@ const AppRouter = () => {
         <Route path="/videos" element={<VideosPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/news" element={<NewsPage />} />
+        <Route path="/page/:slug" element={<CustomPage />} />
         <Route
           path="/dashboard"
           element={
