@@ -4,6 +4,8 @@ import { useAuth } from '../App';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
 import {
   Table,
   TableBody,
@@ -22,7 +24,7 @@ import {
 import { 
   BarChart3, TrendingUp, TrendingDown, Users, Mail, MousePointerClick, 
   Target, Award, AlertTriangle, CheckCircle, Clock, RefreshCw, Loader2,
-  PieChart, Activity, Building2, Trophy
+  PieChart, Activity, Building2, Trophy, Calendar, Filter
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
@@ -33,6 +35,9 @@ export default function AdvancedAnalytics() {
   const { token, user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('30');
+  const [customDateRange, setCustomDateRange] = useState(false);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [analytics, setAnalytics] = useState(null);
   const [phishingStats, setPhishingStats] = useState(null);
   const [trainingStats, setTrainingStats] = useState(null);
@@ -41,23 +46,41 @@ export default function AdvancedAnalytics() {
   const [bestCampaigns, setBestCampaigns] = useState([]);
 
   useEffect(() => {
-    fetchAllData();
+    if (!customDateRange) {
+      fetchAllData();
+    }
   }, [timeRange]);
+
+  const applyCustomDateRange = () => {
+    if (startDate && endDate) {
+      fetchAllData();
+    } else {
+      toast.error('Please select both start and end dates');
+    }
+  };
+
+  const getDateParams = () => {
+    if (customDateRange && startDate && endDate) {
+      return `start_date=${startDate}&end_date=${endDate}`;
+    }
+    return `days=${timeRange}`;
+  };
 
   const fetchAllData = async () => {
     setLoading(true);
+    const dateParams = getDateParams();
     try {
       const [analyticsRes, phishingRes, usersRes, clickRes, bestRes] = await Promise.all([
-        axios.get(`${API}/analytics/overview?days=${timeRange}`, {
+        axios.get(`${API}/analytics/overview?${dateParams}`, {
           headers: { Authorization: `Bearer ${token}` }
         }).catch(() => ({ data: null })),
-        axios.get(`${API}/phishing/stats?days=${timeRange}`, {
+        axios.get(`${API}/phishing/stats?${dateParams}`, {
           headers: { Authorization: `Bearer ${token}` }
         }).catch(() => ({ data: null })),
         axios.get(`${API}/users`, {
           headers: { Authorization: `Bearer ${token}` }
         }).catch(() => ({ data: [] })),
-        axios.get(`${API}/phishing/click-details?days=${timeRange}`, {
+        axios.get(`${API}/phishing/click-details?${dateParams}`, {
           headers: { Authorization: `Bearer ${token}` }
         }).catch(() => ({ data: { click_details: [] } })),
         axios.get(`${API}/phishing/best-performing?limit=5`, {
