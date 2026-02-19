@@ -106,6 +106,7 @@ const navGroups = [
     contentManager: true, // Only super_admin and media_manager can access
     items: [
       { path: '/content', label: 'CMS', icon: FileText, contentManager: true },
+      { path: '/page-builder', label: 'Page Builder', icon: Layout, superAdminOnly: true },
       { path: '/page-editor', label: 'Page Editor', icon: Layout, contentManager: true },
       { path: '/landing-editor', label: 'Landing Page', icon: Layout, contentManager: true },
       { path: '/sidebar-customizer', label: 'Sidebar', icon: Layout, superAdminOnly: true },
