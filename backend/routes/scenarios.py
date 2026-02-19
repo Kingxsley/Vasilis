@@ -462,7 +462,7 @@ async def seed_simulation_templates(request: Request):
         seeded_count += 1
     
     return {
-        "message": f"Templates seeded successfully",
+        "message": "Templates seeded successfully",
         "seeded": seeded_count,
         "skipped": skipped_count,
         "total_templates": len(templates)
