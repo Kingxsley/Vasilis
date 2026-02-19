@@ -253,7 +253,7 @@ const AuthProvider = ({ children }) => {
     isAuthenticated: !!user,
     isAdmin: user?.role === 'super_admin' || user?.role === 'org_admin',
     isMediaManager: user?.role === 'media_manager',
-    canManageContent: user?.role === 'super_admin' || user?.role === 'org_admin' || user?.role === 'media_manager'
+    canManageContent: user?.role === 'super_admin' || user?.role === 'media_manager'
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
