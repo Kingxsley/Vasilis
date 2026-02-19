@@ -30,6 +30,7 @@ import {
 import { Users, Plus, Search, Pencil, Trash2, Building2, Award, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
+import { Pagination } from '../components/Pagination';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -43,6 +44,8 @@ export default function UsersPage() {
   const [filterOrg, setFilterOrg] = useState('all');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
