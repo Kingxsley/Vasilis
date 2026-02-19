@@ -697,8 +697,19 @@ export default function ContentManager() {
               </Card>
 
               {/* News Posts Section */}
-              <div className="flex justify-between items-center">
-                <h3 className="text-[#E8DDB5] font-medium">All News (Local + RSS)</h3>
+              <div className="flex justify-between items-center gap-4">
+                <div className="flex items-center gap-2 flex-1 max-w-md">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                    <Input
+                      placeholder="Search news..."
+                      value={newsSearch}
+                      onChange={(e) => { setNewsSearch(e.target.value); setNewsPage(1); }}
+                      className="pl-10 bg-[#0D1117] border-[#30363D] text-white"
+                      data-testid="news-search"
+                    />
+                  </div>
+                </div>
                 <Button onClick={() => setNewsDialogOpen(true)} className="bg-[#D4A836] hover:bg-[#C49A30] text-black">
                   <Plus className="w-4 h-4 mr-2" />Post News
                 </Button>
