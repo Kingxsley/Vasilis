@@ -277,6 +277,7 @@ const ScenarioManager = React.lazy(() => import('./pages/ScenarioManager'));
 const Settings = React.lazy(() => import('./pages/Settings'));
 const ContentManager = React.lazy(() => import('./pages/ContentManager'));
 const PageEditor = React.lazy(() => import('./pages/PageEditor'));
+const PageBuilder = React.lazy(() => import('./pages/PageBuilder'));
 const SecurityDashboard = React.lazy(() => import('./pages/SecurityDashboard'));
 const EmailTemplates = React.lazy(() => import('./pages/EmailTemplates'));
 const AdvancedAnalytics = React.lazy(() => import('./pages/AdvancedAnalytics'));
