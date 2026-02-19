@@ -356,6 +356,7 @@ class AuditLogger:
         action: str,
         user_id: str = None,
         user_email: str = None,
+        user_name: str = None,
         ip_address: str = None,
         details: dict = None,
         severity: str = "info",
@@ -373,11 +374,26 @@ class AuditLogger:
         if request:
             user_agent = request.headers.get("User-Agent", "Unknown")[:500]
         
+        # If user_name not provided but we have db and user_id/email, try to look it up
+        if not user_name and self.db is not None:
+            try:
+                if user_id:
+                    user_doc = await self.db.users.find_one({"user_id": user_id}, {"name": 1})
+                    if user_doc:
+                        user_name = user_doc.get("name")
+                elif user_email:
+                    user_doc = await self.db.users.find_one({"email": user_email}, {"name": 1})
+                    if user_doc:
+                        user_name = user_doc.get("name")
+            except Exception:
+                pass
+        
         event = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "action": action,
             "user_id": user_id,
             "user_email": user_email,
+            "user_name": user_name,
             "ip_address": ip_address,
             "country": geo_data.get("country", "Unknown"),
             "country_code": geo_data.get("country_code", "XX"),
@@ -390,7 +406,7 @@ class AuditLogger:
         }
         
         # Log to file
-        log_message = f"AUDIT: {action} | User: {user_email or user_id or 'anonymous'} | IP: {ip_address} | Country: {geo_data.get('country', 'Unknown')}"
+        log_message = f"AUDIT: {action} | User: {user_name or user_email or user_id or 'anonymous'} | IP: {ip_address} | Country: {geo_data.get('country', 'Unknown')}"
         
         if severity == "critical":
             logger.critical(log_message)
