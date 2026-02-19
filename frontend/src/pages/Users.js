@@ -533,6 +533,36 @@ export default function UsersPage() {
             />
           </div>
         )}
+
+        {/* Bulk Delete Confirmation Dialog */}
+        <Dialog open={showBulkDeleteConfirm} onOpenChange={setShowBulkDeleteConfirm}>
+          <DialogContent className="bg-[#161B22] border-[#30363D]">
+            <DialogHeader>
+              <DialogTitle className="text-[#E8DDB5] flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-red-400" />
+                Confirm Bulk Delete
+              </DialogTitle>
+              <DialogDescription className="text-gray-400">
+                Are you sure you want to delete {selectedUsers.length} user(s)? This action cannot be undone and will remove all associated data.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowBulkDeleteConfirm(false)} 
+                className="border-[#D4A836]/30 text-[#E8DDB5]"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleBulkDelete} 
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Delete {selectedUsers.length} User(s)
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );
