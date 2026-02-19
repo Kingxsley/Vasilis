@@ -6,12 +6,16 @@ from typing import Optional
 from datetime import datetime, timezone, timedelta
 import uuid
 
-from auth import get_current_user_from_request
-
 
 def get_db():
     from server import db
     return db
+
+
+async def get_current_user(request: Request) -> dict:
+    from server import get_current_user as _get_current_user, security
+    credentials = await security(request)
+    return await _get_current_user(request, credentials)
 
 
 router = APIRouter(prefix="/activity-logs", tags=["Activity Logs"])
