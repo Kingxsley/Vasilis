@@ -554,15 +554,26 @@ export default function AdSimulations() {
                         <Badge variant="outline" className="border-[#D4A836]/30 text-[#D4A836]">
                           {template.call_to_action}
                         </Badge>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => deleteTemplate(template.template_id)}
-                          className="border-red-500/30 text-red-400 hover:bg-red-500/10"
-                          data-testid={`delete-template-${template.template_id}`}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => openEditTemplate(template)}
+                            className="border-[#D4A836]/30 text-[#E8DDB5] hover:bg-[#D4A836]/10"
+                            data-testid={`edit-template-${template.template_id}`}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => deleteTemplate(template.template_id)}
+                            className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                            data-testid={`delete-template-${template.template_id}`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -571,6 +582,36 @@ export default function AdSimulations() {
             )}
           </TabsContent>
         </Tabs>
+
+        {/* Visual Template Editor Dialog */}
+        <Dialog open={showVisualEditor} onOpenChange={setShowVisualEditor}>
+          <DialogContent className="bg-[#0D1117] border-[#30363D] max-w-6xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-[#E8DDB5] flex items-center gap-2">
+                <Paintbrush className="w-5 h-5 text-[#D4A836]" />
+                {editingTemplate ? 'Edit Ad Template' : 'Create Ad Template'}
+              </DialogTitle>
+              <DialogDescription className="text-gray-400">
+                Design malicious ad templates with live preview
+              </DialogDescription>
+            </DialogHeader>
+            <Suspense fallback={
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-[#D4A836]" />
+              </div>
+            }>
+              <AdTemplateEditor
+                initialTemplate={editingTemplate}
+                onSave={handleSaveFromEditor}
+                onCancel={() => {
+                  setShowVisualEditor(false);
+                  setEditingTemplate(null);
+                }}
+                mode={editingTemplate ? 'edit' : 'create'}
+              />
+            </Suspense>
+          </DialogContent>
+        </Dialog>
 
         {/* New Campaign Dialog */}
         <Dialog open={showNewCampaign} onOpenChange={setShowNewCampaign}>
