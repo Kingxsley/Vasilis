@@ -172,18 +172,69 @@ export default function AdvancedAnalytics() {
             <h1 className="text-2xl font-bold text-[#E8DDB5]">Advanced Analytics</h1>
             <p className="text-gray-400">Comprehensive insights across your organization</p>
           </div>
-          <div className="flex items-center gap-3">
-            <Select value={timeRange} onValueChange={setTimeRange}>
-              <SelectTrigger className="w-36 bg-[#1a1a24] border-[#D4A836]/20">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="7">Last 7 days</SelectItem>
-                <SelectItem value="30">Last 30 days</SelectItem>
-                <SelectItem value="90">Last 90 days</SelectItem>
-                <SelectItem value="365">Last year</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Date Range Filter */}
+            {customDateRange ? (
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2">
+                  <Label className="text-gray-400 text-xs">From</Label>
+                  <Input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="w-36 bg-[#1a1a24] border-[#D4A836]/20 text-sm"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label className="text-gray-400 text-xs">To</Label>
+                  <Input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="w-36 bg-[#1a1a24] border-[#D4A836]/20 text-sm"
+                  />
+                </div>
+                <Button onClick={applyCustomDateRange} size="sm" className="bg-[#D4A836] text-black">
+                  Apply
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setCustomDateRange(false);
+                    setStartDate('');
+                    setEndDate('');
+                    fetchAllData();
+                  }} 
+                  size="sm" 
+                  variant="ghost"
+                  className="text-gray-400"
+                >
+                  Reset
+                </Button>
+              </div>
+            ) : (
+              <>
+                <Select value={timeRange} onValueChange={setTimeRange}>
+                  <SelectTrigger className="w-36 bg-[#1a1a24] border-[#D4A836]/20">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="7">Last 7 days</SelectItem>
+                    <SelectItem value="30">Last 30 days</SelectItem>
+                    <SelectItem value="90">Last 90 days</SelectItem>
+                    <SelectItem value="365">Last year</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button 
+                  onClick={() => setCustomDateRange(true)}
+                  variant="outline"
+                  size="sm"
+                  className="border-[#D4A836]/30"
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Custom Range
+                </Button>
+              </>
+            )}
             <Button 
               onClick={fetchAllData}
               variant="outline"
