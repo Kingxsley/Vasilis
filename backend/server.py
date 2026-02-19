@@ -1106,11 +1106,35 @@ async def update_user(user_id: str, data: UserUpdate, admin: dict = Depends(requ
 
 @user_router.delete("/{user_id}")
 async def delete_user(user_id: str, admin: dict = Depends(require_super_admin)):
+    # Get user info before deletion for audit
+    target_user = await db.users.find_one({"user_id": user_id}, {"_id": 0})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
     result = await db.users.delete_one({"user_id": user_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="User not found")
     
     await db.user_sessions.delete_many({"user_id": user_id})
+    
+    # Audit log for user deletion
+    await audit_logger.log(
+        action="user_deleted",
+        user_id=admin["user_id"],
+        user_email=admin.get("email"),
+        user_name=admin.get("name"),
+        details={
+            "actor_id": admin["user_id"],
+            "actor_email": admin.get("email"),
+            "actor_role": admin.get("role"),
+            "deleted_user_id": user_id,
+            "deleted_user_email": target_user.get("email"),
+            "deleted_user_name": target_user.get("name"),
+            "deleted_user_role": target_user.get("role")
+        },
+        severity="warning"
+    )
+    
     return {"message": "User deleted"}
 
 # ============== CAMPAIGN ROUTES ==============
