@@ -1510,6 +1510,44 @@ export default function PhishingSimulations() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Bulk Delete Confirmation Dialog */}
+        <Dialog open={showBulkDeleteConfirm} onOpenChange={setShowBulkDeleteConfirm}>
+          <DialogContent className="bg-[#161B22] border-[#30363D] sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-[#E8DDB5] flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-red-500" />
+                Delete Multiple Campaigns
+              </DialogTitle>
+              <DialogDescription className="text-gray-400">
+                Are you sure you want to delete {selectedCampaignIds.length} campaign(s)? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+                <p className="text-red-400 text-sm">
+                  All tracking data, targets, and statistics for these campaigns will be permanently deleted.
+                </p>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowBulkDeleteConfirm(false)}
+                className="border-[#30363D] text-gray-400"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={bulkDeleteCampaigns}
+                className="bg-red-600 hover:bg-red-700 text-white"
+                data-testid="confirm-bulk-delete"
+              >
+                Delete {selectedCampaignIds.length} Campaign(s)
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );
