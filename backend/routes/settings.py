@@ -355,9 +355,15 @@ async def delete_favicon(request: Request):
 # ============== PASSWORD POLICY SETTINGS ==============
 
 class PasswordPolicySettings(BaseModel):
-    password_expiry_days: Optional[int] = 0  # 0 = no expiry
-    expiry_reminder_days: Optional[int] = 7  # Days before expiry to send reminder
-    force_change_on_next_login: Optional[bool] = False
+    min_length: Optional[int] = 8
+    require_uppercase: Optional[bool] = True
+    require_lowercase: Optional[bool] = True
+    require_numbers: Optional[bool] = True
+    require_special: Optional[bool] = True
+    max_age_days: Optional[int] = 90
+    prevent_reuse: Optional[int] = 5
+    lockout_attempts: Optional[int] = 3
+    lockout_duration_minutes: Optional[int] = 15
     
 @router.get("/password-policy")
 async def get_password_policy(request: Request):
@@ -367,10 +373,17 @@ async def get_password_policy(request: Request):
     
     settings = await db.settings.find_one({"type": "password_policy"}, {"_id": 0})
     
+    # Return defaults if not set
     return {
-        "password_expiry_days": settings.get("password_expiry_days", 0) if settings else 0,
-        "expiry_reminder_days": settings.get("expiry_reminder_days", 7) if settings else 7,
-        "force_change_on_next_login": settings.get("force_change_on_next_login", False) if settings else False
+        "min_length": settings.get("min_length", 8) if settings else 8,
+        "require_uppercase": settings.get("require_uppercase", True) if settings else True,
+        "require_lowercase": settings.get("require_lowercase", True) if settings else True,
+        "require_numbers": settings.get("require_numbers", True) if settings else True,
+        "require_special": settings.get("require_special", True) if settings else True,
+        "max_age_days": settings.get("max_age_days", 90) if settings else 90,
+        "prevent_reuse": settings.get("prevent_reuse", 5) if settings else 5,
+        "lockout_attempts": settings.get("lockout_attempts", 3) if settings else 3,
+        "lockout_duration_minutes": settings.get("lockout_duration_minutes", 15) if settings else 15
     }
 
 
