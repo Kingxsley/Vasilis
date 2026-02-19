@@ -430,6 +430,26 @@ async def login(data: UserLogin, request: Request):
             severity="warning"
         )
         if locked:
+            # Send email notification to admins about the lockout
+            try:
+                from services.email_service import send_account_lockout_notification
+                # Get all super_admin emails
+                admin_users = await db.users.find(
+                    {"role": "super_admin", "is_active": True}, 
+                    {"_id": 0, "email": 1}
+                ).to_list(50)
+                admin_emails = [u["email"] for u in admin_users]
+                if admin_emails:
+                    await send_account_lockout_notification(
+                        admin_emails=admin_emails,
+                        locked_email=data.email,
+                        ip_address=client_ip,
+                        lockout_duration=15,
+                        db=db
+                    )
+            except Exception as e:
+                logger.error(f"Failed to send lockout notification: {e}")
+            
             raise HTTPException(
                 status_code=429, 
                 detail="Too many failed attempts. Account temporarily locked."
