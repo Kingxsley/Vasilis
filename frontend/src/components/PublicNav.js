@@ -5,9 +5,8 @@ import { Menu, X } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-// Logo Component - fetches custom logo from settings
-const Logo = ({ branding, isLoading }) => {
-  // Handle click - refresh the page
+// Logo Component - shows logo directly without skeleton
+const Logo = ({ branding }) => {
   const handleClick = (e) => {
     e.preventDefault();
     window.location.href = '/';
@@ -15,10 +14,9 @@ const Logo = ({ branding, isLoading }) => {
 
   return (
     <a href="/" onClick={handleClick} className="flex items-center gap-2">
-      {/* Only show logo after branding is loaded to prevent flash */}
-      {!isLoading && branding?.logo_url ? (
+      {branding?.logo_url ? (
         <img src={branding.logo_url} alt="Logo" className="w-8 h-8 object-contain" />
-      ) : !isLoading ? (
+      ) : (
         /* Professional mini shield icon when no logo is uploaded */
         <svg viewBox="0 0 100 100" className="w-8 h-8">
           <defs>
@@ -37,17 +35,12 @@ const Logo = ({ branding, isLoading }) => {
           <circle cx="50" cy="52" r="3" fill="#D4A836" />
           <rect x="49" y="52" width="2" height="6" fill="#D4A836" />
         </svg>
-      ) : (
-        /* Empty placeholder with same size to prevent layout shift */
-        <div className="w-8 h-8" />
       )}
       <span 
         className="text-xl font-bold" 
         style={{ 
           color: branding?.text_color || '#E8DDB5', 
-          fontFamily: 'Chivo, sans-serif',
-          opacity: isLoading ? 0 : 1,
-          transition: 'opacity 0.2s ease'
+          fontFamily: 'Chivo, sans-serif'
         }}
       >
         {branding?.company_name || 'Vasilis NetShield'}
