@@ -1,5 +1,6 @@
 """
 User Import Routes - CSV bulk import for users
+V2: Auto-generates secure passwords and sends welcome emails
 """
 from fastapi import APIRouter, HTTPException, Request, UploadFile, File
 from pydantic import BaseModel, EmailStr
@@ -9,8 +10,13 @@ import csv
 import io
 import uuid
 import bcrypt
+import secrets
+import string
+import logging
 
-from models import UserRole, UserResponse
+from models import UserRole
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/import", tags=["Import"])
 
@@ -31,6 +37,32 @@ async def require_admin(request: Request) -> dict:
     if user.get("role") not in [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN]:
         raise HTTPException(status_code=403, detail="Admin access required")
     return user
+
+
+def generate_secure_password(length: int = 16) -> str:
+    """Generate a secure random password"""
+    # Ensure at least one of each required character type
+    lowercase = string.ascii_lowercase
+    uppercase = string.ascii_uppercase
+    digits = string.digits
+    special = "!@#$%^&*"
+    
+    # Start with required characters
+    password = [
+        secrets.choice(lowercase),
+        secrets.choice(uppercase),
+        secrets.choice(digits),
+        secrets.choice(special),
+    ]
+    
+    # Fill the rest with random characters from all pools
+    all_chars = lowercase + uppercase + digits + special
+    password.extend(secrets.choice(all_chars) for _ in range(length - 4))
+    
+    # Shuffle the password
+    secrets.SystemRandom().shuffle(password)
+    
+    return ''.join(password)
 
 
 class ImportPreviewRow(BaseModel):
@@ -55,26 +87,28 @@ class ImportResultResponse(BaseModel):
     total_processed: int
     successful: int
     failed: int
+    emails_sent: int
+    emails_failed: int
     created_users: List[dict]
     errors: List[dict]
 
 
 @router.get("/users/template")
 async def get_import_template(request: Request):
-    """Get CSV template for user import"""
+    """Get CSV template for user import V2 - password is now optional (auto-generated)"""
     await require_admin(request)
     
-    # Create CSV template
+    # Create CSV template - V2 format (password optional)
     output = io.StringIO()
     writer = csv.writer(output)
     
-    # Header row
-    writer.writerow(['name', 'email', 'role', 'organization_name', 'password'])
+    # Header row - password is now optional
+    writer.writerow(['name', 'email', 'role', 'organization_name'])
     
     # Example rows
-    writer.writerow(['John Doe', 'john@example.com', 'trainee', 'Acme Corp', 'temppass123'])
-    writer.writerow(['Jane Smith', 'jane@example.com', 'org_admin', 'Acme Corp', 'temppass456'])
-    writer.writerow(['Bob Wilson', 'bob@example.com', 'trainee', 'Tech Inc', 'temppass789'])
+    writer.writerow(['John Doe', 'john@example.com', 'trainee', 'Acme Corp'])
+    writer.writerow(['Jane Smith', 'jane@example.com', 'org_admin', 'Acme Corp'])
+    writer.writerow(['Bob Wilson', 'bob@example.com', 'trainee', 'Tech Inc'])
     
     csv_content = output.getvalue()
     
@@ -82,19 +116,23 @@ async def get_import_template(request: Request):
         "template": csv_content,
         "columns": [
             {"name": "name", "required": True, "description": "User's full name"},
-            {"name": "email", "required": True, "description": "User's email address"},
-            {"name": "role", "required": True, "description": "Role: trainee, org_admin, or super_admin"},
+            {"name": "email", "required": True, "description": "User's email address (must be unique)"},
+            {"name": "role", "required": True, "description": "Role: trainee, org_admin, manager, or super_admin"},
             {"name": "organization_name", "required": False, "description": "Organization name (will be created if not exists)"},
-            {"name": "password", "required": True, "description": "Temporary password for the user"}
         ],
-        "valid_roles": ["trainee", "org_admin", "super_admin"]
+        "valid_roles": ["trainee", "org_admin", "manager", "super_admin"],
+        "notes": [
+            "Passwords are automatically generated and sent via email",
+            "Users will receive a welcome email with their login credentials",
+            "Org admins can only import users to their own organization"
+        ]
     }
 
 
 @router.post("/users/preview", response_model=ImportPreviewResponse)
 async def preview_user_import(request: Request, file: UploadFile = File(...)):
-    """Preview CSV import before processing"""
-    await require_admin(request)
+    """Preview CSV import before processing - V2 format (password auto-generated)"""
+    admin = await require_admin(request)
     db = get_db()
     
     if not file.filename.endswith('.csv'):
@@ -125,7 +163,12 @@ async def preview_user_import(request: Request, file: UploadFile = File(...)):
     valid_count = 0
     invalid_count = 0
     
-    valid_roles = {"trainee", "org_admin", "super_admin"}
+    # Roles that different admin types can assign
+    if admin.get("role") == UserRole.SUPER_ADMIN:
+        valid_roles = {"trainee", "org_admin", "manager", "super_admin", "media_manager", "viewer"}
+    else:
+        # Org admins cannot create super_admin users
+        valid_roles = {"trainee", "org_admin", "manager", "media_manager", "viewer"}
     
     for row_num, row in enumerate(reader, start=2):  # Start at 2 (header is row 1)
         errors = []
@@ -134,7 +177,6 @@ async def preview_user_import(request: Request, file: UploadFile = File(...)):
         email = row.get('email', '').strip().lower()
         role = row.get('role', '').strip().lower()
         org_name = row.get('organization_name', '').strip()
-        password = row.get('password', '').strip()
         
         # Validate required fields
         if not name:
@@ -152,10 +194,15 @@ async def preview_user_import(request: Request, file: UploadFile = File(...)):
         elif role not in valid_roles:
             errors.append(f"Invalid role. Must be one of: {', '.join(valid_roles)}")
         
-        if not password:
-            errors.append("Password is required")
-        elif len(password) < 6:
-            errors.append("Password must be at least 6 characters")
+        # Org admins must import to their own organization
+        if admin.get("role") == UserRole.ORG_ADMIN:
+            admin_org = await db.organizations.find_one(
+                {"organization_id": admin.get("organization_id")},
+                {"_id": 0, "name": 1}
+            )
+            if admin_org:
+                if org_name and org_name.lower() != admin_org.get("name", "").lower():
+                    errors.append(f"Org admins can only import users to their own organization ({admin_org.get('name')})")
         
         is_valid = len(errors) == 0
         if is_valid:
@@ -184,7 +231,7 @@ async def preview_user_import(request: Request, file: UploadFile = File(...)):
 
 @router.post("/users", response_model=ImportResultResponse)
 async def import_users(request: Request, file: UploadFile = File(...)):
-    """Import users from CSV file"""
+    """Import users from CSV file - V2: Auto-generates passwords and sends welcome emails"""
     admin = await require_admin(request)
     db = get_db()
     
@@ -209,10 +256,30 @@ async def import_users(request: Request, file: UploadFile = File(...)):
     async for org in db.organizations.find({}, {"organization_id": 1, "name": 1}):
         existing_orgs[org["name"].lower()] = org["organization_id"]
     
-    valid_roles = {"trainee", "org_admin", "super_admin"}
+    # Roles that different admin types can assign
+    if admin.get("role") == UserRole.SUPER_ADMIN:
+        valid_roles = {"trainee", "org_admin", "manager", "super_admin", "media_manager", "viewer"}
+    else:
+        valid_roles = {"trainee", "org_admin", "manager", "media_manager", "viewer"}
+    
+    # Get org admin's organization for scoping
+    admin_org_id = admin.get("organization_id")
+    admin_org_name = None
+    if admin.get("role") == UserRole.ORG_ADMIN and admin_org_id:
+        admin_org = await db.organizations.find_one(
+            {"organization_id": admin_org_id},
+            {"_id": 0, "name": 1}
+        )
+        if admin_org:
+            admin_org_name = admin_org.get("name")
     
     created_users = []
     errors = []
+    emails_sent = 0
+    emails_failed = 0
+    
+    # Import email service
+    from services.email_service import send_welcome_email
     
     for row_num, row in enumerate(reader, start=2):
         try:
@@ -220,11 +287,10 @@ async def import_users(request: Request, file: UploadFile = File(...)):
             email = row.get('email', '').strip().lower()
             role = row.get('role', '').strip().lower()
             org_name = row.get('organization_name', '').strip()
-            password = row.get('password', '').strip()
             
-            # Validate
-            if not name or not email or not role or not password:
-                errors.append({"row": row_num, "error": "Missing required fields"})
+            # Validate required fields
+            if not name or not email or not role:
+                errors.append({"row": row_num, "error": "Missing required fields (name, email, role)"})
                 continue
             
             if email in existing_emails:
@@ -235,9 +301,14 @@ async def import_users(request: Request, file: UploadFile = File(...)):
                 errors.append({"row": row_num, "email": email, "error": f"Invalid role: {role}"})
                 continue
             
-            # Get or create organization
+            # Determine organization
             org_id = None
-            if org_name:
+            
+            if admin.get("role") == UserRole.ORG_ADMIN:
+                # Org admins always import users to their own organization
+                org_id = admin_org_id
+            elif org_name:
+                # Super admin can specify organization
                 org_key = org_name.lower()
                 if org_key in existing_orgs:
                     org_id = existing_orgs[org_key]
@@ -248,16 +319,19 @@ async def import_users(request: Request, file: UploadFile = File(...)):
                         "organization_id": org_id,
                         "name": org_name,
                         "domain": None,
-                        "description": f"Created via bulk import",
+                        "description": "Created via bulk import",
                         "is_active": True,
                         "created_by": admin["user_id"],
                         "created_at": datetime.now(timezone.utc).isoformat()
                     })
                     existing_orgs[org_key] = org_id
             
+            # Generate secure password
+            password = generate_secure_password(16)
+            password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+            
             # Create user
             user_id = f"user_{uuid.uuid4().hex[:12]}"
-            password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
             
             user_doc = {
                 "user_id": user_id,
@@ -269,27 +343,68 @@ async def import_users(request: Request, file: UploadFile = File(...)):
                 "picture": None,
                 "is_active": True,
                 "created_at": datetime.now(timezone.utc).isoformat(),
-                "imported_by": admin["user_id"]
+                "imported_by": admin["user_id"],
+                "password_change_required": True  # Flag to prompt password change on first login
             }
             
             await db.users.insert_one(user_doc)
             existing_emails.add(email)
+            
+            # Send welcome email with auto-generated password
+            try:
+                email_sent = await send_welcome_email(
+                    user_email=email,
+                    user_name=name,
+                    password=password,
+                    db=db
+                )
+                if email_sent:
+                    emails_sent += 1
+                    logger.info(f"Welcome email sent to {email}")
+                else:
+                    emails_failed += 1
+                    logger.warning(f"Failed to send welcome email to {email}")
+            except Exception as e:
+                emails_failed += 1
+                logger.error(f"Error sending welcome email to {email}: {e}")
             
             created_users.append({
                 "user_id": user_id,
                 "email": email,
                 "name": name,
                 "role": role,
-                "organization_id": org_id
+                "organization_id": org_id,
+                "email_sent": email_sent if 'email_sent' in dir() else False
             })
             
         except Exception as e:
+            logger.error(f"Error importing row {row_num}: {e}")
             errors.append({"row": row_num, "error": str(e)})
+    
+    # Log the import action
+    try:
+        from server import audit_logger
+        await audit_logger.log(
+            action="users_bulk_imported",
+            user_id=admin["user_id"],
+            user_email=admin.get("email"),
+            details={
+                "total_imported": len(created_users),
+                "emails_sent": emails_sent,
+                "emails_failed": emails_failed,
+                "errors": len(errors)
+            },
+            severity="info"
+        )
+    except Exception:
+        pass
     
     return ImportResultResponse(
         total_processed=len(created_users) + len(errors),
         successful=len(created_users),
         failed=len(errors),
+        emails_sent=emails_sent,
+        emails_failed=emails_failed,
         created_users=created_users,
         errors=errors
     )
