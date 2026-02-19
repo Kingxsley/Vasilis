@@ -406,6 +406,8 @@ const AppRouter = () => {
 
   return (
     <React.Suspense fallback={<LoadingFallback />}>
+      {/* Google Analytics - loads when GA ID is configured in SEO settings */}
+      <GoogleAnalytics />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/auth" element={<AuthPage />} />
