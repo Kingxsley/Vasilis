@@ -126,9 +126,10 @@ const navGroups = [
     icon: Cog,
     items: [
       { path: '/settings', label: 'Settings', icon: Settings, adminOnly: true },
+      { path: '/permissions', label: 'Permissions', icon: ShieldAlert, superAdminOnly: true },
       { path: '/seo-settings', label: 'SEO', icon: Search, adminOnly: true },
       { path: '/email-templates', label: 'Email Templates', icon: MailIcon, adminOnly: true },
-      { path: '/security', label: 'Security', icon: ShieldAlert, adminOnly: true },
+      { path: '/security', label: 'Security', icon: ShieldAlert, superAdminOnly: true },
     ]
   },
 ];
