@@ -557,6 +557,14 @@ const AppRouter = () => {
           }
         />
         <Route
+          path="/audit-logs"
+          element={
+            <ProtectedRoute adminOnly>
+              <AuditLogs />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/content"
           element={
             <ProtectedRoute contentManager>
