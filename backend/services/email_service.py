@@ -690,3 +690,349 @@ Please review this activity in the Security Dashboard: {security_url}
             logger.error(f"Failed to send lockout notification to {admin_email}: {e}")
     
     return success_count > 0
+
+
+async def send_contact_form_submission(name: str, email: str, message: str, phone: str = None, db=None):
+    """Send contact form submission to info@vasilisnetshield.com"""
+    
+    sendgrid_api_key = os.environ.get('SENDGRID_API_KEY')
+    sender_email = os.environ.get('SENDER_EMAIL')
+    info_email = os.environ.get('INFO_EMAIL', 'info@vasilisnetshield.com')
+    
+    if not sendgrid_api_key or not sender_email:
+        logger.warning("Email not configured - skipping contact form email")
+        return False
+    
+    branding = {"company_name": "Vasilis NetShield", "primary_color": "#D4A836"}
+    if db is not None:
+        branding = await get_branding_settings(db)
+    
+    company_name = branding.get("company_name", "Vasilis NetShield")
+    primary_color = branding.get("primary_color", "#D4A836")
+    
+    from datetime import datetime, timezone
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    
+    phone_info = f"<p style='color:#888;margin:5px 0;'>Phone: <strong style='color:#E8DDB5;'>{phone}</strong></p>" if phone else ""
+    
+    html_content = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
+<body style="margin:0;padding:0;background:#0f0f15;font-family:Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#0f0f15;padding:20px 0;">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="background:#1a1a24;border-radius:10px;border:1px solid {primary_color};">
+<tr><td style="padding:30px;text-align:center;">
+<div style="font-size:40px;margin-bottom:10px;">📬</div>
+<h1 style="color:{primary_color};margin:0;font-size:24px;">New Contact Form Submission</h1>
+<p style="color:#888;margin:10px 0 0 0;font-size:14px;">{timestamp}</p>
+</td></tr>
+<tr><td style="padding:0 30px;">
+<div style="background:#0f0f15;border-radius:8px;padding:20px;border-left:4px solid {primary_color};">
+<p style="color:#888;margin:0 0 10px 0;">Name: <strong style="color:#E8DDB5;">{name}</strong></p>
+<p style="color:#888;margin:0 0 10px 0;">Email: <strong style="color:#E8DDB5;">{email}</strong></p>
+{phone_info}
+</div>
+</td></tr>
+<tr><td style="padding:20px 30px;">
+<p style="color:{primary_color};margin:0 0 10px 0;font-weight:bold;">Message:</p>
+<div style="background:#0f0f15;border-radius:8px;padding:15px;">
+<p style="color:#E8DDB5;margin:0;white-space:pre-wrap;">{message}</p>
+</div>
+</td></tr>
+<tr><td style="padding:20px 30px;border-top:1px solid #333;text-align:center;">
+<p style="color:#666;margin:0;font-size:12px;">Reply directly to this email to respond to {name}</p>
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>"""
+    
+    plain_text = f"""New Contact Form Submission
+Received: {timestamp}
+
+From: {name}
+Email: {email}
+{f'Phone: {phone}' if phone else ''}
+
+Message:
+{message}
+
+---
+Reply directly to this email to respond."""
+    
+    mail_message = Mail(
+        from_email=Email(sender_email, company_name),
+        to_emails=To(info_email),
+        subject=f"📬 New Contact Form: {name}"
+    )
+    mail_message.add_content(Content("text/plain", plain_text))
+    mail_message.add_content(Content("text/html", html_content))
+    
+    # Set reply-to as the submitter's email
+    from sendgrid.helpers.mail import ReplyTo
+    mail_message.reply_to = ReplyTo(email, name)
+    
+    tracking_settings = TrackingSettings()
+    tracking_settings.click_tracking = ClickTracking(enable=False, enable_text=False)
+    mail_message.tracking_settings = tracking_settings
+    
+    try:
+        sg = SendGridAPIClient(sendgrid_api_key)
+        response = sg.send(mail_message)
+        if response.status_code == 202:
+            logger.info(f"Contact form submission sent to {info_email} from {email}")
+            return True
+        else:
+            logger.error(f"SendGrid returned status {response.status_code}")
+            return False
+    except Exception as e:
+        logger.error(f"Failed to send contact form email: {e}")
+        return False
+
+
+async def send_retraining_email(user_email: str, user_name: str, scenario_type: str, db=None):
+    """Send retraining notification to user who clicked a phishing link"""
+    
+    sendgrid_api_key = os.environ.get('SENDGRID_API_KEY')
+    sender_email = os.environ.get('SENDER_EMAIL')
+    
+    if not sendgrid_api_key or not sender_email:
+        logger.warning("Email not configured - skipping retraining email")
+        return False
+    
+    branding = {"company_name": "Vasilis NetShield", "primary_color": "#D4A836"}
+    if db is not None:
+        branding = await get_branding_settings(db)
+    
+    company_name = branding.get("company_name", "Vasilis NetShield")
+    primary_color = branding.get("primary_color", "#D4A836")
+    
+    frontend_url = os.environ.get('FRONTEND_URL', 'https://vasilisnetshield.com')
+    training_url = f"{frontend_url}/training"
+    
+    scenario_names = {
+        "phishing_email": "Phishing Email",
+        "qr_code_phishing": "QR Code Phishing",
+        "bec_scenario": "Business Email Compromise",
+        "usb_drop": "USB Drop Attack",
+        "mfa_fatigue": "MFA Fatigue Attack",
+        "data_handling_trap": "Data Handling",
+        "ransomware_readiness": "Ransomware Awareness",
+        "shadow_it_detection": "Shadow IT",
+        "malicious_ad": "Malicious Advertisement",
+        "social_engineering": "Social Engineering"
+    }
+    scenario_name = scenario_names.get(scenario_type, "Security Awareness")
+    
+    html_content = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
+<body style="margin:0;padding:0;background:#0f0f15;font-family:Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#0f0f15;padding:20px 0;">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="background:#1a1a24;border-radius:10px;border:1px solid {primary_color};">
+<tr><td style="padding:30px;text-align:center;">
+<div style="font-size:40px;margin-bottom:10px;">📚</div>
+<h1 style="color:{primary_color};margin:0;font-size:24px;">Security Training Required</h1>
+</td></tr>
+<tr><td style="padding:0 30px;">
+<p style="color:#E8DDB5;margin:0 0 15px 0;">Hello <strong>{user_name}</strong>,</p>
+<p style="color:#E8DDB5;margin:0 0 20px 0;">You recently clicked on a simulated security threat during our <strong style="color:{primary_color};">{scenario_name}</strong> awareness exercise.</p>
+<div style="background:#FF6B6B20;border-radius:8px;padding:15px;border:1px solid #FF6B6B40;margin-bottom:20px;">
+<p style="color:#FF6B6B;margin:0;font-size:14px;"><strong>⚠️ Don't worry!</strong> This was a training simulation. No harm was done, but it's important to improve your awareness.</p>
+</div>
+<p style="color:#E8DDB5;margin:0 0 20px 0;">Your training progress has been reset for this module. Please complete the training to strengthen your security awareness skills.</p>
+</td></tr>
+<tr><td style="padding:0 30px 20px 30px;text-align:center;">
+<a href="{training_url}" style="display:inline-block;background:{primary_color};color:#000;text-decoration:none;padding:14px 40px;border-radius:8px;font-weight:bold;">Start Training Now</a>
+</td></tr>
+<tr><td style="padding:0 30px 20px 30px;">
+<div style="background:#0f0f15;border-radius:8px;padding:15px;">
+<p style="color:{primary_color};margin:0 0 10px 0;font-weight:bold;">Tips to Stay Safe:</p>
+<ul style="color:#888;margin:0;padding-left:20px;">
+<li style="margin-bottom:5px;">Always verify the sender's email address</li>
+<li style="margin-bottom:5px;">Hover over links before clicking</li>
+<li style="margin-bottom:5px;">When in doubt, contact IT directly</li>
+<li>Report suspicious emails immediately</li>
+</ul>
+</div>
+</td></tr>
+<tr><td style="padding:20px 30px;border-top:1px solid #333;text-align:center;">
+<p style="color:#666;margin:0;font-size:12px;">{company_name} Security Training</p>
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>"""
+    
+    plain_text = f"""Security Training Required
+
+Hello {user_name},
+
+You recently clicked on a simulated security threat during our {scenario_name} awareness exercise.
+
+Don't worry! This was a training simulation. No harm was done, but it's important to improve your awareness.
+
+Your training progress has been reset for this module. Please complete the training:
+{training_url}
+
+Tips to Stay Safe:
+- Always verify the sender's email address
+- Hover over links before clicking
+- When in doubt, contact IT directly
+- Report suspicious emails immediately
+
+{company_name} Security Training"""
+    
+    mail_message = Mail(
+        from_email=Email(sender_email, f"{company_name} Training"),
+        to_emails=To(user_email),
+        subject=f"📚 {company_name} - Security Training Required"
+    )
+    mail_message.add_content(Content("text/plain", plain_text))
+    mail_message.add_content(Content("text/html", html_content))
+    
+    tracking_settings = TrackingSettings()
+    tracking_settings.click_tracking = ClickTracking(enable=False, enable_text=False)
+    mail_message.tracking_settings = tracking_settings
+    
+    try:
+        sg = SendGridAPIClient(sendgrid_api_key)
+        response = sg.send(mail_message)
+        if response.status_code == 202:
+            logger.info(f"Retraining email sent to {user_email}")
+            return True
+        else:
+            logger.error(f"SendGrid returned status {response.status_code}")
+            return False
+    except Exception as e:
+        logger.error(f"Failed to send retraining email: {e}")
+        return False
+
+
+async def send_training_failure_notification(admin_emails: list, user_name: str, user_email: str, 
+                                              organization_name: str, scenario_type: str, db=None):
+    """Send notification to admins when a user fails a phishing simulation"""
+    
+    sendgrid_api_key = os.environ.get('SENDGRID_API_KEY')
+    sender_email = os.environ.get('SENDER_EMAIL')
+    
+    if not sendgrid_api_key or not sender_email:
+        logger.warning("Email not configured - skipping training failure notification")
+        return False
+    
+    branding = {"company_name": "Vasilis NetShield", "primary_color": "#D4A836"}
+    if db is not None:
+        branding = await get_branding_settings(db)
+    
+    company_name = branding.get("company_name", "Vasilis NetShield")
+    primary_color = branding.get("primary_color", "#D4A836")
+    
+    frontend_url = os.environ.get('FRONTEND_URL', 'https://vasilisnetshield.com')
+    analytics_url = f"{frontend_url}/advanced-analytics"
+    
+    from datetime import datetime, timezone
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    
+    scenario_names = {
+        "phishing_email": "Phishing Email",
+        "qr_code_phishing": "QR Code Phishing",
+        "bec_scenario": "Business Email Compromise",
+        "usb_drop": "USB Drop Attack",
+        "mfa_fatigue": "MFA Fatigue Attack",
+        "data_handling_trap": "Data Handling",
+        "ransomware_readiness": "Ransomware Awareness",
+        "shadow_it_detection": "Shadow IT",
+        "malicious_ad": "Malicious Advertisement",
+        "social_engineering": "Social Engineering"
+    }
+    scenario_name = scenario_names.get(scenario_type, "Security Simulation")
+    
+    html_content = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
+<body style="margin:0;padding:0;background:#0f0f15;font-family:Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#0f0f15;padding:20px 0;">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="background:#1a1a24;border-radius:10px;border:1px solid #FF6B6B;">
+<tr><td style="padding:30px;text-align:center;">
+<div style="font-size:40px;margin-bottom:10px;">⚠️</div>
+<h1 style="color:#FF6B6B;margin:0;font-size:24px;">Training Failure Alert</h1>
+<p style="color:#888;margin:10px 0 0 0;font-size:14px;">{timestamp}</p>
+</td></tr>
+<tr><td style="padding:0 30px;">
+<p style="color:#E8DDB5;margin:0 0 20px 0;">A user has clicked on a simulated phishing link:</p>
+<div style="background:#0f0f15;border-radius:8px;padding:20px;border-left:4px solid #FF6B6B;">
+<p style="color:#888;margin:0 0 10px 0;">User: <strong style="color:#E8DDB5;">{user_name}</strong></p>
+<p style="color:#888;margin:0 0 10px 0;">Email: <strong style="color:#E8DDB5;">{user_email}</strong></p>
+<p style="color:#888;margin:0 0 10px 0;">Organization: <strong style="color:#E8DDB5;">{organization_name or 'N/A'}</strong></p>
+<p style="color:#888;margin:0;">Simulation Type: <strong style="color:#FF6B6B;">{scenario_name}</strong></p>
+</div>
+</td></tr>
+<tr><td style="padding:20px 30px;">
+<div style="background:#1a4a1a;border-radius:8px;padding:15px;border:1px solid #2a6a2a;">
+<p style="color:#4CAF50;margin:0;font-size:14px;"><strong>✓ Automatic Actions Taken:</strong></p>
+<ul style="color:#888;margin:10px 0 0 0;padding-left:20px;">
+<li>User's training progress has been reset</li>
+<li>Retraining notification email sent to user</li>
+</ul>
+</div>
+</td></tr>
+<tr><td style="padding:0 30px 20px 30px;text-align:center;">
+<a href="{analytics_url}" style="display:inline-block;background:{primary_color};color:#000;text-decoration:none;padding:14px 40px;border-radius:8px;font-weight:bold;">View Analytics</a>
+</td></tr>
+<tr><td style="padding:20px 30px;border-top:1px solid #333;text-align:center;">
+<p style="color:#666;margin:0;font-size:12px;">{company_name} Security Training System</p>
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>"""
+    
+    plain_text = f"""Training Failure Alert
+{timestamp}
+
+A user has clicked on a simulated phishing link:
+
+- User: {user_name}
+- Email: {user_email}
+- Organization: {organization_name or 'N/A'}
+- Simulation Type: {scenario_name}
+
+Automatic Actions Taken:
+- User's training progress has been reset
+- Retraining notification email sent to user
+
+View detailed analytics: {analytics_url}
+
+{company_name} Security Training System"""
+    
+    success_count = 0
+    for admin_email in admin_emails:
+        mail_message = Mail(
+            from_email=Email(sender_email, f"{company_name} Training"),
+            to_emails=To(admin_email),
+            subject=f"⚠️ Training Failure: {user_name} clicked {scenario_name} simulation"
+        )
+        mail_message.add_content(Content("text/plain", plain_text))
+        mail_message.add_content(Content("text/html", html_content))
+        
+        tracking_settings = TrackingSettings()
+        tracking_settings.click_tracking = ClickTracking(enable=False, enable_text=False)
+        mail_message.tracking_settings = tracking_settings
+        
+        try:
+            sg = SendGridAPIClient(sendgrid_api_key)
+            response = sg.send(mail_message)
+            if response.status_code == 202:
+                success_count += 1
+                logger.info(f"Training failure notification sent to {admin_email}")
+        except Exception as e:
+            logger.error(f"Failed to send training failure notification to {admin_email}: {e}")
+    
+    return success_count > 0
+
