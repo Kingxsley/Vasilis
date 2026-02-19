@@ -322,8 +322,18 @@ Disallow: /analytics`,
                     value={seo.google_analytics_id}
                     onChange={(e) => handleChange('google_analytics_id', e.target.value)}
                     placeholder="G-XXXXXXXXXX or UA-XXXXXXXX-X"
-                    className="bg-[#1a1a24] border-[#D4A836]/30 mt-1"
+                    className={`bg-[#1a1a24] border-[#D4A836]/30 mt-1 ${
+                      seo.google_analytics_id && !/^(G-[A-Z0-9]+|UA-\d+-\d+)$/i.test(seo.google_analytics_id) 
+                        ? 'border-red-500' 
+                        : ''
+                    }`}
                   />
+                  {seo.google_analytics_id && !/^(G-[A-Z0-9]+|UA-\d+-\d+)$/i.test(seo.google_analytics_id) && (
+                    <p className="text-xs text-red-500 mt-1">Invalid format. Use G-XXXXXXXXXX (GA4) or UA-XXXXXXXX-X (Universal)</p>
+                  )}
+                  {seo.google_analytics_id && /^(G-[A-Z0-9]+|UA-\d+-\d+)$/i.test(seo.google_analytics_id) && (
+                    <p className="text-xs text-green-500 mt-1">✓ Valid format - tracking will be active on your site</p>
+                  )}
                   <p className="text-xs text-gray-500 mt-1">Your Google Analytics measurement ID</p>
                 </div>
 
