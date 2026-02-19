@@ -1,659 +1,273 @@
-# Vasilis NetShield - Complete User Guide
+# Vasilis NetShield - User Guide
+
+## Welcome to Vasilis NetShield
+Your comprehensive cybersecurity training platform for building a security-aware workforce.
+
+---
 
 ## Table of Contents
-
 1. [Getting Started](#getting-started)
 2. [Dashboard Overview](#dashboard-overview)
-3. [User Management](#user-management)
-4. [Organization Management](#organization-management)
-5. [Phishing Campaigns](#phishing-campaigns)
-6. [Training Modules](#training-modules)
-7. [Content Management (CMS)](#content-management-cms)
-8. [Page Customization](#page-customization)
-9. [Media Library](#media-library)
-10. [Email Templates](#email-templates)
-11. [Certificate Management](#certificate-management)
-12. [Analytics & Reporting](#analytics--reporting)
-13. [Settings & Branding](#settings--branding)
-14. [SEO Settings](#seo-settings)
-15. [Security Settings](#security-settings)
+3. [Simulations](#simulations)
+4. [Training Center](#training-center)
+5. [User Management](#user-management)
+6. [Analytics](#analytics)
+7. [Settings & Customization](#settings)
 
 ---
 
-## Getting Started
+## 1. Getting Started
 
-### Accessing the Platform
+### Requesting Access
+1. Visit the landing page and click **"Get Started"** or **"Request Access"**
+2. Fill in your email, phone number, and a brief message
+3. An admin will review your request and create your account
+4. You'll receive a welcome email with login credentials
 
-1. Navigate to your site URL (e.g., `https://vasilisnetshield.net`)
-2. Click **"Login"** or **"Get Started"**
-3. Enter your email and password
-4. Click **"Sign In"**
+### Logging In
+1. Navigate to the login page
+2. Enter your email and password
+3. Click **"Sign In"**
+4. On first login, you may be prompted to change your password
 
-### User Roles
-
-| Role | Permissions |
-|------|-------------|
-| **Super Admin** | Full access to all features, can manage organizations |
-| **Org Admin** | Manage their organization, users, campaigns, content |
-| **Media Manager** | Create and manage content (blog, news, videos) |
-| **Trainer** | View training modules and user progress |
-| **User** | Complete training and view own progress |
-
----
-
-## Dashboard Overview
-
-After logging in, you'll see the main dashboard with:
-
-- **Quick Stats**: Total users, active campaigns, completion rates
-- **Recent Activity**: Latest user actions and campaign results
-- **Navigation Sidebar**: Access all features from the left menu
-
-### Sidebar Navigation
-
-The sidebar is organized into sections:
-
-| Section | Features |
-|---------|----------|
-| **Main** | Dashboard, Organizations, Users |
-| **Simulations** | Campaigns, Ads Tracker, Scenarios |
-| **Content** | CMS, Page Editor, Landing Page, Sidebar, Media Library |
-| **Training** | Modules, Certificates, Templates |
-| **Settings** | Settings, SEO, Email Templates, Security |
+### Password Reset
+1. Click **"Forgot Password?"** on the login page
+2. Enter your registered email
+3. Check your email for a reset link (valid for 1 hour)
+4. Create a new strong password
 
 ---
 
-## User Management
+## 2. Dashboard Overview
 
-### Viewing Users
+The dashboard provides a quick summary of your security posture:
 
-1. Go to **Dashboard → Users**
-2. View all users in your organization
-3. Use search and filters to find specific users
+### Key Metrics
+- **Total Users**: Number of registered users in your organization
+- **Active Campaigns**: Running phishing simulations
+- **Training Completion**: Percentage of completed training modules
+- **Click Rate**: Overall phishing susceptibility rate
 
-### Adding a New User
-
-1. Click **"Add User"** button
-2. Fill in the form:
-   - **Email**: User's email address
-   - **Name**: Full name
-   - **Role**: Select appropriate role
-   - **Phone** (optional): Contact number
-3. Click **"Create User"**
-4. User receives an email with login instructions
-
-### Editing a User
-
-1. Find the user in the list
-2. Click the **Edit** icon (pencil)
-3. Modify details as needed
-4. Click **"Save Changes"**
-
-### Importing Users (Bulk)
-
-1. Click **"Import Users"**
-2. Download the CSV template
-3. Fill in user data in the template
-4. Upload the completed CSV file
-5. Review and confirm the import
-
-### Exporting Users
-
-1. Click **"Export"** button
-2. Choose format (CSV or Excel)
-3. File downloads automatically
+### Quick Actions
+- Launch new phishing campaigns
+- View recent simulation results
+- Access training modules
 
 ---
 
-## Organization Management
+## 3. Simulations
 
-### Creating an Organization
+### Simulation Builder (Create Sim)
+The drag-and-drop simulation builder allows you to create custom security tests:
 
-1. Go to **Dashboard → Organizations**
-2. Click **"Add Organization"**
-3. Enter:
-   - **Organization Name**
-   - **Industry** (optional)
-   - **Contact Email**
-4. Click **"Create"**
+#### Available Simulation Types:
+1. **Phishing Email** - Classic email phishing tests
+2. **Credential Harvest** - Track password submission attempts
+3. **QR Code Phishing** - Fake QR codes that redirect
+4. **MFA Fatigue** - Repeated push notification attacks
+5. **USB Drop** - Physical security awareness tests
+6. **SMS Phishing (Smishing)** - Text message based attacks
+7. **Business Email Compromise** - Executive impersonation
+8. **Malicious Ad** - Deceptive advertisement tests
 
-### Managing Organization Settings
+#### Creating a Simulation:
+1. Go to **Simulations > Create Sim**
+2. Select a simulation type
+3. Choose a pre-built template or start from scratch
+4. Drag building blocks to the canvas:
+   - **Content**: Headers, body text, signatures
+   - **Form Elements**: Input fields, buttons, checkboxes
+   - **Phishing Tactics**: Urgency messages, deadlines, fake links
+   - **Visual Elements**: Images, QR codes, dividers
+   - **Special Elements**: MFA prompts, USB labels
+5. View the live preview on the right
+6. Name your simulation and click **Save**
 
-1. Select an organization
-2. Configure:
-   - **Branding**: Logo, colors
-   - **User Limits**: Maximum users allowed
-   - **Features**: Enable/disable specific features
+### Phishing Campaigns
 
----
+#### Creating a Campaign:
+1. Go to **Simulations > Phishing Sim**
+2. Click **New Campaign**
+3. Select a template and target users
+4. Schedule or launch immediately
+5. Monitor results in real-time
 
-## Phishing Campaigns
+#### Campaign Statuses:
+- **Draft**: Not yet launched
+- **Scheduled**: Set to launch at a future time
+- **Active**: Currently running
+- **Paused**: Temporarily stopped
+- **Completed**: Finished
 
-### Creating a Campaign
-
-1. Go to **Simulations → Campaigns**
-2. Click **"New Campaign"**
-3. Configure the campaign:
-
-#### Step 1: Basic Info
-- **Campaign Name**: Internal reference name
-- **Description**: Brief description
-- **Type**: Phishing Email, Malicious Ad, or Social Engineering
-
-#### Step 2: Target Audience
-- Select users or groups to target
-- Or import a list of email addresses
-
-#### Step 3: Email Template
-- Choose from existing templates OR
-- Create a custom email:
-  - **Subject Line**: Email subject
-  - **Sender Name**: Displayed sender
-  - **Email Body**: Use the rich text editor
-
-#### Step 4: Landing Page
-- Select a phishing landing page template
-- Customize if needed
-
-#### Step 5: Schedule
-- **Send Immediately**: Launch now
-- **Schedule**: Pick date and time
-- **Drip Campaign**: Send in batches over time
-
-4. Click **"Launch Campaign"** or **"Save as Draft"**
-
-### Monitoring Campaigns
-
-1. Go to **Campaigns** list
-2. Click on a campaign to view:
-   - **Sent**: Number of emails delivered
-   - **Opened**: Users who opened the email
-   - **Clicked**: Users who clicked the link
-   - **Submitted**: Users who entered data
-   - **Reported**: Users who reported as phishing
-
-### Campaign Reports
-
-1. Select a campaign
-2. Click **"View Report"**
-3. Export as PDF or CSV
+### Ad Simulations
+Create fake advertisements to test user awareness against malicious ads:
+1. Go to **Simulations > Ad Simulation**
+2. Use the visual editor to design ad templates
+3. Choose from pre-built scam templates
+4. Set target users and launch
 
 ---
 
-## Training Modules
+## 4. Training Center
 
-### Viewing Available Modules
+### Scenarios
+Browse and assign security training scenarios:
+1. **Phishing Email Scenarios** - Learn to spot suspicious emails
+2. **Malicious Ads** - Identify deceptive advertisements
+3. **Social Engineering** - Recognize manipulation tactics
+4. **QR Code Threats** - Understand QR-based attacks
+5. **USB Security** - Physical device risks
+6. **MFA Best Practices** - Multi-factor authentication safety
 
-1. Go to **Training → Modules**
-2. Browse available training content:
-   - Phishing Awareness
-   - Password Security
-   - Social Engineering
-   - Data Protection
-   - And more...
-
-### Assigning Training
-
-1. Select a module
-2. Click **"Assign to Users"**
-3. Choose:
-   - Specific users
-   - Entire organization
-   - Users who failed a campaign
-4. Set a deadline (optional)
-5. Click **"Assign"**
-
-### Tracking Progress
-
-1. Go to **Training → Progress**
-2. View completion rates by:
-   - User
-   - Module
-   - Organization
-3. Send reminders to incomplete users
+### Completing Training
+1. Access assigned scenarios from your dashboard
+2. Review the scenario content
+3. Identify if it's safe or unsafe
+4. Get instant feedback and explanations
+5. Earn certificates upon completion
 
 ---
 
-## Content Management (CMS)
+## 5. User Management
 
-### Managing Blog Posts
+### For Administrators
 
-#### Creating a Blog Post
+#### Creating Users:
+1. Go to **Management > Users**
+2. Click **New User**
+3. Fill in name, email, and temporary password
+4. Select role and organization
+5. User receives welcome email with credentials
 
-1. Go to **Content → CMS**
-2. Select **"Blog"** tab
-3. Click **"Add New Post"**
-4. Fill in:
-   - **Title**: Post title
-   - **Slug**: URL-friendly name (auto-generated)
-   - **Excerpt**: Short summary
-   - **Content**: Use the rich text editor
-   - **Featured Image**: Upload or paste URL
-   - **Tags**: Add relevant tags
-5. Toggle **"Published"** to make it live
-6. Click **"Save"**
+#### User Roles:
+| Role | Description | Permissions |
+|------|-------------|-------------|
+| **Trainee** | Standard user | Complete training, view own results |
+| **Media Manager** | Content creator | Manage CMS content, pages |
+| **Org Admin** | Organization admin | Manage users in their org, launch campaigns |
+| **Super Admin** | Full access | All permissions across platform |
 
-#### Using the Rich Text Editor
+#### Changing User Roles:
+1. Find the user in the Users table
+2. Click the shield icon to change role
+3. Select the new role from dropdown
+4. Confirm the change
 
-The editor supports:
-- **Headings**: H1, H2
-- **Formatting**: Bold, Italic, Underline
-- **Lists**: Bulleted, Numbered
-- **Links**: Insert hyperlinks
-- **Images**: Upload directly or paste URL
-- **Quotes**: Block quotes
-- **Code**: Code blocks
+#### Bulk Operations:
+- Select multiple users with checkboxes
+- Use **Select All** for bulk selection
+- Click **Delete Selected** for bulk deletion
 
-**Tip**: Click the **Upload** button to add images directly from your computer. Images are automatically optimized!
-
-### Managing News
-
-1. Go to **Content → CMS**
-2. Select **"News"** tab
-3. Add news items with:
-   - Title
-   - Content
-   - External link (optional)
-   - Published date
-
-### Managing Videos
-
-1. Go to **Content → CMS**
-2. Select **"Videos"** tab
-3. Add videos:
-   - Title
-   - Description
-   - YouTube/Vimeo URL
-   - Thumbnail image
-
-### RSS Feeds
-
-1. Go to **Content → CMS → RSS Feeds**
-2. Add RSS feed URLs
-3. Content automatically imports
+### Access Requests
+Review pending access requests:
+1. Go to **Management > Access Requests**
+2. Click on a request to view details
+3. Update status: **Contacted**, **Approved**, **Rejected**, **Pending**
+4. When approved, you're redirected to create the user account
 
 ---
 
-## Page Customization
-
-### Page Editor
-
-Customize the main site pages:
-
-1. Go to **Content → Page Editor**
-2. Edit sections:
-   - **Hero**: Main headline, subtext, CTA buttons
-   - **Stats**: Numbers displayed (users trained, etc.)
-   - **Features**: Feature cards with icons
-   - **Platform Image**: The image in the "Enterprise-Ready" section
-
-3. Click **"Save"** to apply changes
-
-### Landing Page Editor
-
-Customize the public landing page:
-
-1. Go to **Content → Landing Page**
-2. Edit sections:
-   - Add/remove sections
-   - Reorder sections
-   - Edit content within each section
-   - Configure pricing plans
-3. Click **"Save Layout"**
-
-### Sidebar Customizer
-
-Customize sidebars for public pages (News, Blog, Videos, About):
-
-1. Go to **Content → Sidebar**
-2. Select the page tab
-3. Add sections:
-
-| Section Type | Description |
-|--------------|-------------|
-| **Call to Action** | Title, description, and button |
-| **Quick Links** | List of navigation links |
-| **Image/Banner** | Display an image |
-| **Custom HTML** | Any custom content |
-
-4. Configure each section:
-   - Edit title and content
-   - Add/remove links
-   - Set button URLs
-   - Paste image URLs from Media Library
-
-5. Reorder using **▲▼** arrows
-6. Click **"Save Changes"**
-
----
-
-## Media Library
-
-Manage all your images in one place:
-
-### Uploading Media
-
-1. Go to **Content → Media Library**
-2. Click **"Upload Media"**
-3. Select image(s) from your computer
-4. Images are **automatically optimized** (smaller file size)
-5. Success message shows % reduction
-
-### Using Media
-
-1. Find the image you want
-2. Hover over it and click **Copy** icon
-3. Paste the URL wherever needed:
-   - Blog posts
-   - Sidebar images
-   - Email templates
-   - Landing page
-
-### Managing Media
-
-- **Search**: Find images by name
-- **Filter**: By category (Logo, Blog, Content, General)
-- **View**: Grid or List view
-- **Edit**: Change alt text, category
-- **Delete**: Remove unused images
-
-### Image Optimization
-
-All uploaded images are automatically:
-- Resized to web-friendly dimensions
-- Converted to efficient formats (WebP)
-- Compressed while maintaining quality
-- You'll see the % size reduction after upload
-
----
-
-## Email Templates
-
-### Creating Email Templates
-
-1. Go to **Settings → Email Templates**
-2. Click **"New Template"**
-3. Configure:
-   - **Template Name**: For internal reference
-   - **Subject Line**: Email subject
-   - **Category**: Phishing, Training, Notification
-   - **Body**: Use the rich text editor
-
-### Using Variables
-
-Insert dynamic content using variables:
-
-| Variable | Description |
-|----------|-------------|
-| `{{name}}` | Recipient's name |
-| `{{email}}` | Recipient's email |
-| `{{company}}` | Organization name |
-| `{{link}}` | Tracking link |
-| `{{date}}` | Current date |
-
-### Testing Templates
-
-1. Click **"Send Test"**
-2. Enter your email
-3. Review the test email
-4. Make adjustments as needed
-
----
-
-## Certificate Management
-
-### Certificate Templates
-
-1. Go to **Training → Certificate Templates**
-2. View existing templates or create new
-3. Customize:
-   - Background image
-   - Text placement
-   - Signature image
-   - Logo placement
-
-### Issuing Certificates
-
-Certificates are automatically issued when:
-- User completes a training module
-- Admin manually issues from user profile
-
-### Viewing Certificates
-
-1. Go to **Training → Certificates**
-2. View all issued certificates
-3. Download or email certificates
-
----
-
-## Analytics & Reporting
+## 6. Analytics
 
 ### Dashboard Analytics
-
-The main dashboard shows:
-- **User Statistics**: Total, active, completion rates
-- **Campaign Performance**: Success rates, click rates
-- **Training Progress**: Modules completed
+- Total simulations run
+- Overall click rates
+- Training completion rates
+- User engagement metrics
 
 ### Advanced Analytics
+Access detailed reporting:
+1. Go to **Overview > Advanced Analytics**
+2. Filter by date range or custom dates
+3. View metrics by campaign type (Phishing, Ad)
+4. Compare multiple campaigns side-by-side
 
-1. Go to **Analytics → Advanced**
-2. View detailed reports:
-   - Campaign comparison
-   - User risk scores
-   - Department breakdowns
-   - Trend analysis
+### Best Performing Campaigns
+See which campaigns have the lowest click rates (best security awareness):
+- 🥇 Top performer
+- 🥈 Second place
+- 🥉 Third place
+- Color-coded click rates (Green ≤5%, Yellow ≤15%, Red >15%)
 
-### Exporting Reports
-
-1. Go to any analytics page
-2. Click **"Export"**
-3. Choose format:
-   - PDF (formatted report)
-   - CSV (raw data)
-   - Excel (spreadsheet)
-
----
-
-## Settings & Branding
-
-### Branding Settings
-
-1. Go to **Settings → Settings**
-2. Configure:
-
-#### Company Info
-- **Company Name**: Displayed throughout the site
-- **Tagline**: Shown on landing page
-
-#### Logo & Favicon
-- **Logo**: Upload your logo (recommended: 200x200px)
-- **Favicon**: Browser tab icon (recommended: 32x32px)
-- Images are automatically optimized
-
-#### Colors
-- **Primary Color**: Main accent color (buttons, links)
-- **Text Color**: Body text color
-- **Heading Color**: Heading text color
-- **Accent Color**: Secondary accent color
-
-#### Navigation Visibility
-Toggle which pages appear in the public navigation:
-- Blog
-- Videos
-- News
-- About
-
-#### Footer Settings
-- **Footer Copyright**: Custom copyright text
-- **Social Links**: Add your social media URLs
-  - Facebook
-  - Twitter/X
-  - LinkedIn
-  - Instagram
-  - YouTube
+### Click Analysis
+View detailed information about who clicked phishing links:
+- User details
+- Click timestamp
+- Campaign information
+- Device/browser information
 
 ---
 
-## SEO Settings
+## 7. Settings & Customization
 
-Optimize your site for search engines:
+### Branding (Super Admin Only)
+Customize the platform appearance:
+1. Go to **Settings**
+2. Upload company logo
+3. Set primary and accent colors
+4. Configure company name and tagline
+5. Manage social media links
 
-1. Go to **Settings → SEO**
+### Landing Page Editor
+Customize your public-facing landing page:
+1. Go to **Content > Landing Page**
+2. Edit hero section, features, testimonials
+3. Toggle section visibility
+4. Save and preview changes
 
-### General Tab
-- **Site Title**: Appears in browser tab and search results
-- **Meta Description**: 150-160 characters describing your site
-- **Keywords**: Comma-separated keywords
-- **Canonical URL**: Your primary domain
-
-### Social Media Tab
-
-#### Open Graph (Facebook, LinkedIn)
-- **OG Title**: Title when shared
-- **OG Description**: Description when shared
-- **OG Image**: Image when shared (1200x630px recommended)
-
-#### Twitter Card
-- **Twitter Title**: Title on Twitter
-- **Twitter Description**: Description on Twitter
-- **Twitter Image**: Image on Twitter (1200x600px recommended)
-
-### Robots.txt Tab
-Edit the robots.txt file to control search engine crawling:
-```
-User-agent: *
-Allow: /
-Disallow: /dashboard
-Sitemap: https://yourdomain.com/sitemap.xml
-```
-
-### Tracking Tab
-- **Google Analytics ID**: Enter your GA4 ID (G-XXXXXXXXXX)
-  - Format is validated automatically
-  - ✓ Green check = valid format
-  - Tracking activates automatically when saved
-
-- **Google Search Console**: Verification meta tag content
+### Page Builder
+Create custom pages:
+1. Go to **Content > Page Builder**
+2. Create new page with blocks (headers, text, images, forms)
+3. Set page as published and navigation visibility
+4. Access via `/page/[your-page-slug]`
 
 ---
 
-## Security Settings
+## Need Help?
 
-### Password Policy
-
-1. Go to **Settings → Security**
-2. Configure password requirements:
-   - Minimum length
-   - Require uppercase
-   - Require numbers
-   - Require special characters
-
-### Session Settings
-- Session timeout duration
-- Maximum concurrent sessions
-
-### Access Control
-- IP whitelist (optional)
-- Two-factor authentication settings
-
----
-
-## Troubleshooting
+### Contact Support
+- Email: info@vasilisnetshield.com
+- Use the Contact Us form on the landing page
 
 ### Common Issues
 
-#### Can't Login
-1. Check email spelling
-2. Use "Forgot Password" to reset
-3. Clear browser cache
-4. Try incognito/private mode
+**Q: I didn't receive my welcome email**
+A: Check spam folder. Contact admin to resend.
 
-#### Images Not Displaying
-1. Check the image URL is correct
-2. Ensure image is publicly accessible
-3. Try re-uploading to Media Library
+**Q: My account is locked**
+A: Wait 15 minutes or contact admin to unlock.
 
-#### Campaign Emails Not Sending
-1. Check email configuration in Settings
-2. Verify sender email is authorized
-3. Check spam/junk folders
+**Q: Campaign shows 0 emails sent**
+A: Verify targets were added before launching. Check SendGrid configuration.
 
-#### Changes Not Appearing
-1. Hard refresh the page (Ctrl+Shift+R)
-2. Clear browser cache
-3. Wait 30 seconds for cache to update
-
-### Getting Help
-
-- **Documentation**: This guide
-- **Support Email**: Contact your administrator
-- **In-App Help**: Click the help icon in the dashboard
+**Q: I can't access certain features**
+A: Your role may not have permission. Contact admin for role elevation.
 
 ---
 
-## Keyboard Shortcuts
+## Security Best Practices
 
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl + S` | Save current form |
-| `Ctrl + /` | Open search |
-| `Esc` | Close modal/dialog |
-
----
-
-## Best Practices
-
-### For Phishing Campaigns
-1. Start with simple campaigns
-2. Gradually increase difficulty
-3. Always provide immediate training for those who fail
-4. Run campaigns regularly (monthly recommended)
-
-### For Content
-1. Keep blog posts concise and actionable
-2. Use images to break up text
-3. Include clear calls-to-action
-4. Update content regularly
-
-### For Training
-1. Assign training based on user risk scores
-2. Set reasonable deadlines
-3. Send reminders for incomplete training
-4. Celebrate completions
-
-### For Branding
-1. Use consistent colors throughout
-2. Keep your logo simple and recognizable
-3. Update social links to build trust
-4. Customize the footer copyright
+1. **Use strong passwords** - Min 8 characters with mixed case, numbers, and symbols
+2. **Don't share credentials** - Each user should have unique login
+3. **Report suspicious activity** - Contact admin immediately
+4. **Complete training regularly** - Stay updated on latest threats
+5. **Verify before clicking** - When in doubt, don't click links
 
 ---
 
-## Glossary
+## Audit Trail
 
-| Term | Definition |
-|------|------------|
-| **Campaign** | A simulated phishing or security test |
-| **Click Rate** | Percentage of users who clicked a phishing link |
-| **Completion Rate** | Percentage of users who finished training |
-| **Landing Page** | The page users see when they click a phishing link |
-| **Module** | A training unit or course |
-| **Phishing** | Fraudulent attempt to obtain sensitive information |
-| **Risk Score** | A user's vulnerability rating based on behavior |
-| **Social Engineering** | Manipulating people to divulge information |
+All platform activities are logged for security and compliance:
+- User creation, updates, and deletion
+- Role changes (who elevated whom)
+- Access request approvals and rejections
+- Campaign launches
+- Login attempts and password resets
+
+Audit logs are accessible to Super Admins under **Security > Audit Logs**.
 
 ---
 
-## Version History
-
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0 | Feb 2025 | Initial release |
-| 1.1 | Feb 2025 | Added Media Library, SEO Settings |
-| 1.2 | Feb 2025 | Added Sidebar Customizer, JWT auto-refresh |
-
----
-
-*This documentation is for Vasilis NetShield Security Training Platform.*
-*For the latest updates, contact your administrator.*
+*Vasilis NetShield - Human + AI Powered Security Training*
+*© 2026 Vasilis NetShield. All rights reserved.*
