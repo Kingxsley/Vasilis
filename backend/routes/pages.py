@@ -223,10 +223,10 @@ async def list_custom_pages(
     
     # If not authenticated or requesting only published, filter by published
     try:
-        user = await get_current_user(request)
+        await get_current_user(request)
         if not include_unpublished:
             query["is_published"] = True
-    except:
+    except Exception:
         query["is_published"] = True
     
     pages = await db.custom_pages.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
