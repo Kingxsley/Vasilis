@@ -84,7 +84,7 @@ async def send_phishing_email(
         
         if sendgrid_api_key and sender_email:
             from sendgrid import SendGridAPIClient
-            from sendgrid.helpers.mail import Mail, Email, To, Content, ReplyTo
+            from sendgrid.helpers.mail import Mail, Email, To, Content, ReplyTo, TrackingSettings, ClickTracking, OpenTracking
             
             # Use template's sender_name as display name (e.g., "IT Security Team")
             # The actual email address will be the verified sender
@@ -97,6 +97,13 @@ async def send_phishing_email(
                 subject=subject,
                 html_content=Content("text/html", html_body)
             )
+            
+            # IMPORTANT: Disable SendGrid's click and open tracking
+            # We use our own tracking system for phishing simulations
+            tracking_settings = TrackingSettings()
+            tracking_settings.click_tracking = ClickTracking(enable=False, enable_text=False)
+            tracking_settings.open_tracking = OpenTracking(enable=False)
+            message.tracking_settings = tracking_settings
             
             # Set reply-to to the fake email address from template
             fake_sender_email = template.get('sender_email', '')
