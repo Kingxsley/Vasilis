@@ -166,7 +166,7 @@ async def grant_permission(request_data: GrantPermissionRequest, request: Reques
     """Grant a permission to a user"""
     user = await get_current_user_from_request(request)
     
-    if not db or not rbac_manager:
+    if db is None or rbac_manager is None:
         raise HTTPException(status_code=500, detail="Service not initialized")
     
     # Check if current user can grant this permission
@@ -214,7 +214,7 @@ async def revoke_permission(request_data: RevokePermissionRequest, request: Requ
     """Revoke a permission from a user"""
     user = await get_current_user_from_request(request)
     
-    if not db or not rbac_manager:
+    if db is None or rbac_manager is None:
         raise HTTPException(status_code=500, detail="Service not initialized")
     
     # Get target user
@@ -252,7 +252,7 @@ async def bulk_update_permissions(request_data: BulkPermissionRequest, request: 
     """Grant or revoke multiple permissions at once"""
     user = await get_current_user_from_request(request)
     
-    if not db or not rbac_manager:
+    if db is None or rbac_manager is None:
         raise HTTPException(status_code=500, detail="Service not initialized")
     
     if request_data.action not in ["grant", "revoke"]:
@@ -316,7 +316,7 @@ async def update_user_role(request_data: UpdateUserRoleRequest, request: Request
     """Update a user's role"""
     user = await get_current_user_from_request(request)
     
-    if not db or not rbac_manager:
+    if db is None or rbac_manager is None:
         raise HTTPException(status_code=500, detail="Service not initialized")
     
     # Check if current user can assign this role
