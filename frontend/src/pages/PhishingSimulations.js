@@ -974,12 +974,21 @@ export default function PhishingSimulations() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowNewCampaign(false)} className="border-[#D4A836]/30 text-[#E8DDB5]">
+              <Button variant="outline" onClick={() => {
+                setShowNewCampaign(false);
+                resetCampaignForm();
+              }} className="border-[#D4A836]/30 text-[#E8DDB5]">
                 Cancel
               </Button>
-              <Button onClick={createCampaign} className="bg-[#D4A836] hover:bg-[#C49A30] text-black" data-testid="create-campaign-submit">
-                {newCampaign.launch_immediately ? 'Create Campaign' : 'Schedule Campaign'}
-              </Button>
+              {editingCampaign ? (
+                <Button onClick={saveCampaignChanges} className="bg-[#D4A836] hover:bg-[#C49A30] text-black" data-testid="save-campaign-submit">
+                  Save Changes
+                </Button>
+              ) : (
+                <Button onClick={createCampaign} className="bg-[#D4A836] hover:bg-[#C49A30] text-black" data-testid="create-campaign-submit">
+                  {newCampaign.launch_immediately ? 'Create Campaign' : 'Schedule Campaign'}
+                </Button>
+              )}
             </DialogFooter>
           </DialogContent>
         </Dialog>
