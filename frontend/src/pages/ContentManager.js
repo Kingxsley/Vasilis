@@ -149,25 +149,77 @@ export default function ContentManager() {
   useEffect(() => {
     fetchAllContent();
     fetchRssFeeds();
+    if (user?.role === 'super_admin') {
+      fetchNavItems();
+    }
   }, []);
+
+  // Fetch blog with pagination
+  useEffect(() => {
+    fetchBlogPosts();
+  }, [blogPage, blogSearch]);
+
+  // Fetch news with pagination
+  useEffect(() => {
+    fetchNews();
+  }, [newsPage, newsSearch]);
+
+  const fetchBlogPosts = async () => {
+    try {
+      const skip = (blogPage - 1) * BLOG_LIMIT;
+      const searchParam = blogSearch ? `&search=${encodeURIComponent(blogSearch)}` : '';
+      const res = await axios.get(
+        `${API}/content/blog?published_only=false&skip=${skip}&limit=${BLOG_LIMIT}${searchParam}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setBlogPosts(res.data.posts || []);
+      setBlogTotal(res.data.total || 0);
+    } catch (error) {
+      console.error('Failed to load blog posts:', error);
+    }
+  };
+
+  const fetchNews = async () => {
+    try {
+      const skip = (newsPage - 1) * NEWS_LIMIT;
+      const searchParam = newsSearch ? `&search=${encodeURIComponent(newsSearch)}` : '';
+      const res = await axios.get(
+        `${API}/content/news?include_rss=false&skip=${skip}&limit=${NEWS_LIMIT}${searchParam}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setNews(res.data.news || []);
+      setNewsTotal(res.data.total || 0);
+    } catch (error) {
+      console.error('Failed to load news:', error);
+    }
+  };
 
   const fetchAllContent = async () => {
     setLoading(true);
     try {
-      const [blogRes, newsRes, videosRes, aboutRes] = await Promise.all([
-        axios.get(`${API}/content/blog?published_only=false`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API}/content/news?include_rss=true`),
+      const [videosRes, aboutRes] = await Promise.all([
         axios.get(`${API}/content/videos?published_only=false`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API}/content/about`)
       ]);
-      setBlogPosts(blogRes.data.posts || []);
-      setNews(newsRes.data.news || []);
       setVideos(videosRes.data.videos || []);
       setAbout(aboutRes.data);
     } catch (error) {
       toast.error('Failed to load content');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchNavItems = async () => {
+    try {
+      const [itemsRes, optionsRes] = await Promise.all([
+        axios.get(`${API}/navigation`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API}/navigation/options`, { headers: { Authorization: `Bearer ${token}` } })
+      ]);
+      setNavItems(itemsRes.data.items || []);
+      setCmsPages(optionsRes.data.cms_pages || []);
+    } catch (error) {
+      console.error('Failed to load navigation items:', error);
     }
   };
 
