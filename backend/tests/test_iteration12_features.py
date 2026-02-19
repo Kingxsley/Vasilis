@@ -6,14 +6,14 @@ import requests
 import os
 import time
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://security-training-31.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://awareness-hub-9.preview.emergentagent.com').rstrip('/')
 
 # Test credentials
 SUPER_ADMIN_EMAIL = "testuser123@vasilisnetshield.com"
 SUPER_ADMIN_PASSWORD = "TestAdmin123!"
 
 # Test tracking URL
-TEST_TRACKING_URL = "https://security-training-31.preview.emergentagent.com/api/phishing/track/click/bKqgQ-jZl3hVJIdkIWjIkg"
+TEST_TRACKING_URL = "https://awareness-hub-9.preview.emergentagent.com/api/phishing/track/click/bKqgQ-jZl3hVJIdkIWjIkg"
 
 
 class TestPhishingTracking:

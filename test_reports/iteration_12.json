@@ -58,7 +58,7 @@
   },
   "test_credentials": {
     "super_admin": "testuser123@vasilisnetshield.com / TestAdmin123!",
-    "test_tracking_url": "https://security-training-31.preview.emergentagent.com/api/phishing/track/click/bKqgQ-jZl3hVJIdkIWjIkg"
+    "test_tracking_url": "https://awareness-hub-9.preview.emergentagent.com/api/phishing/track/click/bKqgQ-jZl3hVJIdkIWjIkg"
   },
   "seed_data_creation": "Used existing test campaigns: TEST_TRACKING_CAMPAIGN, TEST_Duplicate_Campaign (Copy)",
   "retest_needed": false,
