@@ -1904,6 +1904,115 @@ async def get_phishing_stats(
         "period_days": days
     }
 
+@api_router.get("/analytics/all-campaigns")
+async def get_all_campaigns_analytics(
+    days: int = 30,
+    start_date: str = None,
+    end_date: str = None,
+    user: dict = Depends(require_admin)
+):
+    """Get all simulation campaigns (phishing + ad) for analytics"""
+    from datetime import timedelta
+    
+    # Determine date range
+    if start_date and end_date:
+        try:
+            cutoff_start = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+            cutoff_end = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+        except:
+            cutoff_start = datetime.now(timezone.utc) - timedelta(days=days)
+            cutoff_end = datetime.now(timezone.utc)
+    else:
+        cutoff_start = datetime.now(timezone.utc) - timedelta(days=days)
+        cutoff_end = datetime.now(timezone.utc)
+    
+    all_campaigns = []
+    
+    # Get phishing campaigns
+    phishing_campaigns = await db.phishing_campaigns.find({}, {"_id": 0}).to_list(1000)
+    for camp in phishing_campaigns:
+        targets = await db.phishing_targets.find(
+            {"campaign_id": camp["campaign_id"]},
+            {"_id": 0}
+        ).to_list(10000)
+        
+        total = len(targets)
+        sent = sum(1 for t in targets if t.get("email_sent"))
+        opened = sum(1 for t in targets if t.get("email_opened"))
+        clicked = sum(1 for t in targets if t.get("link_clicked"))
+        
+        all_campaigns.append({
+            "campaign_id": camp["campaign_id"],
+            "name": camp.get("name", "Unnamed"),
+            "type": "phishing",
+            "type_label": "Phishing Email",
+            "status": camp.get("status", "draft"),
+            "created_at": camp.get("created_at"),
+            "launched_at": camp.get("launched_at"),
+            "total_targets": total,
+            "sent": sent,
+            "opened": opened,
+            "clicked": clicked,
+            "open_rate": round((opened / sent * 100), 1) if sent > 0 else 0,
+            "click_rate": round((clicked / sent * 100), 1) if sent > 0 else 0,
+            "organization_id": camp.get("organization_id")
+        })
+    
+    # Get ad campaigns
+    ad_campaigns = await db.ad_campaigns.find({}, {"_id": 0}).to_list(1000)
+    for camp in ad_campaigns:
+        targets = await db.ad_targets.find(
+            {"campaign_id": camp["campaign_id"]},
+            {"_id": 0}
+        ).to_list(10000)
+        
+        total = len(targets)
+        viewed = sum(1 for t in targets if t.get("ad_viewed"))
+        clicked = sum(1 for t in targets if t.get("ad_clicked"))
+        
+        all_campaigns.append({
+            "campaign_id": camp["campaign_id"],
+            "name": camp.get("name", "Unnamed"),
+            "type": "ad",
+            "type_label": "Malicious Ad",
+            "status": camp.get("status", "draft"),
+            "created_at": camp.get("created_at"),
+            "launched_at": camp.get("launched_at"),
+            "total_targets": total,
+            "sent": total,  # All targets receive the ad
+            "opened": viewed,
+            "clicked": clicked,
+            "open_rate": round((viewed / total * 100), 1) if total > 0 else 0,
+            "click_rate": round((clicked / total * 100), 1) if total > 0 else 0,
+            "organization_id": camp.get("organization_id")
+        })
+    
+    # Sort by created_at descending
+    all_campaigns.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+    
+    # Calculate summary stats
+    total_campaigns = len(all_campaigns)
+    phishing_count = sum(1 for c in all_campaigns if c["type"] == "phishing")
+    ad_count = sum(1 for c in all_campaigns if c["type"] == "ad")
+    
+    total_sent = sum(c["sent"] for c in all_campaigns)
+    total_opened = sum(c["opened"] for c in all_campaigns)
+    total_clicked = sum(c["clicked"] for c in all_campaigns)
+    
+    return {
+        "campaigns": all_campaigns,
+        "summary": {
+            "total_campaigns": total_campaigns,
+            "phishing_campaigns": phishing_count,
+            "ad_campaigns": ad_count,
+            "total_sent": total_sent,
+            "total_opened": total_opened,
+            "total_clicked": total_clicked,
+            "overall_open_rate": round((total_opened / total_sent * 100), 1) if total_sent > 0 else 0,
+            "overall_click_rate": round((total_clicked / total_sent * 100), 1) if total_sent > 0 else 0
+        }
+    }
+
 # ============== ROOT ROUTE ==============
 
 @api_router.get("/")
