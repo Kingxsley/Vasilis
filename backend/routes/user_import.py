@@ -270,8 +270,7 @@ async def import_users(request: Request, file: UploadFile = File(...)):
             {"organization_id": admin_org_id},
             {"_id": 0, "name": 1}
         )
-        if admin_org:
-            admin_org_name = admin_org.get("name")
+        # Note: admin_org info is used only for validation, not stored
     
     created_users = []
     errors = []
