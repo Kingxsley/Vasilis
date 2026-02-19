@@ -444,6 +444,19 @@ export default function UsersPage() {
             )}
           </CardContent>
         </Card>
+        
+        {/* Pagination */}
+        {!loading && totalUsers > 0 && (
+          <div className="mt-6">
+            <Pagination
+              total={totalUsers}
+              page={page}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+            />
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
