@@ -148,6 +148,14 @@ const navGroups = [
       { path: '/password-policy', label: 'Password Policy', icon: ShieldAlert, superAdminOnly: true },
     ]
   },
+  {
+    id: 'help',
+    label: 'Help',
+    icon: HelpCircle,
+    items: [
+      { path: '/documentation', label: 'Documentation', icon: BookOpen },
+    ]
+  },
 ];
 
 export const DashboardLayout = ({ children }) => {
