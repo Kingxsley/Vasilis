@@ -540,6 +540,14 @@ const AppRouter = () => {
           }
         />
         <Route
+          path="/documentation"
+          element={
+            <ProtectedRoute>
+              <Documentation />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/media-library"
           element={
             <ProtectedRoute adminOnly>
