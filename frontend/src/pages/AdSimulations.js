@@ -211,6 +211,32 @@ export default function AdSimulations() {
     }
   };
 
+  // Handle save from visual editor
+  const handleSaveFromEditor = async (templateData) => {
+    try {
+      if (editingTemplate) {
+        // Update existing template - currently API doesn't support PUT, so delete and recreate
+        await axios.delete(`${API}/ads/templates/${editingTemplate.template_id}`, { headers });
+        await axios.post(`${API}/ads/templates`, templateData, { headers });
+        toast.success('Template updated successfully');
+      } else {
+        await axios.post(`${API}/ads/templates`, templateData, { headers });
+        toast.success('Template created successfully');
+      }
+      setShowVisualEditor(false);
+      setEditingTemplate(null);
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to save template');
+    }
+  };
+
+  // Open visual editor for editing
+  const openEditTemplate = (template) => {
+    setEditingTemplate(template);
+    setShowVisualEditor(true);
+  };
+
   const deleteCampaign = async (campaignId) => {
     if (!window.confirm('Are you sure you want to delete this campaign?')) return;
     
