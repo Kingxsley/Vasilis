@@ -89,7 +89,7 @@ async def generate_phishing_export_token(campaign_id: str, format: str, request:
     token = generate_download_token(f"phishing_{format}", campaign_id)
     
     return {
-        "download_url": f"/api/export/download/phishing/{campaign_id}/{format}?token={token}",
+        "download_url": f"/export/download/phishing/{campaign_id}/{format}?token={token}",
         "expires_in": 300  # 5 minutes
     }
 
@@ -105,7 +105,7 @@ async def generate_training_export_token(format: str, request: Request, organiza
     resource_id = organization_id or "all"
     token = generate_download_token(f"training_{format}", resource_id)
     
-    url = f"/api/export/download/training/{format}?token={token}"
+    url = f"/export/download/training/{format}?token={token}"
     if organization_id:
         url += f"&organization_id={organization_id}"
     
