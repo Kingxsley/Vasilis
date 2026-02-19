@@ -428,6 +428,14 @@ const AppRouter = () => {
           }
         />
         <Route
+          path="/seo-settings"
+          element={
+            <ProtectedRoute adminOnly>
+              <SEOSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/content"
           element={
             <ProtectedRoute contentManager>
