@@ -22,6 +22,19 @@ Build a full-featured cybersecurity training platform for vasilisnetshield.com w
 - [x] **Page Builder Moved to Content Section** - Now under Content menu in sidebar
 - [x] **Custom Pages in Public Nav** - Pages with `show_in_nav=true` appear in navigation
 - [x] **Campaign Edit/Duplicate** - Can now edit draft campaigns and duplicate any campaign
+- [x] **Permissions Endpoint Fixed** - Changed `if not db` to `if db is None` for proper MongoDB truth testing
+- [x] **Phishing Emails NOW SENDING** - Successfully sent 5 emails via EMAIL_TEST_CAMPAIGN
+
+### Automatic Retraining Flow (NEW) ✅
+When a user clicks a phishing link:
+1. [x] User receives retraining email with "Start Training Now" button
+2. [x] User's training progress is reset for that scenario
+3. [x] Super admins AND org admins receive notification email with user details
+4. [x] Training failure recorded in database
+
+### Contact Form Email Routing (NEW) ✅
+- [x] Contact form submissions sent to `info@vasilisnetshield.com`
+- [x] Professional HTML email template with reply-to set to submitter
 
 ### Dynamic Page Builder
 - [x] Full CRUD for custom pages at `/page-builder`
