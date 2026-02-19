@@ -12,18 +12,20 @@ Build a full-featured cybersecurity training platform for vasilisnetshield.com w
 ## What's Been Implemented (Latest Session - Feb 19, 2026)
 
 ### CRITICAL FIXES THIS SESSION ✅
-- [x] **Phishing Link Tracking FIXED** - Clicks now show phishing landing page, NOT homepage
-  - Root cause: SendGrid was wrapping links. User disabled it in their dashboard.
-  - Campaigns must have targets assigned for tracking to work
+- [x] **Phishing Campaign Duplication FIXED** - Duplicated campaigns now correctly copy all targets from original
+  - Root cause: Duplicate endpoint was setting `total_targets: 0` without copying target records
+  - Fixed: Now copies all target records with new tracking codes
+  - Verified: Duplicated TEST_TRACKING_CAMPAIGN now has 3 targets and sends 3 emails
+- [x] **Campaign Edit Target Loading FIXED** - Edit dialog now fetches existing targets from API
+  - Root cause: Frontend was looking for `campaign.target_user_ids` which didn't exist in list response
+  - Fixed: `editCampaign()` now calls API to fetch actual targets before populating form
+- [x] **Phishing Emails CONFIRMED WORKING** - SendGrid integration verified via logs (status 202)
 - [x] **Backwards Typing Bug FIXED** - RichTextEditor no longer types backwards
-  - Root cause: `dangerouslySetInnerHTML` was resetting cursor on every render
-  - Fixed by setting innerHTML only once on mount
 - [x] **File Upload "Invalid Token" FIXED** - Removed explicit Content-Type header for multipart
 - [x] **Page Builder Moved to Content Section** - Now under Content menu in sidebar
 - [x] **Custom Pages in Public Nav** - Pages with `show_in_nav=true` appear in navigation
 - [x] **Campaign Edit/Duplicate** - Can now edit draft campaigns and duplicate any campaign
 - [x] **Permissions Endpoint Fixed** - Changed `if not db` to `if db is None` for proper MongoDB truth testing
-- [x] **Phishing Emails NOW SENDING** - Successfully sent 5 emails via EMAIL_TEST_CAMPAIGN
 
 ### Automatic Retraining Flow (NEW) ✅
 When a user clicks a phishing link:
