@@ -70,30 +70,44 @@ export default function Inquiries() {
   };
 
   const updateStatus = async (inquiryId, status) => {
+    if (!inquiryId || !status) {
+      toast.error('Invalid inquiry or status');
+      return;
+    }
+    
     setUpdating(true);
     try {
-      await axios.patch(`${API}/inquiries/${inquiryId}`, {
+      const response = await axios.patch(`${API}/inquiries/${inquiryId}`, {
         status,
         admin_notes: adminNotes || null
       }, { headers });
-      toast.success(`Inquiry marked as ${status}`);
-      fetchData();
-      setShowDetailDialog(false);
       
-      // If approved, redirect to Users page with pre-filled data for creating the user
-      if (status === 'approved' && selectedInquiry) {
-        const userData = {
+      if (response.data) {
+        toast.success(`Inquiry marked as ${status}`);
+        
+        // Store user data before closing dialog
+        const userData = status === 'approved' && selectedInquiry ? {
           email: selectedInquiry.email,
           name: selectedInquiry.name || '',
           organization: selectedInquiry.organization || ''
-        };
-        // Navigate to users page with state to open create user dialog
-        navigate('/users', { state: { createUser: userData } });
-        toast.info('Create the user account now');
+        } : null;
+        
+        // Close dialog and reset state
+        setShowDetailDialog(false);
+        setSelectedInquiry(null);
+        setAdminNotes('');
+        
+        // Refresh data
+        await fetchData();
+        
+        // If approved, redirect to Users page with pre-filled data for creating the user
+        if (status === 'approved' && userData) {
+          setTimeout(() => {
+            navigate('/users', { state: { createUser: userData } });
+            toast.info('Create the user account now');
+          }, 100);
+        }
       }
-      
-      setSelectedInquiry(null);
-      setAdminNotes('');
     } catch (err) {
       console.error('Update error:', err);
       toast.error(err.response?.data?.detail || 'Failed to update inquiry');
