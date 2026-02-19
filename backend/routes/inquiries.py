@@ -53,7 +53,7 @@ class InquiryCreate(BaseModel):
 
 class InquiryUpdate(BaseModel):
     status: str  # pending, contacted, approved, rejected
-    admin_notes: str = None
+    admin_notes: Optional[str] = None
 
 
 # ============== HELPER FUNCTIONS ==============
