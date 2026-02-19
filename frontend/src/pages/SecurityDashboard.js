@@ -33,23 +33,13 @@ export default function SecurityDashboard() {
   const [dashboard, setDashboard] = useState(null);
   const [logs, setLogs] = useState([]);
   const [logsTotal, setLogsTotal] = useState(0);
-  const [logsPage, setLogsPage] = useState(0);
   const [loginHistory, setLoginHistory] = useState([]);
-  const [filters, setFilters] = useState({
-    action: '',
-    severity: '',
-    search: ''
-  });
 
   useEffect(() => {
     fetchDashboard();
-    fetchLogs();
+    fetchRecentLogs();
     fetchLoginHistory();
   }, []);
-
-  useEffect(() => {
-    fetchLogs();
-  }, [logsPage, filters]);
 
   const fetchDashboard = async () => {
     try {
@@ -62,17 +52,9 @@ export default function SecurityDashboard() {
     }
   };
 
-  const fetchLogs = async () => {
+  const fetchRecentLogs = async () => {
     try {
-      const params = new URLSearchParams({
-        limit: '20',
-        offset: String(logsPage * 20)
-      });
-      if (filters.action) params.append('action', filters.action);
-      if (filters.severity) params.append('severity', filters.severity);
-      if (filters.search) params.append('user_email', filters.search);
-      
-      const res = await axios.get(`${API}/security/audit-logs?${params}`, {
+      const res = await axios.get(`${API}/security/audit-logs?limit=10`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setLogs(res.data.logs);
