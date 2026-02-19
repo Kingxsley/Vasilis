@@ -2,7 +2,7 @@
 Permission Management Routes
 API endpoints for managing user roles and permissions
 """
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime, timezone
@@ -14,17 +14,22 @@ router = APIRouter(prefix="/permissions", tags=["Permissions"])
 
 # Will be set by server.py
 db = None
-get_current_user = None
 rbac_manager = None
 audit_logger = None
 
 
 def init_permission_routes(database, user_dep, rbac, logger):
-    global db, get_current_user, rbac_manager, audit_logger
+    global db, rbac_manager, audit_logger
     db = database
-    get_current_user = user_dep
     rbac_manager = rbac
     audit_logger = logger
+
+
+async def get_current_user_from_request(request: Request) -> dict:
+    """Get current user from request"""
+    from utils import get_current_user as _get_current_user, security
+    credentials = await security(request)
+    return await _get_current_user(request, credentials)
 
 
 # ============== MODELS ==============
@@ -55,8 +60,10 @@ class BulkPermissionRequest(BaseModel):
 # ============== ENDPOINTS ==============
 
 @router.get("/roles")
-async def get_available_roles(user: dict = Depends(lambda: get_current_user)):
+async def get_available_roles(request: Request):
     """Get roles that current user can assign"""
+    user = await get_current_user_from_request(request)
+    
     if not rbac_manager:
         raise HTTPException(status_code=500, detail="RBAC not initialized")
     
@@ -84,8 +91,10 @@ async def get_available_roles(user: dict = Depends(lambda: get_current_user)):
 
 
 @router.get("/available")
-async def get_available_permissions(user: dict = Depends(lambda: get_current_user)):
+async def get_available_permissions(request: Request):
     """Get permissions that current user can grant to others"""
+    user = await get_current_user_from_request(request)
+    
     if not rbac_manager:
         raise HTTPException(status_code=500, detail="RBAC not initialized")
     
@@ -108,11 +117,10 @@ async def get_available_permissions(user: dict = Depends(lambda: get_current_use
 
 
 @router.get("/user/{user_id}")
-async def get_user_permissions(
-    user_id: str,
-    user: dict = Depends(lambda: get_current_user)
-):
+async def get_user_permissions(user_id: str, request: Request):
     """Get permissions for a specific user"""
+    user = await get_current_user_from_request(request)
+    
     if not db or not rbac_manager:
         raise HTTPException(status_code=500, detail="Service not initialized")
     
@@ -154,21 +162,20 @@ async def get_user_permissions(
 
 
 @router.post("/grant")
-async def grant_permission(
-    request: GrantPermissionRequest,
-    user: dict = Depends(lambda: get_current_user)
-):
+async def grant_permission(request_data: GrantPermissionRequest, request: Request):
     """Grant a permission to a user"""
+    user = await get_current_user_from_request(request)
+    
     if not db or not rbac_manager:
         raise HTTPException(status_code=500, detail="Service not initialized")
     
     # Check if current user can grant this permission
     assignable = rbac_manager.get_assignable_permissions(user.get("role"))
-    if request.permission not in assignable:
-        raise HTTPException(status_code=403, detail=f"You cannot grant the '{request.permission}' permission")
+    if request_data.permission not in assignable:
+        raise HTTPException(status_code=403, detail=f"You cannot grant the '{request_data.permission}' permission")
     
     # Get target user
-    target_user = await db.users.find_one({"user_id": request.user_id}, {"_id": 0})
+    target_user = await db.users.find_one({"user_id": request_data.user_id}, {"_id": 0})
     if not target_user:
         raise HTTPException(status_code=404, detail="User not found")
     
@@ -178,11 +185,11 @@ async def grant_permission(
     
     # Grant permission
     success = await rbac_manager.grant_permission(
-        user_id=request.user_id,
-        permission=request.permission,
+        user_id=request_data.user_id,
+        permission=request_data.permission,
         granted_by=user.get("user_id"),
-        expires_at=request.expires_at,
-        reason=request.reason
+        expires_at=request_data.expires_at,
+        reason=request_data.reason
     )
     
     if success and audit_logger:
@@ -191,28 +198,27 @@ async def grant_permission(
             user_id=user.get("user_id"),
             user_email=user.get("email"),
             details={
-                "target_user": request.user_id,
-                "permission": request.permission,
-                "expires_at": request.expires_at,
-                "reason": request.reason
+                "target_user": request_data.user_id,
+                "permission": request_data.permission,
+                "expires_at": request_data.expires_at,
+                "reason": request_data.reason
             },
             severity="info"
         )
     
-    return {"success": success, "message": f"Permission '{request.permission}' granted to user"}
+    return {"success": success, "message": f"Permission '{request_data.permission}' granted to user"}
 
 
 @router.post("/revoke")
-async def revoke_permission(
-    request: RevokePermissionRequest,
-    user: dict = Depends(lambda: get_current_user)
-):
+async def revoke_permission(request_data: RevokePermissionRequest, request: Request):
     """Revoke a permission from a user"""
+    user = await get_current_user_from_request(request)
+    
     if not db or not rbac_manager:
         raise HTTPException(status_code=500, detail="Service not initialized")
     
     # Get target user
-    target_user = await db.users.find_one({"user_id": request.user_id}, {"_id": 0})
+    target_user = await db.users.find_one({"user_id": request_data.user_id}, {"_id": 0})
     if not target_user:
         raise HTTPException(status_code=404, detail="User not found")
     
@@ -222,8 +228,8 @@ async def revoke_permission(
     
     # Revoke permission
     success = await rbac_manager.revoke_permission(
-        user_id=request.user_id,
-        permission=request.permission
+        user_id=request_data.user_id,
+        permission=request_data.permission
     )
     
     if success and audit_logger:
@@ -232,29 +238,28 @@ async def revoke_permission(
             user_id=user.get("user_id"),
             user_email=user.get("email"),
             details={
-                "target_user": request.user_id,
-                "permission": request.permission
+                "target_user": request_data.user_id,
+                "permission": request_data.permission
             },
             severity="info"
         )
     
-    return {"success": success, "message": f"Permission '{request.permission}' revoked from user"}
+    return {"success": success, "message": f"Permission '{request_data.permission}' revoked from user"}
 
 
 @router.post("/bulk")
-async def bulk_update_permissions(
-    request: BulkPermissionRequest,
-    user: dict = Depends(lambda: get_current_user)
-):
+async def bulk_update_permissions(request_data: BulkPermissionRequest, request: Request):
     """Grant or revoke multiple permissions at once"""
+    user = await get_current_user_from_request(request)
+    
     if not db or not rbac_manager:
         raise HTTPException(status_code=500, detail="Service not initialized")
     
-    if request.action not in ["grant", "revoke"]:
+    if request_data.action not in ["grant", "revoke"]:
         raise HTTPException(status_code=400, detail="Action must be 'grant' or 'revoke'")
     
     # Get target user
-    target_user = await db.users.find_one({"user_id": request.user_id}, {"_id": 0})
+    target_user = await db.users.find_one({"user_id": request_data.user_id}, {"_id": 0})
     if not target_user:
         raise HTTPException(status_code=404, detail="User not found")
     
@@ -267,20 +272,20 @@ async def bulk_update_permissions(
     
     results = {"success": [], "failed": []}
     
-    for permission in request.permissions:
-        if request.action == "grant":
+    for permission in request_data.permissions:
+        if request_data.action == "grant":
             if permission not in assignable:
                 results["failed"].append({"permission": permission, "reason": "Not assignable"})
                 continue
             
             success = await rbac_manager.grant_permission(
-                user_id=request.user_id,
+                user_id=request_data.user_id,
                 permission=permission,
                 granted_by=user.get("user_id")
             )
         else:
             success = await rbac_manager.revoke_permission(
-                user_id=request.user_id,
+                user_id=request_data.user_id,
                 permission=permission
             )
         
@@ -291,12 +296,12 @@ async def bulk_update_permissions(
     
     if audit_logger:
         await audit_logger.log(
-            action=f"permissions_bulk_{request.action}",
+            action=f"permissions_bulk_{request_data.action}",
             user_id=user.get("user_id"),
             user_email=user.get("email"),
             details={
-                "target_user": request.user_id,
-                "action": request.action,
+                "target_user": request_data.user_id,
+                "action": request_data.action,
                 "success_count": len(results["success"]),
                 "failed_count": len(results["failed"])
             },
@@ -307,21 +312,20 @@ async def bulk_update_permissions(
 
 
 @router.put("/role")
-async def update_user_role(
-    request: UpdateUserRoleRequest,
-    user: dict = Depends(lambda: get_current_user)
-):
+async def update_user_role(request_data: UpdateUserRoleRequest, request: Request):
     """Update a user's role"""
+    user = await get_current_user_from_request(request)
+    
     if not db or not rbac_manager:
         raise HTTPException(status_code=500, detail="Service not initialized")
     
     # Check if current user can assign this role
     assignable_roles = rbac_manager.get_assignable_roles(user.get("role"))
-    if request.role not in assignable_roles:
-        raise HTTPException(status_code=403, detail=f"You cannot assign the '{request.role}' role")
+    if request_data.role not in assignable_roles:
+        raise HTTPException(status_code=403, detail=f"You cannot assign the '{request_data.role}' role")
     
     # Get target user
-    target_user = await db.users.find_one({"user_id": request.user_id}, {"_id": 0})
+    target_user = await db.users.find_one({"user_id": request_data.user_id}, {"_id": 0})
     if not target_user:
         raise HTTPException(status_code=404, detail="User not found")
     
@@ -338,8 +342,8 @@ async def update_user_role(
     
     # Update role
     await db.users.update_one(
-        {"user_id": request.user_id},
-        {"$set": {"role": request.role}}
+        {"user_id": request_data.user_id},
+        {"$set": {"role": request_data.role}}
     )
     
     if audit_logger:
@@ -348,27 +352,27 @@ async def update_user_role(
             user_id=user.get("user_id"),
             user_email=user.get("email"),
             details={
-                "target_user": request.user_id,
+                "target_user": request_data.user_id,
+                "target_email": target_user.get("email"),
                 "old_role": old_role,
-                "new_role": request.role
+                "new_role": request_data.role
             },
             severity="warning"
         )
     
     return {
         "success": True,
-        "message": f"User role updated to '{request.role}'",
+        "message": f"User role updated to '{request_data.role}'",
         "old_role": old_role,
-        "new_role": request.role
+        "new_role": request_data.role
     }
 
 
 @router.get("/check/{permission}")
-async def check_permission(
-    permission: str,
-    user: dict = Depends(lambda: get_current_user)
-):
+async def check_permission(permission: str, request: Request):
     """Check if current user has a specific permission"""
+    user = await get_current_user_from_request(request)
+    
     if not rbac_manager:
         raise HTTPException(status_code=500, detail="RBAC not initialized")
     
@@ -382,8 +386,10 @@ async def check_permission(
 
 
 @router.get("/my-permissions")
-async def get_my_permissions(user: dict = Depends(lambda: get_current_user)):
+async def get_my_permissions(request: Request):
     """Get current user's effective permissions"""
+    user = await get_current_user_from_request(request)
+    
     if not rbac_manager:
         raise HTTPException(status_code=500, detail="RBAC not initialized")
     
