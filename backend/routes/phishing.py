@@ -27,6 +27,11 @@ def get_db():
     return db
 
 
+def get_audit_logger():
+    from server import audit_logger
+    return audit_logger
+
+
 async def get_current_user(request: Request) -> dict:
     from utils import get_current_user as _get_current_user, security
     credentials = await security(request)
