@@ -5,12 +5,15 @@ import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
+import { Checkbox } from '../components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
+  DialogFooter,
 } from '../components/ui/dialog';
 import {
   Select,
@@ -27,7 +30,7 @@ import {
   TableHeader,
   TableRow,
 } from '../components/ui/table';
-import { Users, Plus, Search, Pencil, Trash2, Building2, Award, Loader2 } from 'lucide-react';
+import { Users, Plus, Search, Pencil, Trash2, Building2, Award, Loader2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { Pagination } from '../components/Pagination';
@@ -46,6 +49,8 @@ export default function UsersPage() {
   const [editingUser, setEditingUser] = useState(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
