@@ -129,6 +129,7 @@ const navGroups = [
     contentManager: true, // media_manager can access
     items: [
       { path: '/settings', label: 'Settings', icon: Settings, contentManager: true },
+      { path: '/page-builder', label: 'Page Builder', icon: Layout, superAdminOnly: true },
       { path: '/permissions', label: 'Permissions', icon: ShieldAlert, superAdminOnly: true },
       { path: '/seo-settings', label: 'SEO', icon: Search, contentManager: true },
       { path: '/email-templates', label: 'Email Templates', icon: MailIcon, contentManager: true },
