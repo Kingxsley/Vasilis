@@ -539,6 +539,14 @@ const AppRouter = () => {
           }
         />
         <Route
+          path="/sidebar-customizer"
+          element={
+            <ProtectedRoute adminOnly>
+              <SidebarCustomizer />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/content"
           element={
             <ProtectedRoute contentManager>
