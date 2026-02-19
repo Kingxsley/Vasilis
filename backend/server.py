@@ -1948,6 +1948,7 @@ from routes.media import router as media_router
 from routes.sidebar import router as sidebar_router
 from routes.permissions import router as permissions_router, init_permission_routes
 from routes.navigation import router as navigation_router
+from routes.activity_logs import router as activity_logs_router
 
 # Import RBAC manager
 from middleware.rbac import rbac_manager
