@@ -471,6 +471,7 @@ export default function ContentManager() {
                         value={blogForm.content} 
                         onChange={(value) => setBlogForm({...blogForm, content: value})}
                         placeholder="Write your blog post content..."
+                        token={token}
                       />
                     </Suspense>
                   </div>
