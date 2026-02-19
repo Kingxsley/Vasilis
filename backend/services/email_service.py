@@ -590,3 +590,103 @@ async def send_certificate_email(user_email: str, user_name: str, certificate_na
     except Exception as e:
         logger.error(f"Failed to send certificate email: {e}")
         return False
+
+
+async def send_account_lockout_notification(admin_emails: list, locked_email: str, ip_address: str, 
+                                             lockout_duration: int = 15, db=None):
+    """Send notification to admins when a user account is locked due to failed login attempts"""
+    
+    sendgrid_api_key = os.environ.get('SENDGRID_API_KEY')
+    sender_email = os.environ.get('SENDER_EMAIL')
+    
+    if not sendgrid_api_key or not sender_email:
+        logger.warning("Email not configured - skipping lockout notification")
+        return False
+    
+    branding = {"company_name": "Vasilis NetShield", "primary_color": "#D4A836"}
+    if db is not None:
+        branding = await get_branding_settings(db)
+    
+    company_name = branding.get("company_name", "Vasilis NetShield")
+    primary_color = branding.get("primary_color", "#D4A836")
+    
+    frontend_url = os.environ.get('FRONTEND_URL', 'https://vasilisnetshield.com')
+    security_url = f"{frontend_url}/security-dashboard"
+    
+    from datetime import datetime, timezone
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    
+    html_content = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
+<body style="margin:0;padding:0;background:#0f0f15;font-family:Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#0f0f15;padding:20px 0;">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="background:#1a1a24;border-radius:10px;border:1px solid #FF6B6B;">
+<tr><td style="padding:30px;text-align:center;">
+<div style="font-size:40px;margin-bottom:10px;">🔒</div>
+<h1 style="color:#FF6B6B;margin:0;font-size:24px;">Account Locked Alert</h1>
+</td></tr>
+<tr><td style="padding:0 30px;">
+<p style="color:#E8DDB5;margin:0 0 20px 0;">An account has been automatically locked due to multiple failed login attempts:</p>
+<div style="background:#0f0f15;border-radius:8px;padding:20px;border-left:4px solid #FF6B6B;">
+<p style="color:#888;margin:0 0 10px 0;">Locked Account: <strong style="color:#FF6B6B;">{locked_email}</strong></p>
+<p style="color:#888;margin:0 0 10px 0;">IP Address: <strong style="color:#E8DDB5;">{ip_address or 'Unknown'}</strong></p>
+<p style="color:#888;margin:0 0 10px 0;">Timestamp: <strong style="color:#E8DDB5;">{timestamp}</strong></p>
+<p style="color:#888;margin:0;">Lock Duration: <strong style="color:#E8DDB5;">{lockout_duration} minutes</strong></p>
+</div>
+</td></tr>
+<tr><td style="padding:20px 30px;">
+<div style="background:#FF6B6B20;border-radius:8px;padding:15px;border:1px solid #FF6B6B40;">
+<p style="color:#FF6B6B;margin:0;font-size:14px;"><strong>⚠️ Action Required:</strong> Review this activity to determine if it was a legitimate user or a potential brute-force attack.</p>
+</div>
+</td></tr>
+<tr><td style="padding:0 30px 20px 30px;text-align:center;">
+<a href="{security_url}" style="display:inline-block;background:{primary_color};color:#000;text-decoration:none;padding:14px 40px;border-radius:8px;font-weight:bold;">View Security Dashboard</a>
+</td></tr>
+<tr><td style="padding:20px 30px;border-top:1px solid #333;text-align:center;">
+<p style="color:#666;margin:0;font-size:12px;">{company_name} Security Alert System</p>
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>"""
+    
+    plain_text = f"""Account Locked Alert
+
+An account has been automatically locked due to multiple failed login attempts:
+
+- Locked Account: {locked_email}
+- IP Address: {ip_address or 'Unknown'}
+- Timestamp: {timestamp}
+- Lock Duration: {lockout_duration} minutes
+
+Please review this activity in the Security Dashboard: {security_url}
+
+{company_name} Security Alert System"""
+    
+    success_count = 0
+    for admin_email in admin_emails:
+        message = Mail(
+            from_email=Email(sender_email, f"{company_name} Security"),
+            to_emails=To(admin_email),
+            subject=f"🔒 {company_name} Security Alert - Account Locked: {locked_email}"
+        )
+        message.add_content(Content("text/plain", plain_text))
+        message.add_content(Content("text/html", html_content))
+        
+        tracking_settings = TrackingSettings()
+        tracking_settings.click_tracking = ClickTracking(enable=False, enable_text=False)
+        message.tracking_settings = tracking_settings
+        
+        try:
+            sg = SendGridAPIClient(sendgrid_api_key)
+            response = sg.send(message)
+            if response.status_code == 202:
+                success_count += 1
+                logger.info(f"Account lockout notification sent to {admin_email}")
+        except Exception as e:
+            logger.error(f"Failed to send lockout notification to {admin_email}: {e}")
+    
+    return success_count > 0
