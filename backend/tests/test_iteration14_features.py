@@ -32,8 +32,9 @@ class TestAuth:
         })
         assert response.status_code == 200, f"Login failed: {response.text}"
         data = response.json()
-        assert "access_token" in data, "No access_token in response"
-        return data["access_token"]
+        # API returns 'token' not 'access_token'
+        assert "token" in data, f"No token in response: {data.keys()}"
+        return data["token"]
     
     def test_login_success(self):
         """Test super admin login works"""
@@ -43,7 +44,7 @@ class TestAuth:
         })
         assert response.status_code == 200
         data = response.json()
-        assert "access_token" in data
+        assert "token" in data
         assert data["user"]["role"] == "super_admin"
         print(f"PASS: Super admin login successful - role: {data['user']['role']}")
 
@@ -57,7 +58,7 @@ class TestAdvancedAnalyticsDateRange:
             "email": TEST_EMAIL,
             "password": TEST_PASSWORD
         })
-        return response.json()["access_token"]
+        return response.json()["token"]
     
     def test_analytics_overview_with_days(self, auth_token):
         """Test analytics overview with days parameter"""
@@ -117,7 +118,7 @@ class TestUsersPageBulkDelete:
             "email": TEST_EMAIL,
             "password": TEST_PASSWORD
         })
-        return response.json()["access_token"]
+        return response.json()["token"]
     
     def test_list_users(self, auth_token):
         """Test listing users for bulk operations"""
@@ -179,7 +180,7 @@ class TestActivityLogs:
             "email": TEST_EMAIL,
             "password": TEST_PASSWORD
         })
-        return response.json()["access_token"]
+        return response.json()["token"]
     
     def test_activity_logs_list(self, auth_token):
         """Test activity logs list endpoint - super admin only"""
@@ -252,7 +253,7 @@ class TestActivityLogsBulkDelete:
             "email": TEST_EMAIL,
             "password": TEST_PASSWORD
         })
-        return response.json()["access_token"]
+        return response.json()["token"]
     
     def test_bulk_delete_activity_logs(self, auth_token):
         """Test bulk delete of activity logs"""
@@ -290,8 +291,8 @@ class TestContactFormEmail:
     
     def test_contact_form_inquiry_submission(self):
         """Test contact form submission via inquiry endpoint"""
-        # Contact form submissions go through the inquiry endpoint
-        response = requests.post(f"{BASE_URL}/api/inquiries/submit", json={
+        # Contact form submissions go through POST /api/inquiries
+        response = requests.post(f"{BASE_URL}/api/inquiries", json={
             "name": "Test Contact User",
             "email": "testcontact@example.com",
             "phone": "+1234567890",
@@ -315,7 +316,7 @@ class TestPhishingTemplates:
             "email": TEST_EMAIL,
             "password": TEST_PASSWORD
         })
-        return response.json()["access_token"]
+        return response.json()["token"]
     
     def test_list_phishing_templates(self, auth_token):
         """Test listing phishing templates"""
@@ -360,7 +361,7 @@ class TestActivityLogsAccessControl:
             "email": TEST_EMAIL,
             "password": TEST_PASSWORD
         })
-        admin_token = admin_login.json()["access_token"]
+        admin_token = admin_login.json()["token"]
         admin_headers = {"Authorization": f"Bearer {admin_token}"}
         
         # Create trainee user
@@ -387,7 +388,7 @@ class TestActivityLogsAccessControl:
             })
             
             if trainee_login.status_code == 200:
-                trainee_token = trainee_login.json()["access_token"]
+                trainee_token = trainee_login.json()["token"]
                 trainee_headers = {"Authorization": f"Bearer {trainee_token}"}
                 
                 # Try to access activity logs
