@@ -80,11 +80,15 @@ export default function LandingPage() {
       axios.get(`${API}/pages/landing`).catch(() => ({ data: null })),
       axios.get(`${API}/pages/custom`).catch(() => ({ data: { pages: [] } }))
     ])
-    ])
-      .then(([layoutRes, brandingRes, pageRes]) => {
+      .then(([layoutRes, brandingRes, pageRes, customPagesRes]) => {
         setLayout(layoutRes.data);
         setBranding(brandingRes.data);
         setPageContent(pageRes.data);
+        // Filter only published pages that should show in nav
+        const navPages = (customPagesRes.data?.pages || []).filter(
+          p => p.is_published && p.show_in_nav
+        );
+        setCustomPages(navPages);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
