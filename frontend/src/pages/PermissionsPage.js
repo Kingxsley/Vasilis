@@ -55,7 +55,9 @@ export default function PermissionsPage() {
         axios.get(`${API}/permissions/available`, { headers })
       ]);
       
-      setUsers(usersRes.data.users || []);
+      // Handle both array response and object with users property
+      const usersData = Array.isArray(usersRes.data) ? usersRes.data : (usersRes.data.users || []);
+      setUsers(usersData);
       setAvailableRoles(rolesRes.data.assignable_roles || []);
       setAvailablePermissions(permsRes.data.permission_groups || {});
     } catch (err) {
