@@ -11,92 +11,83 @@ Build a full-featured cybersecurity training platform for vasilisnetshield.com w
 
 ## What's Been Implemented (Latest Session - Feb 2026)
 
-### Dynamic Page Builder (NEW - This Session)
+### Dynamic Page Builder
 - [x] Full CRUD for custom pages at `/page-builder`
 - [x] 9 block types: heading, text, button, image, divider, hero, contact_form, event_registration, cards
 - [x] Page types: custom, contact, event, info
 - [x] Show in navigation option
 - [x] Publish/unpublish functionality
 - [x] Public page renderer at `/page/:slug`
-- [x] Block-specific content editors
 
-### Phishing Stats Fix (NEW - This Session)
-- [x] Fixed route ordering issue - `/api/phishing/stats` now correctly returns aggregated statistics
-- [x] Returns: total_campaigns, active_campaigns, completed_campaigns, total_sent, total_opened, total_clicked, open_rate, click_rate
-- [x] Supports `days` parameter for filtering
+### Advanced Analytics Enhancements (NEW)
+- [x] **Click Details Table** - Shows who clicked phishing links with:
+  - User name, email, organization (for super_admin)
+  - Campaign name, click time, IP address
+- [x] **Best Performing Campaigns** - Shows campaigns with lowest click rates
+  - Ranked by click rate (lower = better)
+  - Shows status, emails sent, clicks
 
-### SendGrid Click Tracking Fix (NEW - This Session)
-- [x] Disabled SendGrid click tracking in phishing emails
-- [x] Added TrackingSettings to disable ClickTracking and OpenTracking
-- [x] Phishing links now use platform's own tracking system
+### Campaign Management
+- [x] **Duplicate Campaign** - Copy any campaign for editing
+  - Creates new draft campaign with "(Copy)" suffix
+  - Preserves all settings except targets
 
-### Account Lockout Email Notifications (NEW - This Session)
-- [x] `send_account_lockout_notification()` function in email_service.py
-- [x] Sends email to all super_admins when user account is locked
-- [x] Includes locked email, IP address, timestamp, lockout duration
-- [x] Professional HTML email template with security alert styling
+### RBAC Updates (THIS SESSION)
+- [x] Settings section: **super_admin only**
+- [x] Content section: **super_admin + media_manager only** (org_admin removed)
+- [x] org_admin can see click data for their organization only
 
-### UI Improvements (NEW - This Session)
-- [x] Menu Manager tab removed from CMS (functionality in Settings page)
-- [x] Export button colors improved: Excel (emerald/green), PDF (gold)
-- [x] Page Builder added to sidebar under Settings
+### Audit Logs Enhancement
+- [x] **User Names Column** - Shows actual user names instead of just emails
+- [x] Auto-lookup of user names from user_id or email
 
-### Previous Session Features
-- [x] Enhanced Phishing Landing Page with personalized messaging
-- [x] Training Failure Tracking system
-- [x] Dynamic Menu Manager in CMS
-- [x] Media Manager role permissions
-- [x] Password Policy page in Security section
-- [x] Blog & News pagination with search
-- [x] User Import V2 with auto-generated passwords
-- [x] 7 new simulation types (35 templates)
+### Scenario Manager
+- [x] All 10 simulation types available:
+  - Phishing Email, Malicious Ad, Social Engineering
+  - QR Code Phishing, USB Drop Attack, MFA Fatigue
+  - Business Email Compromise, Data Handling Trap
+  - Ransomware Readiness, Shadow IT Detection
+
+### Previous Features
+- SendGrid click tracking disabled for phishing emails
+- Account lockout email notifications
+- Phishing stats endpoint fixed
+- Export button colors improved
 
 ## API Endpoints
 
-### Page Builder (NEW)
-- `GET /api/pages/custom` - List all custom pages
-- `POST /api/pages/custom` - Create new page
-- `GET /api/pages/custom/{slug}` - Get page by slug (public if published)
-- `PATCH /api/pages/custom/{page_id}` - Update page
-- `DELETE /api/pages/custom/{page_id}` - Delete page
-- `GET /api/pages/block-templates` - Get available block templates
+### Click Analysis (NEW)
+- `GET /api/phishing/click-details?days=30` - Who clicked phishing links
+- `GET /api/phishing/best-performing?limit=10` - Top campaigns by click rate
 
-### Phishing Stats (FIXED)
-- `GET /api/phishing/stats?days=30` - Aggregated phishing statistics
+### Campaign Management (NEW)
+- `POST /api/phishing/campaigns/{id}/duplicate` - Duplicate a campaign
 
-### Phishing Tracking
-- `GET /api/phishing/track/click/{tracking_code}` - Show "You've Been Phished" page
-- `GET /api/phishing/track/open/{tracking_code}` - Track email opens (pixel)
+### Existing Endpoints
+- `GET /api/phishing/stats?days=30` - Aggregated statistics
+- `GET /api/pages/custom` - List custom pages
+- `POST /api/pages/custom` - Create page
+- CRUD for all entities
 
-### Training Failures
-- `GET /api/phishing/training-failures` - List failures (paginated, role-filtered)
-- `GET /api/phishing/training-failures/stats` - Aggregated statistics
-- `PATCH /api/phishing/training-failures/{id}/complete` - Mark as completed
-
-### Navigation Menu Management
-- `GET /api/navigation` - List custom nav items
-- `GET /api/navigation/public` - Get nav items for current user
-- `POST /api/navigation` - Create custom nav item
-- `PATCH /api/navigation/{item_id}` - Update nav item
-- `DELETE /api/navigation/{item_id}` - Delete nav item
-
-## Role-Based Access
+## Role-Based Access (UPDATED)
 
 | Feature | super_admin | org_admin | media_manager | trainee |
 |---------|-------------|-----------|---------------|---------|
-| View All Training Failures | Yes | No | No | No |
-| View Org Training Failures | Yes | Yes | No | No |
-| Content Management | Yes | No | Yes | No |
-| Settings | Yes | No | Yes | No |
-| Password Policy | Yes | No | No | No |
-| Simulations | Yes | No | No | No |
+| Settings Section | Yes | **No** | No | No |
+| Content Section | Yes | **No** | Yes | No |
+| Click Details (all orgs) | Yes | No | No | No |
+| Click Details (own org) | Yes | Yes | No | No |
+| Best Performing Campaigns | Yes | No | No | No |
+| Duplicate Campaign | Yes | Yes | No | No |
+| Audit Logs | Yes | No | No | No |
 
-## Database Collections (Updated)
-- training_failures (NEW) - Tracks phishing simulation clicks
+## Database Collections
+- training_failures - Tracks phishing simulation clicks
+- custom_pages (NEW) - Dynamic page builder pages
 - navigation_items - Custom menu items
-- users, organizations, campaigns
-- scenarios (35 templates per type)
-- audit_logs, settings
+- audit_logs - Now includes user_name field
+- phishing_campaigns, phishing_targets
+- users, organizations, scenarios
 
 ## Phishing Landing Page Scenarios
 | Scenario Type | Title | Color |
