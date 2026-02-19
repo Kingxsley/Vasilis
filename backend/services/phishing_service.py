@@ -139,7 +139,7 @@ async def send_phishing_email(
                 logger.info(f"Phishing email sent to {target['user_email']} via SendGrid (status: {response.status_code})")
                 return True
             else:
-                logger.error(f"SendGrid returned status {response.status_code} for {target['user_email']}")
+                logger.error(f"SendGrid returned status {response.status_code} for {target['user_email']}: {response.text}")
                 return False
         
         # Fallback to SMTP if SendGrid not configured
