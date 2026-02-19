@@ -379,7 +379,7 @@ export default function UsersPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredUsers.map((user) => (
+                  {paginatedUsers.map((user) => (
                     <TableRow 
                       key={user.user_id} 
                       className="border-[#30363D] hover:bg-white/5"
