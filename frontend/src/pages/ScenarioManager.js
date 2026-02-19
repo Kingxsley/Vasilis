@@ -38,6 +38,13 @@ const SCENARIO_TYPES = [
   { value: 'phishing_email', label: 'Phishing Email', icon: Mail },
   { value: 'malicious_ads', label: 'Malicious Ad', icon: Monitor },
   { value: 'social_engineering', label: 'Social Engineering', icon: Users },
+  { value: 'qr_code_phishing', label: 'QR Code Phishing', icon: Mail },
+  { value: 'usb_drop', label: 'USB Drop Attack', icon: Mail },
+  { value: 'mfa_fatigue', label: 'MFA Fatigue Attack', icon: Mail },
+  { value: 'bec_scenario', label: 'Business Email Compromise', icon: Mail },
+  { value: 'data_handling_trap', label: 'Data Handling Trap', icon: Mail },
+  { value: 'ransomware_readiness', label: 'Ransomware Readiness', icon: Mail },
+  { value: 'shadow_it_detection', label: 'Shadow IT Detection', icon: Monitor },
 ];
 
 const DIFFICULTIES = [
