@@ -27,6 +27,22 @@ Build a full-featured cybersecurity training platform for vasilisnetshield.com w
 - [x] **Edit Templates** - Edit button on template cards opens Visual Editor with existing data
 - [x] Files: `/app/frontend/src/components/AdTemplateEditor.js`, updated `AdSimulations.js`
 
+### Phishing Tracking & Retraining Flow (FIXED) ✅
+- [x] **"You Have Been Phished" Page NOW SHOWS** - Click tracking shows awareness page directly
+  - Root cause: Was redirecting to custom `landing_page_url` instead of showing awareness HTML
+  - Fixed by removing the redirect and always showing the phishing awareness page
+- [x] **Email Open Tracking FIXED** - Tracking pixel correctly records email opens
+  - Verified: Returns 1x1 transparent GIF, updates `email_opened` field in database
+- [x] **Automatic Retraining Flow COMPLETE**:
+  - When user clicks phishing link:
+    1. Training failure recorded in database
+    2. Retraining email sent to user with "Start Training Now" button
+    3. User's training progress reset for that scenario
+    4. Notification emails sent to ALL super_admins and org_admins
+  - Bug fixed: Was looking for `target.email` but field was `target.user_email`
+  - Bug fixed: Now gets `user_id` directly from target instead of lookingit up
+- [x] Files: `/app/backend/routes/phishing.py` (lines 942-1040)
+
 ### CRITICAL FIXES THIS SESSION ✅
 - [x] **Phishing Campaign Duplication FIXED** - Duplicated campaigns now correctly copy all targets from original
   - Root cause: Duplicate endpoint was setting `total_targets: 0` without copying target records
