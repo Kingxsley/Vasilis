@@ -79,7 +79,7 @@ const RichTextEditor = ({ value, onChange, placeholder = "Write your content..."
         </Button>
       </div>
 
-      {/* Editor */}
+      {/* Editor - dir="auto" for automatic RTL/LTR detection */}
       <div
         ref={editorRef}
         contentEditable
@@ -87,12 +87,9 @@ const RichTextEditor = ({ value, onChange, placeholder = "Write your content..."
         dangerouslySetInnerHTML={{ __html: value || '' }}
         className="min-h-[200px] p-4 bg-[#1a1a24] text-[#E8DDB5] focus:outline-none prose prose-invert max-w-none"
         style={{
-          minHeight: '200px',
-          direction: 'ltr',
-          textAlign: 'left',
-          unicodeBidi: 'plaintext'
+          minHeight: '200px'
         }}
-        dir="ltr"
+        dir="auto"
         data-placeholder={placeholder}
       />
 
