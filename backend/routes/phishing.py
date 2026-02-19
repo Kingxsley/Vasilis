@@ -824,6 +824,12 @@ async def duplicate_campaign(campaign_id: str, request: Request):
     if not original:
         raise HTTPException(status_code=404, detail="Campaign not found")
     
+    # Get original targets
+    original_targets = await db.phishing_targets.find(
+        {"campaign_id": campaign_id},
+        {"_id": 0}
+    ).to_list(10000)
+    
     # Create new campaign with copy
     new_campaign_id = f"camp_{uuid.uuid4().hex[:12]}"
     new_campaign = {
@@ -834,15 +840,40 @@ async def duplicate_campaign(campaign_id: str, request: Request):
         "created_at": datetime.now(timezone.utc).isoformat(),
         "updated_at": datetime.now(timezone.utc).isoformat(),
         "launched_at": None,
-        "total_targets": 0
+        "emails_sent": 0,
+        "emails_opened": 0,
+        "links_clicked": 0,
+        "total_targets": len(original_targets)
     }
     
     await db.phishing_campaigns.insert_one(new_campaign)
     
+    # Copy targets with new IDs and tracking codes
+    if original_targets:
+        new_targets = []
+        for t in original_targets:
+            new_target = {
+                "target_id": f"tgt_{uuid.uuid4().hex[:12]}",
+                "campaign_id": new_campaign_id,
+                "user_id": t["user_id"],
+                "user_email": t["user_email"],
+                "user_name": t["user_name"],
+                "tracking_code": generate_tracking_code(),
+                "email_sent": False,
+                "email_sent_at": None,
+                "email_opened": False,
+                "email_opened_at": None,
+                "link_clicked": False,
+                "link_clicked_at": None
+            }
+            new_targets.append(new_target)
+        await db.phishing_targets.insert_many(new_targets)
+    
     return {
         "message": "Campaign duplicated successfully",
         "campaign_id": new_campaign_id,
-        "name": new_campaign["name"]
+        "name": new_campaign["name"],
+        "total_targets": len(original_targets)
     }
 
 
