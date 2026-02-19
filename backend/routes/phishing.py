@@ -311,7 +311,7 @@ async def get_campaign(campaign_id: str, request: Request):
 @router.post("/campaigns/{campaign_id}/launch")
 async def launch_campaign(campaign_id: str, request: Request):
     """Launch a phishing campaign - sends emails to all targets"""
-    user = await require_admin(request)
+    await require_admin(request)
     db = get_db()
     
     campaign = await db.phishing_campaigns.find_one({"campaign_id": campaign_id}, {"_id": 0})
