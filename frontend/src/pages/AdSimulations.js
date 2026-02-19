@@ -57,6 +57,10 @@ export default function AdSimulations() {
   const [showNewTemplate, setShowNewTemplate] = useState(false);
   const [showCampaignDetails, setShowCampaignDetails] = useState(false);
   
+  // Visual Editor states
+  const [showVisualEditor, setShowVisualEditor] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState(null);
+  
   const [newCampaign, setNewCampaign] = useState({
     name: '',
     organization_id: '',
