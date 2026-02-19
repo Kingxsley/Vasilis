@@ -11,6 +11,22 @@ Build a full-featured cybersecurity training platform for vasilisnetshield.com w
 
 ## What's Been Implemented (Latest Session - Feb 19, 2026)
 
+### No-Code Ad Simulation Editor (NEW) ✅
+- [x] **Visual Template Editor** - Full no-code editor for creating malicious ad templates
+  - Design tab: Template name, Ad type selector (Banner, Popup, Sidebar, Native)
+  - Content tab: Headline, Description, CTA button, Image URL, Urgency banner toggle
+  - Style tab: Color pickers (background, text, button), Font size slider, Border radius slider
+  - Live Preview panel with desktop/mobile toggle
+- [x] **Quick Scam Templates** - 5 pre-designed scam templates:
+  - Prize/Giveaway Scam
+  - Fake Virus Alert  
+  - Fake Software Update
+  - Get Rich Quick
+  - Fake Tech Support
+- [x] **Color Presets** - 6 one-click color schemes: Danger Red, Warning Orange, Corporate Blue, Money Green, Tech Purple, Dark Mode
+- [x] **Edit Templates** - Edit button on template cards opens Visual Editor with existing data
+- [x] Files: `/app/frontend/src/components/AdTemplateEditor.js`, updated `AdSimulations.js`
+
 ### CRITICAL FIXES THIS SESSION ✅
 - [x] **Phishing Campaign Duplication FIXED** - Duplicated campaigns now correctly copy all targets from original
   - Root cause: Duplicate endpoint was setting `total_targets: 0` without copying target records
@@ -20,12 +36,6 @@ Build a full-featured cybersecurity training platform for vasilisnetshield.com w
   - Root cause: Frontend was looking for `campaign.target_user_ids` which didn't exist in list response
   - Fixed: `editCampaign()` now calls API to fetch actual targets before populating form
 - [x] **Phishing Emails CONFIRMED WORKING** - SendGrid integration verified via logs (status 202)
-- [x] **Backwards Typing Bug FIXED** - RichTextEditor no longer types backwards
-- [x] **File Upload "Invalid Token" FIXED** - Removed explicit Content-Type header for multipart
-- [x] **Page Builder Moved to Content Section** - Now under Content menu in sidebar
-- [x] **Custom Pages in Public Nav** - Pages with `show_in_nav=true` appear in navigation
-- [x] **Campaign Edit/Duplicate** - Can now edit draft campaigns and duplicate any campaign
-- [x] **Permissions Endpoint Fixed** - Changed `if not db` to `if db is None` for proper MongoDB truth testing
 
 ### Automatic Retraining Flow (NEW) ✅
 When a user clicks a phishing link:
