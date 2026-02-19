@@ -823,7 +823,15 @@ async def create_organization(data: OrganizationCreate, user: dict = Depends(req
 
 @org_router.get("", response_model=List[OrganizationResponse])
 async def list_organizations(user: dict = Depends(require_admin)):
-    orgs = await db.organizations.find({}, {"_id": 0}).to_list(1000)
+    # Org admins can only see their own organization
+    if user.get("role") == "org_admin":
+        if not user.get("organization_id"):
+            return []
+        query = {"organization_id": user["organization_id"]}
+    else:
+        query = {}
+    
+    orgs = await db.organizations.find(query, {"_id": 0}).to_list(1000)
     result = []
     for org in orgs:
         user_count = await db.users.count_documents({"organization_id": org["organization_id"]})
@@ -844,6 +852,11 @@ async def list_organizations(user: dict = Depends(require_admin)):
 
 @org_router.get("/{org_id}", response_model=OrganizationResponse)
 async def get_organization(org_id: str, user: dict = Depends(require_admin)):
+    # Org admins can only view their own organization
+    if user.get("role") == "org_admin":
+        if user.get("organization_id") != org_id:
+            raise HTTPException(status_code=403, detail="You can only view your own organization")
+    
     org = await db.organizations.find_one({"organization_id": org_id}, {"_id": 0})
     if not org:
         raise HTTPException(status_code=404, detail="Organization not found")
@@ -865,6 +878,11 @@ async def get_organization(org_id: str, user: dict = Depends(require_admin)):
 
 @org_router.patch("/{org_id}", response_model=OrganizationResponse)
 async def update_organization(org_id: str, data: OrganizationUpdate, user: dict = Depends(require_admin)):
+    # Org admins can only update their own organization
+    if user.get("role") == "org_admin":
+        if user.get("organization_id") != org_id:
+            raise HTTPException(status_code=403, detail="You can only modify your own organization")
+    
     update_data = {k: v for k, v in data.model_dump().items() if v is not None}
     if not update_data:
         raise HTTPException(status_code=400, detail="No update data provided")
