@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { useAuth } from '../App';
+import { useLocation } from 'react-router-dom';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -30,7 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from '../components/ui/table';
-import { Users, Plus, Search, Pencil, Trash2, Building2, Award, Loader2, AlertTriangle } from 'lucide-react';
+import { Users, Plus, Search, Pencil, Trash2, Building2, Award, Loader2, AlertTriangle, ShieldCheck, UserCog } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { Pagination } from '../components/Pagination';
@@ -40,6 +41,7 @@ const API = `${BACKEND_URL}/api`;
 
 export default function UsersPage() {
   const { token, user: currentUser } = useAuth();
+  const location = useLocation();
   const [users, setUsers] = useState([]);
   const [organizations, setOrganizations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,6 +53,9 @@ export default function UsersPage() {
   const [pageSize, setPageSize] = useState(10);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+  const [showRoleDialog, setShowRoleDialog] = useState(false);
+  const [roleChangeUser, setRoleChangeUser] = useState(null);
+  const [newRole, setNewRole] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -59,6 +64,23 @@ export default function UsersPage() {
     organization_id: ''
   });
   const [submitting, setSubmitting] = useState(false);
+
+  // Check if we're coming from access request approval
+  useEffect(() => {
+    if (location.state?.createUser) {
+      const userData = location.state.createUser;
+      setFormData({
+        name: userData.name || '',
+        email: userData.email || '',
+        password: '',
+        role: 'trainee',
+        organization_id: ''
+      });
+      setDialogOpen(true);
+      // Clear the state so refresh doesn't re-open
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     fetchData();
