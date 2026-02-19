@@ -203,7 +203,6 @@ export default function PermissionsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-              <Shield className="w-6 h-6 text-[#D4A836]" />
               Permission Management
             </h1>
             <p className="text-gray-400 mt-1">Manage user roles and access permissions</p>
