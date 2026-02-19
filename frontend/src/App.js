@@ -294,6 +294,7 @@ const SEOSettings = React.lazy(() => import('./pages/SEOSettings'));
 const SidebarCustomizer = React.lazy(() => import('./pages/SidebarCustomizer'));
 const PermissionsPage = React.lazy(() => import('./pages/PermissionsPage'));
 const AuditLogs = React.lazy(() => import('./pages/AuditLogs'));
+const PasswordPolicyPage = React.lazy(() => import('./pages/PasswordPolicyPage'));
 
 // Auth Callback Handler
 const AuthCallback = () => {
