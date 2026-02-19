@@ -130,7 +130,6 @@ const navGroups = [
     superAdminOnly: true, // Only super_admin can access settings
     items: [
       { path: '/settings', label: 'Settings', icon: Settings, superAdminOnly: true },
-      { path: '/page-builder', label: 'Page Builder', icon: Layout, superAdminOnly: true },
       { path: '/permissions', label: 'Permissions', icon: ShieldAlert, superAdminOnly: true },
       { path: '/seo-settings', label: 'SEO', icon: Search, superAdminOnly: true },
       { path: '/email-templates', label: 'Email Templates', icon: MailIcon, superAdminOnly: true },
