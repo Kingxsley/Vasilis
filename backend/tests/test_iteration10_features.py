@@ -32,7 +32,7 @@ class TestHealthAndAuth:
         })
         assert response.status_code == 200, f"Login failed: {response.text}"
         data = response.json()
-        assert "access_token" in data, "No access_token in response"
+        assert "token" in data, "No token in response"
         print(f"✓ Super admin login successful, role: {data.get('user', {}).get('role')}")
 
 
@@ -44,7 +44,7 @@ def auth_token():
         "password": SUPER_ADMIN_PASSWORD
     })
     if response.status_code == 200:
-        return response.json().get("access_token")
+        return response.json().get("token")
     pytest.skip("Authentication failed - skipping authenticated tests")
 
 
