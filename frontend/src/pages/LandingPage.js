@@ -19,35 +19,20 @@ const iconMap = {
   Zap: Zap,
 };
 
-// Logo Component - fetches custom logo from settings
+// Logo Component - shows logo directly without loading skeleton
 const Logo = ({ className = "h-10" }) => {
   const [branding, setBranding] = useState(null);
-  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     axios.get(`${API}/settings/branding`)
-      .then(res => {
-        setBranding(res.data);
-        setLoaded(true);
-      })
-      .catch(() => setLoaded(true));
+      .then(res => setBranding(res.data))
+      .catch(() => {});
   }, []);
 
-  // Handle click - refresh the page
   const handleClick = (e) => {
     e.preventDefault();
     window.location.href = '/';
   };
-
-  // Don't render anything until branding is loaded to prevent flickering
-  if (!loaded) {
-    return (
-      <a href="/" onClick={handleClick} className={`flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity ${className}`}>
-        <div className="w-8 h-8 bg-[#D4A836]/20 rounded animate-pulse" />
-        <div className="w-32 h-6 bg-[#D4A836]/20 rounded animate-pulse" />
-      </a>
-    );
-  }
 
   return (
     <a href="/" onClick={handleClick} className={`flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity ${className}`} data-testid="logo-home-link">
