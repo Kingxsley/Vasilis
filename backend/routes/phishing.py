@@ -418,7 +418,7 @@ async def complete_campaign(campaign_id: str, request: Request):
 @router.post("/campaigns/check-scheduled")
 async def check_scheduled_campaigns(request: Request):
     """Check and launch any scheduled campaigns that are due"""
-    user = await require_admin(request)
+    await require_admin(request)
     db = get_db()
     
     now = datetime.now(timezone.utc)
