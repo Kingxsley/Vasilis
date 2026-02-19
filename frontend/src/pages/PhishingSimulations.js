@@ -388,11 +388,60 @@ export default function PhishingSimulations() {
   const duplicateCampaign = async (campaignId) => {
     try {
       const res = await axios.post(`${API}/phishing/campaigns/${campaignId}/duplicate`, {}, { headers });
-      toast.success(`Campaign duplicated: ${res.data.name}`);
+      toast.success(`Campaign duplicated: ${res.data.name}. You can now edit it before launching.`);
+      // Open the edit dialog with the duplicated campaign
+      editCampaign(res.data);
       fetchData();
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Failed to duplicate campaign');
     }
+  };
+
+  const editCampaign = (campaign) => {
+    setEditingCampaign(campaign);
+    setNewCampaign({
+      name: campaign.name,
+      organization_id: campaign.organization_id || '',
+      template_id: campaign.template_id || '',
+      target_user_ids: campaign.target_user_ids || [],
+      scheduled_at: campaign.scheduled_at || '',
+      launch_immediately: false
+    });
+    setShowNewCampaign(true);
+  };
+
+  const saveCampaignChanges = async () => {
+    if (!editingCampaign) return;
+    
+    try {
+      await axios.put(`${API}/phishing/campaigns/${editingCampaign.campaign_id}`, {
+        name: newCampaign.name,
+        organization_id: newCampaign.organization_id,
+        template_id: newCampaign.template_id,
+        target_user_ids: newCampaign.target_user_ids,
+        scheduled_at: newCampaign.scheduled_at || null
+      }, { headers });
+      
+      toast.success('Campaign updated successfully');
+      setShowNewCampaign(false);
+      setEditingCampaign(null);
+      resetCampaignForm();
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to update campaign');
+    }
+  };
+
+  const resetCampaignForm = () => {
+    setNewCampaign({
+      name: '',
+      organization_id: '',
+      template_id: '',
+      target_user_ids: [],
+      scheduled_at: '',
+      launch_immediately: true
+    });
+    setEditingCampaign(null);
   };
 
   const deleteTemplate = async (templateId) => {
