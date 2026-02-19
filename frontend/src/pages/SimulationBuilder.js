@@ -301,18 +301,27 @@ export default function SimulationBuilder() {
   const [blockValues, setBlockValues] = useState({});
   const [showPreview, setShowPreview] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [launching, setLaunching] = useState(false);
   const [draggedBlock, setDraggedBlock] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [savedSimulations, setSavedSimulations] = useState([]);
   const [loadingSimulations, setLoadingSimulations] = useState(false);
   const dropAreaRef = useRef(null);
+  
+  // Launch campaign states
+  const [showLaunchDialog, setShowLaunchDialog] = useState(false);
+  const [availableUsers, setAvailableUsers] = useState([]);
+  const [selectedTargets, setSelectedTargets] = useState([]);
+  const [campaignToLaunch, setCampaignToLaunch] = useState(null);
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
   const headers = { Authorization: `Bearer ${token}` };
 
-  // Fetch saved simulations
+  // Fetch saved simulations and users
   useEffect(() => {
     fetchSavedSimulations();
+    fetchUsers();
   }, []);
 
   const fetchSavedSimulations = async () => {
@@ -324,6 +333,22 @@ export default function SimulationBuilder() {
       console.error('Failed to fetch simulations:', err);
     } finally {
       setLoadingSimulations(false);
+    }
+  };
+  
+  const fetchUsers = async () => {
+    setLoadingUsers(true);
+    try {
+      const res = await axios.get(`${API}/users`, { headers });
+      // Filter to only trainee/user type users (not admins)
+      const users = (res.data || []).filter(u => 
+        u.role === 'trainee' || u.role === 'user' || u.role === 'org_admin'
+      );
+      setAvailableUsers(users);
+    } catch (err) {
+      console.error('Failed to fetch users:', err);
+    } finally {
+      setLoadingUsers(false);
     }
   };
 
