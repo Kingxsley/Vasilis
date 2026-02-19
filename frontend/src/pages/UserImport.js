@@ -303,7 +303,7 @@ export default function UserImport() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-3 gap-4 mb-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <Card className="bg-[#0f0f15] border-[#30363D]">
                   <CardContent className="p-4 text-center">
                     <p className="text-2xl font-bold text-[#E8DDB5]">{result.total_processed}</p>
@@ -314,6 +314,12 @@ export default function UserImport() {
                   <CardContent className="p-4 text-center">
                     <p className="text-2xl font-bold text-green-400">{result.successful}</p>
                     <p className="text-xs text-gray-500">Successful</p>
+                  </CardContent>
+                </Card>
+                <Card className="bg-[#0f0f15] border-[#30363D]">
+                  <CardContent className="p-4 text-center">
+                    <p className="text-2xl font-bold text-blue-400">{result.emails_sent || 0}</p>
+                    <p className="text-xs text-gray-500">Emails Sent</p>
                   </CardContent>
                 </Card>
                 <Card className="bg-[#0f0f15] border-[#30363D]">
