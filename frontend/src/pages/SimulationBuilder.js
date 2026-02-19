@@ -1384,7 +1384,7 @@ export default function SimulationBuilder() {
                       return (
                         <div
                           key={sim.scenario_id || sim._id}
-                          className="p-4 bg-[#0D1117] border border-[#30363D] rounded-lg"
+                          className="p-4 bg-[#0D1117] border border-[#30363D] rounded-lg hover:border-[#D4A836]/50 transition-colors"
                         >
                           <div className="flex items-start gap-3">
                             <div className={`w-10 h-10 ${simType?.color || 'bg-gray-500'} rounded-lg flex items-center justify-center flex-shrink-0`}>
@@ -1404,6 +1404,15 @@ export default function SimulationBuilder() {
                               </div>
                             </div>
                           </div>
+                          <Button
+                            size="sm"
+                            onClick={() => launchSavedSimulation(sim)}
+                            className="mt-3 bg-[#D4A836] hover:bg-[#C49A30] text-black w-full"
+                            data-testid={`launch-sim-${sim.scenario_id}`}
+                          >
+                            <Play className="w-4 h-4 mr-2" />
+                            Launch Campaign
+                          </Button>
                         </div>
                       );
                     })}
