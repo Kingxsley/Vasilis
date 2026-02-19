@@ -366,10 +366,21 @@ export default function CustomPage() {
   const [page, setPage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [branding, setBranding] = useState(null);
 
   useEffect(() => {
     fetchPage();
+    fetchBranding();
   }, [slug]);
+
+  const fetchBranding = async () => {
+    try {
+      const res = await axios.get(`${API}/settings/branding`);
+      setBranding(res.data);
+    } catch (err) {
+      console.error('Failed to load branding:', err);
+    }
+  };
 
   const fetchPage = async () => {
     try {
