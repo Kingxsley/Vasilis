@@ -582,11 +582,7 @@ export default function ContentManager() {
             <TabsTrigger value="about" className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">
               <Info className="w-4 h-4 mr-2" />About
             </TabsTrigger>
-            {user?.role === 'super_admin' && (
-              <TabsTrigger value="menu" className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">
-                <Navigation className="w-4 h-4 mr-2" />Menu Manager
-              </TabsTrigger>
-            )}
+{/* Menu Manager tab moved to Settings page */}
           </TabsList>
 
           {/* BLOG TAB */}
