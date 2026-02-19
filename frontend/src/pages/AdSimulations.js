@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { useAuth } from '../App';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
@@ -25,10 +25,14 @@ import {
 import { 
   Monitor, Plus, Eye, MousePointer, Users, Trash2, 
   BarChart3, AlertTriangle, FileText, Loader2, RefreshCw, Code,
-  Play, Pause, Clock, Calendar, Copy, Check, Link as LinkIcon
+  Play, Pause, Clock, Calendar, Copy, Check, Link as LinkIcon,
+  Paintbrush, Edit, Sparkles
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
+
+// Lazy load the AdTemplateEditor
+const AdTemplateEditor = lazy(() => import('../components/AdTemplateEditor'));
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
