@@ -223,6 +223,10 @@ const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
+    // Clear refresh timer
+    if (refreshIntervalRef.current) {
+      clearTimeout(refreshIntervalRef.current);
+    }
     try {
       await axios.post(`${API}/auth/logout`);
     } catch (err) {
