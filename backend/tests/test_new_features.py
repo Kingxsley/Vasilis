@@ -11,7 +11,7 @@ import requests
 import os
 import time
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://phishing-sim-1.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://cybersec-trainer-10.preview.emergentagent.com')
 
 # Test credentials
 TEST_EMAIL = "testadmin@netshield.com"

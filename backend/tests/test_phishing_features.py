@@ -12,7 +12,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://phishing-sim-1.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://cybersec-trainer-10.preview.emergentagent.com')
 
 # Test credentials
 SUPER_ADMIN_EMAIL = "kingsley@vasilisnetshield.com"

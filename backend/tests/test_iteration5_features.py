@@ -6,7 +6,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://phishing-sim-1.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://cybersec-trainer-10.preview.emergentagent.com')
 API_URL = f"{BASE_URL}/api"
 
 # Test credentials
