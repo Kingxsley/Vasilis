@@ -11,55 +11,50 @@ Build a full-featured cybersecurity training platform for vasilisnetshield.com w
 - Content management system
 - Enhanced security with RBAC and organization-scoped access control
 
-## What's Been Implemented (Latest Session - Feb 2025)
+## What's Been Implemented (Latest Session - Feb 19, 2025)
 
-### Pagination & Search (NEW)
-- [x] Blog page with pagination, search, and configurable page size (default 10)
-- [x] News page with pagination, search, and configurable page size
-- [x] Videos page with pagination, search, and configurable page size
-- [x] Users admin page with pagination
-- [x] Reusable Pagination component for admin and public pages
-- [x] URL-based pagination state (bookmarkable, shareable)
+### Navigation Access Control (NEW - This Session)
+- [x] Super admin only access to: Organizations, Simulations, Content, Settings, Security sections
+- [x] Org admins see restricted menu: Overview, Management (without Orgs), Training (My Training only)
+- [x] Security API endpoints properly protected with super_admin check
 
-### Permission Management UI (NEW)
-- [x] Dedicated Permissions Management page (`/permissions`)
-- [x] View all users and their roles
-- [x] Change user roles (with restrictions)
-- [x] Grant/revoke individual permissions
-- [x] Bulk permission management
-- [x] Super admin only access to permissions page
+### Dedicated Audit Logs Page (NEW - This Session)
+- [x] Separate `/audit-logs` route (removed from embedded Security Dashboard)
+- [x] Full-featured filters: email search, action type, severity, country, date range
+- [x] Proper table alignment with columns: Timestamp, Action, Email, IP Address, Country, Severity
+- [x] Working CSV and JSON export functionality
+- [x] Pagination with 25 items per page
 
-### Organization-Scoped Access Control (NEW/FIXED)
-- [x] Org admins can ONLY see users in their organization
-- [x] Org admins can ONLY see their own organization
-- [x] Org admins can ONLY see campaigns for their organization
-- [x] Dashboard stats are org-scoped for org admins
-- [x] Org admins cannot assign super_admin role
-- [x] Org admins cannot modify users outside their org
+### Permissions Page Fixes (This Session)
+- [x] Fixed user listing (now handles array response correctly)
+- [x] Shows user count: "Users (N)"
+- [x] Search by name or email functionality
+- [x] Role badges displayed for each user
 
-### Security Features
+### Security Dashboard Updates (This Session)
+- [x] Simplified to show only recent 10 audit logs
+- [x] "View All Logs" button linking to /audit-logs
+- [x] Fixed security route protection (require_super_admin dependency fix)
+
+### Previous Session Features
+- [x] Pagination & Search on Blog, News, Videos, Users pages
+- [x] Permission Management UI with role/permission assignment
+- [x] Organization-Scoped Access Control
 - [x] Audit logging with geolocation (country, city, ISP)
 - [x] 30-day audit log retention with cleanup
-- [x] Audit log export (CSV/JSON)
-- [x] HSTS headers enabled by default
-- [x] Security headers middleware
+- [x] HSTS headers, security headers middleware
 - [x] Rate limiting per endpoint
-- [x] Account lockout management
-- [x] 28 granular permissions across 10 categories
-
-### Email System
 - [x] SendGrid integration with click tracking DISABLED
-- [x] Compact email templates (no Gmail clipping)
-- [x] Direct URLs (no tracking URL issues)
 - [x] Access request notifications to ALL super admins
-- [x] Welcome emails, password reset emails
 
 ## API Endpoints
 
-### Content with Pagination
-- `GET /api/content/blog?skip=0&limit=10&search=query` - Paginated blog posts
-- `GET /api/content/news?skip=0&limit=10&search=query` - Paginated news
-- `GET /api/content/videos?skip=0&limit=10&search=query` - Paginated videos
+### Security Dashboard (Super Admin Only)
+- `GET /api/security/dashboard` - Security overview
+- `GET /api/security/audit-logs` - Paginated audit logs with filters
+- `GET /api/security/audit-logs/export?format=csv|json` - Export logs
+- `GET /api/security/audit-logs/stats` - Statistics
+- `GET /api/security/login-history` - Login activity chart data
 
 ### Permission Management
 - `GET /api/permissions/roles` - Get assignable roles
@@ -69,44 +64,57 @@ Build a full-featured cybersecurity training platform for vasilisnetshield.com w
 - `POST /api/permissions/revoke` - Revoke permission
 - `POST /api/permissions/bulk` - Bulk permission updates
 - `PUT /api/permissions/role` - Update user's role
-- `GET /api/permissions/my-permissions` - Current user's permissions
 
-### Security Dashboard
-- `GET /api/security/dashboard` - Security overview
-- `GET /api/security/audit-logs` - Paginated audit logs
-- `GET /api/security/audit-logs/export` - Export logs
-- `GET /api/security/audit-logs/stats` - Statistics
+### Content with Pagination
+- `GET /api/content/blog?skip=0&limit=10&search=query` - Paginated blog posts
+- `GET /api/content/news?skip=0&limit=10&search=query` - Paginated news
+- `GET /api/content/videos?skip=0&limit=10&search=query` - Paginated videos
 
-## Role Hierarchy
+## Role-Based Navigation
 
-| Role | Access Level | Can Manage |
-|------|--------------|------------|
-| super_admin | Full system | All users, all orgs |
-| org_admin | Organization only | Users in their org |
-| manager | Limited | Read campaigns, training |
-| media_manager | Content only | Blog, news, videos |
-| trainee | Training only | Take training |
-| viewer | Read-only | View only |
+| Menu Section | super_admin | org_admin | trainee |
+|--------------|-------------|-----------|---------|
+| Overview (Dashboard, Analytics) | Yes | Yes | No |
+| Management (Users, Import) | Yes | Yes | No |
+| Organizations | Yes | No | No |
+| Simulations | Yes | No | No |
+| Content (CMS, Editors) | Yes | No | No |
+| Training (My Training) | Yes | Yes | Yes |
+| Certificates, Cert Templates | Yes | No | No |
+| Settings | Yes | No | No |
+| Security (Dashboard, Audit Logs) | Yes | No | No |
 
 ## Database Collections
-- users, user_permissions
+- users, user_permissions, audit_logs
 - organizations
 - campaigns, phishing_campaigns, ad_campaigns
 - training_sessions, scenarios
 - certificates, certificate_templates
 - content (blog, news, videos)
 - pages, settings, sidebar_configs
-- media, audit_logs, inquiries
+- media, inquiries
 
 ## Prioritized Backlog
 
+### P0 (Critical)
+- [x] Fixed: Audit log export functionality
+- [x] Fixed: Security API access control
+- [x] Fixed: Permissions page user listing
+
 ### P1 (High Priority)
+- [ ] Enhanced Account Lockout System (3 retries then lock + admin notification)
+- [ ] Dynamic Sitemap Generation (`/sitemap.xml`)
 - [ ] Complete Media Library UI
 - [ ] Certificate signature upload
 
 ### P2 (Medium Priority)
-- [ ] Security dashboard UI updates
+- [ ] Logo display consolidation (two data sources issue)
 - [ ] User documentation updates
+- [ ] Expandable sidebar navigation default state
+
+## Test Credentials
+- Super Admin: `test@admin.com` / `Test123!`
+- Org Admin: `orgadmin@test.com` / `Test123!`
 
 ## Vercel Deployment
 
