@@ -174,6 +174,19 @@ async def create_inquiry(data: InquiryCreate, request: Request):
         "message": data.message
     })
     
+    # Also send contact form submission to info@vasilisnetshield.com
+    try:
+        from services.email_service import send_contact_form_submission
+        await send_contact_form_submission(
+            name=data.name or "Anonymous",
+            email=data.email,
+            message=data.message,
+            phone=data.phone,
+            db=db
+        )
+    except Exception as e:
+        logger.error(f"Failed to send contact form email: {e}")
+    
     return {
         "message": "Thank you for your interest! A team member will review your request and contact you soon.",
         "inquiry_id": inquiry_id
