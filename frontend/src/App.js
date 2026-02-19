@@ -548,6 +548,14 @@ const AppRouter = () => {
           }
         />
         <Route
+          path="/permissions"
+          element={
+            <ProtectedRoute adminOnly>
+              <PermissionsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/content"
           element={
             <ProtectedRoute contentManager>
