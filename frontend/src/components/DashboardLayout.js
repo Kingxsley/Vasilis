@@ -143,6 +143,7 @@ const navGroups = [
     items: [
       { path: '/security', label: 'Dashboard', icon: ShieldAlert, superAdminOnly: true },
       { path: '/audit-logs', label: 'Audit Logs', icon: FileText, superAdminOnly: true },
+      { path: '/activity-logs', label: 'Activity Logs', icon: Activity, superAdminOnly: true },
       { path: '/password-policy', label: 'Password Policy', icon: ShieldAlert, superAdminOnly: true },
     ]
   },
