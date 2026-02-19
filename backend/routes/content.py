@@ -149,15 +149,32 @@ async def create_blog_post(data: BlogPostCreate, request: Request):
 
 
 @router.get("/blog")
-async def list_blog_posts(published_only: bool = True, limit: int = 20, skip: int = 0):
-    """List blog posts (public endpoint)"""
+async def list_blog_posts(
+    published_only: bool = True, 
+    limit: int = 10, 
+    skip: int = 0,
+    search: str = None
+):
+    """List blog posts with pagination and search (public endpoint)"""
     db = get_db()
     
-    query = {"published": True} if published_only else {}
-    posts = await db.blog_posts.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
-    total = await db.blog_posts.count_documents(query)
+    query = {}
+    if published_only:
+        query["published"] = True
     
-    return {"posts": posts, "total": total}
+    # Add search filter
+    if search:
+        query["$or"] = [
+            {"title": {"$regex": search, "$options": "i"}},
+            {"excerpt": {"$regex": search, "$options": "i"}},
+            {"content": {"$regex": search, "$options": "i"}},
+            {"tags": {"$regex": search, "$options": "i"}}
+        ]
+    
+    total = await db.blog_posts.count_documents(query)
+    posts = await db.blog_posts.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    return {"posts": posts, "total": total, "skip": skip, "limit": limit}
 
 
 @router.get("/blog/{slug}")
