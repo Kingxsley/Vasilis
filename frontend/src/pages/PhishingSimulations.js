@@ -54,6 +54,7 @@ export default function PhishingSimulations() {
   const [showNewCampaign, setShowNewCampaign] = useState(false);
   const [showNewTemplate, setShowNewTemplate] = useState(false);
   const [showCampaignDetails, setShowCampaignDetails] = useState(false);
+  const [editingCampaign, setEditingCampaign] = useState(null); // For editing existing campaigns
   
   // Form states
   const [newCampaign, setNewCampaign] = useState({
