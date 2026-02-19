@@ -215,12 +215,14 @@ When a user clicks a phishing link:
 ## Remaining Issues/Tasks
 
 ### P1 - Still Pending
-- [ ] **No-Code Ad Simulation Editor** - Template editor for ad simulations
-- [ ] **Email "Opened" Status Tracking** - Fix display of opened status
-- [ ] **Logo Display Issue** - Recurring branding bug (conflicting endpoints)
+- [x] **Drag-and-Drop Simulation Builder** - COMPLETED (8 types, 11+ templates, live preview)
+- [x] **No-Code Ad Simulation Editor** - COMPLETED
+- [x] **Email "Opened" Status Tracking** - FIXED (confirmed working)
+- [ ] **Logo Display Issue** - Verified working in test environment (may be production-specific)
 
 ### P2 - Still Pending  
 - [ ] **Final User Documentation** - Create after all features complete
+- [ ] **Integrate Best Performing Campaigns Widget** - Backend exists, needs frontend integration
 
 ## Training Failure Record Structure
 ```json
