@@ -372,8 +372,12 @@ export default function SimulationBuilder() {
         if (block.reorder && block.fromIndex !== undefined) {
           moveBlock(block.fromIndex, index !== null ? index : selectedBlocks.length);
         } else {
+          // Find the original block definition to get the icon component
+          // JSON.stringify loses the icon function, so we need to look it up
+          const originalBlock = BUILDING_BLOCKS.find(b => b.id === block.id);
           const newBlock = {
             ...block,
+            icon: originalBlock?.icon || FileText, // Restore icon from original
             instanceId: `${block.id}_${Date.now()}`
           };
           
