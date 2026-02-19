@@ -417,28 +417,6 @@ async def get_random_scenario(scenario_type: str, exclude_ids: str = "", request
 
 # ============== NEW SIMULATION TYPES ==============
 
-@router.get("/types")
-async def get_scenario_types(request: Request):
-    """Get all available scenario types"""
-    await require_admin(request)
-    
-    return {
-        "types": VALID_SCENARIO_TYPES,
-        "descriptions": {
-            "phishing_email": "Email phishing detection training",
-            "malicious_ads": "Malicious advertisement recognition",
-            "social_engineering": "Social engineering defense scenarios",
-            "qr_code_phishing": "QR code phishing awareness",
-            "usb_drop": "USB drop attack simulation",
-            "mfa_fatigue": "Multi-factor authentication fatigue attacks",
-            "bec_scenario": "Business email compromise scenarios",
-            "data_handling_trap": "Data handling and privacy traps",
-            "ransomware_readiness": "Ransomware preparedness drills",
-            "shadow_it_detection": "Shadow IT detection training"
-        }
-    }
-
-
 @router.post("/seed-templates")
 async def seed_simulation_templates(request: Request):
     """Seed the database with default simulation templates for all types"""
