@@ -167,6 +167,36 @@ export default function UsersPage() {
     }
   };
 
+  // Open role change dialog
+  const openRoleChange = (user) => {
+    if (user.user_id === currentUser.user_id) {
+      toast.error("You can't change your own role");
+      return;
+    }
+    setRoleChangeUser(user);
+    setNewRole(user.role);
+    setShowRoleDialog(true);
+  };
+
+  // Change user role (elevate/demote privileges)
+  const changeUserRole = async () => {
+    if (!roleChangeUser || !newRole) return;
+    
+    try {
+      await axios.patch(`${API}/users/${roleChangeUser.user_id}`, {
+        role: newRole
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success(`${roleChangeUser.name}'s role changed to ${newRole.replace('_', ' ')}`);
+      setShowRoleDialog(false);
+      setRoleChangeUser(null);
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to change role');
+    }
+  };
+
   const toggleSelectUser = (userId) => {
     if (userId === currentUser.user_id) return; // Can't select self
     setSelectedUsers(prev => 
