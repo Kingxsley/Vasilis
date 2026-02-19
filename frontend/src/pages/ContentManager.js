@@ -483,7 +483,7 @@ export default function ContentManager() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-[#1a1a24] border border-[#D4A836]/20 mb-6">
+          <TabsList className="bg-[#1a1a24] border border-[#D4A836]/20 mb-6 flex-wrap">
             <TabsTrigger value="blog" className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">
               <FileText className="w-4 h-4 mr-2" />Blog
             </TabsTrigger>
@@ -496,21 +496,40 @@ export default function ContentManager() {
             <TabsTrigger value="about" className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">
               <Info className="w-4 h-4 mr-2" />About
             </TabsTrigger>
+            {user?.role === 'super_admin' && (
+              <TabsTrigger value="menu" className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">
+                <Navigation className="w-4 h-4 mr-2" />Menu Manager
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {/* BLOG TAB */}
           <TabsContent value="blog">
-            <div className="flex justify-between items-center mb-4">
-              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleMediaUpload} className="hidden" />
-              <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading}
-                className="border-[#D4A836]/30 text-[#E8DDB5]">
-                {uploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Image className="w-4 h-4 mr-2" />}
-                Upload Image
-              </Button>
-              <Button onClick={() => { resetBlogForm(); setBlogDialogOpen(true); }}
-                className="bg-[#D4A836] hover:bg-[#C49A30] text-black">
-                <Plus className="w-4 h-4 mr-2" />New Post
-              </Button>
+            <div className="flex justify-between items-center mb-4 gap-4">
+              <div className="flex items-center gap-2 flex-1 max-w-md">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <Input
+                    placeholder="Search posts..."
+                    value={blogSearch}
+                    onChange={(e) => { setBlogSearch(e.target.value); setBlogPage(1); }}
+                    className="pl-10 bg-[#0D1117] border-[#30363D] text-white"
+                    data-testid="blog-search"
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleMediaUpload} className="hidden" />
+                <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading}
+                  className="border-[#D4A836]/30 text-[#E8DDB5]">
+                  {uploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Image className="w-4 h-4 mr-2" />}
+                  Upload Image
+                </Button>
+                <Button onClick={() => { resetBlogForm(); setBlogDialogOpen(true); }}
+                  className="bg-[#D4A836] hover:bg-[#C49A30] text-black">
+                  <Plus className="w-4 h-4 mr-2" />New Post
+                </Button>
+              </div>
             </div>
 
             <div className="card-dark rounded-xl border border-[#D4A836]/20 overflow-hidden">
