@@ -1039,7 +1039,7 @@ export default function PhishingSimulations() {
                         toast.error('Failed to generate download link');
                       }
                     }}
-                    className="border-green-500/30 text-green-400 hover:bg-green-500/10"
+                    className="border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-400"
                     data-testid="export-excel-btn"
                   >
                     <FileSpreadsheet className="w-4 h-4 mr-1" />
@@ -1058,7 +1058,7 @@ export default function PhishingSimulations() {
                         toast.error('Failed to generate download link');
                       }
                     }}
-                    className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                    className="border-[#D4A836]/50 text-[#D4A836] hover:bg-[#D4A836]/20 hover:border-[#D4A836]"
                     data-testid="export-pdf-btn"
                   >
                     <Download className="w-4 h-4 mr-1" />
