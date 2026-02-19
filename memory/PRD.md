@@ -218,11 +218,15 @@ When a user clicks a phishing link:
 - [x] **Drag-and-Drop Simulation Builder** - COMPLETED (8 types, 11+ templates, live preview)
 - [x] **No-Code Ad Simulation Editor** - COMPLETED
 - [x] **Email "Opened" Status Tracking** - FIXED (confirmed working)
-- [ ] **Logo Display Issue** - Verified working in test environment (may be production-specific)
+- [x] **Inquiry Status Buttons** - FIXED (was crashing due to Pydantic validation error object being rendered)
 
 ### P2 - Still Pending  
-- [ ] **Final User Documentation** - Create after all features complete
-- [ ] **Integrate Best Performing Campaigns Widget** - Backend exists, needs frontend integration
+- [x] **Enhanced Audit Logs** - COMPLETED (captures actor, target, action details for user CRUD, role changes, access requests)
+- [x] **Best Performing Campaigns Widget** - ALREADY INTEGRATED (displays on Advanced Analytics page)
+- [x] **User Documentation** - COMPLETED (Documentation page with 7 sections, quick start guides, search)
+
+### Remaining Tasks
+- [ ] **Logo Display Issue** - Verified working in test environment (may be production-specific)
 
 ## Training Failure Record Structure
 ```json
