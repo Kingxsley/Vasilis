@@ -31,7 +31,8 @@ import { Badge } from '../components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { 
   Plus, Edit, Trash2, Loader2, FileText, Video, Newspaper, 
-  Upload, Eye, EyeOff, Image, Youtube, Info, Users, Rss, ExternalLink, Globe
+  Upload, Eye, EyeOff, Image, Youtube, Info, Users, Rss, ExternalLink, Globe,
+  Link, Navigation, ChevronLeft, ChevronRight, Search
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../App';
@@ -47,6 +48,33 @@ const VIDEO_CATEGORIES = [
   { value: 'tutorials', label: 'Tutorials' },
   { value: 'news', label: 'News & Updates' },
   { value: 'webinars', label: 'Webinars' },
+];
+
+// Available icons for menu manager
+const ICON_OPTIONS = [
+  "LayoutDashboard", "Building2", "Users", "BookOpen", "BarChart3", 
+  "Mail", "Monitor", "Upload", "Award", "FileText", "Settings", 
+  "Layout", "Crosshair", "GraduationCap", "Cog", "ShieldAlert", 
+  "TrendingUp", "MessageSquare", "Image", "Search", "Globe", 
+  "ExternalLink", "Link", "Home", "Folder", "Database", "Cloud"
+];
+
+const SECTION_OPTIONS = [
+  { id: "main", label: "Overview" },
+  { id: "management", label: "Management" },
+  { id: "simulations", label: "Simulations" },
+  { id: "content", label: "Content" },
+  { id: "training", label: "Training" },
+  { id: "settings", label: "Settings" },
+  { id: "security", label: "Security" },
+];
+
+const ROLE_OPTIONS = [
+  { id: "super_admin", label: "Super Admin" },
+  { id: "org_admin", label: "Organization Admin" },
+  { id: "media_manager", label: "Media Manager" },
+  { id: "trainee", label: "Trainee" },
+  { id: "all", label: "All Users" },
 ];
 
 export default function ContentManager() {
