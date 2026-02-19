@@ -168,7 +168,7 @@ class RBACManager:
         permissions = set(self.get_role_permissions(role))
         
         # Get custom permission grants from database
-        if self.db and user_id:
+        if self.db is not None and user_id:
             custom_perms = await self.db.user_permissions.find_one(
                 {"user_id": user_id},
                 {"_id": 0}
