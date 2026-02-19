@@ -308,6 +308,113 @@ async def get_campaign(campaign_id: str, request: Request):
     )
 
 
+@router.put("/campaigns/{campaign_id}")
+async def update_campaign(campaign_id: str, request: Request):
+    """Update a campaign (only draft/scheduled campaigns can be edited)"""
+    user = await require_admin(request)
+    db = get_db()
+    
+    campaign = await db.phishing_campaigns.find_one({"campaign_id": campaign_id}, {"_id": 0})
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    
+    # Only allow editing draft or scheduled campaigns
+    if campaign.get("status") not in ["draft", "scheduled"]:
+        raise HTTPException(status_code=400, detail="Only draft or scheduled campaigns can be edited")
+    
+    data = await request.json()
+    
+    # Build update document
+    update_doc = {}
+    
+    if "name" in data:
+        update_doc["name"] = data["name"]
+    
+    if "template_id" in data and data["template_id"]:
+        template = await db.phishing_templates.find_one({"template_id": data["template_id"]}, {"_id": 0})
+        if not template:
+            raise HTTPException(status_code=404, detail="Template not found")
+        update_doc["template_id"] = data["template_id"]
+    
+    if "organization_id" in data and data["organization_id"]:
+        org = await db.organizations.find_one({"organization_id": data["organization_id"]}, {"_id": 0})
+        if not org:
+            raise HTTPException(status_code=404, detail="Organization not found")
+        update_doc["organization_id"] = data["organization_id"]
+    
+    if "scheduled_at" in data:
+        if data["scheduled_at"]:
+            update_doc["scheduled_at"] = data["scheduled_at"]
+            update_doc["status"] = "scheduled"
+        else:
+            update_doc["scheduled_at"] = None
+            update_doc["status"] = "draft"
+    
+    # Handle target user changes
+    if "target_user_ids" in data and data["target_user_ids"]:
+        new_target_ids = data["target_user_ids"]
+        
+        # Get existing target user IDs
+        existing_targets = await db.phishing_targets.find(
+            {"campaign_id": campaign_id},
+            {"user_id": 1, "_id": 0}
+        ).to_list(10000)
+        existing_user_ids = [t["user_id"] for t in existing_targets]
+        
+        # Find users to add and remove
+        users_to_add = [uid for uid in new_target_ids if uid not in existing_user_ids]
+        users_to_remove = [uid for uid in existing_user_ids if uid not in new_target_ids]
+        
+        # Remove targets no longer in list
+        if users_to_remove:
+            await db.phishing_targets.delete_many({
+                "campaign_id": campaign_id,
+                "user_id": {"$in": users_to_remove}
+            })
+        
+        # Add new targets
+        if users_to_add:
+            new_users = await db.users.find(
+                {"user_id": {"$in": users_to_add}},
+                {"_id": 0}
+            ).to_list(10000)
+            
+            new_targets = []
+            for u in new_users:
+                target_doc = {
+                    "target_id": f"tgt_{uuid.uuid4().hex[:12]}",
+                    "campaign_id": campaign_id,
+                    "user_id": u["user_id"],
+                    "user_email": u["email"],
+                    "user_name": u["name"],
+                    "tracking_code": generate_tracking_code(),
+                    "email_sent": False,
+                    "email_sent_at": None,
+                    "email_opened": False,
+                    "email_opened_at": None,
+                    "link_clicked": False,
+                    "link_clicked_at": None,
+                    "click_ip": None,
+                    "click_user_agent": None
+                }
+                new_targets.append(target_doc)
+            
+            if new_targets:
+                await db.phishing_targets.insert_many(new_targets)
+        
+        # Update total targets count
+        total_targets = await db.phishing_targets.count_documents({"campaign_id": campaign_id})
+        update_doc["total_targets"] = total_targets
+    
+    if update_doc:
+        await db.phishing_campaigns.update_one(
+            {"campaign_id": campaign_id},
+            {"$set": update_doc}
+        )
+    
+    return {"message": "Campaign updated successfully"}
+
+
 @router.post("/campaigns/{campaign_id}/launch")
 async def launch_campaign(campaign_id: str, request: Request):
     """Launch a phishing campaign - sends emails to all targets"""
