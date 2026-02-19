@@ -79,10 +79,24 @@ export default function Inquiries() {
       toast.success(`Inquiry marked as ${status}`);
       fetchData();
       setShowDetailDialog(false);
+      
+      // If approved, redirect to Users page with pre-filled data for creating the user
+      if (status === 'approved' && selectedInquiry) {
+        const userData = {
+          email: selectedInquiry.email,
+          name: selectedInquiry.name || '',
+          organization: selectedInquiry.organization || ''
+        };
+        // Navigate to users page with state to open create user dialog
+        navigate('/users', { state: { createUser: userData } });
+        toast.info('Create the user account now');
+      }
+      
       setSelectedInquiry(null);
       setAdminNotes('');
     } catch (err) {
-      toast.error('Failed to update inquiry');
+      console.error('Update error:', err);
+      toast.error(err.response?.data?.detail || 'Failed to update inquiry');
     } finally {
       setUpdating(false);
     }
