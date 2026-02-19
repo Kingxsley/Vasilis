@@ -17,7 +17,9 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 // Block renderers
 const HeadingBlock = ({ content }) => {
-  const Tag = content.level || 'h2';
+  // Handle both numeric levels (1,2,3) and string levels ('h1','h2','h3')
+  const levelMap = {1: 'h1', 2: 'h2', 3: 'h3', h1: 'h1', h2: 'h2', h3: 'h3'};
+  const Tag = levelMap[content.level] || 'h2';
   const styles = {
     h1: 'text-4xl md:text-5xl font-bold text-[#E8DDB5]',
     h2: 'text-2xl md:text-3xl font-bold text-[#E8DDB5]',
