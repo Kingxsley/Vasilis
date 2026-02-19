@@ -152,7 +152,7 @@ export const DashboardLayout = ({ children }) => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // All groups expanded by default to reduce click times
-  const [expandedGroups, setExpandedGroups] = useState(['main', 'simulations', 'content', 'training', 'settings', 'management']);
+  const [expandedGroups, setExpandedGroups] = useState(['main', 'simulations', 'content', 'training', 'settings', 'management', 'security']);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const handleLogout = async () => {
