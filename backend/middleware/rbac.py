@@ -253,7 +253,7 @@ class RBACManager:
         reason: str = None
     ) -> bool:
         """Grant a custom permission to a user"""
-        if not self.db:
+        if self.db is None:
             return False
         
         grant = {
@@ -277,7 +277,7 @@ class RBACManager:
     
     async def revoke_permission(self, user_id: str, permission: str) -> bool:
         """Revoke a custom permission from a user"""
-        if not self.db:
+        if self.db is None:
             return False
         
         await self.db.user_permissions.update_one(
@@ -289,7 +289,7 @@ class RBACManager:
     
     async def deny_permission(self, user_id: str, permission: str) -> bool:
         """Explicitly deny a permission (overrides role default)"""
-        if not self.db:
+        if self.db is None:
             return False
         
         await self.db.user_permissions.update_one(
@@ -305,7 +305,7 @@ class RBACManager:
     
     async def get_user_permission_details(self, user_id: str) -> dict:
         """Get detailed permission info for a user"""
-        if not self.db:
+        if self.db is None:
             return {}
         
         perms = await self.db.user_permissions.find_one(
