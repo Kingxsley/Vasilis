@@ -97,6 +97,9 @@ export default function VideosPage() {
           </div>
         </div>
       )}
+
+      {/* Footer */}
+      <PublicFooter branding={branding} />
     </div>
   );
 }
