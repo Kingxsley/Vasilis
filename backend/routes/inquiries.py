@@ -1,15 +1,18 @@
 """
-Inquiry Routes - Handle contact/signup inquiries
+Inquiry Routes - Handle contact/signup inquiries (Access Requests)
 Users cannot sign up directly - they submit an inquiry form
 Admins review and create user accounts manually
+Notifications sent to all super admins
 """
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, EmailStr
 from datetime import datetime, timezone
 import uuid
+import logging
 
 from models import UserRole
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/inquiries", tags=["Inquiries"])
 
 
@@ -34,8 +37,10 @@ async def require_admin(request: Request) -> dict:
 # ============== MODELS ==============
 
 class InquiryCreate(BaseModel):
+    name: str = None
     email: EmailStr
-    phone: str
+    phone: str = ""
+    organization: str = None
     message: str
 
 
@@ -44,12 +49,55 @@ class InquiryUpdate(BaseModel):
     admin_notes: str = None
 
 
+# ============== HELPER FUNCTIONS ==============
+
+async def notify_super_admins_of_access_request(inquiry_data: dict):
+    """Send email notification to all super admins about new access request"""
+    db = get_db()
+    
+    try:
+        # Get all super admins
+        super_admins = await db.users.find(
+            {"role": UserRole.SUPER_ADMIN, "is_active": True},
+            {"_id": 0, "email": 1, "name": 1}
+        ).to_list(100)
+        
+        if not super_admins:
+            logger.warning("No super admins found to notify about access request")
+            return
+        
+        from services.email_service import send_access_request_notification
+        
+        # Send notification to each super admin
+        for admin in super_admins:
+            try:
+                await send_access_request_notification(
+                    admin_email=admin.get("email"),
+                    requester_name=inquiry_data.get("name", "Unknown"),
+                    requester_email=inquiry_data.get("email"),
+                    organization_name=inquiry_data.get("organization"),
+                    message=inquiry_data.get("message"),
+                    db=db
+                )
+                logger.info(f"Access request notification sent to {admin.get('email')}")
+            except Exception as e:
+                logger.error(f"Failed to send notification to {admin.get('email')}: {e}")
+        
+    except Exception as e:
+        logger.error(f"Error notifying super admins: {e}")
+
+
 # ============== PUBLIC ROUTES ==============
 
 @router.post("")
 async def create_inquiry(data: InquiryCreate, request: Request):
-    """Submit a new inquiry (public - no auth required)"""
+    """Submit a new access request / inquiry (public - no auth required)"""
     db = get_db()
+    
+    # Get client IP for tracking and geolocation
+    from middleware.security import get_client_ip, get_ip_geolocation
+    client_ip = get_client_ip(request)
+    geo_data = await get_ip_geolocation(client_ip)
     
     # Check if email already has a pending inquiry
     existing = await db.inquiries.find_one({
@@ -63,55 +111,66 @@ async def create_inquiry(data: InquiryCreate, request: Request):
             {"inquiry_id": existing["inquiry_id"]},
             {
                 "$set": {
-                    "phone": data.phone,
+                    "name": data.name or existing.get("name"),
+                    "phone": data.phone or existing.get("phone"),
+                    "organization": data.organization or existing.get("organization"),
                     "message": data.message,
                     "updated_at": datetime.now(timezone.utc).isoformat()
                 }
             }
         )
-        return {"message": "Your inquiry has been updated", "inquiry_id": existing["inquiry_id"]}
+        return {"message": "Your access request has been updated", "inquiry_id": existing["inquiry_id"]}
     
     inquiry_id = f"inq_{uuid.uuid4().hex[:12]}"
     
-    # Get client IP for tracking
-    client_ip = request.client.host if request.client else "unknown"
-    forwarded = request.headers.get("x-forwarded-for")
-    if forwarded:
-        client_ip = forwarded.split(",")[0].strip()
-    
     inquiry_doc = {
         "inquiry_id": inquiry_id,
+        "name": data.name,
         "email": data.email,
         "phone": data.phone,
+        "organization": data.organization,
         "message": data.message,
         "status": "pending",  # pending, contacted, approved, rejected
         "admin_notes": None,
         "ip_address": client_ip,
+        "country": geo_data.get("country", "Unknown"),
+        "country_code": geo_data.get("country_code", "XX"),
+        "city": geo_data.get("city"),
         "created_at": datetime.now(timezone.utc).isoformat(),
         "updated_at": datetime.now(timezone.utc).isoformat()
     }
     
     await db.inquiries.insert_one(inquiry_doc)
     
-    # Optionally send notification email to admin
+    # Log the access request
     try:
-        from services.email_service import send_admin_notification
-        await send_admin_notification(
-            subject="New Inquiry Received",
-            body=f"""
-A new inquiry has been submitted:
-
-Email: {data.email}
-Phone: {data.phone}
-Message: {data.message}
-
-Login to the admin panel to review and create the user account.
-            """
+        from server import audit_logger
+        await audit_logger.log(
+            action="access_request_submitted",
+            user_email=data.email,
+            ip_address=client_ip,
+            details={
+                "inquiry_id": inquiry_id,
+                "name": data.name,
+                "organization": data.organization
+            },
+            severity="info"
         )
     except Exception:
-        pass  # Don't fail if email notification fails
+        pass
     
-    return {"message": "Thank you! We will contact you soon.", "inquiry_id": inquiry_id}
+    # Send email notification to all super admins
+    await notify_super_admins_of_access_request({
+        "name": data.name,
+        "email": data.email,
+        "organization": data.organization,
+        "message": data.message
+    })
+    
+    return {
+        "message": "Thank you for your interest! A team member will review your request and contact you soon.",
+        "inquiry_id": inquiry_id
+    }
 
 
 # ============== ADMIN ROUTES ==============
@@ -124,12 +183,22 @@ async def list_inquiries(
     limit: int = 50
 ):
     """List all inquiries (admin only)"""
-    await require_admin(request)
+    user = await require_admin(request)
     db = get_db()
     
     query = {}
     if status:
         query["status"] = status
+    
+    # Org admins can only see inquiries for their organization
+    if user.get("role") == UserRole.ORG_ADMIN:
+        org = await db.organizations.find_one(
+            {"organization_id": user.get("organization_id")},
+            {"_id": 0, "domain": 1}
+        )
+        if org and org.get("domain"):
+            # Filter by email domain matching organization
+            query["email"] = {"$regex": f"@{org['domain']}$", "$options": "i"}
     
     inquiries = await db.inquiries.find(
         query,
@@ -149,21 +218,52 @@ async def list_inquiries(
 @router.get("/stats")
 async def get_inquiry_stats(request: Request):
     """Get inquiry statistics (admin only)"""
-    await require_admin(request)
+    user = await require_admin(request)
     db = get_db()
     
-    total = await db.inquiries.count_documents({})
-    pending = await db.inquiries.count_documents({"status": "pending"})
-    contacted = await db.inquiries.count_documents({"status": "contacted"})
-    approved = await db.inquiries.count_documents({"status": "approved"})
-    rejected = await db.inquiries.count_documents({"status": "rejected"})
+    base_query = {}
+    
+    # Org admins get stats only for their organization
+    if user.get("role") == UserRole.ORG_ADMIN:
+        org = await db.organizations.find_one(
+            {"organization_id": user.get("organization_id")},
+            {"_id": 0, "domain": 1}
+        )
+        if org and org.get("domain"):
+            base_query["email"] = {"$regex": f"@{org['domain']}$", "$options": "i"}
+    
+    total = await db.inquiries.count_documents(base_query)
+    
+    pending_query = {**base_query, "status": "pending"}
+    pending = await db.inquiries.count_documents(pending_query)
+    
+    contacted_query = {**base_query, "status": "contacted"}
+    contacted = await db.inquiries.count_documents(contacted_query)
+    
+    approved_query = {**base_query, "status": "approved"}
+    approved = await db.inquiries.count_documents(approved_query)
+    
+    rejected_query = {**base_query, "status": "rejected"}
+    rejected = await db.inquiries.count_documents(rejected_query)
+    
+    # Get country breakdown for super admins
+    countries = []
+    if user.get("role") == UserRole.SUPER_ADMIN:
+        pipeline = [
+            {"$match": {"country": {"$exists": True, "$ne": "Unknown"}}},
+            {"$group": {"_id": "$country", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}},
+            {"$limit": 10}
+        ]
+        countries = await db.inquiries.aggregate(pipeline).to_list(10)
     
     return {
         "total": total,
         "pending": pending,
         "contacted": contacted,
         "approved": approved,
-        "rejected": rejected
+        "rejected": rejected,
+        "by_country": [{"country": c["_id"], "count": c["count"]} for c in countries]
     }
 
 
@@ -190,6 +290,11 @@ async def update_inquiry(inquiry_id: str, data: InquiryUpdate, request: Request)
     if data.status not in valid_statuses:
         raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
     
+    # Get the inquiry first
+    inquiry = await db.inquiries.find_one({"inquiry_id": inquiry_id}, {"_id": 0})
+    if not inquiry:
+        raise HTTPException(status_code=404, detail="Inquiry not found")
+    
     update_doc = {
         "status": data.status,
         "updated_at": datetime.now(timezone.utc).isoformat(),
@@ -199,13 +304,28 @@ async def update_inquiry(inquiry_id: str, data: InquiryUpdate, request: Request)
     if data.admin_notes:
         update_doc["admin_notes"] = data.admin_notes
     
-    result = await db.inquiries.update_one(
+    await db.inquiries.update_one(
         {"inquiry_id": inquiry_id},
         {"$set": update_doc}
     )
     
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Inquiry not found")
+    # Log status change
+    try:
+        from server import audit_logger
+        await audit_logger.log(
+            action="access_request_status_changed",
+            user_id=user["user_id"],
+            user_email=user.get("email"),
+            details={
+                "inquiry_id": inquiry_id,
+                "requester_email": inquiry.get("email"),
+                "old_status": inquiry.get("status"),
+                "new_status": data.status
+            },
+            severity="info"
+        )
+    except Exception:
+        pass
     
     return {"message": "Inquiry updated", "status": data.status}
 
@@ -213,8 +333,12 @@ async def update_inquiry(inquiry_id: str, data: InquiryUpdate, request: Request)
 @router.delete("/{inquiry_id}")
 async def delete_inquiry(inquiry_id: str, request: Request):
     """Delete an inquiry (admin only)"""
-    await require_admin(request)
+    user = await require_admin(request)
     db = get_db()
+    
+    # Only super admins can delete
+    if user.get("role") != UserRole.SUPER_ADMIN:
+        raise HTTPException(status_code=403, detail="Only super admins can delete inquiries")
     
     result = await db.inquiries.delete_one({"inquiry_id": inquiry_id})
     if result.deleted_count == 0:
