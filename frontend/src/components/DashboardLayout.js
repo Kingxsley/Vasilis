@@ -329,6 +329,44 @@ export const DashboardLayout = ({ children }) => {
                         </Link>
                       );
                     })}
+                    {/* Custom navigation items for this section */}
+                    {getCustomItemsForSection(group.id).map((item) => {
+                      const isItemActive = location.pathname === item.path;
+                      const isExternal = item.link_type === 'external';
+                      
+                      if (isExternal) {
+                        return (
+                          <a
+                            key={item.item_id}
+                            href={item.path}
+                            target={item.open_in_new_tab ? '_blank' : '_self'}
+                            rel={item.open_in_new_tab ? 'noopener noreferrer' : undefined}
+                            className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-gray-400 hover:text-[#E8DDB5] hover:bg-white/5 border-l-2 border-transparent"
+                            data-testid={`nav-custom-${item.item_id}`}
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                            <span className="text-sm">{item.label}</span>
+                          </a>
+                        );
+                      }
+                      
+                      return (
+                        <Link
+                          key={item.item_id}
+                          to={item.path}
+                          onClick={() => setSidebarOpen(false)}
+                          className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                            isItemActive 
+                              ? 'bg-[#D4A836]/10 text-[#D4A836] border-l-2 border-[#D4A836]' 
+                              : 'text-gray-400 hover:text-[#E8DDB5] hover:bg-white/5 border-l-2 border-transparent'
+                          }`}
+                          data-testid={`nav-custom-${item.item_id}`}
+                        >
+                          <FileText className="w-4 h-4" />
+                          <span className="text-sm">{item.label}</span>
+                        </Link>
+                      );
+                    })}
                   </div>
                 )}
               </div>
