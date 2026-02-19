@@ -35,6 +35,7 @@ const API = `${BACKEND_URL}/api`;
 
 export default function Inquiries() {
   const { token } = useAuth();
+  const navigate = useNavigate();
   const [inquiries, setInquiries] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
