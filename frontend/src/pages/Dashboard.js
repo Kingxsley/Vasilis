@@ -74,11 +74,11 @@ export default function Dashboard() {
       bgColor: 'bg-[#FFB300]/10'
     },
     {
-      title: 'Training Sessions',
-      value: stats?.total_training_sessions || 0,
-      icon: BookOpen,
-      color: '#FF3B30',
-      bgColor: 'bg-[#FF3B30]/10'
+      title: 'Simulations',
+      value: stats?.total_scenarios || 0,
+      icon: Shield,
+      color: '#9C27B0',
+      bgColor: 'bg-[#9C27B0]/10'
     }
   ];
 
