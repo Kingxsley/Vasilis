@@ -189,6 +189,7 @@ const BlogPostPage = React.lazy(() => import('./pages/Blog').then(m => ({ defaul
 const VideosPage = React.lazy(() => import('./pages/VideosPage'));
 const AboutPage = React.lazy(() => import('./pages/AboutPage'));
 const NewsPage = React.lazy(() => import('./pages/NewsPage'));
+const MediaLibrary = React.lazy(() => import('./pages/MediaLibrary'));
 
 // Auth Callback Handler
 const AuthCallback = () => {
