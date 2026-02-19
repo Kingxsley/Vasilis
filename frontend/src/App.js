@@ -293,6 +293,7 @@ const MediaLibrary = React.lazy(() => import('./pages/MediaLibrary'));
 const SEOSettings = React.lazy(() => import('./pages/SEOSettings'));
 const SidebarCustomizer = React.lazy(() => import('./pages/SidebarCustomizer'));
 const PermissionsPage = React.lazy(() => import('./pages/PermissionsPage'));
+const AuditLogs = React.lazy(() => import('./pages/AuditLogs'));
 
 // Auth Callback Handler
 const AuthCallback = () => {
