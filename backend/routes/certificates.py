@@ -199,6 +199,152 @@ async def generate_user_certificate(user_id: str, request: Request):
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
 
+# New route to generate a certificate for a specific module
+@router.get("/user/{user_id}/module/{module_id}")
+async def generate_user_module_certificate(user_id: str, module_id: str, request: Request):
+    """
+    Generate a certificate for a single completed training module for a specific user.
+
+    This endpoint allows trainees to download a certificate for each module they have completed.
+    The same template selection logic is applied as the general certificate generation:
+    organization template first, then module template, then global default.
+    """
+    current_user = await get_current_user(request)
+    db = get_db()
+
+    # Users can generate their own certificate, admins can generate for anyone
+    if current_user["user_id"] != user_id and current_user.get("role") not in [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN]:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    # Get user
+    user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0, "password_hash": 0})
+    if not user_doc:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Get completed session for this module
+    session = await db.training_sessions.find_one(
+        {"user_id": user_id, "module_id": module_id, "status": "completed"},
+        {"_id": 0}
+    )
+    if not session:
+        raise HTTPException(status_code=400, detail="No completed session found for this module")
+
+    # Fetch module details
+    module = await db.training_modules.find_one({"module_id": module_id}, {"_id": 0})
+    if not module:
+        raise HTTPException(status_code=404, detail="Training module not found")
+    module_name = module.get("name", module_id)
+
+    # Determine score and completion date
+    score = session.get("score", 0)
+    completion_date = session.get("completed_at")
+    if isinstance(completion_date, str):
+        try:
+            completion_dt = datetime.fromisoformat(completion_date)
+        except Exception:
+            completion_dt = datetime.now(timezone.utc)
+    else:
+        completion_dt = completion_date or datetime.now(timezone.utc)
+
+    # Determine which certificate template to use
+    template_doc = None
+    # 1. Organization-level template
+    if user_doc.get("organization_id"):
+        org = await db.organizations.find_one(
+            {"organization_id": user_doc["organization_id"]},
+            {"_id": 0, "certificate_template_id": 1}
+        )
+        if org and org.get("certificate_template_id"):
+            template_doc = await db.certificate_templates.find_one(
+                {"template_id": org["certificate_template_id"]},
+                {"_id": 0}
+            )
+    # 2. Module-level template
+    if not template_doc and module.get("certificate_template_id"):
+        template_doc = await db.certificate_templates.find_one(
+            {"template_id": module.get("certificate_template_id")},
+            {"_id": 0}
+        )
+    # 3. Global default template
+    if not template_doc:
+        template_doc = await db.certificate_templates.find_one(
+            {"is_default": True}, {"_id": 0}
+        )
+
+    # Unique certificate ID
+    certificate_id = f"CERT-{uuid.uuid4().hex[:8].upper()}"
+
+    # Prepare placeholders
+    org_name = ""
+    if user_doc.get("organization_id"):
+        org = await db.organizations.find_one(
+            {"organization_id": user_doc["organization_id"]}, {"_id": 0}
+        )
+        if org:
+            org_name = org.get("name", "")
+
+    placeholders = {
+        "user_name": user_doc.get("name", "Unknown"),
+        "user_email": user_doc.get("email", ""),
+        "modules_completed": module_name,
+        "modules_completed_list": module_name,
+        "average_score": f"{score:.1f}%",
+        "average_score_value": score,
+        "completion_date": completion_dt.strftime("%B %d, %Y"),
+        "organization_name": org_name or "",
+        "certificate_id": certificate_id
+    }
+
+    # Generate certificate bytes
+    if template_doc:
+        try:
+            pdf_bytes = generate_certificate_from_template(template_doc, placeholders)
+        except Exception as render_err:
+            # Fallback to default generator
+            pdf_bytes = generate_training_certificate(
+                user_name=user_doc.get("name", "Unknown"),
+                user_email=user_doc.get("email", ""),
+                modules_completed=[module_name],
+                average_score=score,
+                completion_date=completion_dt,
+                organization_name=org_name,
+                certificate_id=certificate_id
+            )
+    else:
+        pdf_bytes = generate_training_certificate(
+            user_name=user_doc.get("name", "Unknown"),
+            user_email=user_doc.get("email", ""),
+            modules_completed=[module_name],
+            average_score=score,
+            completion_date=completion_dt,
+            organization_name=org_name,
+            certificate_id=certificate_id
+        )
+
+    # Store certificate record with module_id
+    cert_record = {
+        "certificate_id": certificate_id,
+        "user_id": user_id,
+        "user_name": user_doc.get("name"),
+        "user_email": user_doc.get("email"),
+        "organization_id": user_doc.get("organization_id"),
+        "module_id": module_id,
+        "module_name": module_name,
+        "score": score,
+        "completion_date": completion_dt.isoformat(),
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    if template_doc and template_doc.get("template_id"):
+        cert_record["template_id"] = template_doc.get("template_id")
+    await db.certificates.insert_one(cert_record)
+
+    filename = f"certificate_{module_name.replace(' ', '_')}_{certificate_id}.pdf"
+    return StreamingResponse(
+        io.BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
 
 @router.get("/verify/{certificate_id}")
 async def verify_certificate(certificate_id: str):

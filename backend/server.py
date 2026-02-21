@@ -410,7 +410,9 @@ async def register(data: UserRegister):
         "organization_id": None,
         "picture": None,
         "is_active": True,
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        # Initialize last_login to created_at so new users count as active
+        "last_login": datetime.now(timezone.utc).isoformat()
     }
     
     # Check if any users exist - if not, make super admin
@@ -522,11 +524,21 @@ async def login(data: UserLogin, request: Request):
         ip_address=client_ip,
         severity="info"
     )
-    
+
+    # Update last_login timestamp
+    try:
+        now_ts = datetime.now(timezone.utc)
+        await db.users.update_one(
+            {"user_id": user["user_id"]},
+            {"$set": {"last_login": now_ts.isoformat()}}
+        )
+    except Exception as e:
+        logger.error(f"Failed to update last_login for user {user['user_id']}: {e}")
+
     created_at = user.get("created_at")
     if isinstance(created_at, str):
         created_at = datetime.fromisoformat(created_at)
-    
+
     user_response = UserResponse(
         user_id=user["user_id"],
         email=user["email"],
@@ -536,7 +548,7 @@ async def login(data: UserLogin, request: Request):
         picture=user.get("picture"),
         created_at=created_at
     )
-    
+
     return TokenResponse(token=token, user=user_response)
 
 
@@ -1004,7 +1016,9 @@ async def create_user(data: UserCreate, admin: dict = Depends(require_admin)):
         "organization_id": data.organization_id,
         "picture": None,
         "is_active": True,
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        # Set last_login equal to creation date so new users count as active
+        "last_login": datetime.now(timezone.utc).isoformat()
     }
     await db.users.insert_one(user_doc)
     
@@ -2175,6 +2189,52 @@ async def get_training_analytics(
         "recent_sessions": recent
     }
 
+# New endpoint to provide user analytics including active/inactive counts
+@api_router.get("/analytics/users")
+async def get_user_analytics(
+    organization_id: Optional[str] = None,
+    days_inactive: int = 3,
+    user: dict = Depends(require_admin)
+):
+    """
+    Return statistics about users across the system or within a specific organization.
+
+    Active users are defined as those with a last_login timestamp within the past ``days_inactive`` days.
+    Inactive users have not logged in during that period.
+    """
+    from datetime import timedelta
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days_inactive)
+
+    query: dict = {}
+    if organization_id:
+        query["organization_id"] = organization_id
+
+    # Count total users
+    total_users = await db.users.count_documents(query)
+
+    # Active users: last_login >= cutoff
+    active_query = query.copy()
+    active_query["last_login"] = {"$gte": cutoff.isoformat()}
+    active_users = await db.users.count_documents(active_query)
+
+    inactive_users = total_users - active_users
+
+    # Breakdown by role
+    pipeline = [
+        {"$match": query if query else {}},
+        {"$group": {"_id": "$role", "count": {"$sum": 1}}}
+    ]
+    role_counts = await db.users.aggregate(pipeline).to_list(10)
+    roles = {rc["_id"]: rc["count"] for rc in role_counts}
+
+    return {
+        "total_users": total_users,
+        "active_users": active_users,
+        "inactive_users": inactive_users,
+        "role_distribution": roles,
+        "days_inactive_threshold": days_inactive
+    }
+
 @api_router.get("/analytics/overview")
 async def get_analytics_overview(
     days: int = 30,
@@ -2375,6 +2435,140 @@ async def get_all_campaigns_analytics(
             "overall_click_rate": round((total_clicked / total_sent * 100), 1) if total_sent > 0 else 0
         }
     }
+
+
+# New endpoint: detailed analytics for a specific campaign including organization breakdown
+@api_router.get("/analytics/campaign/{campaign_id}")
+async def get_campaign_analytics(
+    campaign_id: str,
+    user: dict = Depends(require_admin)
+):
+    """
+    Retrieve detailed analytics for a single campaign, including breakdown by organization.
+
+    For phishing campaigns, statistics include sent, opened, clicked, and submitted counts.
+    For ad campaigns, statistics include impressions (sent), views, and clicks.
+    The endpoint returns the overall campaign summary and a list of organizations with their respective metrics.
+    """
+    # Try to find the campaign in phishing or ad collections
+    campaign = await db.phishing_campaigns.find_one({"campaign_id": campaign_id}, {"_id": 0})
+    campaign_type = "phishing"
+    if not campaign:
+        campaign = await db.ad_campaigns.find_one({"campaign_id": campaign_id}, {"_id": 0})
+        if not campaign:
+            raise HTTPException(status_code=404, detail="Campaign not found")
+        campaign_type = "ad"
+
+    result = {
+        "campaign_id": campaign_id,
+        "campaign_name": campaign.get("name", "Unnamed"),
+        "campaign_type": campaign_type,
+        "created_at": campaign.get("created_at"),
+        "launched_at": campaign.get("launched_at"),
+        "status": campaign.get("status", "draft"),
+        "organization_id": campaign.get("organization_id")
+    }
+
+    # Fetch all targets and join with users to get organization_id
+    if campaign_type == "phishing":
+        targets = await db.phishing_targets.find({"campaign_id": campaign_id}, {"_id": 0}).to_list(100000)
+        # Map user_id to organization_id and name
+        user_ids = {t["user_id"] for t in targets if t.get("user_id")}
+        users = await db.users.find({"user_id": {"$in": list(user_ids)}}, {"_id": 0, "user_id": 1, "organization_id": 1}).to_list(len(user_ids))
+        user_org_map = {u["user_id"]: u.get("organization_id") for u in users}
+        # Map organization_id to org name
+        org_ids = {u.get("organization_id") for u in users if u.get("organization_id")}
+        orgs = await db.organizations.find({"organization_id": {"$in": list(org_ids)}}, {"_id": 0, "organization_id": 1, "name": 1}).to_list(len(org_ids))
+        org_name_map = {o["organization_id"]: o.get("name") for o in orgs}
+
+        # Aggregate overall counts
+        total_sent = len(targets)
+        total_opened = sum(1 for t in targets if t.get("email_opened"))
+        total_clicked = sum(1 for t in targets if t.get("link_clicked"))
+        total_submitted = sum(1 for t in targets if t.get("credentials_submitted") or t.get("submitted_at"))
+
+        # Group by organization
+        org_stats = {}
+        for t in targets:
+            org_id = user_org_map.get(t.get("user_id"))
+            if not org_id:
+                org_id = "unassigned"
+            if org_id not in org_stats:
+                org_stats[org_id] = {
+                    "organization_id": org_id,
+                    "organization_name": org_name_map.get(org_id, "Unassigned"),
+                    "sent": 0,
+                    "opened": 0,
+                    "clicked": 0,
+                    "submitted": 0
+                }
+            org_stats[org_id]["sent"] += 1
+            if t.get("email_opened"):
+                org_stats[org_id]["opened"] += 1
+            if t.get("link_clicked"):
+                org_stats[org_id]["clicked"] += 1
+            if t.get("credentials_submitted") or t.get("submitted_at"):
+                org_stats[org_id]["submitted"] += 1
+
+        # Build response
+        result.update({
+            "summary": {
+                "sent": total_sent,
+                "opened": total_opened,
+                "clicked": total_clicked,
+                "submitted": total_submitted,
+                "open_rate": round((total_opened / total_sent * 100), 1) if total_sent > 0 else 0,
+                "click_rate": round((total_clicked / total_sent * 100), 1) if total_sent > 0 else 0,
+                "submission_rate": round((total_submitted / total_sent * 100), 1) if total_sent > 0 else 0,
+            },
+            "organizations": list(org_stats.values())
+        })
+
+    else:
+        # ad campaign statistics
+        targets = await db.ad_targets.find({"campaign_id": campaign_id}, {"_id": 0}).to_list(100000)
+        user_ids = {t["user_id"] for t in targets if t.get("user_id")}
+        users = await db.users.find({"user_id": {"$in": list(user_ids)}}, {"_id": 0, "user_id": 1, "organization_id": 1}).to_list(len(user_ids))
+        user_org_map = {u["user_id"]: u.get("organization_id") for u in users}
+        org_ids = {u.get("organization_id") for u in users if u.get("organization_id")}
+        orgs = await db.organizations.find({"organization_id": {"$in": list(org_ids)}}, {"_id": 0, "organization_id": 1, "name": 1}).to_list(len(org_ids))
+        org_name_map = {o["organization_id"]: o.get("name") for o in orgs}
+
+        total_sent = len(targets)
+        total_viewed = sum(1 for t in targets if t.get("ad_viewed"))
+        total_clicked = sum(1 for t in targets if t.get("ad_clicked"))
+
+        org_stats = {}
+        for t in targets:
+            org_id = user_org_map.get(t.get("user_id"))
+            if not org_id:
+                org_id = "unassigned"
+            if org_id not in org_stats:
+                org_stats[org_id] = {
+                    "organization_id": org_id,
+                    "organization_name": org_name_map.get(org_id, "Unassigned"),
+                    "sent": 0,
+                    "viewed": 0,
+                    "clicked": 0
+                }
+            org_stats[org_id]["sent"] += 1
+            if t.get("ad_viewed"):
+                org_stats[org_id]["viewed"] += 1
+            if t.get("ad_clicked"):
+                org_stats[org_id]["clicked"] += 1
+
+        result.update({
+            "summary": {
+                "sent": total_sent,
+                "viewed": total_viewed,
+                "clicked": total_clicked,
+                "view_rate": round((total_viewed / total_sent * 100), 1) if total_sent > 0 else 0,
+                "click_rate": round((total_clicked / total_sent * 100), 1) if total_sent > 0 else 0
+            },
+            "organizations": list(org_stats.values())
+        })
+
+    return result
 
 # ============== ROOT ROUTE ==============
 
