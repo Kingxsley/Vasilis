@@ -42,18 +42,27 @@ export default function AdvancedAnalytics() {
   const [analytics, setAnalytics] = useState(null);
   const [phishingStats, setPhishingStats] = useState(null);
   const [userStats, setUserStats] = useState(null);
-  const [clickDetails, setClickDetails] = useState([]);
+  // Removed click details state; click tracking is handled server-side only
   
   // New: All campaigns data with multi-select
   const [allCampaigns, setAllCampaigns] = useState([]);
   const [campaignSummary, setCampaignSummary] = useState(null);
   const [selectedCampaignIds, setSelectedCampaignIds] = useState([]);
   const [campaignTypeFilter, setCampaignTypeFilter] = useState('all'); // all, phishing, ad
+  const [campaignStatusFilter, setCampaignStatusFilter] = useState('all'); // all, draft, active, completed, paused
+  // Date filter for campaigns list.  Empty strings mean no filter.
+  const [campaignStartDate, setCampaignStartDate] = useState('');
+  const [campaignEndDate, setCampaignEndDate] = useState('');
   const [bestCampaigns, setBestCampaigns] = useState([]);
 
   // Detailed analytics for a single selected campaign
   const [campaignDetail, setCampaignDetail] = useState(null);
   const [campaignDetailLoading, setCampaignDetailLoading] = useState(false);
+
+  // Simulation analytics state
+  const [simOverview, setSimOverview] = useState([]);
+  const [simTypeDetail, setSimTypeDetail] = useState(null);
+  const [simUsersDetail, setSimUsersDetail] = useState(null);
 
   useEffect(() => {
     if (!customDateRange) {
@@ -85,23 +94,19 @@ export default function AdvancedAnalytics() {
         ? `${API}/analytics/users?organization_id=${user.organization_id}`
         : `${API}/analytics/users`;
 
-      const [analyticsRes, phishingRes, clickRes, bestRes, allCampaignsRes, userAnalyticsRes] = await Promise.all([
+      const [analyticsRes, phishingRes, bestRes, allCampaignsRes, userAnalyticsRes] = await Promise.all([
         axios.get(`${API}/analytics/overview?${dateParams}`, {
           headers: { Authorization: `Bearer ${token}` }
         }).catch(() => ({ data: null })),
         axios.get(`${API}/phishing/stats?${dateParams}`, {
           headers: { Authorization: `Bearer ${token}` }
         }).catch(() => ({ data: null })),
-        axios.get(`${API}/phishing/click-details?${dateParams}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }).catch(() => ({ data: { click_details: [] } })),
         axios.get(`${API}/phishing/best-performing?limit=5`, {
           headers: { Authorization: `Bearer ${token}` }
         }).catch(() => ({ data: { campaigns: [] } })),
         axios.get(`${API}/analytics/all-campaigns?${dateParams}`, {
           headers: { Authorization: `Bearer ${token}` }
-        }).catch(() => ({ data: { campaigns: [], summary: null } }))
-        ,
+        }).catch(() => ({ data: { campaigns: [], summary: null } })),
         // Fetch aggregated user analytics (active/inactive counts)
         axios.get(userAnalyticsUrl, {
           headers: { Authorization: `Bearer ${token}` }
@@ -110,7 +115,7 @@ export default function AdvancedAnalytics() {
 
       setAnalytics(analyticsRes.data);
       setPhishingStats(phishingRes.data);
-      setClickDetails(clickRes.data?.click_details || []);
+      // click details removed
       setBestCampaigns(bestRes.data?.campaigns || []);
 
       // Set all campaigns data
@@ -128,6 +133,16 @@ export default function AdvancedAnalytics() {
         });
       } else {
         setUserStats(null);
+      }
+
+      // Fetch simulation overview (phishing vs ad) regardless of date range
+      try {
+        const simRes = await axios.get(`${API}/analytics/simulations`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setSimOverview(simRes.data?.types || []);
+      } catch (err) {
+        setSimOverview([]);
       }
     } catch (err) {
       toast.error('Failed to load analytics');
@@ -149,6 +164,38 @@ export default function AdvancedAnalytics() {
       setCampaignDetail(null);
     } finally {
       setCampaignDetailLoading(false);
+    }
+  };
+
+  /**
+   * Fetch detailed analytics for a simulation type (phishing or ad).  This
+   * populates simTypeDetail with summary metrics and a list of organizations.
+   */
+  const fetchSimTypeDetail = async (type) => {
+    setSimUsersDetail(null);
+    setSimTypeDetail(null);
+    try {
+      const res = await axios.get(`${API}/analytics/simulations/${type}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSimTypeDetail(res.data);
+    } catch (err) {
+      toast.error('Failed to load simulation details');
+    }
+  };
+
+  /**
+   * Fetch user-level analytics for a simulation type within a given organization.
+   */
+  const fetchSimUsersDetail = async (type, orgId) => {
+    setSimUsersDetail(null);
+    try {
+      const res = await axios.get(`${API}/analytics/simulations/${type}/organization/${orgId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSimUsersDetail(res.data);
+    } catch (err) {
+      toast.error('Failed to load user details');
     }
   };
 
@@ -405,6 +452,194 @@ export default function AdvancedAnalytics() {
           </Card>
         </div>
 
+        {/* Simulations Overview Section */}
+        {simOverview && simOverview.length > 0 && (
+          <Card className="bg-[#0f0f15] border-[#D4A836]/20">
+            <CardHeader>
+              <CardTitle className="text-[#E8DDB5] flex items-center gap-2">
+                <Activity className="w-5 h-5 text-[#D4A836]" />
+                Simulations Overview
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-2 gap-4">
+                {simOverview.map((sim) => (
+                  <div
+                    key={sim.type}
+                    className="p-4 bg-[#1a1a24] rounded-lg cursor-pointer hover:bg-[#222a33] transition-colors"
+                    onClick={() => fetchSimTypeDetail(sim.type)}
+                  >
+                    <p className="text-lg font-semibold text-[#E8DDB5] capitalize">{sim.label}</p>
+                    <div className="text-xs text-gray-400 mt-1">Campaigns: {sim.total_campaigns}</div>
+                    <div className="flex justify-between mt-2 text-sm">
+                      <span className="text-gray-400">Sent</span>
+                      <span className="text-[#E8DDB5]">{sim.sent}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Opened</span>
+                      <span className="text-[#E8DDB5]">{sim.opened}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Clicked</span>
+                      <span className="text-[#E8DDB5]">{sim.clicked}</span>
+                    </div>
+                    {sim.type === 'phishing' && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-400">Submitted</span>
+                        <span className="text-[#E8DDB5]">{sim.submitted}</span>
+                      </div>
+                    )}
+                    <div className="mt-2 text-xs text-gray-500">Click to view details</div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Simulation Type Detail Section */}
+        {simTypeDetail && (
+          <Card className="bg-[#0f0f15] border-[#D4A836]/20">
+            <CardHeader>
+              <CardTitle className="text-[#E8DDB5] flex items-center gap-2">
+                <Activity className="w-5 h-5 text-[#D4A836]" />
+                {simTypeDetail.type === 'phishing' ? 'Phishing Campaigns' : 'Ad Simulations'} Summary
+              </CardTitle>
+              <div className="mt-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-[#D4A836]/30"
+                  onClick={() => {
+                    setSimTypeDetail(null);
+                    setSimUsersDetail(null);
+                  }}
+                >
+                  Back to Overview
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="p-3 bg-[#1a1a24] rounded-lg text-center">
+                    <p className="text-sm text-gray-400">Sent</p>
+                    <p className="text-xl font-bold text-[#E8DDB5]">{simTypeDetail.summary.sent}</p>
+                  </div>
+                  <div className="p-3 bg-[#1a1a24] rounded-lg text-center">
+                    <p className="text-sm text-gray-400">Opened</p>
+                    <p className="text-xl font-bold text-[#E8DDB5]">{simTypeDetail.summary.opened}</p>
+                    <p className="text-xs text-gray-500">{simTypeDetail.summary.open_rate}% rate</p>
+                  </div>
+                  <div className="p-3 bg-[#1a1a24] rounded-lg text-center">
+                    <p className="text-sm text-gray-400">Clicked</p>
+                    <p className="text-xl font-bold text-[#E8DDB5]">{simTypeDetail.summary.clicked}</p>
+                    <p className="text-xs text-gray-500">{simTypeDetail.summary.click_rate}% rate</p>
+                  </div>
+                  {simTypeDetail.type === 'phishing' && (
+                    <div className="p-3 bg-[#1a1a24] rounded-lg text-center">
+                      <p className="text-sm text-gray-400">Submitted</p>
+                      <p className="text-xl font-bold text-[#E8DDB5]">{simTypeDetail.summary.submitted}</p>
+                      <p className="text-xs text-gray-500">{simTypeDetail.summary.submission_rate}% rate</p>
+                    </div>
+                  )}
+                </div>
+                <div className="mt-4">
+                  <h4 className="text-sm text-gray-400 mb-2">By Organization</h4>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full text-sm">
+                      <thead>
+                        <tr className="text-left border-b border-[#D4A836]/20">
+                          <th className="py-2 pr-4">Organization</th>
+                          <th className="py-2 pr-4">Sent</th>
+                          <th className="py-2 pr-4">Opened</th>
+                          <th className="py-2 pr-4">Clicked</th>
+                          {simTypeDetail.type === 'phishing' && <th className="py-2 pr-4">Submitted</th>}
+                          <th className="py-2 pr-4">Open Rate</th>
+                          <th className="py-2 pr-4">Click Rate</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {simTypeDetail.organizations.map((org) => {
+                          const openRate = org.sent > 0 ? ((org.opened / org.sent) * 100).toFixed(1) : '0.0';
+                          const clickRate = org.sent > 0 ? ((org.clicked / org.sent) * 100).toFixed(1) : '0.0';
+                          return (
+                            <tr
+                              key={org.organization_id}
+                              className="border-b border-[#D4A836]/10 hover:bg-[#1a1a24] cursor-pointer"
+                              onClick={() => fetchSimUsersDetail(simTypeDetail.type, org.organization_id)}
+                            >
+                              <td className="py-2 pr-4">{org.organization_name || 'Unassigned'}</td>
+                              <td className="py-2 pr-4">{org.sent}</td>
+                              <td className="py-2 pr-4">{org.opened}</td>
+                              <td className="py-2 pr-4">{org.clicked}</td>
+                              {simTypeDetail.type === 'phishing' && <td className="py-2 pr-4">{org.submitted}</td>}
+                              <td className="py-2 pr-4">{openRate}%</td>
+                              <td className="py-2 pr-4">{clickRate}%</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">Click a row to view user breakdown.</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Simulation Users Detail Section */}
+        {simUsersDetail && (
+          <Card className="bg-[#0f0f15] border-[#D4A836]/20">
+            <CardHeader>
+              <CardTitle className="text-[#E8DDB5] flex items-center gap-2">
+                <Activity className="w-5 h-5 text-[#D4A836]" />
+                User Breakdown
+              </CardTitle>
+              <div className="mt-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-[#D4A836]/30"
+                  onClick={() => setSimUsersDetail(null)}
+                >
+                  Back to Organizations
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr className="text-left border-b border-[#D4A836]/20">
+                      <th className="py-2 pr-4">User</th>
+                      <th className="py-2 pr-4">Sent</th>
+                      <th className="py-2 pr-4">Opened</th>
+                      <th className="py-2 pr-4">Clicked</th>
+                      {simUsersDetail.type === 'phishing' && <th className="py-2 pr-4">Submitted</th>}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {simUsersDetail.users.map((usr) => (
+                      <tr key={usr.user_id} className="border-b border-[#D4A836]/10">
+                        <td className="py-2 pr-4">{usr.name || 'Unknown'}</td>
+                        <td className="py-2 pr-4">{usr.sent}</td>
+                        <td className="py-2 pr-4">{usr.opened}</td>
+                        <td className="py-2 pr-4">{usr.clicked}</td>
+                        {simUsersDetail.type === 'phishing' && <td className="py-2 pr-4">{usr.submitted}</td>}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {simUsersDetail.users.length === 0 && (
+                  <p className="text-gray-400 text-sm mt-4">No user activity data available.</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Risk Assessment */}
         <Card className="bg-[#0f0f15] border-[#D4A836]/20">
           <CardHeader>
@@ -493,70 +728,6 @@ export default function AdvancedAnalytics() {
           </CardContent>
         </Card>
 
-        {/* Click Details Section - Who clicked */}
-        <Card className="bg-[#0f0f15] border-[#D4A836]/20">
-          <CardHeader>
-            <CardTitle className="text-[#E8DDB5] flex items-center gap-2">
-              <MousePointerClick className="w-5 h-5 text-red-400" />
-              Users Who Clicked Phishing Links
-              {clickDetails.length > 0 && (
-                <Badge className="ml-2 bg-red-500/20 text-red-400">{clickDetails.length}</Badge>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {clickDetails.length === 0 ? (
-              <div className="text-center py-8 text-gray-400">
-                <CheckCircle className="w-12 h-12 mx-auto mb-3 text-green-500/50" />
-                <p>No users clicked on phishing links in this period</p>
-                <p className="text-sm text-gray-500 mt-1">Great security awareness!</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-[#D4A836]/20">
-                      <TableHead className="text-gray-400">User Name</TableHead>
-                      <TableHead className="text-gray-400">Email</TableHead>
-                      {user?.role === 'super_admin' && (
-                        <TableHead className="text-gray-400">Organization</TableHead>
-                      )}
-                      <TableHead className="text-gray-400">Campaign</TableHead>
-                      <TableHead className="text-gray-400">Clicked At</TableHead>
-                      <TableHead className="text-gray-400">IP Address</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {clickDetails.slice(0, 20).map((click, idx) => (
-                      <TableRow key={idx} className="border-[#D4A836]/10">
-                        <TableCell className="text-[#E8DDB5] font-medium">{click.user_name}</TableCell>
-                        <TableCell className="text-gray-400">{click.user_email}</TableCell>
-                        {user?.role === 'super_admin' && (
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Building2 className="w-4 h-4 text-[#D4A836]" />
-                              <span className="text-gray-300">{click.organization_name}</span>
-                            </div>
-                          </TableCell>
-                        )}
-                        <TableCell className="text-gray-400">{click.campaign_name}</TableCell>
-                        <TableCell className="text-gray-500 text-sm">
-                          {click.clicked_at ? new Date(click.clicked_at).toLocaleString() : '-'}
-                        </TableCell>
-                        <TableCell className="text-gray-500 font-mono text-sm">{click.click_ip || '-'}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                {clickDetails.length > 20 && (
-                  <p className="text-center text-gray-500 text-sm mt-4">
-                    Showing 20 of {clickDetails.length} clicks
-                  </p>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
 
         {/* All Campaigns Analytics - Multi-select */}
         <Card className="bg-[#0f0f15] border-[#D4A836]/20">
@@ -583,6 +754,47 @@ export default function AdvancedAnalytics() {
                     <SelectItem value="ad">Malicious Ads</SelectItem>
                   </SelectContent>
                 </Select>
+                {/* Status filter */}
+                <Select value={campaignStatusFilter} onValueChange={setCampaignStatusFilter}>
+                  <SelectTrigger className="w-44 bg-[#1a1a24] border-[#D4A836]/20">
+                    <Filter className="w-4 h-4 mr-2" />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="paused">Paused</SelectItem>
+                  </SelectContent>
+                </Select>
+                {/* Start date filter */}
+                <Input
+                  type="date"
+                  value={campaignStartDate}
+                  onChange={(e) => setCampaignStartDate(e.target.value)}
+                  className="w-40 bg-[#1a1a24] border-[#D4A836]/20 text-[#E8DDB5]"
+                />
+                {/* End date filter */}
+                <Input
+                  type="date"
+                  value={campaignEndDate}
+                  onChange={(e) => setCampaignEndDate(e.target.value)}
+                  className="w-40 bg-[#1a1a24] border-[#D4A836]/20 text-[#E8DDB5]"
+                />
+                {/* Clear date filters button */}
+                {(campaignStartDate || campaignEndDate) && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setCampaignStartDate('');
+                      setCampaignEndDate('');
+                    }}
+                    className="border-[#D4A836]/20 text-[#D4A836]"
+                  >
+                    Clear Dates
+                  </Button>
+                )}
                 {selectedCampaignIds.length > 0 && (
                   <Badge className="bg-[#D4A836] text-black">
                     {selectedCampaignIds.length} Selected
@@ -632,15 +844,19 @@ export default function AdvancedAnalytics() {
                       <TableHead className="w-12">
                         <Checkbox
                           checked={selectedCampaignIds.length === allCampaigns.filter(c => 
-                            campaignTypeFilter === 'all' || c.type === campaignTypeFilter
+                            (campaignTypeFilter === 'all' || c.type === campaignTypeFilter) &&
+                            (campaignStatusFilter === 'all' || c.status === campaignStatusFilter)
                           ).length && allCampaigns.length > 0}
                           onCheckedChange={(checked) => {
                             if (checked) {
-                              setSelectedCampaignIds(
-                                allCampaigns
-                                  .filter(c => campaignTypeFilter === 'all' || c.type === campaignTypeFilter)
-                                  .map(c => c.campaign_id)
-                              );
+                                setSelectedCampaignIds(
+                                  allCampaigns
+                                    .filter(c => 
+                                      (campaignTypeFilter === 'all' || c.type === campaignTypeFilter) &&
+                                      (campaignStatusFilter === 'all' || c.status === campaignStatusFilter)
+                                    )
+                                    .map(c => c.campaign_id)
+                                );
                             } else {
                               setSelectedCampaignIds([]);
                             }
@@ -661,7 +877,42 @@ export default function AdvancedAnalytics() {
                   </TableHeader>
                   <TableBody>
                     {allCampaigns
-                      .filter(c => campaignTypeFilter === 'all' || c.type === campaignTypeFilter)
+                      .filter(c => {
+                        // Filter by type
+                        const typeMatch = campaignTypeFilter === 'all' || c.type === campaignTypeFilter;
+                        // Filter by status
+                        const statusMatch = campaignStatusFilter === 'all' || c.status === campaignStatusFilter;
+                        // Filter by start date (if provided)
+                        let startMatch = true;
+                        if (campaignStartDate) {
+                          // If campaign has a start_date, compare; otherwise include
+                          if (c.start_date) {
+                            try {
+                              const campaignStart = new Date(c.start_date);
+                              const filterStart = new Date(campaignStartDate);
+                              // Include if campaign starts on or after the filter start
+                              startMatch = campaignStart >= filterStart;
+                            } catch {
+                              startMatch = true;
+                            }
+                          }
+                        }
+                        // Filter by end date (if provided)
+                        let endMatch = true;
+                        if (campaignEndDate) {
+                          if (c.start_date) {
+                            try {
+                              const campaignStart = new Date(c.start_date);
+                              const filterEnd = new Date(campaignEndDate);
+                              // Include if campaign starts on or before the filter end
+                              endMatch = campaignStart <= filterEnd;
+                            } catch {
+                              endMatch = true;
+                            }
+                          }
+                        }
+                        return typeMatch && statusMatch && startMatch && endMatch;
+                      })
                       .map((campaign) => (
                         <TableRow
                           key={campaign.campaign_id}

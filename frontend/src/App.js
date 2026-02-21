@@ -201,8 +201,13 @@ const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (email, password) => {
-    const response = await axios.post(`${API}/auth/login`, { email, password });
+  const login = async (email, password, twoFactorCode) => {
+    const payload = { email, password };
+    // Include two-factor code only if provided
+    if (twoFactorCode) {
+      payload.two_factor_code = twoFactorCode;
+    }
+    const response = await axios.post(`${API}/auth/login`, payload);
     const { token: newToken, user: userData } = response.data;
     localStorage.setItem('token', newToken);
     setToken(newToken);

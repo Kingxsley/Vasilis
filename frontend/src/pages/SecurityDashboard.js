@@ -13,6 +13,8 @@ import {
   TableRow,
 } from '../components/ui/table';
 import { AlertTriangle, CheckCircle, Lock, Unlock, RefreshCw, Activity, Key, Globe, Loader2 } from 'lucide-react';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
 import { toast } from 'sonner';
 import axios from 'axios';
 
@@ -21,17 +23,90 @@ const API = `${BACKEND_URL}/api`;
 
 export default function SecurityDashboard() {
   const { token, user } = useAuth();
+  const { setUserData } = useAuth();
   const [loading, setLoading] = useState(true);
   const [dashboard, setDashboard] = useState(null);
   const [logs, setLogs] = useState([]);
   const [logsTotal, setLogsTotal] = useState(0);
   const [loginHistory, setLoginHistory] = useState([]);
 
+  // Two-Factor Authentication (2FA) setup state
+  // Track whether the current user has 2FA enabled
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(() => {
+    return user?.two_factor_enabled ?? false;
+  });
+  // If a setup has been initiated, store the secret and otpauth URL
+  const [twoFactorSecret, setTwoFactorSecret] = useState('');
+  const [otpAuthUrl, setOtpAuthUrl] = useState('');
+  // Input field for user to enter their 2FA code during verification
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+  // Loading states for setup and verification
+  const [twoFactorSetupLoading, setTwoFactorSetupLoading] = useState(false);
+  const [twoFactorVerifyLoading, setTwoFactorVerifyLoading] = useState(false);
+
   useEffect(() => {
     fetchDashboard();
     fetchRecentLogs();
     fetchLoginHistory();
   }, []);
+
+  // Initiate two-factor setup.  This calls the backend to generate a secret
+  // and returns an otpauth URL which can be scanned with an authenticator app.
+  const startTwoFactorSetup = async () => {
+    setTwoFactorSetupLoading(true);
+    setTwoFactorCode('');
+    try {
+      const res = await axios.post(
+        `${API}/auth/two-factor/setup`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setTwoFactorSecret(res.data.secret);
+      setOtpAuthUrl(res.data.otp_auth_url);
+      toast.success('Two-factor setup initiated. Scan the QR code and verify.');
+    } catch (err) {
+      toast.error(
+        err?.response?.data?.detail || 'Failed to initiate two-factor setup'
+      );
+    } finally {
+      setTwoFactorSetupLoading(false);
+    }
+  };
+
+  // Verify the two-factor code entered by the admin.  If successful,
+  // two-factor authentication will be enabled on their account.
+  const verifyTwoFactor = async () => {
+    if (!twoFactorCode) {
+      toast.error('Please enter the verification code from your authenticator app');
+      return;
+    }
+    setTwoFactorVerifyLoading(true);
+    try {
+      await axios.post(
+        `${API}/auth/two-factor/verify`,
+        { code: twoFactorCode },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      toast.success('Two-factor authentication enabled');
+      setTwoFactorEnabled(true);
+      // Update user context to reflect 2FA enabled state
+      if (user) {
+        setUserData({ ...user, two_factor_enabled: true });
+      }
+      // Reset setup state
+      setTwoFactorSecret('');
+      setOtpAuthUrl('');
+      setTwoFactorCode('');
+    } catch (err) {
+      toast.error(err?.response?.data?.detail || 'Invalid two-factor code');
+    } finally {
+      setTwoFactorVerifyLoading(false);
+    }
+  };
 
   const fetchDashboard = async () => {
     try {
@@ -132,6 +207,95 @@ export default function SecurityDashboard() {
             Refresh
           </Button>
         </div>
+
+        {/* Two-Factor Authentication Setup */}
+        <Card className="bg-[#0f0f15] border-[#D4A836]/20">
+          <CardHeader>
+            <CardTitle className="text-[#E8DDB5] flex items-center gap-2">
+              <Key className="w-5 h-5 text-[#D4A836]" />
+              Two-Factor Authentication
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {twoFactorEnabled ? (
+              <div className="space-y-2">
+                <p className="text-sm text-gray-400">
+                  Two‑factor authentication is currently <span className="text-green-400 font-medium">enabled</span> on your account.
+                </p>
+                <p className="text-sm text-gray-500">
+                  To disable or reset your 2FA, contact a system administrator.
+                </p>
+              </div>
+            ) : otpAuthUrl ? (
+              <div className="space-y-4">
+                <p className="text-sm text-gray-400">
+                  Scan the QR code below with your authenticator app (e.g. Google Authenticator or Authy) or copy the secret key.
+                </p>
+                <div className="flex flex-col items-center gap-2">
+                  {/* Use Google Chart API to render QR code */}
+                  <img
+                    src={`https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${encodeURIComponent(
+                      otpAuthUrl
+                    )}`}
+                    alt="2FA QR code"
+                    className="mx-auto border border-[#D4A836]/30 rounded"
+                  />
+                  <p className="text-xs font-mono text-gray-500 break-all">
+                    Secret: {twoFactorSecret}
+                  </p>
+                </div>
+                <div>
+                  <Label htmlFor="twoFactorCode" className="text-gray-400">
+                    Verification Code
+                  </Label>
+                  <Input
+                    id="twoFactorCode"
+                    type="text"
+                    placeholder="Enter 6‑digit code"
+                    value={twoFactorCode}
+                    onChange={(e) => setTwoFactorCode(e.target.value)}
+                    className="mt-1 bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]"
+                  />
+                </div>
+                <Button
+                  onClick={verifyTwoFactor}
+                  disabled={twoFactorVerifyLoading}
+                  className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
+                >
+                  {twoFactorVerifyLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Verifying...
+                    </>
+                  ) : (
+                    'Verify & Enable'
+                  )}
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-sm text-gray-400">
+                  Enhance your account security by enabling two‑factor authentication. You will need an
+                  authenticator app to generate verification codes.
+                </p>
+                <Button
+                  onClick={startTwoFactorSetup}
+                  disabled={twoFactorSetupLoading}
+                  className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
+                >
+                  {twoFactorSetupLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    'Enable Two‑Factor'
+                  )}
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
