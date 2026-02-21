@@ -646,16 +646,18 @@ async def exchange_session(request: Request, response: Response):
     
     if user:
         user_id = user["user_id"]
-        # Update user info
+        # Update user info and last_login timestamp.  If last_login is missing, set it to now
+        now_ts = datetime.now(timezone.utc)
         await db.users.update_one(
             {"user_id": user_id},
-            {"$set": {"name": name, "picture": picture}}
+            {"$set": {"name": name, "picture": picture, "last_login": now_ts.isoformat()}}
         )
     else:
         # Create new user
         user_id = f"user_{uuid.uuid4().hex[:12]}"
         user_count = await db.users.count_documents({})
         role = UserRole.SUPER_ADMIN if user_count == 0 else UserRole.TRAINEE
+        now_ts = datetime.now(timezone.utc)
         
         user_doc = {
             "user_id": user_id,
@@ -666,7 +668,9 @@ async def exchange_session(request: Request, response: Response):
             "organization_id": None,
             "picture": picture,
             "is_active": True,
-            "created_at": datetime.now(timezone.utc).isoformat()
+            "created_at": now_ts.isoformat(),
+            # Initialize last_login to created time so new users count as active
+            "last_login": now_ts.isoformat()
         }
         await db.users.insert_one(user_doc)
         user = user_doc
@@ -2253,16 +2257,23 @@ async def get_analytics_overview(
     ad_active = await db.ad_campaigns.count_documents({"status": "active"})
     
     # Get phishing stats
-    phishing_targets = await db.phishing_targets.find({}).to_list(10000)
-    total_sent = len(phishing_targets)
-    total_opened = sum(1 for t in phishing_targets if t.get("opened_at"))
-    total_clicked = sum(1 for t in phishing_targets if t.get("clicked_at"))
-    total_submitted = sum(1 for t in phishing_targets if t.get("submitted_at"))
-    
+    # Use consistent field names based on how the phishing service records events.  An email
+    # is considered sent when `email_sent` is True, opened when `email_opened` is True (or
+    # `opened_at` exists for older data), clicked when `link_clicked` is True (or
+    # `clicked_at` exists), and submitted when `credentials_submitted` is True (or
+    # `submitted_at` exists).  We deliberately count only events that have actually
+    # occurred rather than simply counting the number of target records.  This ensures
+    # statistics reflect real user activity.
+    phishing_targets = await db.phishing_targets.find({}, {"_id": 0}).to_list(100000)
+    total_sent = sum(1 for t in phishing_targets if t.get("email_sent"))
+    total_opened = sum(1 for t in phishing_targets if t.get("email_opened") or t.get("opened_at"))
+    total_clicked = sum(1 for t in phishing_targets if t.get("link_clicked") or t.get("clicked_at"))
+    total_submitted = sum(1 for t in phishing_targets if t.get("credentials_submitted") or t.get("submitted_at"))
+
     # Get ad stats
-    ad_targets = await db.ad_targets.find({}).to_list(10000)
-    ads_viewed = sum(1 for t in ad_targets if t.get("viewed_at"))
-    ads_clicked = sum(1 for t in ad_targets if t.get("clicked_at"))
+    ad_targets = await db.ad_targets.find({}, {"_id": 0}).to_list(100000)
+    ads_viewed = sum(1 for t in ad_targets if t.get("ad_viewed"))
+    ads_clicked = sum(1 for t in ad_targets if t.get("ad_clicked"))
     
     # Training stats
     training_sessions = await db.training_sessions.count_documents({})
@@ -2297,21 +2308,25 @@ async def get_phishing_stats(
     completed_campaigns = await db.phishing_campaigns.count_documents({"status": "completed"})
     
     # Get all targets for stats calculation
-    targets = await db.phishing_targets.find({}).to_list(10000)
-    
-    total_sent = len(targets)
-    total_opened = sum(1 for t in targets if t.get("opened_at"))
-    total_clicked = sum(1 for t in targets if t.get("clicked_at"))
-    total_submitted = sum(1 for t in targets if t.get("submitted_at"))
-    
+    targets = await db.phishing_targets.find({}, {"_id": 0}).to_list(100000)
+
+    # Count events based on current field names.  Fall back to older fields if necessary.
+    # An email is considered sent only when email_sent=True.  This prevents draft
+    # targets from inflating sent counts.  Similarly, opened and clicked events
+    # count when the respective boolean flags or timestamp fields exist.
+    total_sent = sum(1 for t in targets if t.get("email_sent"))
+    total_opened = sum(1 for t in targets if t.get("email_opened") or t.get("opened_at"))
+    total_clicked = sum(1 for t in targets if t.get("link_clicked") or t.get("clicked_at"))
+    total_submitted = sum(1 for t in targets if t.get("credentials_submitted") or t.get("submitted_at"))
+
     # Calculate rates
     open_rate = (total_opened / total_sent * 100) if total_sent > 0 else 0
     click_rate = (total_clicked / total_sent * 100) if total_sent > 0 else 0
     submission_rate = (total_submitted / total_sent * 100) if total_sent > 0 else 0
-    
+
     # Click to open rate
     click_to_open_rate = (total_clicked / total_opened * 100) if total_opened > 0 else 0
-    
+
     return {
         "total_campaigns": total_campaigns,
         "active_campaigns": active_campaigns,
@@ -2360,9 +2375,11 @@ async def get_all_campaigns_analytics(
         ).to_list(10000)
         
         total = len(targets)
+        # Count sent/opened/clicked using consistent event flags.  Fallback to older
+        # fields when necessary for backwards compatibility.
         sent = sum(1 for t in targets if t.get("email_sent"))
-        opened = sum(1 for t in targets if t.get("email_opened"))
-        clicked = sum(1 for t in targets if t.get("link_clicked"))
+        opened = sum(1 for t in targets if t.get("email_opened") or t.get("opened_at"))
+        clicked = sum(1 for t in targets if t.get("link_clicked") or t.get("clicked_at"))
         
         all_campaigns.append({
             "campaign_id": camp["campaign_id"],
@@ -2482,17 +2499,16 @@ async def get_campaign_analytics(
         org_name_map = {o["organization_id"]: o.get("name") for o in orgs}
 
         # Aggregate overall counts
-        total_sent = len(targets)
-        total_opened = sum(1 for t in targets if t.get("email_opened"))
-        total_clicked = sum(1 for t in targets if t.get("link_clicked"))
+        # Use email_sent flag to determine actual sent count, not just total targets
+        total_sent = sum(1 for t in targets if t.get("email_sent"))
+        total_opened = sum(1 for t in targets if t.get("email_opened") or t.get("opened_at"))
+        total_clicked = sum(1 for t in targets if t.get("link_clicked") or t.get("clicked_at"))
         total_submitted = sum(1 for t in targets if t.get("credentials_submitted") or t.get("submitted_at"))
 
         # Group by organization
         org_stats = {}
         for t in targets:
-            org_id = user_org_map.get(t.get("user_id"))
-            if not org_id:
-                org_id = "unassigned"
+            org_id = user_org_map.get(t.get("user_id")) or "unassigned"
             if org_id not in org_stats:
                 org_stats[org_id] = {
                     "organization_id": org_id,
@@ -2502,10 +2518,13 @@ async def get_campaign_analytics(
                     "clicked": 0,
                     "submitted": 0
                 }
-            org_stats[org_id]["sent"] += 1
-            if t.get("email_opened"):
+            # Increment sent only if the email was actually sent
+            if t.get("email_sent"):
+                org_stats[org_id]["sent"] += 1
+            # Count using consistent field names with backwards compatibility
+            if t.get("email_opened") or t.get("opened_at"):
                 org_stats[org_id]["opened"] += 1
-            if t.get("link_clicked"):
+            if t.get("link_clicked") or t.get("clicked_at"):
                 org_stats[org_id]["clicked"] += 1
             if t.get("credentials_submitted") or t.get("submitted_at"):
                 org_stats[org_id]["submitted"] += 1
@@ -2569,6 +2588,248 @@ async def get_campaign_analytics(
         })
 
     return result
+
+# ===============================================
+# Simulation Analytics
+# These endpoints provide high-level and drill-down analytics across all
+# simulation campaigns (phishing and ads).  They allow the frontend to
+# display summary metrics by simulation type and then drill into
+# organization and user-level performance.
+
+@api_router.get("/analytics/simulations")
+async def get_simulation_overview(
+    user: dict = Depends(require_admin)
+):
+    """
+    Return high-level simulation analytics grouped by campaign type.  Each
+    entry includes the number of campaigns of that type and aggregated
+    metrics such as total targets, opens/views, clicks and submissions.
+    """
+    results = []
+
+    # Phishing campaigns
+    phishing_campaigns = await db.phishing_campaigns.find({}, {"_id": 0, "campaign_id": 1}).to_list(10000)
+    phishing_ids = [c["campaign_id"] for c in phishing_campaigns]
+    phishing_targets = []
+    if phishing_ids:
+        phishing_targets = await db.phishing_targets.find({"campaign_id": {"$in": phishing_ids}}, {"_id": 0}).to_list(100000)
+    # Count using event flags rather than simply counting targets.  This ensures
+    # only emails that were actually sent are included in the totals.
+    total_sent = sum(1 for t in phishing_targets if t.get("email_sent"))
+    total_opened = sum(1 for t in phishing_targets if t.get("email_opened") or t.get("opened_at"))
+    total_clicked = sum(1 for t in phishing_targets if t.get("link_clicked") or t.get("clicked_at"))
+    total_submitted = sum(1 for t in phishing_targets if t.get("credentials_submitted") or t.get("submitted_at"))
+    results.append({
+        "type": "phishing",
+        "label": "Phishing Campaigns",
+        "total_campaigns": len(phishing_campaigns),
+        "sent": total_sent,
+        "opened": total_opened,
+        "clicked": total_clicked,
+        "submitted": total_submitted,
+        "open_rate": round((total_opened / total_sent * 100), 1) if total_sent > 0 else 0.0,
+        "click_rate": round((total_clicked / total_sent * 100), 1) if total_sent > 0 else 0.0,
+        "submission_rate": round((total_submitted / total_sent * 100), 1) if total_sent > 0 else 0.0
+    })
+
+    # Ad campaigns
+    ad_campaigns = await db.ad_campaigns.find({}, {"_id": 0, "campaign_id": 1}).to_list(10000)
+    ad_ids = [c["campaign_id"] for c in ad_campaigns]
+    ad_targets = []
+    if ad_ids:
+        ad_targets = await db.ad_targets.find({"campaign_id": {"$in": ad_ids}}, {"_id": 0}).to_list(100000)
+    total_sent_ad = len(ad_targets)  # All ad targets receive the ad by definition
+    total_viewed_ad = sum(1 for t in ad_targets if t.get("ad_viewed"))
+    total_clicked_ad = sum(1 for t in ad_targets if t.get("ad_clicked"))
+    results.append({
+        "type": "ad",
+        "label": "Ad Simulations",
+        "total_campaigns": len(ad_campaigns),
+        "sent": total_sent_ad,
+        "opened": total_viewed_ad,  # For ads, views are equivalent to opens
+        "clicked": total_clicked_ad,
+        "submitted": 0,
+        "open_rate": round((total_viewed_ad / total_sent_ad * 100), 1) if total_sent_ad > 0 else 0.0,
+        "click_rate": round((total_clicked_ad / total_sent_ad * 100), 1) if total_sent_ad > 0 else 0.0,
+        "submission_rate": 0.0
+    })
+
+    return {"types": results}
+
+
+@api_router.get("/analytics/simulations/{sim_type}")
+async def get_simulation_type_detail(
+    sim_type: str,
+    user: dict = Depends(require_admin)
+):
+    """
+    Return detailed analytics for a given simulation type ("phishing" or "ad").
+    The response includes summary metrics and a breakdown by organization.
+    """
+    sim_type = sim_type.lower()
+    if sim_type not in {"phishing", "ad"}:
+        raise HTTPException(status_code=400, detail="Invalid simulation type")
+
+    result = {"type": sim_type}
+    org_stats = {}
+
+    if sim_type == "phishing":
+        # Get all phishing targets and map to organizations via user_id
+        targets = await db.phishing_targets.find({}, {"_id": 0}).to_list(100000)
+        # Build user -> org map
+        user_ids = {t.get("user_id") for t in targets if t.get("user_id")}
+        users = []
+        if user_ids:
+            users = await db.users.find({"user_id": {"$in": list(user_ids)}}, {"_id": 0, "user_id": 1, "organization_id": 1}).to_list(len(user_ids))
+        user_org_map = {u["user_id"]: u.get("organization_id") for u in users}
+        # Map org_id to name
+        org_ids = {u.get("organization_id") for u in users if u.get("organization_id")}
+        orgs = []
+        if org_ids:
+            orgs = await db.organizations.find({"organization_id": {"$in": list(org_ids)}}, {"_id": 0, "organization_id": 1, "name": 1}).to_list(len(org_ids))
+        org_name_map = {o["organization_id"]: o.get("name") for o in orgs}
+        # Aggregate per organization
+        total_sent = 0
+        total_opened = 0
+        total_clicked = 0
+        total_submitted = 0
+        for t in targets:
+            # Only count sent emails
+            if t.get("email_sent"):
+                total_sent += 1
+            org_id = user_org_map.get(t.get("user_id")) or "unassigned"
+            if org_id not in org_stats:
+                org_stats[org_id] = {
+                    "organization_id": org_id,
+                    "organization_name": org_name_map.get(org_id, "Unassigned"),
+                    "sent": 0,
+                    "opened": 0,
+                    "clicked": 0,
+                    "submitted": 0
+                }
+            # Sent count is incremented only if the email was actually sent
+            if t.get("email_sent"):
+                org_stats[org_id]["sent"] += 1
+            if t.get("email_opened") or t.get("opened_at"):
+                org_stats[org_id]["opened"] += 1
+                total_opened += 1
+            if t.get("link_clicked") or t.get("clicked_at"):
+                org_stats[org_id]["clicked"] += 1
+                total_clicked += 1
+            if t.get("credentials_submitted") or t.get("submitted_at"):
+                org_stats[org_id]["submitted"] += 1
+                total_submitted += 1
+        summary = {
+            "sent": total_sent,
+            "opened": total_opened,
+            "clicked": total_clicked,
+            "submitted": total_submitted,
+            "open_rate": round((total_opened / total_sent * 100), 1) if total_sent > 0 else 0.0,
+            "click_rate": round((total_clicked / total_sent * 100), 1) if total_sent > 0 else 0.0,
+            "submission_rate": round((total_submitted / total_sent * 100), 1) if total_sent > 0 else 0.0
+        }
+    else:
+        # Ad simulations: metrics are ad_viewed (open) and ad_clicked (click)
+        targets = await db.ad_targets.find({}, {"_id": 0}).to_list(100000)
+        user_ids = {t.get("user_id") for t in targets if t.get("user_id")}
+        users = []
+        if user_ids:
+            users = await db.users.find({"user_id": {"$in": list(user_ids)}}, {"_id": 0, "user_id": 1, "organization_id": 1}).to_list(len(user_ids))
+        user_org_map = {u["user_id"]: u.get("organization_id") for u in users}
+        org_ids = {u.get("organization_id") for u in users if u.get("organization_id")}
+        orgs = []
+        if org_ids:
+            orgs = await db.organizations.find({"organization_id": {"$in": list(org_ids)}}, {"_id": 0, "organization_id": 1, "name": 1}).to_list(len(org_ids))
+        org_name_map = {o["organization_id"]: o.get("name") for o in orgs}
+        total_sent = len(targets)
+        total_opened = 0
+        total_clicked = 0
+        for t in targets:
+            org_id = user_org_map.get(t.get("user_id")) or "unassigned"
+            if org_id not in org_stats:
+                org_stats[org_id] = {
+                    "organization_id": org_id,
+                    "organization_name": org_name_map.get(org_id, "Unassigned"),
+                    "sent": 0,
+                    "opened": 0,
+                    "clicked": 0,
+                    "submitted": 0
+                }
+            org_stats[org_id]["sent"] += 1
+            if t.get("ad_viewed"):
+                org_stats[org_id]["opened"] += 1
+                total_opened += 1
+            if t.get("ad_clicked"):
+                org_stats[org_id]["clicked"] += 1
+                total_clicked += 1
+        summary = {
+            "sent": total_sent,
+            "opened": total_opened,
+            "clicked": total_clicked,
+            "submitted": 0,
+            "open_rate": round((total_opened / total_sent * 100), 1) if total_sent > 0 else 0.0,
+            "click_rate": round((total_clicked / total_sent * 100), 1) if total_sent > 0 else 0.0,
+            "submission_rate": 0.0
+        }
+
+    result.update({
+        "summary": summary,
+        "organizations": list(org_stats.values())
+    })
+    return result
+
+
+@api_router.get("/analytics/simulations/{sim_type}/organization/{org_id}")
+async def get_simulation_user_detail(
+    sim_type: str,
+    org_id: str,
+    user: dict = Depends(require_admin)
+):
+    """
+    Return user-level analytics for a given simulation type within a specific organization.
+    Each entry includes the user's name and counts of sent, opened/viewed, clicked and
+    submitted (for phishing).  Users without any events are still listed if they
+    were targeted.
+    """
+    sim_type = sim_type.lower()
+    if sim_type not in {"phishing", "ad"}:
+        raise HTTPException(status_code=400, detail="Invalid simulation type")
+
+    # Get users in the organization
+    users_cursor = db.users.find({"organization_id": org_id}, {"_id": 0, "user_id": 1, "name": 1})
+    users = await users_cursor.to_list(10000)
+    user_id_map = {u["user_id"]: u for u in users}
+    # Initialize stats for each user
+    user_stats = {uid: {"user_id": uid, "name": user_id_map[uid]["name"], "sent": 0, "opened": 0, "clicked": 0, "submitted": 0} for uid in user_id_map}
+
+    if sim_type == "phishing":
+        targets = await db.phishing_targets.find({"user_id": {"$in": list(user_id_map.keys())}}, {"_id": 0}).to_list(100000)
+        for t in targets:
+            uid = t.get("user_id")
+            if uid not in user_stats:
+                continue
+            user_stats[uid]["sent"] += 1
+            if t.get("email_opened") or t.get("opened_at"):
+                user_stats[uid]["opened"] += 1
+            if t.get("link_clicked") or t.get("clicked_at"):
+                user_stats[uid]["clicked"] += 1
+            if t.get("credentials_submitted") or t.get("submitted_at"):
+                user_stats[uid]["submitted"] += 1
+    else:
+        targets = await db.ad_targets.find({"user_id": {"$in": list(user_id_map.keys())}}, {"_id": 0}).to_list(100000)
+        for t in targets:
+            uid = t.get("user_id")
+            if uid not in user_stats:
+                continue
+            user_stats[uid]["sent"] += 1
+            if t.get("ad_viewed"):
+                user_stats[uid]["opened"] += 1
+            if t.get("ad_clicked"):
+                user_stats[uid]["clicked"] += 1
+    # Convert to list and sort by sent count descending
+    users_list = list(user_stats.values())
+    users_list.sort(key=lambda x: x["sent"], reverse=True)
+    return {"type": sim_type, "organization_id": org_id, "users": users_list}
 
 # ============== ROOT ROUTE ==============
 

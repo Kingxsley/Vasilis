@@ -332,6 +332,7 @@ async def import_users(request: Request, file: UploadFile = File(...)):
             # Create user
             user_id = f"user_{uuid.uuid4().hex[:12]}"
             
+            now_ts = datetime.now(timezone.utc)
             user_doc = {
                 "user_id": user_id,
                 "email": email,
@@ -341,7 +342,9 @@ async def import_users(request: Request, file: UploadFile = File(...)):
                 "organization_id": org_id,
                 "picture": None,
                 "is_active": True,
-                "created_at": datetime.now(timezone.utc).isoformat(),
+                "created_at": now_ts.isoformat(),
+                # Initialize last_login to created time so newly imported users count as active
+                "last_login": now_ts.isoformat(),
                 "imported_by": admin["user_id"],
                 "password_change_required": True  # Flag to prompt password change on first login
             }

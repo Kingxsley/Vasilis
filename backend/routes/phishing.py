@@ -813,6 +813,8 @@ async def get_best_performing_campaigns(request: Request, limit: int = 10):
             {"campaign_id": campaign["campaign_id"]}, {"_id": 0}
         ).to_list(10000)
         
+        # Only count targets where an email was actually sent.  This prevents
+        # draft or unsent targets from inflating the sent count.
         total_sent = sum(1 for t in targets if t.get("email_sent"))
         total_clicked = sum(1 for t in targets if t.get("link_clicked"))
         click_rate = (total_clicked / total_sent * 100) if total_sent > 0 else 0
