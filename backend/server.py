@@ -199,6 +199,8 @@ class TrainingModuleResponse(BaseModel):
     difficulty: str
     duration_minutes: int
     scenarios_count: int
+    certificate_template_id: Optional[str] = None
+    is_active: bool = True
 
 class TrainingSessionCreate(BaseModel):
     module_id: str
@@ -215,6 +217,48 @@ class TrainingSessionResponse(BaseModel):
     correct_answers: int
     started_at: datetime
     completed_at: Optional[datetime] = None
+
+# --- Additional models for module management and reassigning training ---
+class TrainingModuleCreate(BaseModel):
+    """
+    Schema for creating a new training module via API.  Administrators can
+    define custom modules with their own metadata, control whether the
+    module is active, and optionally select a certificate template to use
+    when generating completion certificates.
+    """
+    name: str
+    module_type: str
+    description: str
+    difficulty: str
+    duration_minutes: int
+    scenarios_count: int
+    certificate_template_id: Optional[str] = None
+    is_active: bool = True
+
+class TrainingModuleUpdate(BaseModel):
+    """
+    Schema for updating existing training modules.  All fields are
+    optional; omitted fields will remain unchanged.  Administrators can
+    pause or activate modules, change the associated certificate
+    template, or modify descriptive metadata.
+    """
+    name: Optional[str] = None
+    description: Optional[str] = None
+    difficulty: Optional[str] = None
+    duration_minutes: Optional[int] = None
+    scenarios_count: Optional[int] = None
+    certificate_template_id: Optional[str] = None
+    is_active: Optional[bool] = None
+
+class TrainingReassignRequest(BaseModel):
+    """
+    Payload for reassigning one or more training modules to multiple users.
+    When `module_ids` is empty or omitted, all active modules will be
+    reassigned.  This is primarily used by super admins or organization
+    admins to assign remedial training after phishing campaign clicks.
+    """
+    user_ids: List[str]
+    module_ids: Optional[List[str]] = None
 
 class ScenarioResponse(BaseModel):
     scenario_id: str
@@ -830,6 +874,11 @@ async def create_organization(data: OrganizationCreate, user: dict = Depends(req
         "is_active": True,
         "created_by": user["user_id"],
         "created_at": datetime.now(timezone.utc).isoformat()
+        # When a new organization is created, we don't assign a certificate template
+        # by default.  Super administrators or organization administrators can
+        # update this field later via the PATCH endpoint.
+        ,
+        "certificate_template_id": None
     }
     await db.organizations.insert_one(org_doc)
     
@@ -840,7 +889,8 @@ async def create_organization(data: OrganizationCreate, user: dict = Depends(req
         description=data.description,
         is_active=True,
         created_at=datetime.fromisoformat(org_doc["created_at"]),
-        user_count=0
+        user_count=0,
+        certificate_template_id=None
     )
 
 @org_router.get("", response_model=List[OrganizationResponse])
@@ -868,7 +918,8 @@ async def list_organizations(user: dict = Depends(require_admin)):
             description=org.get("description"),
             is_active=org.get("is_active", True),
             created_at=created_at,
-            user_count=user_count
+            user_count=user_count,
+            certificate_template_id=org.get("certificate_template_id")
         ))
     return result
 
@@ -895,7 +946,8 @@ async def get_organization(org_id: str, user: dict = Depends(require_admin)):
         description=org.get("description"),
         is_active=org.get("is_active", True),
         created_at=created_at,
-        user_count=user_count
+        user_count=user_count,
+        certificate_template_id=org.get("certificate_template_id")
     )
 
 @org_router.patch("/{org_id}", response_model=OrganizationResponse)
@@ -1297,7 +1349,16 @@ async def delete_campaign(campaign_id: str, user: dict = Depends(require_admin))
 
 # ============== TRAINING ROUTES ==============
 
-# Default training modules
+# Passing score threshold for training completion.  If a user finishes a
+# session with a score below this threshold, the session will be marked
+# as "failed" rather than "completed".  Failed sessions count toward
+# certificate eligibility but indicate that remedial training may be
+# required.
+PASSING_SCORE = 70
+
+# Default training modules used to seed the database on first run.  Each
+# record includes fields for certificate templates and active status so
+# administrators can manage module availability.
 DEFAULT_MODULES = [
     {
         "module_id": "mod_phishing_email",
@@ -1306,7 +1367,9 @@ DEFAULT_MODULES = [
         "description": "Learn to identify suspicious emails, fraudulent sender addresses, and malicious links.",
         "difficulty": "medium",
         "duration_minutes": 30,
-        "scenarios_count": 10
+        "scenarios_count": 10,
+        "certificate_template_id": None,
+        "is_active": True
     },
     {
         "module_id": "mod_malicious_ads",
@@ -1315,7 +1378,9 @@ DEFAULT_MODULES = [
         "description": "Spot fake advertisements, clickbait, and potentially harmful ad content.",
         "difficulty": "easy",
         "duration_minutes": 20,
-        "scenarios_count": 8
+        "scenarios_count": 8,
+        "certificate_template_id": None,
+        "is_active": True
     },
     {
         "module_id": "mod_social_engineering",
@@ -1324,35 +1389,245 @@ DEFAULT_MODULES = [
         "description": "Recognize manipulation tactics including pretexting, baiting, and impersonation.",
         "difficulty": "hard",
         "duration_minutes": 45,
-        "scenarios_count": 12
+        "scenarios_count": 12,
+        "certificate_template_id": None,
+        "is_active": True
     }
 ]
 
+# Helper to seed default training modules into the database.  Called on
+# demand from `list_training_modules` to avoid race conditions at
+# import time.
+async def _ensure_training_modules_seeded():
+    try:
+        count = await db.training_modules.count_documents({})
+    except Exception:
+        # If the collection does not exist yet, seed with defaults
+        count = 0
+    if count == 0:
+        # Transform defaults into insertable documents
+        await db.training_modules.insert_many([m.copy() for m in DEFAULT_MODULES])
+
 @training_router.get("/modules", response_model=List[TrainingModuleResponse])
 async def list_training_modules(user: dict = Depends(get_current_user)):
-    return [TrainingModuleResponse(**m) for m in DEFAULT_MODULES]
+    """
+    List all training modules.  For trainees, only return active modules.
+    Super administrators and organization administrators can view
+    inactive (paused) modules as well.  If the collection is empty the
+    default modules will be seeded automatically.
+    """
+    # Ensure database is seeded on first call
+    await _ensure_training_modules_seeded()
+
+    query = {}
+    # Trainees only see active modules
+    if user.get("role") == UserRole.TRAINEE:
+        query["is_active"] = True
+    modules_cursor = db.training_modules.find(query, {"_id": 0})
+    modules = await modules_cursor.to_list(1000)
+    return [TrainingModuleResponse(**m) for m in modules]
+
+# ---------------------------------------------------------------------------
+#  Module Management Endpoints
+#  These endpoints allow administrators to create, update, delete and
+#  reassign training modules.  Only users with the SUPER_ADMIN or ORG_ADMIN
+#  role may access these operations.  Trainees should never call these
+#  endpoints directly.
+#
+
+@training_router.post("/modules", response_model=TrainingModuleResponse)
+async def create_training_module(
+    data: TrainingModuleCreate,
+    user: dict = Depends(get_current_user)
+):
+    """
+    Create a new training module.  Administrators can define custom
+    modules with their own metadata.  A unique module_id will be
+    generated automatically.  The new module is stored in the
+    `training_modules` collection.
+    """
+    # Only administrators can create modules
+    if user.get("role") not in [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    # Ensure default modules are seeded prior to creation so we do not
+    # inadvertently overwrite the defaults with user-defined ones
+    await _ensure_training_modules_seeded()
+
+    # Generate a unique module ID
+    module_id = f"mod_{uuid.uuid4().hex[:12]}"
+
+    module_doc = data.dict()
+    module_doc["module_id"] = module_id
+    # Insert into DB
+    await db.training_modules.insert_one(module_doc)
+
+    return TrainingModuleResponse(**module_doc)
+
+
+@training_router.patch("/modules/{module_id}", response_model=TrainingModuleResponse)
+async def update_training_module(
+    module_id: str,
+    data: TrainingModuleUpdate,
+    user: dict = Depends(get_current_user)
+):
+    """
+    Update an existing training module.  Only provided fields will be
+    modified; omitted fields remain unchanged.  Administrators may
+    pause/activate modules, change the associated certificate template
+    or adjust descriptive metadata.
+    """
+    if user.get("role") not in [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    await _ensure_training_modules_seeded()
+
+    # Build update dictionary from provided fields
+    update_dict = {}
+    if data.name is not None:
+        update_dict["name"] = data.name
+    if data.description is not None:
+        update_dict["description"] = data.description
+    if data.difficulty is not None:
+        update_dict["difficulty"] = data.difficulty
+    if data.duration_minutes is not None:
+        update_dict["duration_minutes"] = data.duration_minutes
+    if data.scenarios_count is not None:
+        update_dict["scenarios_count"] = data.scenarios_count
+    if data.certificate_template_id is not None:
+        update_dict["certificate_template_id"] = data.certificate_template_id
+    if data.is_active is not None:
+        update_dict["is_active"] = data.is_active
+
+    if not update_dict:
+        # Nothing to update
+        module = await db.training_modules.find_one({"module_id": module_id}, {"_id": 0})
+        if not module:
+            raise HTTPException(status_code=404, detail="Module not found")
+        return TrainingModuleResponse(**module)
+
+    # Perform the update
+    result = await db.training_modules.update_one(
+        {"module_id": module_id},
+        {"$set": update_dict}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Module not found")
+
+    # Fetch updated module and return
+    module = await db.training_modules.find_one({"module_id": module_id}, {"_id": 0})
+    return TrainingModuleResponse(**module)
+
+
+@training_router.delete("/modules/{module_id}")
+async def delete_training_module(
+    module_id: str,
+    user: dict = Depends(get_current_user)
+):
+    """
+    Delete a training module.  This will remove the module from the
+    `training_modules` collection.  Use with caution; deleting a module
+    will not remove existing training sessions associated with it.
+    """
+    if user.get("role") not in [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    result = await db.training_modules.delete_one({"module_id": module_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Module not found")
+    return {"message": "Module deleted"}
+
+
+@training_router.post("/reassign", response_model=dict)
+async def reassign_training_modules(
+    data: TrainingReassignRequest,
+    user: dict = Depends(get_current_user)
+):
+    """
+    Reassign training modules to one or more users.  This endpoint is
+    intended for administrators to bulk-assign remedial training after
+    phishing campaign clicks or other failures.  When `module_ids` is
+    provided, only those modules are reassigned.  Otherwise, all
+    currently active modules are reassigned.  New training session
+    documents are created with the status "reassigned".  Existing
+    sessions are not modified.
+    """
+    if user.get("role") not in [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    # Determine modules to assign
+    module_ids = data.module_ids or []
+    if not module_ids:
+        # Fetch all active modules
+        active_modules = await db.training_modules.find(
+            {"is_active": True}, {"_id": 0, "module_id": 1, "scenarios_count": 1}
+        ).to_list(1000)
+        module_info = {m["module_id"]: m.get("scenarios_count", 0) for m in active_modules}
+    else:
+        # Validate provided module IDs and get scenarios_count for each
+        docs = await db.training_modules.find(
+            {"module_id": {"$in": module_ids}}, {"_id": 0, "module_id": 1, "scenarios_count": 1}
+        ).to_list(len(module_ids))
+        if len(docs) != len(module_ids):
+            found_ids = {d["module_id"] for d in docs}
+            missing = [mid for mid in module_ids if mid not in found_ids]
+            raise HTTPException(status_code=400, detail=f"Modules not found: {missing}")
+        module_info = {d["module_id"]: d.get("scenarios_count", 0) for d in docs}
+
+    created_sessions = []
+
+    # Create sessions for each user and module combination
+    for uid in data.user_ids:
+        for mid, scen_count in module_info.items():
+            session_id = f"sess_{uuid.uuid4().hex[:12]}"
+            session_doc = {
+                "session_id": session_id,
+                "user_id": uid,
+                "module_id": mid,
+                "campaign_id": None,
+                "status": "reassigned",
+                "score": 0,
+                "total_questions": scen_count,
+                "correct_answers": 0,
+                "current_scenario_index": 0,
+                "answers": [],
+                "started_at": datetime.now(timezone.utc).isoformat(),
+                "completed_at": None
+            }
+            await db.training_sessions.insert_one(session_doc)
+            created_sessions.append(session_id)
+
+    return {
+        "message": "Training reassigned",
+        "created_sessions": created_sessions,
+        "user_count": len(data.user_ids),
+        "module_count": len(module_info)
+    }
 
 @training_router.get("/modules/{module_id}", response_model=TrainingModuleResponse)
 async def get_training_module(module_id: str, user: dict = Depends(get_current_user)):
-    for m in DEFAULT_MODULES:
-        if m["module_id"] == module_id:
-            return TrainingModuleResponse(**m)
-    raise HTTPException(status_code=404, detail="Module not found")
+    """Retrieve a single training module by ID"""
+    await _ensure_training_modules_seeded()
+    module = await db.training_modules.find_one({"module_id": module_id}, {"_id": 0})
+    if not module:
+        raise HTTPException(status_code=404, detail="Module not found")
+    # Trainees cannot view inactive modules
+    if user.get("role") == UserRole.TRAINEE and not module.get("is_active", True):
+        raise HTTPException(status_code=404, detail="Module not found")
+    return TrainingModuleResponse(**module)
 
 @training_router.post("/sessions", response_model=TrainingSessionResponse)
 async def start_training_session(data: TrainingSessionCreate, user: dict = Depends(get_current_user)):
     session_id = f"sess_{uuid.uuid4().hex[:12]}"
-    
-    # Get module info
-    module = None
-    for m in DEFAULT_MODULES:
-        if m["module_id"] == data.module_id:
-            module = m
-            break
-    
+
+    # Fetch module from database and ensure it's active
+    await _ensure_training_modules_seeded()
+    module = await db.training_modules.find_one({"module_id": data.module_id}, {"_id": 0})
     if not module:
         raise HTTPException(status_code=404, detail="Module not found")
-    
+    if not module.get("is_active", True):
+        raise HTTPException(status_code=400, detail="Module is currently paused")
+
     session_doc = {
         "session_id": session_id,
         "user_id": user["user_id"],
@@ -1360,7 +1635,7 @@ async def start_training_session(data: TrainingSessionCreate, user: dict = Depen
         "campaign_id": data.campaign_id,
         "status": "in_progress",
         "score": 0,
-        "total_questions": module["scenarios_count"],
+        "total_questions": module.get("scenarios_count", 0),
         "correct_answers": 0,
         "current_scenario_index": 0,
         "answers": [],
@@ -1368,7 +1643,7 @@ async def start_training_session(data: TrainingSessionCreate, user: dict = Depen
         "completed_at": None
     }
     await db.training_sessions.insert_one(session_doc)
-    
+
     return TrainingSessionResponse(
         session_id=session_id,
         user_id=user["user_id"],
@@ -1376,7 +1651,7 @@ async def start_training_session(data: TrainingSessionCreate, user: dict = Depen
         campaign_id=data.campaign_id,
         status="in_progress",
         score=0,
-        total_questions=module["scenarios_count"],
+        total_questions=session_doc["total_questions"],
         correct_answers=0,
         started_at=datetime.fromisoformat(session_doc["started_at"]),
         completed_at=None
@@ -1450,7 +1725,10 @@ async def get_current_scenario(session_id: str, user: dict = Depends(get_current
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
     
-    if session["status"] == "completed":
+    # Completed and failed sessions cannot progress further.  A new session
+    # should be started instead.  Reassigned sessions are treated as
+    # in-progress until completion.
+    if session["status"] in ["completed", "failed"]:
         raise HTTPException(status_code=400, detail="Session already completed")
     
     # Check if we have a cached scenario for this index
@@ -1513,7 +1791,11 @@ async def submit_answer(session_id: str, data: SubmitAnswerRequest, user: dict =
     
     # Check if session is complete
     if new_index >= total_questions:
-        update_data["status"] = "completed"
+        # Determine pass/fail based on score threshold
+        if new_score >= PASSING_SCORE:
+            update_data["status"] = "completed"
+        else:
+            update_data["status"] = "failed"
         update_data["completed_at"] = datetime.now(timezone.utc).isoformat()
     
     await db.training_sessions.update_one(

@@ -8,7 +8,7 @@ from typing import Optional
 import io
 import uuid
 
-from services.certificate_service import generate_training_certificate
+from services.certificate_service import generate_training_certificate, generate_certificate_from_template
 from models import UserRole
 
 router = APIRouter(prefix="/certificates", tags=["Certificates"])
@@ -89,36 +89,106 @@ async def generate_user_certificate(user_id: str, request: Request):
     ]
     latest_completion = max(completion_dates) if completion_dates else datetime.now(timezone.utc)
     
-    # Generate certificate
+    # Generate unique certificate ID
     certificate_id = f"CERT-{uuid.uuid4().hex[:8].upper()}"
+
+    # -----------------------------------------
+    # Determine which certificate template to use
+    # Priority:
+    # 1. Organization-level certificate_template_id
+    # 2. Module-level certificate_template_id from any completed module
+    # 3. Global default template if defined
+    template_doc = None
+    # 1. Check organization
+    if user.get("organization_id"):
+        org = await db.organizations.find_one(
+            {"organization_id": user["organization_id"]},
+            {"_id": 0, "certificate_template_id": 1}
+        )
+        if org and org.get("certificate_template_id"):
+            template_doc = await db.certificate_templates.find_one(
+                {"template_id": org["certificate_template_id"]},
+                {"_id": 0}
+            )
+    # 2. Check modules if still no template
+    if not template_doc:
+        # Unique module IDs from completed sessions
+        module_ids = list({s.get("module_id") for s in sessions})
+        for m_id in module_ids:
+            module = await db.training_modules.find_one(
+                {"module_id": m_id},
+                {"_id": 0, "certificate_template_id": 1}
+            )
+            if module and module.get("certificate_template_id"):
+                template_doc = await db.certificate_templates.find_one(
+                    {"template_id": module["certificate_template_id"]},
+                    {"_id": 0}
+                )
+                if template_doc:
+                    break
+    # 3. Check for global default template
+    if not template_doc:
+        template_doc = await db.certificate_templates.find_one(
+            {"is_default": True}, {"_id": 0}
+        )
+
+    # Prepare placeholders for dynamic rendering
+    placeholders = {
+        "user_name": user.get("name", "Unknown"),
+        "user_email": user.get("email", ""),
+        "modules_completed": " • ".join(modules_completed),
+        "average_score": f"{avg_score:.1f}%",
+        "average_score_value": avg_score,
+        "completion_date": latest_completion.strftime("%B %d, %Y"),
+        "organization_name": org_name or "",
+        "certificate_id": certificate_id
+    }
+    # Additional placeholders for backwards compatibility
+    placeholders["modules_completed_list"] = placeholders["modules_completed"]
+
+    # Render certificate using template if available
+    if template_doc:
+        try:
+            pdf_bytes = generate_certificate_from_template(template_doc, placeholders)
+        except Exception as render_err:
+            # Fallback to default generator if rendering fails
+            pdf_bytes = generate_training_certificate(
+                user_name=user.get("name", "Unknown"),
+                user_email=user.get("email", ""),
+                modules_completed=modules_completed,
+                average_score=avg_score,
+                completion_date=latest_completion,
+                organization_name=org_name,
+                certificate_id=certificate_id
+            )
+    else:
+        # Use original certificate design
+        pdf_bytes = generate_training_certificate(
+            user_name=user.get("name", "Unknown"),
+            user_email=user.get("email", ""),
+            modules_completed=modules_completed,
+            average_score=avg_score,
+            completion_date=latest_completion,
+            organization_name=org_name,
+            certificate_id=certificate_id
+        )
     
-    pdf_bytes = generate_training_certificate(
-        user_name=user.get("name", "Unknown"),
-        user_email=user.get("email", ""),
-        modules_completed=modules_completed,
-        average_score=avg_score,
-        completion_date=latest_completion,
-        organization_name=org_name,
-        certificate_id=certificate_id
-    )
-    
-    # Store certificate record
+    # Store certificate record, including the template used (if any)
+    cert_record = {
+        "certificate_id": certificate_id,
+        "user_id": user_id,
+        "user_name": user.get("name"),
+        "user_email": user.get("email"),
+        "organization_id": user.get("organization_id"),
+        "modules_completed": modules_completed,
+        "average_score": avg_score,
+        "completion_date": latest_completion.isoformat(),
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    if template_doc and template_doc.get("template_id"):
+        cert_record["template_id"] = template_doc.get("template_id")
     await db.certificates.update_one(
-        {"user_id": user_id},
-        {
-            "$set": {
-                "certificate_id": certificate_id,
-                "user_id": user_id,
-                "user_name": user.get("name"),
-                "user_email": user.get("email"),
-                "organization_id": user.get("organization_id"),
-                "modules_completed": modules_completed,
-                "average_score": avg_score,
-                "completion_date": latest_completion.isoformat(),
-                "generated_at": datetime.now(timezone.utc).isoformat()
-            }
-        },
-        upsert=True
+        {"user_id": user_id}, {"$set": cert_record}, upsert=True
     )
     
     filename = f"certificate_{user.get('name', 'user').replace(' ', '_')}_{certificate_id}.pdf"

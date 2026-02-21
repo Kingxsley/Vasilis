@@ -1060,6 +1060,45 @@ async def track_link_click(tracking_code: str, request: Request):
                         db=db
                     )
                     logger.info(f"Training failure notification sent to {len(admin_emails)} admins")
+
+                # 4. Automatically create new training sessions (reassign) for the user
+                #    Get all active modules and assign them.  This ensures the user
+                #    completes remedial training across relevant modules.  The
+                #    sessions are created with status "reassigned" so the UI
+                #    can differentiate them from normal sessions.
+                try:
+                    active_modules = await db.training_modules.find(
+                        {"is_active": True}, {"_id": 0, "module_id": 1, "scenarios_count": 1}
+                    ).to_list(1000)
+                    for mod in active_modules:
+                        module_id = mod.get("module_id")
+                        total_q = mod.get("scenarios_count", 0)
+                        # Do not create duplicate reassigned sessions for the same user/module
+                        existing = await db.training_sessions.find_one(
+                            {"user_id": user_id, "module_id": module_id, "status": "reassigned"},
+                            {"_id": 1}
+                        )
+                        if existing:
+                            continue
+                        session_id = f"sess_{uuid.uuid4().hex[:12]}"
+                        session_doc = {
+                            "session_id": session_id,
+                            "user_id": user_id,
+                            "module_id": module_id,
+                            "campaign_id": campaign_id,
+                            "status": "reassigned",
+                            "score": 0,
+                            "total_questions": total_q,
+                            "correct_answers": 0,
+                            "current_scenario_index": 0,
+                            "answers": [],
+                            "started_at": datetime.now(timezone.utc).isoformat(),
+                            "completed_at": None
+                        }
+                        await db.training_sessions.insert_one(session_doc)
+                    logger.info(f"Auto-reassigned training modules for user {user_email}")
+                except Exception as reassign_err:
+                    logger.error(f"Failed to auto reassign training: {reassign_err}")
                     
             except Exception as e:
                 logger.error(f"Error in automatic retraining flow: {e}")

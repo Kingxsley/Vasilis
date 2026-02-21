@@ -48,6 +48,11 @@ class OrganizationUpdate(BaseModel):
     domain: Optional[str] = None
     description: Optional[str] = None
     is_active: Optional[bool] = None
+    # Allow administrators to specify a default certificate template for the organization.
+    # When set, this template will be used when generating completion certificates for
+    # users belonging to the organization. If omitted, the system will fall back to
+    # a module-level template or the global default.
+    certificate_template_id: Optional[str] = None
 
 
 class OrganizationResponse(BaseModel):
@@ -58,6 +63,11 @@ class OrganizationResponse(BaseModel):
     is_active: bool
     created_at: datetime
     user_count: int = 0
+    # The certificate template assigned to this organization.  When present,
+    # certificates generated for users in the organization will be rendered
+    # using this template.  If null, the platform will choose a module-level
+    # template or use the global default.
+    certificate_template_id: Optional[str] = None
 
 
 # Campaign Models
@@ -99,6 +109,8 @@ class TrainingModuleResponse(BaseModel):
     difficulty: str
     duration_minutes: int
     scenarios_count: int
+    certificate_template_id: Optional[str] = None
+    is_active: bool = True
 
 
 class TrainingSessionCreate(BaseModel):
@@ -117,6 +129,55 @@ class TrainingSessionResponse(BaseModel):
     correct_answers: int
     started_at: datetime
     completed_at: Optional[datetime] = None
+
+# --- New Schemas for Module Management and Reassignment ---
+
+class TrainingModuleCreate(BaseModel):
+    """
+    Schema for creating a new training module. Super administrators or
+    organization administrators can use this to define custom training
+    modules rather than relying on the hard‑coded defaults. Additional
+    fields allow administrators to control the availability of the module
+    and associate a specific certificate template with it.
+    """
+    name: str
+    module_type: str
+    description: str
+    difficulty: str
+    duration_minutes: int
+    scenarios_count: int
+    certificate_template_id: Optional[str] = None
+    is_active: bool = True
+
+
+class TrainingModuleUpdate(BaseModel):
+    """
+    Schema for updating an existing training module. All fields are
+    optional; only the provided values will be updated. Super admins or
+    organization administrators can pause/activate modules, change the
+    associated certificate template or adjust metadata without affecting
+    other fields.
+    """
+    name: Optional[str] = None
+    description: Optional[str] = None
+    difficulty: Optional[str] = None
+    duration_minutes: Optional[int] = None
+    scenarios_count: Optional[int] = None
+    certificate_template_id: Optional[str] = None
+    is_active: Optional[bool] = None
+
+
+class TrainingReassignRequest(BaseModel):
+    """
+    Payload for reassigning one or more training modules to multiple
+    users. When `module_ids` is omitted or empty, all active modules will
+    be reassigned. Only super administrators or organization
+    administrators can reassign training. This endpoint is used in
+    response to phishing campaigns where employees clicked a malicious
+    link and need to repeat training.
+    """
+    user_ids: List[str]
+    module_ids: Optional[List[str]] = None
 
 
 class ScenarioResponse(BaseModel):
