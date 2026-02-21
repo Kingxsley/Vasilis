@@ -119,7 +119,11 @@ const navGroups = [
     label: 'Training',
     icon: GraduationCap,
     items: [
+      // Regular trainees see their training modules.  Admins see a separate entry for
+      // creating modules.  The /training route is hidden from admins via custom filter below.
       { path: '/training', label: 'My Training', icon: BookOpen, adminOnly: false },
+      // Admin users see the module builder instead of the My Training route.  Use plural for consistency.
+      { path: '/module-builder', label: 'Create Trainings', icon: BookOpen, adminOnly: true },
       { path: '/certificates', label: 'Certificates', icon: Award, superAdminOnly: true },
       { path: '/certificate-templates', label: 'Cert Templates', icon: Award, superAdminOnly: true },
     ]
@@ -207,6 +211,11 @@ export const DashboardLayout = ({ children }) => {
   // Filter items based on user role
   const filterItems = (items) => {
     return items.filter(item => {
+      // Hide the trainee training route for admin users.  Admins should use the
+      // module builder instead.  The Create Training link is marked adminOnly.
+      if (isAdmin && item.path === '/training') {
+        return false;
+      }
       if (item.superAdminOnly) return user?.role === 'super_admin';
       if (item.contentManager) return canManageContent || user?.role === 'super_admin' || user?.role === 'media_manager';
       if (item.adminOnly) return isAdmin;
