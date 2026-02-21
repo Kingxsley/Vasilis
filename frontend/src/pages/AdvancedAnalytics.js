@@ -41,7 +41,6 @@ export default function AdvancedAnalytics() {
   const [endDate, setEndDate] = useState('');
   const [analytics, setAnalytics] = useState(null);
   const [phishingStats, setPhishingStats] = useState(null);
-  const [trainingStats, setTrainingStats] = useState(null);
   const [userStats, setUserStats] = useState(null);
   const [clickDetails, setClickDetails] = useState([]);
   
@@ -51,6 +50,10 @@ export default function AdvancedAnalytics() {
   const [selectedCampaignIds, setSelectedCampaignIds] = useState([]);
   const [campaignTypeFilter, setCampaignTypeFilter] = useState('all'); // all, phishing, ad
   const [bestCampaigns, setBestCampaigns] = useState([]);
+
+  // Detailed analytics for a single selected campaign
+  const [campaignDetail, setCampaignDetail] = useState(null);
+  const [campaignDetailLoading, setCampaignDetailLoading] = useState(false);
 
   useEffect(() => {
     if (!customDateRange) {
@@ -77,16 +80,18 @@ export default function AdvancedAnalytics() {
     setLoading(true);
     const dateParams = getDateParams();
     try {
-      const [analyticsRes, phishingRes, usersRes, clickRes, bestRes, allCampaignsRes] = await Promise.all([
+      // Determine URL for user analytics: restrict to org scope for org admins
+      const userAnalyticsUrl = user?.role !== 'super_admin' && user?.organization_id
+        ? `${API}/analytics/users?organization_id=${user.organization_id}`
+        : `${API}/analytics/users`;
+
+      const [analyticsRes, phishingRes, clickRes, bestRes, allCampaignsRes, userAnalyticsRes] = await Promise.all([
         axios.get(`${API}/analytics/overview?${dateParams}`, {
           headers: { Authorization: `Bearer ${token}` }
         }).catch(() => ({ data: null })),
         axios.get(`${API}/phishing/stats?${dateParams}`, {
           headers: { Authorization: `Bearer ${token}` }
         }).catch(() => ({ data: null })),
-        axios.get(`${API}/users`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }).catch(() => ({ data: [] })),
         axios.get(`${API}/phishing/click-details?${dateParams}`, {
           headers: { Authorization: `Bearer ${token}` }
         }).catch(() => ({ data: { click_details: [] } })),
@@ -96,36 +101,54 @@ export default function AdvancedAnalytics() {
         axios.get(`${API}/analytics/all-campaigns?${dateParams}`, {
           headers: { Authorization: `Bearer ${token}` }
         }).catch(() => ({ data: { campaigns: [], summary: null } }))
+        ,
+        // Fetch aggregated user analytics (active/inactive counts)
+        axios.get(userAnalyticsUrl, {
+          headers: { Authorization: `Bearer ${token}` }
+        }).catch(() => ({ data: null }))
       ]);
 
       setAnalytics(analyticsRes.data);
       setPhishingStats(phishingRes.data);
       setClickDetails(clickRes.data?.click_details || []);
       setBestCampaigns(bestRes.data?.campaigns || []);
-      
+
       // Set all campaigns data
       setAllCampaigns(allCampaignsRes.data?.campaigns || []);
       setCampaignSummary(allCampaignsRes.data?.summary || null);
-      
-      // Calculate user stats from users list
-      // API returns array directly, not { users: [] }
-      const users = Array.isArray(usersRes.data) ? usersRes.data : (usersRes.data?.users || []);
-      const activeUsers = users.filter(u => u.is_active).length;
-      const roleDistribution = users.reduce((acc, u) => {
-        acc[u.role] = (acc[u.role] || 0) + 1;
-        return acc;
-      }, {});
-      
-      setUserStats({
-        total: users.length,
-        active: activeUsers,
-        inactive: users.length - activeUsers,
-        roles: roleDistribution
-      });
+
+      // Set user stats using analytics/users response
+      const userAnalytics = userAnalyticsRes.data;
+      if (userAnalytics) {
+        setUserStats({
+          total: userAnalytics.total_users || 0,
+          active: userAnalytics.active_users || 0,
+          inactive: userAnalytics.inactive_users || 0,
+          roles: userAnalytics.role_distribution || {}
+        });
+      } else {
+        setUserStats(null);
+      }
     } catch (err) {
       toast.error('Failed to load analytics');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch detailed analytics for a specific campaign
+  const fetchCampaignDetail = async (campaignId) => {
+    setCampaignDetailLoading(true);
+    try {
+      const res = await axios.get(`${API}/analytics/campaign/${campaignId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setCampaignDetail(res.data);
+    } catch (err) {
+      toast.error('Failed to load campaign analytics');
+      setCampaignDetail(null);
+    } finally {
+      setCampaignDetailLoading(false);
     }
   };
 
@@ -640,12 +663,13 @@ export default function AdvancedAnalytics() {
                     {allCampaigns
                       .filter(c => campaignTypeFilter === 'all' || c.type === campaignTypeFilter)
                       .map((campaign) => (
-                        <TableRow 
-                          key={campaign.campaign_id} 
+                        <TableRow
+                          key={campaign.campaign_id}
                           className={`border-[#D4A836]/10 ${
                             selectedCampaignIds.includes(campaign.campaign_id) ? 'bg-[#D4A836]/10' : ''
                           }`}
                         >
+                          {/* Checkbox selection */}
                           <TableCell>
                             <Checkbox
                               checked={selectedCampaignIds.includes(campaign.campaign_id)}
@@ -659,10 +683,11 @@ export default function AdvancedAnalytics() {
                               className="border-[#30363D] data-[state=checked]:bg-[#D4A836]"
                             />
                           </TableCell>
+                          {/* Campaign type */}
                           <TableCell>
                             <Badge className={
-                              campaign.type === 'phishing' 
-                                ? 'bg-blue-500/20 text-blue-400' 
+                              campaign.type === 'phishing'
+                                ? 'bg-blue-500/20 text-blue-400'
                                 : 'bg-purple-500/20 text-purple-400'
                             }>
                               {campaign.type === 'phishing' ? (
@@ -672,13 +697,22 @@ export default function AdvancedAnalytics() {
                               )}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-[#E8DDB5] font-medium">{campaign.name}</TableCell>
+                          {/* Campaign name clickable for details */}
+                          <TableCell
+                            className="text-[#E8DDB5] font-medium cursor-pointer hover:underline"
+                            onClick={() => fetchCampaignDetail(campaign.campaign_id)}
+                          >
+                            {campaign.name}
+                          </TableCell>
                           <TableCell>
                             <Badge className={
-                              campaign.status === 'active' ? 'bg-green-500/20 text-green-400' :
-                              campaign.status === 'draft' ? 'bg-gray-500/20 text-gray-400' :
-                              campaign.status === 'completed' ? 'bg-blue-500/20 text-blue-400' :
-                              'bg-yellow-500/20 text-yellow-400'
+                              campaign.status === 'active'
+                                ? 'bg-green-500/20 text-green-400'
+                                : campaign.status === 'draft'
+                                ? 'bg-gray-500/20 text-gray-400'
+                                : campaign.status === 'completed'
+                                ? 'bg-blue-500/20 text-blue-400'
+                                : 'bg-yellow-500/20 text-yellow-400'
                             }>
                               {campaign.status}
                             </Badge>
@@ -688,12 +722,28 @@ export default function AdvancedAnalytics() {
                           <TableCell className="text-center text-green-400">{campaign.opened}</TableCell>
                           <TableCell className="text-center text-red-400">{campaign.clicked}</TableCell>
                           <TableCell className="text-center">
-                            <span className={campaign.open_rate >= 50 ? 'text-green-400' : campaign.open_rate >= 25 ? 'text-yellow-400' : 'text-gray-400'}>
+                            <span
+                              className={
+                                campaign.open_rate >= 50
+                                  ? 'text-green-400'
+                                  : campaign.open_rate >= 25
+                                  ? 'text-yellow-400'
+                                  : 'text-gray-400'
+                              }
+                            >
                               {campaign.open_rate}%
                             </span>
                           </TableCell>
                           <TableCell className="text-center">
-                            <span className={campaign.click_rate <= 5 ? 'text-green-400' : campaign.click_rate <= 15 ? 'text-yellow-400' : 'text-red-400'}>
+                            <span
+                              className={
+                                campaign.click_rate <= 5
+                                  ? 'text-green-400'
+                                  : campaign.click_rate <= 15
+                                  ? 'text-yellow-400'
+                                  : 'text-red-400'
+                              }
+                            >
                               {campaign.click_rate}%
                             </span>
                           </TableCell>
@@ -807,6 +857,131 @@ export default function AdvancedAnalytics() {
                       ))}
                     </TableBody>
                   </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Detailed Analytics for Selected Campaign */}
+        {campaignDetail && (
+          <Card className="bg-[#0f0f15] border-[#D4A836]/20 mt-6">
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <CardTitle className="text-[#E8DDB5] flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-[#D4A836]" />
+                  Campaign Details: {campaignDetail.campaign_name}
+                  <Badge className="ml-2 bg-[#D4A836]/20 text-[#D4A836]">
+                    {campaignDetail.campaign_type === 'phishing' ? 'Phishing' : 'Ad'}
+                  </Badge>
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {campaignDetailLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="w-6 h-6 border-2 border-[#D4A836] border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Summary Stats */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {campaignDetail.summary && campaignDetail.campaign_type === 'phishing' && (
+                      <>
+                        <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg text-center">
+                          <Mail className="w-6 h-6 text-blue-400 mx-auto mb-2" />
+                          <p className="text-xl font-bold text-blue-400">{campaignDetail.summary.sent}</p>
+                          <p className="text-xs text-gray-400">Emails Sent</p>
+                        </div>
+                        <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg text-center">
+                          <Eye className="w-6 h-6 text-green-400 mx-auto mb-2" />
+                          <p className="text-xl font-bold text-green-400">{campaignDetail.summary.opened}</p>
+                          <p className="text-xs text-gray-400">Opened</p>
+                        </div>
+                        <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-center">
+                          <MousePointerClick className="w-6 h-6 text-yellow-400 mx-auto mb-2" />
+                          <p className="text-xl font-bold text-yellow-400">{campaignDetail.summary.clicked}</p>
+                          <p className="text-xs text-gray-400">Clicked</p>
+                        </div>
+                        <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-center">
+                          <Users className="w-6 h-6 text-red-400 mx-auto mb-2" />
+                          <p className="text-xl font-bold text-red-400">{campaignDetail.summary.submitted}</p>
+                          <p className="text-xs text-gray-400">Credentials Submitted</p>
+                        </div>
+                      </>
+                    )}
+                    {campaignDetail.summary && campaignDetail.campaign_type === 'ad' && (
+                      <>
+                        <div className="p-4 bg-purple-500/10 border border-purple-500/30 rounded-lg text-center">
+                          <Monitor className="w-6 h-6 text-purple-400 mx-auto mb-2" />
+                          <p className="text-xl font-bold text-purple-400">{campaignDetail.summary.sent}</p>
+                          <p className="text-xs text-gray-400">Ads Served</p>
+                        </div>
+                        <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg text-center">
+                          <Eye className="w-6 h-6 text-green-400 mx-auto mb-2" />
+                          <p className="text-xl font-bold text-green-400">{campaignDetail.summary.viewed}</p>
+                          <p className="text-xs text-gray-400">Viewed</p>
+                        </div>
+                        <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-center">
+                          <MousePointerClick className="w-6 h-6 text-yellow-400 mx-auto mb-2" />
+                          <p className="text-xl font-bold text-yellow-400">{campaignDetail.summary.clicked}</p>
+                          <p className="text-xs text-gray-400">Clicked</p>
+                        </div>
+                        <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg text-center">
+                          <TrendingUp className="w-6 h-6 text-blue-400 mx-auto mb-2" />
+                          <p className="text-xl font-bold text-blue-400">{campaignDetail.summary.view_rate}%</p>
+                          <p className="text-xs text-gray-400">View Rate</p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  {/* Organization Breakdown Table */}
+                  {campaignDetail.organizations && campaignDetail.organizations.length > 0 && (
+                    <div className="overflow-x-auto border border-[#30363D] rounded-lg">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="border-[#30363D]">
+                            <TableHead className="text-gray-400">Organization</TableHead>
+                            <TableHead className="text-gray-400 text-center">Sent</TableHead>
+                            {campaignDetail.campaign_type === 'phishing' && (
+                              <>
+                                <TableHead className="text-gray-400 text-center">Opened</TableHead>
+                                <TableHead className="text-gray-400 text-center">Clicked</TableHead>
+                                <TableHead className="text-gray-400 text-center">Submitted</TableHead>
+                              </>
+                            )}
+                            {campaignDetail.campaign_type === 'ad' && (
+                              <>
+                                <TableHead className="text-gray-400 text-center">Viewed</TableHead>
+                                <TableHead className="text-gray-400 text-center">Clicked</TableHead>
+                              </>
+                            )}
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {campaignDetail.organizations.map((org) => (
+                            <TableRow key={org.organization_id} className="border-[#30363D]/50">
+                              <TableCell className="text-[#E8DDB5] font-medium">{org.organization_name || 'Unassigned'}</TableCell>
+                              <TableCell className="text-center text-gray-300">{org.sent}</TableCell>
+                              {campaignDetail.campaign_type === 'phishing' && (
+                                <>
+                                  <TableCell className="text-center text-green-400">{org.opened}</TableCell>
+                                  <TableCell className="text-center text-yellow-400">{org.clicked}</TableCell>
+                                  <TableCell className="text-center text-red-400">{org.submitted}</TableCell>
+                                </>
+                              )}
+                              {campaignDetail.campaign_type === 'ad' && (
+                                <>
+                                  <TableCell className="text-center text-green-400">{org.viewed}</TableCell>
+                                  <TableCell className="text-center text-yellow-400">{org.clicked}</TableCell>
+                                </>
+                              )}
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>

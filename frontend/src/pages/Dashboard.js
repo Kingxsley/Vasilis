@@ -43,6 +43,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [recentSessions, setRecentSessions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [userStats, setUserStats] = useState(null);
 
   useEffect(() => {
     fetchDashboardData();
@@ -50,16 +51,27 @@ export default function Dashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      const [statsRes, analyticsRes] = await Promise.all([
+      const [statsRes, analyticsRes, userAnalyticsRes] = await Promise.all([
         axios.get(`${API}/dashboard/stats`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
         axios.get(`${API}/analytics/training`, {
           headers: { Authorization: `Bearer ${token}` }
-        })
+        }),
+        axios.get(
+          `${API}/analytics/users${
+            user?.role !== 'super_admin' && user?.organization_id
+              ? `?organization_id=${user.organization_id}`
+              : ''
+          }`,
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        )
       ]);
       setStats(statsRes.data);
       setRecentSessions(analyticsRes.data.recent_sessions || []);
+      setUserStats(userAnalyticsRes.data || null);
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err);
     } finally {
@@ -81,6 +93,20 @@ export default function Dashboard() {
       icon: Users,
       color: '#00E676',
       bgColor: 'bg-[#00E676]/10'
+    },
+    {
+      title: 'Active Users',
+      value: userStats?.active_users || 0,
+      icon: Activity,
+      color: '#00E676',
+      bgColor: 'bg-[#00E676]/10'
+    },
+    {
+      title: 'Inactive Users',
+      value: userStats?.inactive_users || 0,
+      icon: Activity,
+      color: '#FF3B30',
+      bgColor: 'bg-[#FF3B30]/10'
     },
     {
       title: 'Campaigns',

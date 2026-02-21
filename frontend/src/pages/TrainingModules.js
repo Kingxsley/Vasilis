@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button';
 import { Progress } from '../components/ui/progress';
 import { Mail, MousePointerClick, Users, Clock, Target, Play, CheckCircle, BookOpen } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 
@@ -123,6 +124,29 @@ export default function TrainingModules() {
         return 'bg-[#2979FF]/10 text-[#2979FF]';
       default:
         return 'bg-gray-600/20 text-gray-400';
+    }
+  };
+
+  // Download certificate for a completed module
+  const downloadCertificate = async (moduleId, moduleName) => {
+    try {
+      const response = await axios.get(
+        `${BACKEND_URL}/api/certificates/user/${user.user_id}/module/${moduleId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: 'blob'
+        }
+      );
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      const safeName = moduleName.replace(/\s+/g, '_');
+      link.setAttribute('download', `certificate_${safeName}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      toast.error('Failed to download certificate');
     }
   };
 
@@ -301,6 +325,18 @@ export default function TrainingModules() {
                             <Play className="w-4 h-4 mr-2" />
                           )}
                           {progress.hasCompleted ? 'Retake' : 'Start'}
+                        </Button>
+                      )}
+                      {/* Download certificate button */}
+                      {progress.hasCompleted && (
+                        <Button
+                          variant="outline"
+                          className="flex items-center gap-1 border-[#30363D] text-gray-300 hover:text-white"
+                          onClick={() => downloadCertificate(module.module_id, module.name)}
+                          data-testid={`download-cert-${module.module_id}`}
+                        >
+                          <Download className="w-4 h-4" />
+                          Certificate
                         </Button>
                       )}
                     </div>
