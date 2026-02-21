@@ -31,3 +31,6 @@ reportlab==4.2.0
 
 # Image processing
 Pillow==10.4.0
+
+# Two-Factor Authentication
+pyotp==2.8.0

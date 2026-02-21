@@ -16,6 +16,7 @@ from datetime import datetime, timezone, timedelta
 import bcrypt
 import jwt
 import httpx
+import pyotp
 
 # Import security middleware
 from middleware.security import (
@@ -128,6 +129,8 @@ class UserRegister(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+    # Optional two-factor authentication code. Required for admins with 2FA enabled.
+    two_factor_code: Optional[str] = None
 
 class UserResponse(BaseModel):
     user_id: str
@@ -141,6 +144,14 @@ class UserResponse(BaseModel):
 class TokenResponse(BaseModel):
     token: str
     user: UserResponse
+
+# Two-Factor Auth models
+class TwoFactorSetupResponse(BaseModel):
+    secret: str
+    otp_auth_url: str
+
+class TwoFactorVerifyRequest(BaseModel):
+    code: str
 
 # Organization Models
 class OrganizationCreate(BaseModel):
@@ -339,6 +350,8 @@ def create_jwt_token(user_id: str, email: str, role: str, token_type: str = "acc
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
+# Added placeholder comment for TOTp integration
+
 async def get_current_user(request: Request, credentials=Depends(security)) -> dict:
     # Try cookie first
     session_token = request.cookies.get("session_token")
@@ -511,8 +524,38 @@ async def login(data: UserLogin, request: Request):
         )
         raise HTTPException(status_code=401, detail="Account is deactivated")
     
-    # Clear failed attempts on successful login
+    # Clear failed attempts on successful password verification
     account_lockout.clear_attempts(data.email)
+
+    # If user has two-factor authentication enabled, verify code
+    if user.get("two_factor_enabled"):
+        # A two-factor code must be provided
+        if not data.two_factor_code:
+            await audit_logger.log(
+                action="login_failed_missing_2fa",
+                user_email=data.email,
+                ip_address=client_ip,
+                severity="warning"
+            )
+            raise HTTPException(status_code=403, detail="Two-factor authentication code required")
+        secret = user.get("two_factor_secret")
+        if not secret:
+            logger.error(f"User {user['user_id']} has 2FA enabled but no secret stored")
+            raise HTTPException(status_code=500, detail="Two-factor authentication misconfigured")
+        try:
+            totp = pyotp.TOTP(secret)
+            # verify returns True if the code is valid for current window (30s)
+            if not totp.verify(data.two_factor_code, valid_window=1):
+                await audit_logger.log(
+                    action="login_failed_invalid_2fa",
+                    user_email=data.email,
+                    ip_address=client_ip,
+                    severity="warning"
+                )
+                raise HTTPException(status_code=401, detail="Invalid two-factor authentication code")
+        except Exception as e:
+            logger.error(f"2FA verification error for {user['user_id']}: {e}")
+            raise HTTPException(status_code=500, detail="Two-factor verification failed")
     
     token = create_jwt_token(user["user_id"], user["email"], user["role"])
     
@@ -876,6 +919,55 @@ async def verify_reset_token(token: str):
         return {"valid": False, "message": "Reset token has expired"}
     
     return {"valid": True, "email": reset_record["email"]}
+
+# ==================== TWO-FACTOR AUTHENTICATION ====================
+
+@auth_router.post("/two-factor/setup", response_model=TwoFactorSetupResponse)
+async def two_factor_setup(current_user: dict = Depends(require_admin)):
+    """
+    Setup two-factor authentication (TOTP) for the current admin user.
+    Generates a secret and returns an otpauth URL for scanning. Admins must
+    complete verification via /two-factor/verify to enable 2FA.
+    """
+    # Only allow super and org admins to enable 2FA
+    if current_user.get("role") not in [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN]:
+        raise HTTPException(status_code=403, detail="Two-factor setup available only for admins")
+    # If already enabled, don't regenerate
+    if current_user.get("two_factor_enabled"):
+        raise HTTPException(status_code=400, detail="Two-factor authentication is already enabled")
+    # Generate secret
+    secret = pyotp.random_base32()
+    totp = pyotp.TOTP(secret)
+    otp_auth_url = totp.provisioning_uri(name=current_user.get("email"), issuer_name="VasilisNetShield")
+    # Store secret and disable flag until verified
+    await db.users.update_one(
+        {"user_id": current_user["user_id"]},
+        {"$set": {"two_factor_secret": secret, "two_factor_enabled": False}}
+    )
+    return TwoFactorSetupResponse(secret=secret, otp_auth_url=otp_auth_url)
+
+
+@auth_router.post("/two-factor/verify")
+async def two_factor_verify(data: TwoFactorVerifyRequest, current_user: dict = Depends(get_current_user)):
+    """
+    Verify a TOTP code for two-factor authentication setup.
+    After successful verification, 2FA will be enabled for the current user.
+    """
+    secret = current_user.get("two_factor_secret")
+    if not secret:
+        raise HTTPException(status_code=400, detail="Two-factor setup not initiated")
+    try:
+        totp = pyotp.TOTP(secret)
+        if not totp.verify(data.code, valid_window=1):
+            raise HTTPException(status_code=401, detail="Invalid two-factor code")
+    except Exception:
+        raise HTTPException(status_code=500, detail="Two-factor verification failed")
+    # Enable 2FA
+    await db.users.update_one(
+        {"user_id": current_user["user_id"]},
+        {"$set": {"two_factor_enabled": True}}
+    )
+    return {"message": "Two-factor authentication enabled successfully"}
 
 # ============== ORGANIZATION ROUTES ==============
 
@@ -2347,6 +2439,8 @@ async def get_all_campaigns_analytics(
     days: int = 30,
     start_date: str = None,
     end_date: str = None,
+    campaign_type: Optional[str] = None,
+    status: Optional[str] = None,
     user: dict = Depends(require_admin)
 ):
     """Get all simulation campaigns (phishing + ad) for analytics"""
@@ -2429,6 +2523,11 @@ async def get_all_campaigns_analytics(
     
     # Sort by created_at descending
     all_campaigns.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+    # Apply optional filters
+    if campaign_type in {"phishing", "ad"}:
+        all_campaigns = [c for c in all_campaigns if c["type"] == campaign_type]
+    if status:
+        all_campaigns = [c for c in all_campaigns if c.get("status") == status]
     
     # Calculate summary stats
     total_campaigns = len(all_campaigns)
