@@ -92,12 +92,13 @@ const navGroups = [
     id: 'simulations',
     label: 'Simulations',
     icon: Crosshair,
-    superAdminOnly: true,
+    // Available to all admin roles; individual items may restrict further
+    adminOnly: true,
     items: [
       { path: '/simulation-builder', label: 'Create Sim', icon: Wand2, superAdminOnly: true },
       { path: '/phishing', label: 'Phishing Sim', icon: Mail, superAdminOnly: true },
       { path: '/ads', label: 'Ad Simulation', icon: Monitor, superAdminOnly: true },
-      { path: '/scenarios', label: 'Scenarios', icon: FileText, superAdminOnly: true },
+      { path: '/scenarios', label: 'Scenarios', icon: FileText, adminOnly: true },
     ]
   },
   {
