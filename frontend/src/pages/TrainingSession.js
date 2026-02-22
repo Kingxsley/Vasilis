@@ -356,14 +356,32 @@ export default function TrainingSession() {
               Exit Training
             </Button>
             <div className="text-right">
+              {/*
+                Display the current question number.  Some users reported the question number
+                remaining stuck at 1; this can occur when the session's
+                `current_scenario_index` does not update synchronously after answering.  To
+                ensure the count reflects progress, fall back to the number of answered
+                scenarios if available.
+              */}
               <p className="text-sm text-gray-400">
-                Question {(session?.current_scenario_index || 0) + 1} of {session?.total_questions}
+                {(() => {
+                  const answered = session?.answers?.length || 0;
+                  // Use current_scenario_index if greater than answered count (e.g. when resuming)
+                  const index = session?.current_scenario_index ?? answered;
+                  const currentQuestion = Math.min(index + 1, session?.total_questions || 1);
+                  return `Question ${currentQuestion} of ${session?.total_questions || 1}`;
+                })()}
               </p>
               <p className="text-lg font-bold text-[#2979FF]">{session?.score || 0}%</p>
             </div>
           </div>
-          <Progress 
-            value={((session?.current_scenario_index || 0) / (session?.total_questions || 1)) * 100}
+          <Progress
+            value={(() => {
+              const answered = session?.answers?.length || 0;
+              const index = session?.current_scenario_index ?? answered;
+              const total = session?.total_questions || 1;
+              return (index / total) * 100;
+            })()}
             className="h-2 bg-[#21262D]"
           />
         </div>

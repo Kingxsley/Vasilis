@@ -22,6 +22,9 @@ export default function PasswordPolicyPage() {
     require_lowercase: true,
     require_numbers: true,
     require_special: true,
+    // Support both names for expiry
+    password_expiry_days: 90,
+    expiry_reminder_days: 7,
     max_age_days: 90,
     prevent_reuse: 5,
     lockout_attempts: 3,
@@ -37,7 +40,22 @@ export default function PasswordPolicyPage() {
       const response = await axios.get(`${API}/settings/password-policy`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setPolicy(response.data);
+      // Map synonyms so the UI works regardless of backend field names
+      const data = response.data;
+      setPolicy(prev => ({
+        ...prev,
+        min_length: data.min_length ?? prev.min_length,
+        require_uppercase: data.require_uppercase ?? prev.require_uppercase,
+        require_lowercase: data.require_lowercase ?? prev.require_lowercase,
+        require_numbers: data.require_numbers ?? prev.require_numbers,
+        require_special: data.require_special ?? prev.require_special,
+        password_expiry_days: data.password_expiry_days ?? data.max_age_days ?? prev.password_expiry_days,
+        max_age_days: data.password_expiry_days ?? data.max_age_days ?? prev.max_age_days,
+        expiry_reminder_days: data.expiry_reminder_days ?? prev.expiry_reminder_days,
+        prevent_reuse: data.prevent_reuse ?? prev.prevent_reuse,
+        lockout_attempts: data.lockout_attempts ?? prev.lockout_attempts,
+        lockout_duration_minutes: data.lockout_duration_minutes ?? prev.lockout_duration_minutes
+      }));
     } catch (error) {
       console.error('Failed to load password policy:', error);
     } finally {
@@ -48,7 +66,14 @@ export default function PasswordPolicyPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await axios.patch(`${API}/settings/password-policy`, policy, {
+      // Send both names for expiry to ensure backwards compatibility
+      const payload = {
+        ...policy,
+        max_age_days: policy.password_expiry_days,
+        password_expiry_days: policy.password_expiry_days,
+        expiry_reminder_days: policy.expiry_reminder_days
+      };
+      await axios.patch(`${API}/settings/password-policy`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('Password policy updated');
@@ -189,8 +214,11 @@ export default function PasswordPolicyPage() {
                   type="number"
                   min="0"
                   max="365"
-                  value={policy.max_age_days}
-                  onChange={(e) => setPolicy({ ...policy, max_age_days: parseInt(e.target.value) || 0 })}
+                  value={policy.password_expiry_days}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value) || 0;
+                    setPolicy({ ...policy, password_expiry_days: val, max_age_days: val });
+                  }}
                   className="bg-[#0D1117] border-[#30363D] text-white"
                   data-testid="max-age-input"
                 />

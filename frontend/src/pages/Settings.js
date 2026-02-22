@@ -56,7 +56,12 @@ export default function Settings() {
       const response = await axios.get(`${API}/settings/password-policy`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setPasswordPolicy(response.data);
+      const data = response.data;
+      // Normalize field names.  Use password_expiry_days or max_age_days for expiry
+      setPasswordPolicy({
+        password_expiry_days: data.password_expiry_days ?? data.max_age_days ?? 0,
+        expiry_reminder_days: data.expiry_reminder_days ?? 7
+      });
     } catch (error) {
       console.error('Failed to load password policy:', error);
     }
@@ -65,7 +70,12 @@ export default function Settings() {
   const handleSavePasswordPolicy = async () => {
     setSavingPolicy(true);
     try {
-      await axios.patch(`${API}/settings/password-policy`, passwordPolicy, {
+      // Send both field names to backend
+      await axios.patch(`${API}/settings/password-policy`, {
+        password_expiry_days: passwordPolicy.password_expiry_days,
+        max_age_days: passwordPolicy.password_expiry_days,
+        expiry_reminder_days: passwordPolicy.expiry_reminder_days
+      }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('Password policy saved');
