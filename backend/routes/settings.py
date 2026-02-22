@@ -352,16 +352,79 @@ async def delete_favicon(request: Request):
     return {"message": "Favicon removed"}
 
 
+# ============== SECURITY SETTINGS ==============
+
+class SecuritySettings(BaseModel):
+    """
+    Settings related to high‑level security controls.
+
+    Currently only supports enforcing two‑factor authentication across all users.
+    When `force_2fa` is true, the login endpoint will reject users who do not
+    have two‑factor authentication enabled and verified.  Additional
+    organization‑wide security controls can be added here in the future.
+    """
+    force_2fa: Optional[bool] = False
+
+
+@router.get("/security")
+async def get_security_settings(request: Request):
+    """Retrieve security settings such as two‑factor enforcement."""
+    # Only admins should view security settings
+    await require_admin(request)
+    db = get_db()
+    settings = await db.settings.find_one({"type": "security"}, {"_id": 0})
+    result = {"force_2fa": False}
+    if settings:
+        result["force_2fa"] = settings.get("force_2fa", False)
+    return result
+
+
+@router.patch("/security")
+async def update_security_settings(data: SecuritySettings, request: Request):
+    """Update security settings.  Only super admins can modify these."""
+    # Enforce super admin privileges for changing global security controls
+    user = await require_admin(request)
+    if user.get("role") != "super_admin":
+        raise HTTPException(status_code=403, detail="Super admin access required")
+    db = get_db()
+    update_data = {k: v for k, v in data.model_dump().items() if v is not None}
+    update_data["type"] = "security"
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    update_data["updated_by"] = user["user_id"]
+    await db.settings.update_one(
+        {"type": "security"},
+        {"$set": update_data},
+        upsert=True
+    )
+    return await get_security_settings(request)
+
+
 # ============== PASSWORD POLICY SETTINGS ==============
 
 class PasswordPolicySettings(BaseModel):
+    """
+    Settings for password requirements and account security.
+
+    Many of these fields are synonyms for legacy names used in different
+    parts of the app.  For example `max_age_days` is functionally the
+    same as `password_expiry_days`, and `expiry_reminder_days` controls
+    how many days before expiry to send reminders.  All fields are
+    optional so that PATCH requests can update only a subset of values.
+    """
+    # Password complexity requirements
     min_length: Optional[int] = 8
     require_uppercase: Optional[bool] = True
     require_lowercase: Optional[bool] = True
     require_numbers: Optional[bool] = True
     require_special: Optional[bool] = True
+    
+    # Password expiry and rotation
     max_age_days: Optional[int] = 90
+    password_expiry_days: Optional[int] = None
+    expiry_reminder_days: Optional[int] = None
     prevent_reuse: Optional[int] = 5
+    
+    # Account lockout
     lockout_attempts: Optional[int] = 3
     lockout_duration_minutes: Optional[int] = 15
     
@@ -372,19 +435,45 @@ async def get_password_policy(request: Request):
     db = get_db()
     
     settings = await db.settings.find_one({"type": "password_policy"}, {"_id": 0})
-    
-    # Return defaults if not set
-    return {
-        "min_length": settings.get("min_length", 8) if settings else 8,
-        "require_uppercase": settings.get("require_uppercase", True) if settings else True,
-        "require_lowercase": settings.get("require_lowercase", True) if settings else True,
-        "require_numbers": settings.get("require_numbers", True) if settings else True,
-        "require_special": settings.get("require_special", True) if settings else True,
-        "max_age_days": settings.get("max_age_days", 90) if settings else 90,
-        "prevent_reuse": settings.get("prevent_reuse", 5) if settings else 5,
-        "lockout_attempts": settings.get("lockout_attempts", 3) if settings else 3,
-        "lockout_duration_minutes": settings.get("lockout_duration_minutes", 15) if settings else 15
+
+    # Provide default values if no settings exist yet.  Map synonyms so that
+    # both old and new field names are returned.  max_age_days and
+    # password_expiry_days represent the same concept of password rotation.
+    result = {
+        "min_length": 8,
+        "require_uppercase": True,
+        "require_lowercase": True,
+        "require_numbers": True,
+        "require_special": True,
+        "max_age_days": 90,
+        "password_expiry_days": 90,
+        "expiry_reminder_days": 7,
+        "prevent_reuse": 5,
+        "lockout_attempts": 3,
+        "lockout_duration_minutes": 15
     }
+
+    if settings:
+        # Complexity
+        result["min_length"] = settings.get("min_length", result["min_length"])
+        result["require_uppercase"] = settings.get("require_uppercase", result["require_uppercase"])
+        result["require_lowercase"] = settings.get("require_lowercase", result["require_lowercase"])
+        result["require_numbers"] = settings.get("require_numbers", result["require_numbers"])
+        result["require_special"] = settings.get("require_special", result["require_special"])
+        # Expiry.  Accept both max_age_days and password_expiry_days
+        expiry = settings.get("password_expiry_days", settings.get("max_age_days"))
+        if expiry is not None:
+            result["max_age_days"] = expiry
+            result["password_expiry_days"] = expiry
+        # Reminder days
+        result["expiry_reminder_days"] = settings.get("expiry_reminder_days", result["expiry_reminder_days"])
+        # Prevent reuse
+        result["prevent_reuse"] = settings.get("prevent_reuse", result["prevent_reuse"])
+        # Lockout
+        result["lockout_attempts"] = settings.get("lockout_attempts", result["lockout_attempts"])
+        result["lockout_duration_minutes"] = settings.get("lockout_duration_minutes", result["lockout_duration_minutes"])
+
+    return result
 
 
 @router.patch("/password-policy")
@@ -394,6 +483,13 @@ async def update_password_policy(data: PasswordPolicySettings, request: Request)
     db = get_db()
     
     update_data = {k: v for k, v in data.model_dump().items() if v is not None}
+    # Normalize field names.  If password_expiry_days is provided, update both
+    # password_expiry_days and max_age_days to maintain backwards compatibility.
+    if "password_expiry_days" in update_data:
+        update_data["max_age_days"] = update_data["password_expiry_days"]
+    if "max_age_days" in update_data:
+        update_data["password_expiry_days"] = update_data["max_age_days"]
+    # Ensure type and audit fields
     update_data["type"] = "password_policy"
     update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
     update_data["updated_by"] = user["user_id"]
@@ -404,6 +500,9 @@ async def update_password_policy(data: PasswordPolicySettings, request: Request)
         upsert=True
     )
     
+    # If reminder days were not provided, leave existing value unchanged.  The
+    # same applies to other optional fields; Mongo's $set only updates the
+    # provided keys.
     return await get_password_policy(request)
 
 
@@ -432,19 +531,24 @@ async def get_seo_settings(request: Request):
     db = get_db()
     
     settings = await db.settings.find_one({"type": "seo"}, {"_id": 0})
-    
+
     if not settings:
+        # If no SEO settings exist, derive defaults.  If a branding logo exists,
+        # use it as the Open Graph/Twitter image so that search engines and
+        # social cards display the organization logo instead of a generic icon.
+        branding = await db.settings.find_one({"type": "branding"}, {"_id": 0})
+        logo_url = branding.get("logo_url") if branding else ""
         return {
             "site_title": "Vasilis NetShield | Security Training Platform",
-            "site_description": "Human + AI Powered Security Training. Protect your organization with realistic phishing simulations.",
-            "site_keywords": "cybersecurity training, phishing simulation, security awareness",
+            "site_description": "Human + AI Powered Security Training. Protect your organization with realistic phishing simulations, malicious ad detection, and social engineering defense training.",
+            "site_keywords": "cybersecurity training, phishing simulation, security awareness, employee training, social engineering, malicious ads",
             "og_title": "Vasilis NetShield | Security Training Platform",
-            "og_description": "Human + AI Powered Security Training",
-            "og_image": "",
+            "og_description": "Human + AI Powered Security Training. Build a security-aware workforce with realistic simulations.",
+            "og_image": logo_url or "",
             "twitter_title": "Vasilis NetShield",
-            "twitter_description": "Human + AI Powered Security Training",
-            "twitter_image": "",
-            "robots_txt": "User-agent: *\nAllow: /\n\nSitemap: https://vasilisnetshield.com/sitemap.xml",
+            "twitter_description": "Human + AI Powered Security Training Platform",
+            "twitter_image": logo_url or "",
+            "robots_txt": "User-agent: *\nAllow: /\n\n# Sitemap location\nSitemap: https://vasilisnetshield.com/sitemap.xml\n\n# Disallow admin areas\nDisallow: /dashboard\nDisallow: /settings\nDisallow: /content\nDisallow: /campaigns\nDisallow: /analytics",
             "google_analytics_id": "",
             "google_search_console": "",
             "canonical_url": "https://vasilisnetshield.com"

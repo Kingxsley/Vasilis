@@ -540,6 +540,23 @@ async def login(data: UserLogin, request: Request):
     # Clear failed attempts on successful password verification
     account_lockout.clear_attempts(data.email)
 
+    # Fetch global security settings to determine if 2FA is required for all users
+    try:
+        security_settings = await db.settings.find_one({"type": "security"}, {"force_2fa": 1})
+        force_2fa = security_settings.get("force_2fa", False) if security_settings else False
+    except Exception:
+        force_2fa = False
+
+    # If 2FA is enforced and the user hasn't enabled it, deny access
+    if force_2fa and not user.get("two_factor_enabled"):
+        await audit_logger.log(
+            action="login_failed_2fa_required",
+            user_email=data.email,
+            ip_address=client_ip,
+            severity="warning"
+        )
+        raise HTTPException(status_code=403, detail="Two-factor authentication is required. Please enable 2FA to continue.")
+
     # If user has two-factor authentication enabled, verify code
     if user.get("two_factor_enabled"):
         # A two-factor code must be provided
@@ -2349,43 +2366,108 @@ async def get_user_analytics(
 @api_router.get("/analytics/overview")
 async def get_analytics_overview(
     days: int = 30,
+    start_date: str = None,
+    end_date: str = None,
     user: dict = Depends(require_admin)
 ):
-    """Get comprehensive analytics overview for the Advanced Analytics page"""
+    """
+    Get a comprehensive analytics overview for the Advanced Analytics page.
+
+    Accepts either a number of days or an explicit ISO date range. When
+    `start_date` and `end_date` are provided, metrics are calculated only
+    for events occurring within that range. Otherwise, the last `days`
+    period is used.
+    """
     from datetime import timedelta
-    cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
-    
-    # Count phishing campaigns
-    phishing_campaigns = await db.phishing_campaigns.count_documents({})
-    phishing_active = await db.phishing_campaigns.count_documents({"status": "active"})
-    
-    # Count ad campaigns
-    ad_campaigns = await db.ad_campaigns.count_documents({})
-    ad_active = await db.ad_campaigns.count_documents({"status": "active"})
-    
-    # Get phishing stats
-    # Use consistent field names based on how the phishing service records events.  An email
-    # is considered sent when `email_sent` is True, opened when `email_opened` is True (or
-    # `opened_at` exists for older data), clicked when `link_clicked` is True (or
-    # `clicked_at` exists), and submitted when `credentials_submitted` is True (or
-    # `submitted_at` exists).  We deliberately count only events that have actually
-    # occurred rather than simply counting the number of target records.  This ensures
-    # statistics reflect real user activity.
-    phishing_targets = await db.phishing_targets.find({}, {"_id": 0}).to_list(100000)
+
+    # Determine cutoff range
+    cutoff_start: datetime
+    cutoff_end: datetime
+    if start_date and end_date:
+        # Parse ISO formatted strings; allow trailing 'Z' from frontend
+        try:
+            cutoff_start = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+            cutoff_end = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+        except Exception:
+            # Fall back to days if parsing fails
+            cutoff_start = datetime.now(timezone.utc) - timedelta(days=days)
+            cutoff_end = datetime.now(timezone.utc)
+    else:
+        cutoff_start = datetime.now(timezone.utc) - timedelta(days=days)
+        cutoff_end = datetime.now(timezone.utc)
+
+    # Count phishing campaigns launched within range
+    phishing_campaigns = await db.phishing_campaigns.count_documents({
+        "$or": [
+            {"created_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}},
+            {"launched_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}}
+        ]
+    })
+    phishing_active = await db.phishing_campaigns.count_documents({
+        "status": "active",
+        "$or": [
+            {"created_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}},
+            {"launched_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}}
+        ]
+    })
+
+    # Count ad campaigns launched within range
+    ad_campaigns = await db.ad_campaigns.count_documents({
+        "$or": [
+            {"created_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}},
+            {"launched_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}}
+        ]
+    })
+    ad_active = await db.ad_campaigns.count_documents({
+        "status": "active",
+        "$or": [
+            {"created_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}},
+            {"launched_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}}
+        ]
+    })
+
+    # Fetch phishing target events within the cutoff range.  We select only
+    # targets where any relevant timestamp falls within the range, or where
+    # the target itself was created within the range.  Note that for large
+    # datasets the list may be truncated by Mongo's to_list limit, but this
+    # still yields accurate relative counts.
+    phishing_targets = await db.phishing_targets.find({
+        "$or": [
+            {"created_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}},
+            {"sent_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}},
+            {"opened_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}},
+            {"clicked_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}},
+            {"submitted_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}}
+        ]
+    }, {"_id": 0}).to_list(100000)
+
     total_sent = sum(1 for t in phishing_targets if t.get("email_sent"))
     total_opened = sum(1 for t in phishing_targets if t.get("email_opened") or t.get("opened_at"))
     total_clicked = sum(1 for t in phishing_targets if t.get("link_clicked") or t.get("clicked_at"))
     total_submitted = sum(1 for t in phishing_targets if t.get("credentials_submitted") or t.get("submitted_at"))
 
-    # Get ad stats
-    ad_targets = await db.ad_targets.find({}, {"_id": 0}).to_list(100000)
+    # Fetch ad target events within range
+    ad_targets = await db.ad_targets.find({
+        "$or": [
+            {"created_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}},
+            {"viewed_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}},
+            {"clicked_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}}
+        ]
+    }, {"_id": 0}).to_list(100000)
+
     ads_viewed = sum(1 for t in ad_targets if t.get("ad_viewed"))
     ads_clicked = sum(1 for t in ad_targets if t.get("ad_clicked"))
-    
-    # Training stats
-    training_sessions = await db.training_sessions.count_documents({})
-    training_completed = await db.training_sessions.count_documents({"status": "completed"})
-    
+
+    # Training sessions within range
+    training_sessions = await db.training_sessions.count_documents({
+        "created_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}
+    })
+    training_completed = await db.training_sessions.count_documents({
+        "status": "completed",
+        "created_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}
+    })
+
+    # Return aggregated statistics
     return {
         "campaigns_launched": phishing_campaigns + ad_campaigns,
         "active_campaigns": phishing_active + ad_active,
@@ -2397,30 +2479,72 @@ async def get_analytics_overview(
         "ads_clicked": ads_clicked,
         "training_sessions": training_sessions,
         "training_completed": training_completed,
-        "period_days": days
+        "period_days": days,
+        "start_date": cutoff_start.isoformat(),
+        "end_date": cutoff_end.isoformat()
     }
 
 @api_router.get("/phishing/stats")
 async def get_phishing_stats(
     days: int = 30,
+    start_date: str = None,
+    end_date: str = None,
     user: dict = Depends(require_admin)
 ):
-    """Get detailed phishing statistics for analytics"""
-    from datetime import timedelta
-    cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
-    
-    # Count campaigns
-    total_campaigns = await db.phishing_campaigns.count_documents({})
-    active_campaigns = await db.phishing_campaigns.count_documents({"status": "active"})
-    completed_campaigns = await db.phishing_campaigns.count_documents({"status": "completed"})
-    
-    # Get all targets for stats calculation
-    targets = await db.phishing_targets.find({}, {"_id": 0}).to_list(100000)
+    """
+    Get detailed phishing statistics for analytics.
 
-    # Count events based on current field names.  Fall back to older fields if necessary.
-    # An email is considered sent only when email_sent=True.  This prevents draft
-    # targets from inflating sent counts.  Similarly, opened and clicked events
-    # count when the respective boolean flags or timestamp fields exist.
+    Supports either a relative period defined by `days` or a specific
+    `start_date`/`end_date` range. Only events within the range are
+    considered when counting sent, opened, clicked, and submitted events.
+    """
+    from datetime import timedelta
+    # Determine date range
+    if start_date and end_date:
+        try:
+            cutoff_start = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+            cutoff_end = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+        except Exception:
+            cutoff_start = datetime.now(timezone.utc) - timedelta(days=days)
+            cutoff_end = datetime.now(timezone.utc)
+    else:
+        cutoff_start = datetime.now(timezone.utc) - timedelta(days=days)
+        cutoff_end = datetime.now(timezone.utc)
+
+    # Count phishing campaigns in range
+    total_campaigns = await db.phishing_campaigns.count_documents({
+        "$or": [
+            {"created_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}},
+            {"launched_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}}
+        ]
+    })
+    active_campaigns = await db.phishing_campaigns.count_documents({
+        "status": "active",
+        "$or": [
+            {"created_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}},
+            {"launched_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}}
+        ]
+    })
+    completed_campaigns = await db.phishing_campaigns.count_documents({
+        "status": "completed",
+        "$or": [
+            {"created_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}},
+            {"launched_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}}
+        ]
+    })
+
+    # Collect targets within the range based on any event timestamp
+    targets = await db.phishing_targets.find({
+        "$or": [
+            {"created_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}},
+            {"sent_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}},
+            {"opened_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}},
+            {"clicked_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}},
+            {"submitted_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}}
+        ]
+    }, {"_id": 0}).to_list(100000)
+
+    # Count events based on current field names.  Fall back to older fields
     total_sent = sum(1 for t in targets if t.get("email_sent"))
     total_opened = sum(1 for t in targets if t.get("email_opened") or t.get("opened_at"))
     total_clicked = sum(1 for t in targets if t.get("link_clicked") or t.get("clicked_at"))
@@ -2430,8 +2554,6 @@ async def get_phishing_stats(
     open_rate = (total_opened / total_sent * 100) if total_sent > 0 else 0
     click_rate = (total_clicked / total_sent * 100) if total_sent > 0 else 0
     submission_rate = (total_submitted / total_sent * 100) if total_sent > 0 else 0
-
-    # Click to open rate
     click_to_open_rate = (total_clicked / total_opened * 100) if total_opened > 0 else 0
 
     return {
@@ -2446,7 +2568,9 @@ async def get_phishing_stats(
         "click_rate": round(click_rate, 2),
         "submission_rate": round(submission_rate, 2),
         "click_to_open_rate": round(click_to_open_rate, 2),
-        "period_days": days
+        "period_days": days,
+        "start_date": cutoff_start.isoformat(),
+        "end_date": cutoff_end.isoformat()
     }
 
 @api_router.get("/analytics/all-campaigns")
@@ -2476,7 +2600,13 @@ async def get_all_campaigns_analytics(
     all_campaigns = []
     
     # Get phishing campaigns
-    phishing_campaigns = await db.phishing_campaigns.find({}, {"_id": 0}).to_list(1000)
+    # Only include phishing campaigns whose created_at or launched_at falls within the range
+    phishing_campaigns = await db.phishing_campaigns.find({
+        "$or": [
+            {"created_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}},
+            {"launched_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}}
+        ]
+    }, {"_id": 0}).to_list(1000)
     for camp in phishing_campaigns:
         targets = await db.phishing_targets.find(
             {"campaign_id": camp["campaign_id"]},
@@ -2508,7 +2638,13 @@ async def get_all_campaigns_analytics(
         })
     
     # Get ad campaigns
-    ad_campaigns = await db.ad_campaigns.find({}, {"_id": 0}).to_list(1000)
+    # Only include ad campaigns within date range
+    ad_campaigns = await db.ad_campaigns.find({
+        "$or": [
+            {"created_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}},
+            {"launched_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}}
+        ]
+    }, {"_id": 0}).to_list(1000)
     for camp in ad_campaigns:
         targets = await db.ad_targets.find(
             {"campaign_id": camp["campaign_id"]},
@@ -3415,12 +3551,15 @@ async def cron_check_password_expiry():
     from datetime import datetime, timezone, timedelta
     from services.email_service import send_password_expiry_reminder
     
-    # Get password policy
+    # Get password policy.  Support both legacy and new field names.
     policy = await db.settings.find_one({"type": "password_policy"}, {"_id": 0})
-    expiry_days = policy.get("password_expiry_days", 0) if policy else 0
-    reminder_days = policy.get("expiry_reminder_days", 7) if policy else 7
-    
-    if expiry_days == 0:
+    expiry_days = 0
+    reminder_days = 7
+    if policy:
+        expiry_days = policy.get("password_expiry_days") or policy.get("max_age_days", 0)
+        reminder_days = policy.get("expiry_reminder_days", reminder_days)
+
+    if not expiry_days or expiry_days <= 0:
         return {"message": "Password expiry is disabled", "reminders_sent": 0}
     
     now = datetime.now(timezone.utc)
