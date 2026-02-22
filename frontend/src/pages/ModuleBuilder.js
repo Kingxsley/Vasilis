@@ -258,25 +258,38 @@ export default function ModuleBuilder() {
                 </div>
                 <div>
                   <Label htmlFor="certificate_template_id">Certificate Template</Label>
-                  <Select
-                    value={formData.certificate_template_id || ''}
-                    onValueChange={(value) => setFormData((prev) => ({ ...prev, certificate_template_id: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue>{
-                        templates.find(t => t.template_id === formData.certificate_template_id)?.name ||
-                        'Select Template'
-                      }</SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">Default</SelectItem>
-                      {templates.map((tmpl) => (
-                        <SelectItem key={tmpl.template_id} value={tmpl.template_id}>
-                          {tmpl.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                {/*
+                  The Select component does not allow empty string values.  To represent
+                  the default certificate (no explicit template), we use the string
+                  'default' as the SelectItem value.  When a user selects this, we
+                  convert the value back to an empty string before storing it in
+                  formData.  This avoids runtime errors from Radix Select while
+                  preserving the ability to clear the selection.
+                */}
+                <Select
+                  value={formData.certificate_template_id || 'default'}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      certificate_template_id: value === 'default' ? '' : value,
+                    }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue>
+                      {templates.find((t) => t.template_id === formData.certificate_template_id)?.name ||
+                        'Default Template'}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="default">Default</SelectItem>
+                    {templates.map((tmpl) => (
+                      <SelectItem key={tmpl.template_id} value={tmpl.template_id}>
+                        {tmpl.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 </div>
               </div>
               <div className="flex items-center gap-3">
