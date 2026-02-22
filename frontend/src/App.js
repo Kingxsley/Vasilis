@@ -306,6 +306,7 @@ const CustomPage = React.lazy(() => import('./pages/CustomPage'));
 const ActivityLogs = React.lazy(() => import('./pages/ActivityLogs'));
 const SimulationBuilder = React.lazy(() => import('./pages/SimulationBuilder'));
 const Documentation = React.lazy(() => import('./pages/Documentation'));
+const SecuritySettings = React.lazy(() => import('./pages/SecuritySettings'));
 
 // Auth Callback Handler
 const AuthCallback = () => {
@@ -614,6 +615,14 @@ const AppRouter = () => {
           element={
             <ProtectedRoute adminOnly>
               <PasswordPolicyPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/security-settings"
+          element={
+            <ProtectedRoute adminOnly>
+              <SecuritySettings />
             </ProtectedRoute>
           }
         />

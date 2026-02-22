@@ -151,6 +151,8 @@ const navGroups = [
       { path: '/audit-logs', label: 'Audit Logs', icon: FileText, superAdminOnly: true },
       { path: '/activity-logs', label: 'Activity Logs', icon: Activity, superAdminOnly: true },
       { path: '/password-policy', label: 'Password Policy', icon: ShieldAlert, superAdminOnly: true },
+      // Super admin-only page for configuring global security controls such as 2FA enforcement and session timeouts
+      { path: '/security-settings', label: 'Security Settings', icon: Cog, superAdminOnly: true },
     ]
   },
   {
@@ -158,7 +160,8 @@ const navGroups = [
     label: 'Help',
     icon: HelpCircle,
     items: [
-      { path: '/documentation', label: 'Documentation', icon: BookOpen },
+      // Hide the help/documentation menu from trainees by marking this item as adminOnly.
+      { path: '/documentation', label: 'Documentation', icon: BookOpen, adminOnly: true },
     ]
   },
 ];
