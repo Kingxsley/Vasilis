@@ -7,6 +7,7 @@ import time
 import hashlib
 import secrets
 import logging
+import uuid
 import httpx
 from datetime import datetime, timezone, timedelta
 from collections import defaultdict
@@ -415,12 +416,38 @@ class AuditLogger:
         else:
             logger.info(log_message)
         
-        # Log to database
+        # Log to database and mirror basic fields into activity_logs
         if self.db is not None:
             try:
+                # Insert into audit_logs collection
                 await self.db.audit_logs.insert_one(event)
+                # Also insert a simplified record into activity_logs so activity
+                # logs UI can display recent actions.  Use a separate
+                # activity_id and include only relevant fields.  If details
+                # contains resource identifiers, surface them, otherwise leave
+                # them null.  We intentionally do not include the full audit
+                # geolocation and severity data to keep activity logs focused
+                # on user-visible actions.
+                activity_entry = {
+                    "activity_id": f"act_{uuid.uuid4().hex[:12]}",
+                    "user_id": user_id,
+                    "user_email": user_email,
+                    "user_name": user_name,
+                    "action": action,
+                    "resource_type": None,
+                    "resource_id": None,
+                    "details": details or {},
+                    "ip_address": ip_address,
+                    "user_agent": user_agent,
+                    "timestamp": event["timestamp"]
+                }
+                # If details is a dict with known keys, try to populate resource info
+                if isinstance(details, dict):
+                    activity_entry["resource_type"] = details.get("resource_type")
+                    activity_entry["resource_id"] = details.get("resource_id")
+                await self.db.activity_logs.insert_one(activity_entry)
             except Exception as e:
-                logger.error(f"Failed to write audit log to DB: {e}")
+                logger.error(f"Failed to write audit/activity log to DB: {e}")
     
     async def cleanup_old_logs(self):
         """Remove audit logs older than retention period"""

@@ -158,12 +158,20 @@ class OrganizationCreate(BaseModel):
     name: str
     domain: Optional[str] = None
     description: Optional[str] = None
+    # Optional certificate template to assign by default when creating a new organization.
+    certificate_template_id: Optional[str] = None
 
 class OrganizationUpdate(BaseModel):
     name: Optional[str] = None
     domain: Optional[str] = None
     description: Optional[str] = None
     is_active: Optional[bool] = None
+    # Allow administrators to specify a default certificate template for the organization.
+    # When set, this template will be used when generating completion
+    # certificates for users belonging to the organization. If omitted,
+    # the system will fall back to a module-level template or the global
+    # default.
+    certificate_template_id: Optional[str] = None
 
 class OrganizationResponse(BaseModel):
     organization_id: str
@@ -173,6 +181,11 @@ class OrganizationResponse(BaseModel):
     is_active: bool
     created_at: datetime
     user_count: int = 0
+    # The certificate template assigned to this organization.  When present,
+    # certificates generated for users in the organization will be rendered
+    # using this template.  If null, the platform will choose a module-level
+    # template or use the global default.
+    certificate_template_id: Optional[str] = None
 
 # Campaign Models
 class CampaignCreate(BaseModel):
@@ -981,12 +994,11 @@ async def create_organization(data: OrganizationCreate, user: dict = Depends(req
         "description": data.description,
         "is_active": True,
         "created_by": user["user_id"],
-        "created_at": datetime.now(timezone.utc).isoformat()
-        # When a new organization is created, we don't assign a certificate template
-        # by default.  Super administrators or organization administrators can
-        # update this field later via the PATCH endpoint.
-        ,
-        "certificate_template_id": None
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        # Assign the provided certificate template if specified; otherwise
+        # leave as None so the platform will fall back to module-level or
+        # global default templates when generating certificates.
+        "certificate_template_id": data.certificate_template_id
     }
     await db.organizations.insert_one(org_doc)
     
@@ -998,7 +1010,7 @@ async def create_organization(data: OrganizationCreate, user: dict = Depends(req
         is_active=True,
         created_at=datetime.fromisoformat(org_doc["created_at"]),
         user_count=0,
-        certificate_template_id=None
+        certificate_template_id=org_doc["certificate_template_id"]
     )
 
 @org_router.get("", response_model=List[OrganizationResponse])
@@ -1066,6 +1078,9 @@ async def update_organization(org_id: str, data: OrganizationUpdate, user: dict 
             raise HTTPException(status_code=403, detail="You can only modify your own organization")
     
     update_data = {k: v for k, v in data.model_dump().items() if v is not None}
+    # Normalize empty certificate template ID to None so it clears the setting
+    if 'certificate_template_id' in update_data and not update_data['certificate_template_id']:
+        update_data['certificate_template_id'] = None
     if not update_data:
         raise HTTPException(status_code=400, detail="No update data provided")
     
