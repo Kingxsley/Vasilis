@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import { 
@@ -173,6 +173,24 @@ export const DashboardLayout = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [customNavItems, setCustomNavItems] = useState([]);
 
+  // Ref for the navigation container.  We use this to persist the scroll
+  // position across route changes so that the sidebar doesn't jump back to
+  // the top whenever a navigation item is clicked.  Scroll position is
+  // saved in sessionStorage under the key 'navScrollTop'.
+  const navRef = useRef(null);
+
+  useEffect(() => {
+    // Restore scroll position when the component mounts
+    const savedScroll = sessionStorage.getItem('navScrollTop');
+    if (navRef.current && savedScroll) {
+      navRef.current.scrollTop = parseInt(savedScroll, 10);
+    }
+  }, []);
+
+  const handleNavScroll = (e) => {
+    sessionStorage.setItem('navScrollTop', e.target.scrollTop);
+  };
+
   // Fetch custom navigation items
   useEffect(() => {
     const fetchCustomNav = async () => {
@@ -273,7 +291,11 @@ export const DashboardLayout = ({ children }) => {
         </div>
 
         {/* Navigation - Scrollable */}
-        <nav className="flex-1 p-2 overflow-y-auto">
+        <nav
+          ref={navRef}
+          className="flex-1 p-2 overflow-y-auto"
+          onScroll={handleNavScroll}
+        >
           {navGroups.map((group) => {
             if (!isGroupVisible(group)) return null;
             const filteredItems = filterItems(group.items);

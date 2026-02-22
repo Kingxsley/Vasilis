@@ -6,6 +6,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '../components/ui/select';
 import {
   Dialog,
   DialogContent,
@@ -30,9 +31,29 @@ export default function Organizations() {
   const [formData, setFormData] = useState({
     name: '',
     domain: '',
-    description: ''
+    description: '',
+    certificate_template_id: ''
   });
   const [submitting, setSubmitting] = useState(false);
+
+  // Load certificate templates so organizations can choose a default template
+  const [templates, setTemplates] = useState([]);
+
+  useEffect(() => {
+    // Fetch certificate templates when component mounts
+    const loadTemplates = async () => {
+      if (!token) return;
+      try {
+        const res = await axios.get(`${API}/certificate-templates`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setTemplates(res.data || []);
+      } catch (err) {
+        // It's okay if this fails; template selection will not be shown
+      }
+    };
+    loadTemplates();
+  }, [token]);
 
   useEffect(() => {
     fetchOrganizations();
@@ -57,12 +78,17 @@ export default function Organizations() {
 
     try {
       if (editingOrg) {
-        await axios.patch(`${API}/organizations/${editingOrg.organization_id}`, formData, {
+        // Prepare payload: omit empty certificate template so we don't clear
+        const payload = { ...formData };
+        if (!payload.certificate_template_id) delete payload.certificate_template_id;
+        await axios.patch(`${API}/organizations/${editingOrg.organization_id}`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
         toast.success('Organization updated');
       } else {
-        await axios.post(`${API}/organizations`, formData, {
+        const payload = { ...formData };
+        if (!payload.certificate_template_id) delete payload.certificate_template_id;
+        await axios.post(`${API}/organizations`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
         toast.success('Organization created');
@@ -83,7 +109,8 @@ export default function Organizations() {
     setFormData({
       name: org.name,
       domain: org.domain || '',
-      description: org.description || ''
+      description: org.description || '',
+      certificate_template_id: org.certificate_template_id || ''
     });
     setDialogOpen(true);
   };
@@ -123,7 +150,7 @@ export default function Organizations() {
             setDialogOpen(open);
             if (!open) {
               setEditingOrg(null);
-              setFormData({ name: '', domain: '', description: '' });
+      setFormData({ name: '', domain: '', description: '', certificate_template_id: '' });
             }
           }}>
             <DialogTrigger asChild>
@@ -173,6 +200,42 @@ export default function Organizations() {
                     data-testid="org-description-input"
                   />
                 </div>
+                {/* Certificate Template selection for default certificate */}
+                {templates.length > 0 && (
+                  <div className="space-y-2">
+                    <Label htmlFor="certificate_template_id">Certificate Template</Label>
+                    {/**
+                     * Radix Select does not accept an empty string as a value.  To
+                     * represent the default (no template assigned), we use the
+                     * string 'default' as the select value.  When the value is
+                     * changed, we convert 'default' back to an empty string in
+                     * the form state.
+                     */}
+                    <Select
+                      value={formData.certificate_template_id || 'default'}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          certificate_template_id: value === 'default' ? '' : value,
+                        }))
+                      }
+                    >
+                      <SelectTrigger className="bg-[#0B0E14] border-[#30363D]">
+                        <SelectValue>
+                          {templates.find((t) => t.template_id === formData.certificate_template_id)?.name || 'Default'}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent className="bg-[#0B0E14] border-[#30363D]">
+                        <SelectItem value="default">Default</SelectItem>
+                        {templates.map((tmpl) => (
+                          <SelectItem key={tmpl.template_id} value={tmpl.template_id}>
+                            {tmpl.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 <div className="flex gap-3 pt-4">
                   <Button
                     type="button"
