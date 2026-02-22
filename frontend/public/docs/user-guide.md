@@ -110,21 +110,30 @@ Create fake advertisements to test user awareness against malicious ads:
 
 ## 4. Training Center
 
-### Scenarios
-Browse and assign security training scenarios:
-1. **Phishing Email Scenarios** - Learn to spot suspicious emails
-2. **Malicious Ads** - Identify deceptive advertisements
-3. **Social Engineering** - Recognize manipulation tactics
-4. **QR Code Threats** - Understand QR-based attacks
-5. **USB Security** - Physical device risks
-6. **MFA Best Practices** - Multi-factor authentication safety
+### Scenarios and Module Builder
+
+Training modules consist of one or more **scenarios**, which are individual questions or challenges.  Administrators can mix and match scenarios to build customized training modules for different topics.  To manage scenarios and modules:
+
+1. **Browse Scenario Library** – Go to **Simulations > Create Sim** and select a simulation type to create or edit scenarios.  Save your scenarios to make them available in the Module Builder.
+2. **Module Builder** – Navigate to **Create Trainings** (admins only) to assemble modules.  Select scenarios from the library, drag to reorder them, and choose a certificate template.  You can also remove or add scenarios at any time; a new version date will appear on the module card when changes are saved.
+3. **Scenario Types** – NetShield supports multiple scenario formats:
+   - **Phishing Email** – Traditional emails with suspicious links or attachments for users to analyze.
+   - **Credential Harvest** – Login forms that capture credentials when users submit them.
+   - **Malicious Ad / QR Code** – Images or QR codes that may hide malicious content.
+   - **Social Engineering (Chat)** – Multi‑turn conversations in a chat format (as seen in the Social Engineering module).  Authors can script dialogues where the trainee chooses responses.
+   - **USB and Device Security** – Physical device drop scenarios and other safety tips.
+
+Administrators can edit scenarios and modules individually.  When a module is updated after a trainee completes it, the trainee will see **Updated [Month, Year]** on their dashboard, indicating that new questions are available and a new certificate can be earned.
 
 ### Completing Training
-1. Access assigned scenarios from your dashboard
-2. Review the scenario content
-3. Identify if it's safe or unsafe
-4. Get instant feedback and explanations
-5. Earn certificates upon completion
+1. Open the **Training** section in your dashboard
+2. Choose a module and click **Start** or **Continue**
+3. Review each scenario and answer the question or select the safest option
+4. Your progress and question number update as you advance through the module
+5. After answering all scenarios, you’ll see your score and whether you passed or failed
+6. Successful trainees can download their module certificate; if you fail, you’ll be reassigned and can retake the training
+
+Whenever a module is updated, a timestamp will appear on the module card (e.g., “Updated Mar 2026”).  Retake the module to complete the latest version and earn an updated certificate.
 
 ---
 
@@ -198,7 +207,29 @@ View detailed information about who clicked phishing links:
 
 ---
 
-## 7. Settings & Customization
+## 7. Security & Two‑Factor Authentication
+
+Keeping your account secure is a shared responsibility.  NetShield provides advanced controls to help protect your data:
+
+### Two‑Factor Enforcement
+
+Super administrators can require all users to enable two‑factor authentication (2FA).  When this setting is on (found under **Settings > Security**), any user without 2FA configured will be unable to log in until they complete the 2FA setup process.  To set up 2FA:
+
+1. Log in and go to **Settings > Account**
+2. Click **Enable Two‑Factor Authentication**
+3. Scan the QR code with an authenticator app (e.g., Google Authenticator) and enter the verification code
+4. Once verified, your account will have 2FA enabled and you can log in normally
+
+If a user doesn’t have 2FA enabled when enforcement is turned on, the login page will show an error instructing them to enable 2FA.
+
+### Session Timeouts
+
+For administrators, session timeout can be configured to automatically log users out after a period of inactivity.  Super administrators can change the timeout under **Settings > Security**.  When the session expires, you’ll be prompted to log in again.
+
+---
+
+
+## 8. Settings & Customization
 
 ### Branding (Super Admin Only)
 Customize the platform appearance:
