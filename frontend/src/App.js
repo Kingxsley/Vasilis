@@ -398,15 +398,20 @@ const LoadingFallback = () => (
 );
 
 // Ad Tracker Wrapper - routes campaign IDs to AdTracker
-// Checks if the path looks like a campaign ID
+// Checks if the path looks like a campaign ID (ad or phishing)
 // If not a campaign ID, redirect to home
 const AdTrackerWrapper = () => {
   const params = useParams();
   const campaignId = params.campaignId;
   
   // Check if this looks like a valid campaign ID
-  // Campaign IDs start with "adcamp_" or "adcmp_" (legacy format)
-  if (campaignId && (campaignId.startsWith('adcamp_') || campaignId.startsWith('adcmp_'))) {
+  // Ad campaign IDs start with "adcamp_" or "adcmp_" (legacy format)
+  // Phishing campaign IDs start with "phish_"
+  if (campaignId && (
+    campaignId.startsWith('adcamp_') || 
+    campaignId.startsWith('adcmp_') ||
+    campaignId.startsWith('phish_')
+  )) {
     return <AdTracker />;
   }
   
