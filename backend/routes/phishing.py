@@ -1559,7 +1559,7 @@ async def track_link_click(tracking_code: str, request: Request):
             
             <br><br>
             
-            <a href="/training" class="btn" id="trainingBtn">Start Training Now</a>
+            <a href="{training_url}" class="btn" id="trainingBtn">Start Training Now</a>
             
             <p class="footer">
                 Powered by Vasilis NetShield Security Training<br>
