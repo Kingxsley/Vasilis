@@ -530,11 +530,7 @@ const AppRouter = () => {
         />
         <Route
           path="/module-builder"
-          element={
-            <ProtectedRoute adminOnly>
-              <ModuleBuilder />
-            </ProtectedRoute>
-          }
+          element={<Navigate to="/question-modules" replace />}
         />
         <Route
           path="/question-modules"
