@@ -1341,7 +1341,17 @@ async def track_link_click(tracking_code: str, request: Request, cred_submitted:
     if show_credential_form:
         # Show a fake login form that posts to the credentials tracking endpoint
         frontend_url = os.environ.get('FRONTEND_URL', 'https://vasilisnetshield.com')
-        api_url = os.environ.get('API_URL', str(request.base_url).rstrip('/'))
+        
+        # Get the API URL - prioritize API_URL env var, then use the incoming request's host
+        # In production, API_URL should be set to https://api.vasilisnetshield.com
+        # In preview, we need to use the external preview URL from the request
+        api_url = os.environ.get('API_URL')
+        if not api_url:
+            # Build URL from request headers (handles proxied requests better)
+            scheme = request.headers.get('x-forwarded-proto', 'https')
+            host = request.headers.get('host', request.base_url.hostname)
+            api_url = f"{scheme}://{host}"
+        api_url = api_url.rstrip('/')
         
         # Get template info for branding
         template = await db.phishing_templates.find_one(
