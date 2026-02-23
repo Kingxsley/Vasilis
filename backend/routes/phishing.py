@@ -830,6 +830,48 @@ async def check_email_config(request: Request):
     
     return config
 
+
+@router.get("/webhook-config-check")
+async def check_webhook_config(request: Request):
+    """Check webhook configuration for notifications (admin only)"""
+    await require_admin(request)
+    db = get_db()
+    
+    # Check environment variable
+    env_webhook = os.environ.get('DISCORD_WEBHOOK_URL', '')
+    
+    # Check settings for global webhook
+    settings = await db.settings.find_one({"type": "branding"}, {"_id": 0, "discord_webhook_url": 1})
+    settings_webhook = settings.get("discord_webhook_url", "") if settings else ""
+    
+    # Check organizations for webhooks
+    org_webhooks = []
+    orgs = await db.organizations.find({}, {"_id": 0, "organization_id": 1, "name": 1, "discord_webhook_url": 1}).to_list(100)
+    for org in orgs:
+        webhook = org.get("discord_webhook_url", "")
+        org_webhooks.append({
+            "organization_id": org["organization_id"],
+            "name": org["name"],
+            "has_webhook": bool(webhook),
+            "webhook_prefix": webhook[:50] + "..." if webhook and len(webhook) > 50 else webhook if webhook else "NOT SET"
+        })
+    
+    config = {
+        "env_webhook_set": bool(env_webhook),
+        "env_webhook_prefix": env_webhook[:50] + "..." if env_webhook and len(env_webhook) > 50 else "NOT SET",
+        "settings_webhook_set": bool(settings_webhook),
+        "settings_webhook_prefix": settings_webhook[:50] + "..." if settings_webhook and len(settings_webhook) > 50 else "NOT SET",
+        "organizations": org_webhooks,
+        "any_webhook_configured": bool(env_webhook or settings_webhook or any(o["has_webhook"] for o in org_webhooks))
+    }
+    
+    if not config["any_webhook_configured"]:
+        config["message"] = "No webhooks configured. Set DISCORD_WEBHOOK_URL env var or configure webhook in organization settings."
+    else:
+        config["message"] = "Webhook configuration found!"
+    
+    return config
+
 @router.get("/stats")
 async def get_phishing_stats(request: Request, days: int = 30):
     """Get aggregated simulation statistics for analytics dashboard (phishing + ad campaigns)"""
