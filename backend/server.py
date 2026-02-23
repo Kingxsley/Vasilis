@@ -1893,6 +1893,8 @@ async def start_training_session(data: TrainingSessionCreate, user: dict = Depen
         score=0,
         total_questions=total_questions,
         correct_answers=0,
+        current_scenario_index=0,
+        answers=[],
         started_at=datetime.fromisoformat(session_doc["started_at"]),
         completed_at=None
     )
