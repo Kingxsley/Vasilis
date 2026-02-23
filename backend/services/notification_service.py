@@ -9,8 +9,26 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-# Super admin webhook URL from environment
+# Super admin webhook URL from environment (fallback)
 SUPER_ADMIN_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")
+
+
+async def get_super_admin_webhook(db) -> Optional[str]:
+    """Get Discord webhook URL from settings or environment"""
+    # First try to get from database settings
+    if db:
+        try:
+            settings = await db.settings.find_one(
+                {"type": "branding"},
+                {"_id": 0, "discord_webhook_url": 1}
+            )
+            if settings and settings.get("discord_webhook_url"):
+                return settings.get("discord_webhook_url")
+        except Exception as e:
+            logger.error(f"Error getting webhook from settings: {e}")
+    
+    # Fallback to environment variable
+    return SUPER_ADMIN_WEBHOOK_URL
 
 
 async def send_discord_notification(
