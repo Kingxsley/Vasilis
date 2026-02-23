@@ -109,6 +109,14 @@ JWT_SECRET=<secure-random-string>
 - Optimized campaign dialog UI
 - Email Template Management UI with preview and edit
 
+### Session Changes (Feb 23, 2026 - E1 Fork)
+- **Fixed Training Email Links** - Training assignment emails now correctly link to FRONTEND_URL instead of API URL
+- **Fixed EmailTemplates.js JSX** - Repaired malformed JSX with orphan closing tags that was breaking the UI
+- **Added Alert Template Selection** - Campaign creation dialog now includes "Alert Page Template" selector
+- **Added alert_template_id to Campaigns** - Backend model updated to support storing alert template selection
+- **Integrated Alert Templates with Click Tracking** - When a user clicks a phishing link, the system checks for an alert_template_id and displays the corresponding HTML
+- **Fixed alert_templates.py Route** - Added proper `Request` type import to fix FastAPI parameter validation
+
 ### Production Environment Variables (Vercel Backend)
 ```
 API_URL=https://api.vasilisnetshield.com
