@@ -1,7 +1,7 @@
 """
 Alert Templates Routes - Custom awareness page templates
 """
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, timezone
@@ -22,7 +22,7 @@ def get_db():
         return server_db
     return db
 
-async def require_admin(request):
+async def require_admin(request: Request):
     from server import get_current_user
     user = await get_current_user(request)
     if user.get("role") not in ["super_admin", "org_admin"]:
@@ -47,7 +47,7 @@ class AlertTemplateResponse(BaseModel):
 
 
 @router.get("")
-async def get_alert_templates(request):
+async def get_alert_templates(request: Request):
     """Get all custom alert templates"""
     await require_admin(request)
     db = get_db()
@@ -63,7 +63,7 @@ async def get_alert_templates(request):
 
 
 @router.post("")
-async def create_alert_template(data: AlertTemplateCreate, request):
+async def create_alert_template(data: AlertTemplateCreate, request: Request):
     """Create a new alert template"""
     user = await require_admin(request)
     db = get_db()
@@ -94,7 +94,7 @@ async def create_alert_template(data: AlertTemplateCreate, request):
 
 
 @router.put("/{template_id}")
-async def update_alert_template(template_id: str, data: AlertTemplateCreate, request):
+async def update_alert_template(template_id: str, data: AlertTemplateCreate, request: Request):
     """Update an alert template"""
     await require_admin(request)
     db = get_db()
@@ -116,7 +116,7 @@ async def update_alert_template(template_id: str, data: AlertTemplateCreate, req
 
 
 @router.delete("/{template_id}")
-async def delete_alert_template(template_id: str, request):
+async def delete_alert_template(template_id: str, request: Request):
     """Delete an alert template"""
     await require_admin(request)
     db = get_db()
