@@ -174,6 +174,17 @@ JWT_SECRET=<secure-random-string>
 - **Fixed custom_email_templates.py Auth** - Fixed authentication import issue that was causing 500 errors
 - **Testing Verified**: 100% backend test pass rate, all UI elements working
 
+### Session Changes (Feb 23, 2026 - E1 Fork Part 6) - Credential Harvest Feature
+- **Fixed Training URL in Alert Page** - The "Start Training Now" button now correctly links to `{FRONTEND_URL}/training` instead of the API domain
+- **Credential Harvest Landing Page** - When campaign `scenario_type` is `credential_harvest`, users see a professional fake login form before the awareness page
+- **Scenario Type Selection** - Added new "Scenario Type" dropdown in campaign creation with options:
+  - Phishing Email (default) - Shows awareness page on click
+  - Credential Harvest - Shows fake login form → tracks submission → shows awareness
+  - QR Code Phishing
+  - Business Email Compromise
+- **Credential Tracking Flow** - Form posts to `/api/phishing/track/credentials/{tracking_code}` then redirects to awareness page
+- **URL Handling Fix** - Fixed `x-forwarded-host` header detection for proper URL generation in proxied environments
+
 ### Production Environment Variables (Vercel Backend)
 - `API_URL=https://api.vasilisnetshield.com` ✅ (Confirmed set by user)
 - `FRONTEND_URL=https://vasilisnetshield.com` ✅ (Confirmed set by user)
