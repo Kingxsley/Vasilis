@@ -5,6 +5,7 @@ Tests: Authentication, Phishing Campaigns, Ad Simulations, Training Modules, Ana
 import pytest
 import requests
 import os
+import time
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://awareness-platform-1.preview.emergentagent.com').rstrip('/')
 API = f"{BASE_URL}/api"
@@ -14,6 +15,29 @@ SUPER_ADMIN_EMAIL = "superadmin@vasilisns.com"
 SUPER_ADMIN_PASSWORD = "Admin123!Pass"
 TRAINEE_EMAIL = "trainee@testorg.com"
 TRAINEE_PASSWORD = "Admin123!Pass"
+
+# Cached token for reuse across tests
+_cached_token = None
+
+def get_auth_token():
+    """Get cached auth token or login to get new one"""
+    global _cached_token
+    if _cached_token:
+        return _cached_token
+    
+    time.sleep(0.2)  # Small delay to avoid rate limiting
+    response = requests.post(f"{API}/auth/login", json={
+        "email": SUPER_ADMIN_EMAIL,
+        "password": SUPER_ADMIN_PASSWORD
+    })
+    if response.status_code == 200 and "token" in response.json():
+        _cached_token = response.json()["token"]
+        return _cached_token
+    raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
+
+def get_auth_headers():
+    """Get auth headers with token"""
+    return {"Authorization": f"Bearer {get_auth_token()}"}
 
 
 class TestAuthentication:
