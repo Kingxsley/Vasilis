@@ -769,6 +769,24 @@ export default function SimulationBuilder() {
         );
       case 'divider':
         return <div className="h-1 bg-[#30363D] rounded my-2" />;
+      case 'button':
+      case 'link':
+      case 'submit_button':
+        return (
+          <div className="space-y-2">
+            <Input
+              value={value}
+              onChange={(e) => updateBlockValue(block.instanceId, e.target.value)}
+              placeholder={block.type === 'link' ? 'Link display text (e.g. Reset Password)' : block.placeholder}
+              className="bg-[#0D1117] border-[#30363D] text-white"
+            />
+            <div className="flex items-center gap-2 bg-[#0D1117]/50 border border-[#30363D] rounded px-3 py-2">
+              <Link className="w-4 h-4 text-[#D4A836] flex-shrink-0" />
+              <span className="text-xs text-gray-400">Tracking link auto-inserted</span>
+              <code className="text-xs text-[#D4A836] bg-[#0D1117] px-1.5 py-0.5 rounded ml-auto font-mono">{'{{TRACKING_URL}}'}</code>
+            </div>
+          </div>
+        );
       default:
         return (
           <Input
