@@ -565,6 +565,149 @@ export default function EmailTemplates() {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Alert Preview Dialog */}
+        <Dialog open={!!alertPreview} onOpenChange={() => setAlertPreview(null)}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-[#0f0f15] border-[#D4A836]/30">
+            <DialogHeader>
+              <DialogTitle className="text-[#E8DDB5]">Alert Preview: {alertPreview?.name}</DialogTitle>
+              <DialogDescription>
+                This is how the alert page will appear to users who click phishing links.
+              </DialogDescription>
+            </DialogHeader>
+
+            {alertPreview && (
+              <div className="space-y-4 mt-4">
+                <div className="border border-[#D4A836]/20 rounded-lg overflow-hidden">
+                  <iframe
+                    srcDoc={alertPreview.html
+                      .replace(/\{\{USER_NAME\}\}/g, 'John Doe')
+                      .replace(/\{\{USER_EMAIL\}\}/g, 'john.doe@example.com')
+                      .replace(/\{\{CAMPAIGN_NAME\}\}/g, 'Security Test Campaign')
+                    }
+                    className="w-full h-[400px] bg-[#0D1117]"
+                    title="Alert Preview"
+                  />
+                </div>
+                <Button
+                  onClick={() => setAlertPreview(null)}
+                  className="w-full bg-[#D4A836] text-black hover:bg-[#C49A30]"
+                >
+                  Close Preview
+                </Button>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Alert Template Dialog */}
+        <Dialog open={!!editingAlertTemplate} onOpenChange={() => setEditingAlertTemplate(null)}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-[#0f0f15] border-[#D4A836]/30">
+            <DialogHeader>
+              <DialogTitle className="text-[#E8DDB5]">
+                {editingAlertTemplate?.id === 'new' ? 'Create Alert Template' : `Edit: ${editingAlertTemplate?.name}`}
+              </DialogTitle>
+              <DialogDescription>
+                Design the awareness page shown when users click phishing links.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 mt-4">
+              {/* Name and Description */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-gray-400">Template Name</Label>
+                  <Input
+                    value={alertFormData.name}
+                    onChange={(e) => setAlertFormData({ ...alertFormData, name: e.target.value })}
+                    placeholder="e.g., Custom Warning Alert"
+                    className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-400">Description</Label>
+                  <Input
+                    value={alertFormData.description}
+                    onChange={(e) => setAlertFormData({ ...alertFormData, description: e.target.value })}
+                    placeholder="Brief description"
+                    className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]"
+                  />
+                </div>
+              </div>
+
+              {/* Variables Info */}
+              <div className="p-3 bg-[#1a1a24] rounded-lg">
+                <p className="text-xs text-gray-400 mb-2">Available Variables:</p>
+                <div className="flex flex-wrap gap-1">
+                  {['USER_NAME', 'USER_EMAIL', 'CAMPAIGN_NAME', 'SCENARIO_TYPE'].map((v) => (
+                    <code key={v} className="px-2 py-1 text-xs bg-[#D4A836]/20 text-[#D4A836] rounded">
+                      {`{{${v}}}`}
+                    </code>
+                  ))}
+                </div>
+              </div>
+
+              {/* HTML Editor */}
+              <div>
+                <Label className="text-gray-400">Alert HTML</Label>
+                <Textarea
+                  value={alertFormData.html}
+                  onChange={(e) => setAlertFormData({ ...alertFormData, html: e.target.value })}
+                  placeholder="<div>Your custom alert HTML...</div>"
+                  className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5] font-mono text-sm min-h-[200px]"
+                />
+              </div>
+
+              {/* Live Preview */}
+              <div>
+                <Label className="text-gray-400 mb-2 block">Live Preview</Label>
+                <div className="border border-[#30363D] rounded-lg overflow-hidden">
+                  <iframe
+                    srcDoc={alertFormData.html
+                      .replace(/\{\{USER_NAME\}\}/g, 'John Doe')
+                      .replace(/\{\{USER_EMAIL\}\}/g, 'john.doe@example.com')
+                      .replace(/\{\{CAMPAIGN_NAME\}\}/g, 'Test Campaign')
+                    }
+                    className="w-full h-[250px] bg-[#0D1117]"
+                    title="Live Preview"
+                  />
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setEditingAlertTemplate(null)}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={async () => {
+                    try {
+                      if (editingAlertTemplate.id === 'new') {
+                        await axios.post(`${API}/alert-templates`, alertFormData, {
+                          headers: { Authorization: `Bearer ${token}` }
+                        });
+                        toast.success('Alert template created');
+                      } else {
+                        await axios.put(`${API}/alert-templates/${editingAlertTemplate.id}`, alertFormData, {
+                          headers: { Authorization: `Bearer ${token}` }
+                        });
+                        toast.success('Alert template updated');
+                      }
+                      fetchAlertTemplates();
+                      setEditingAlertTemplate(null);
+                    } catch (err) {
+                      toast.error('Failed to save alert template');
+                    }
+                  }}
+                  className="bg-[#D4A836] text-black hover:bg-[#C49A30]"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Template
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );
