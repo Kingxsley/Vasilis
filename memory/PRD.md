@@ -91,25 +91,26 @@ JWT_SECRET=<secure-random-string>
 
 ## Pending Tasks
 
-### P0 - Critical (User must set ENV vars in Vercel)
-- [x] **FIXED - Phishing Tracking URLs** - All tracking URL generation now uses `API_URL` env var
-- [ ] **Verify Phishing Tracking Works in Production** - User must set `API_URL=https://api.vasilisnetshield.com` in Vercel backend env vars
-- [x] **FIXED - Training Email Links** - Fixed to use `FRONTEND_URL` env var
-- [ ] **Verify Training Email Links in Production** - User must set `FRONTEND_URL=https://vasilisnetshield.com` in Vercel backend env vars
-
-### P1 - Completed
-- [x] **Visual Alert Template Builder** - Full UI to create/edit alert pages with icons, colors, titles, messages without code
-- [x] **Alert Template Selection in Campaigns** - Can now select which alert to show when users click phishing links
+### All Completed
+- [x] **Phishing Tracking URLs** - All tracking URL generation now uses `API_URL` env var
+- [x] **Training Email Links** - Fixed to use `FRONTEND_URL` env var
+- [x] **Visual Alert Template Builder** - Full UI to create/edit alert pages without code
+- [x] **Alert Template Selection** - Can select which alert to show when users click phishing links
 - [x] **Bulk User Import** - Working with auto-generated passwords and welcome emails
+- [x] **Visual Email Template Builder** - Full no-code UI for creating custom emails
+- [x] **QR Code Custom Preview URL** - Added preview URL field for demonstration purposes
+- [x] **CTA Tracking Link Naming** - Added tracking name field for analytics identification
+- [x] **Custom Email Template Integration** - Campaign creation can use custom email templates
+- [x] **Enhanced Analytics Dashboard** - Added credential submissions stat and improved layout
 
-### P2 - Pending
-- [ ] Vulnerable Users data accuracy verification
-- [ ] QR Code Custom Preview URL in Simulation Builder
-- [ ] Advanced analytics dashboard enhancements
+### User Action Required for Production
+- [ ] Set `API_URL=https://api.vasilisnetshield.com` in Vercel backend env vars
+- [ ] Set `FRONTEND_URL=https://vasilisnetshield.com` in Vercel backend env vars
 
-### Future/Backlog
-- [ ] Simulation Builder CTA Enhancement (tracking link naming)
-- [ ] Scheduled campaign automation
+### Future Enhancements (Optional)
+- [ ] Send custom email templates directly from email builder
+- [ ] A/B testing for email templates
+- [ ] Scheduled campaign automation improvements
 
 ## Recent Changes (Feb 23, 2026)
 - **Fixed Stats Accuracy** - Phishing stats now correctly show click rate, submission rate
