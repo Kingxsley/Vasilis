@@ -16,7 +16,7 @@ SUPER_ADMIN_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")
 async def get_super_admin_webhook(db) -> Optional[str]:
     """Get Discord webhook URL from settings or environment"""
     # First try to get from database settings
-    if db:
+    if db is not None:
         try:
             settings = await db.settings.find_one(
                 {"type": "branding"},
