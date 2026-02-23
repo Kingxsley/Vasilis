@@ -122,6 +122,17 @@ export default function VulnerableUsers() {
         a.click();
         a.remove();
         window.URL.revokeObjectURL(url);
+      } else if (format === 'pdf') {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        // Open in new tab for print-to-PDF
+        const newWindow = window.open(url, '_blank');
+        if (newWindow) {
+          newWindow.onload = () => {
+            newWindow.print();
+          };
+        }
+        toast.info('PDF report opened - use Print dialog to save as PDF');
       } else {
         const jsonData = await response.json();
         const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
