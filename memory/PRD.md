@@ -92,18 +92,24 @@ JWT_SECRET=<secure-random-string>
 ## Pending Tasks
 
 ### P0 - Critical (User must set ENV vars in Vercel)
+- [x] **FIXED - Phishing Tracking URLs** - All tracking URL generation now uses `API_URL` env var
 - [ ] **Verify Phishing Tracking Works in Production** - User must set `API_URL=https://api.vasilisnetshield.com` in Vercel backend env vars
-- [ ] **Verify Training Email Links** - User must set `FRONTEND_URL=https://vasilisnetshield.com` in Vercel backend env vars
+- [x] **FIXED - Training Email Links** - Fixed to use `FRONTEND_URL` env var
+- [ ] **Verify Training Email Links in Production** - User must set `FRONTEND_URL=https://vasilisnetshield.com` in Vercel backend env vars
 
-### P1 - Upcoming
-- [ ] Bulk user import (CSV) - needs debugging
-- [ ] QR Code Custom Preview URL in Simulation Builder
+### P1 - Completed
+- [x] **Visual Alert Template Builder** - Full UI to create/edit alert pages with icons, colors, titles, messages without code
+- [x] **Alert Template Selection in Campaigns** - Can now select which alert to show when users click phishing links
+- [x] **Bulk User Import** - Working with auto-generated passwords and welcome emails
+
+### P2 - Pending
 - [ ] Vulnerable Users data accuracy verification
-
-### P2 - Future/Backlog
+- [ ] QR Code Custom Preview URL in Simulation Builder
 - [ ] Advanced analytics dashboard enhancements
-- [ ] Scheduled campaign automation
+
+### Future/Backlog
 - [ ] Simulation Builder CTA Enhancement (tracking link naming)
+- [ ] Scheduled campaign automation
 
 ## Recent Changes (Feb 23, 2026)
 - **Fixed Stats Accuracy** - Phishing stats now correctly show click rate, submission rate
