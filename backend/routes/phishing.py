@@ -660,7 +660,7 @@ async def check_scheduled_campaigns(request: Request):
         
         sent_count = 0
         for target in targets:
-            success = await send_phishing_email(db, target, template, frontend_url)
+            success = await send_phishing_email(db, target, template, api_url)
             if success:
                 await db.phishing_targets.update_one(
                     {"target_id": target["target_id"]},
