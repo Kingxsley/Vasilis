@@ -233,21 +233,39 @@ export default function EmailTemplates() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-[#E8DDB5]">Email Templates</h1>
-          <p className="text-gray-400">Customize the emails sent to users</p>
+          <h1 className="text-2xl font-bold text-[#E8DDB5]">Email & Alert Templates</h1>
+          <p className="text-gray-400">Customize emails and security awareness alerts</p>
         </div>
 
-        {/* Info Card */}
-        <Card className="bg-blue-500/10 border-blue-500/30">
-          <CardContent className="p-4">
-            <div className="flex items-start gap-3">
-              <Info className="w-5 h-5 text-blue-400 mt-0.5" />
-              <div className="text-sm text-blue-200">
-                <p className="font-medium mb-1">Template Variables</p>
-                <p className="text-blue-300/80">
-                  Use curly braces to insert dynamic content. Example: <code className="bg-blue-500/20 px-1 rounded">{'{user_name}'}</code> will be replaced with the actual user's name.
-                </p>
-              </div>
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="bg-[#0D1117] border border-[#30363D]">
+            <TabsTrigger value="notifications" className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">
+              <Mail className="w-4 h-4 mr-2" />
+              Notification Emails
+            </TabsTrigger>
+            <TabsTrigger value="alerts" className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">
+              <FileText className="w-4 h-4 mr-2" />
+              Alert Templates
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Notification Emails Tab */}
+          <TabsContent value="notifications" className="space-y-6">
+            {/* Info Card */}
+            <Card className="bg-blue-500/10 border-blue-500/30">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <Info className="w-5 h-5 text-blue-400 mt-0.5" />
+                  <div className="text-sm text-blue-200">
+                    <p className="font-medium mb-1">Template Variables</p>
+                    <p className="text-blue-300/80">
+                      Use curly braces to insert dynamic content. Example: <code className="bg-blue-500/20 px-1 rounded">{'{user_name}'}</code> will be replaced with the actual user's name.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
             </div>
           </CardContent>
         </Card>
