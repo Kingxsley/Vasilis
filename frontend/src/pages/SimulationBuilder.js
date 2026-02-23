@@ -1547,6 +1547,15 @@ export default function SimulationBuilder() {
                               <Play className="w-4 h-4 mr-1" />
                               Launch
                             </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => deleteSavedSimulation(sim)}
+                              className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                              data-testid={`delete-sim-${sim.template_id || sim.scenario_id}`}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
                           </div>
                         </div>
                       );
