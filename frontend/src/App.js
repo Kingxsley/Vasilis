@@ -705,6 +705,14 @@ const AppRouter = () => {
           }
         />
         <Route
+          path="/vulnerable-users"
+          element={
+            <ProtectedRoute adminOnly>
+              <VulnerableUsers />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/certificate-templates"
           element={
             <ProtectedRoute adminOnly>
