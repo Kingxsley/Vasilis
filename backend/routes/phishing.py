@@ -1081,7 +1081,7 @@ async def track_email_open(tracking_code: str, request: Request):
 
 
 @router.get("/track/click/{tracking_code}")
-async def track_link_click(tracking_code: str, request: Request):
+async def track_link_click(tracking_code: str, request: Request, cred_submitted: Optional[str] = None):
     """Track when a phishing link is clicked"""
     db = get_db()
     
