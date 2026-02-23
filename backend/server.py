@@ -224,6 +224,7 @@ class TrainingModuleResponse(BaseModel):
     duration_minutes: int
     scenarios_count: int = 0
     scenarios: Optional[List[str]] = None
+    questions: Optional[List[dict]] = None
     certificate_template_id: Optional[str] = None
     is_active: bool = True
 
@@ -245,12 +246,6 @@ class TrainingSessionResponse(BaseModel):
 
 # --- Additional models for module management and reassigning training ---
 class TrainingModuleCreate(BaseModel):
-    """
-    Schema for creating a new training module via API.  Administrators can
-    define custom modules with their own metadata, control whether the
-    module is active, and optionally select a certificate template to use
-    when generating completion certificates.
-    """
     name: str
     module_type: str
     description: str
@@ -258,22 +253,19 @@ class TrainingModuleCreate(BaseModel):
     duration_minutes: int
     scenarios_count: int = 0
     scenarios: Optional[List[str]] = None
+    questions: Optional[List[dict]] = None
     certificate_template_id: Optional[str] = None
     is_active: bool = True
 
 class TrainingModuleUpdate(BaseModel):
-    """
-    Schema for updating existing training modules.  All fields are
-    optional; omitted fields will remain unchanged.  Administrators can
-    pause or activate modules, change the associated certificate
-    template, or modify descriptive metadata.
-    """
     name: Optional[str] = None
+    module_type: Optional[str] = None
     description: Optional[str] = None
     difficulty: Optional[str] = None
     duration_minutes: Optional[int] = None
     scenarios_count: Optional[int] = None
     scenarios: Optional[List[str]] = None
+    questions: Optional[List[dict]] = None
     certificate_template_id: Optional[str] = None
     is_active: Optional[bool] = None
 
