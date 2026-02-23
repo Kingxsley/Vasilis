@@ -320,6 +320,8 @@ export default function SimulationBuilder() {
   const [selectedTargets, setSelectedTargets] = useState([]);
   const [campaignToLaunch, setCampaignToLaunch] = useState(null);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [trainingModules, setTrainingModules] = useState([]);
+  const [assignedModuleId, setAssignedModuleId] = useState('');
 
   const headers = { Authorization: `Bearer ${token}` };
 
