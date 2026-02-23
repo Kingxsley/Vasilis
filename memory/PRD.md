@@ -143,6 +143,22 @@ JWT_SECRET=<secure-random-string>
 - **Fixed Vulnerable Users Credential Tracking** - Credential submissions now properly count and mark users as Critical risk
 - **Removed Default Button from Alerts** - The "Start Training Now" button is now optional and disabled by default
 
+### Session Changes (Feb 23, 2026 - E1 Fork Part 3)
+- **Visual Email Template Builder** - Complete no-code UI for creating custom emails (like ads builder):
+  - Icon OR Logo URL toggle
+  - Icon selector with 18 options
+  - Primary color and header title color pickers
+  - Editable header title
+  - Greeting with {{USER_NAME}} variable support
+  - Main message and additional message fields
+  - **Highlight Box** with customizable icon, background color, text color, and message
+  - Optional CTA button with customizable text, URL, and color
+  - Optional safety tips section
+  - Footer text customization
+  - **Live preview** showing email exactly as it will appear
+- **New Backend Route** - `/api/custom-email-templates` for CRUD operations on custom email templates
+- **Three-Tab Interface** - System Emails | Custom Emails | Alert Pages
+
 ### Production Environment Variables (Vercel Backend)
 ```
 API_URL=https://api.vasilisnetshield.com
