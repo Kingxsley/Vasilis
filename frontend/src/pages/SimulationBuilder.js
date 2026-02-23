@@ -850,6 +850,42 @@ export default function SimulationBuilder() {
             </div>
           </div>
         );
+      case 'qr_code':
+        return (
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant={!value || value === '{{TRACKING_URL}}' ? 'default' : 'outline'}
+                onClick={() => updateBlockValue(block.instanceId, '{{TRACKING_URL}}')}
+                className={!value || value === '{{TRACKING_URL}}' ? 'bg-[#D4A836] text-black' : 'border-[#30363D] text-gray-400'}
+              >
+                <QrCode className="w-4 h-4 mr-1" /> Auto-Track
+              </Button>
+              <Button
+                size="sm"
+                variant={value && value !== '{{TRACKING_URL}}' ? 'default' : 'outline'}
+                onClick={() => updateBlockValue(block.instanceId, value && value !== '{{TRACKING_URL}}' ? value : 'https://')}
+                className={value && value !== '{{TRACKING_URL}}' ? 'bg-[#D4A836] text-black' : 'border-[#30363D] text-gray-400'}
+              >
+                <Link className="w-4 h-4 mr-1" /> Custom URL
+              </Button>
+            </div>
+            {value && value !== '{{TRACKING_URL}}' ? (
+              <Input
+                value={value}
+                onChange={(e) => updateBlockValue(block.instanceId, e.target.value)}
+                placeholder="Enter custom URL for QR code..."
+                className="bg-[#0D1117] border-[#30363D] text-white"
+              />
+            ) : (
+              <div className="flex items-center gap-2 bg-[#0D1117]/50 border border-[#30363D] rounded px-3 py-2">
+                <QrCode className="w-4 h-4 text-[#D4A836] flex-shrink-0" />
+                <span className="text-xs text-gray-400">QR code will link to tracking URL</span>
+              </div>
+            )}
+          </div>
+        );
       default:
         return (
           <Input
