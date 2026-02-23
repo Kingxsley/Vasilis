@@ -1584,8 +1584,6 @@ async def update_training_module(
     if user.get("role") not in [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN]:
         raise HTTPException(status_code=403, detail="Admin access required")
 
-    await _ensure_training_modules_seeded()
-
     # Build update dictionary from provided fields
     update_dict = {}
     # If a new list of scenarios is provided, update both the list and the count
