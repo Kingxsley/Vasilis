@@ -172,7 +172,7 @@ export default function QuestionModuleDesigner() {
                       <SelectValue placeholder="Select template" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Default Template</SelectItem>
+                      <SelectItem value="default">Default Template</SelectItem>
                       {templates.map((t) => (
                         <SelectItem key={t.template_id} value={t.template_id}>{t.name}</SelectItem>
                       ))}
