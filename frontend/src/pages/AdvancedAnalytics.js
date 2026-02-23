@@ -414,9 +414,9 @@ export default function AdvancedAnalytics() {
             icon={Users}
           />
           <StatCard
-            title="Phishing Campaigns"
+            title="Total Campaigns"
             value={phishingStats?.total_campaigns || analytics?.campaigns_launched || 0}
-            subtitle="Total launched"
+            subtitle="Phishing + Ad simulations"
             icon={Mail}
           />
           <StatCard
