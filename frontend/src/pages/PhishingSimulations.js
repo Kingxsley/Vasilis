@@ -60,6 +60,9 @@ export default function PhishingSimulations() {
   // Alert templates
   const [alertTemplates, setAlertTemplates] = useState([]);
   
+  // Custom email templates
+  const [customEmailTemplates, setCustomEmailTemplates] = useState([]);
+  
   // Dialog states
   const [showNewCampaign, setShowNewCampaign] = useState(false);
   const [showNewTemplate, setShowNewTemplate] = useState(false);
