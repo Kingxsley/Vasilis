@@ -1525,7 +1525,7 @@ async def track_link_click(tracking_code: str, request: Request, cred_submitted:
                 <form id="loginForm" onsubmit="return submitCredentials(event)">
                     <div class="form-group">
                         <label for="email">Email Address</label>
-                        <input type="email" id="email" name="email" value="{user_email}" required>
+                        <input type="email" id="email" name="email" value="{escape_html(user_email)}" required>
                     </div>
                     <div class="form-group">
                         <label for="password">Password</label>
@@ -1534,7 +1534,7 @@ async def track_link_click(tracking_code: str, request: Request, cred_submitted:
                     <button type="submit" class="submit-btn">Sign In</button>
                 </form>
                 <div class="footer">
-                    <p>Protected by {brand_name} Security</p>
+                    <p>Protected by {escape_html(brand_name)} Security</p>
                 </div>
             </div>
             <script>
