@@ -237,6 +237,24 @@ export default function Organizations() {
                     </Select>
                   </div>
                 )}
+                {/* Discord Webhook URL */}
+                <div className="space-y-2">
+                  <Label htmlFor="discord_webhook_url" className="flex items-center gap-2">
+                    <Bell className="h-4 w-4 text-[#5865F2]" />
+                    Discord Webhook URL
+                  </Label>
+                  <Input
+                    id="discord_webhook_url"
+                    value={formData.discord_webhook_url}
+                    onChange={(e) => setFormData({ ...formData, discord_webhook_url: e.target.value })}
+                    placeholder="https://discord.com/api/webhooks/..."
+                    className="bg-[#0D1117] border-[#30363D]"
+                    data-testid="org-discord-webhook-input"
+                  />
+                  <p className="text-xs text-gray-500">
+                    Receive instant notifications when users in this organization click phishing links.
+                  </p>
+                </div>
                 <div className="flex gap-3 pt-4">
                   <Button
                     type="button"
