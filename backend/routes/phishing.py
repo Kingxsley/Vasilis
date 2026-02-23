@@ -997,6 +997,7 @@ async def track_link_click(tracking_code: str, request: Request):
     organization_id = None
     user_id = None
     campaign_id = None
+    campaign = None  # Initialize campaign variable to avoid UnboundLocalError
     
     if result:
         campaign = result.get("campaign", {})
