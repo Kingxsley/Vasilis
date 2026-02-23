@@ -1277,8 +1277,9 @@ async def track_link_click(tracking_code: str, request: Request):
                         else:
                             assigned_mod = await db.training_modules.find_one({"is_active": True}, {"_id": 0, "name": 1})
                         if assigned_mod:
-                            base_url = str(request.base_url).rstrip("/")
-                            training_url = f"{base_url}/training"
+                            # Use FRONTEND_URL for training links, not the API URL
+                            frontend_url = os.environ.get('FRONTEND_URL', 'https://vasilisnetshield.com')
+                            training_url = f"{frontend_url}/training"
                             await send_training_assignment_email(
                                 user_email=user_email,
                                 user_name=user_name,
