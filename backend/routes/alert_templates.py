@@ -76,6 +76,7 @@ async def create_alert_template(data: AlertTemplateCreate, request: Request):
         "name": data.name,
         "description": data.description or "",
         "html": data.html,
+        "config": data.config,  # Store visual config for future editing
         "created_by": user["user_id"],
         "created_at": datetime.now(timezone.utc).isoformat(),
         "updated_at": datetime.now(timezone.utc).isoformat()
