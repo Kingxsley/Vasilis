@@ -97,6 +97,8 @@ class BrandingSettings(BaseModel):
     social_linkedin: Optional[str] = None
     social_instagram: Optional[str] = None
     social_youtube: Optional[str] = None
+    # Discord webhook for super admin notifications
+    discord_webhook_url: Optional[str] = None
 
 
 class BrandingUpdate(BaseModel):
