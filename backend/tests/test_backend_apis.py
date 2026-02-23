@@ -201,20 +201,10 @@ class TestTrainingModules:
 class TestSimulationBuilder:
     """Simulation Builder specific tests"""
     
-    @pytest.fixture
-    def auth_headers(self):
-        """Get auth headers for super admin"""
-        response = requests.post(f"{API}/auth/login", json={
-            "email": SUPER_ADMIN_EMAIL,
-            "password": SUPER_ADMIN_PASSWORD
-        })
-        token = response.json()["token"]
-        return {"Authorization": f"Bearer {token}"}
-    
-    def test_get_phishing_template_for_edit(self, auth_headers):
+    def test_get_phishing_template_for_edit(self):
         """Test getting a specific template for editing"""
         # First get list of templates
-        response = requests.get(f"{API}/phishing/templates", headers=auth_headers)
+        response = requests.get(f"{API}/phishing/templates", headers=get_auth_headers())
         assert response.status_code == 200
         templates = response.json()
         
