@@ -12,7 +12,7 @@ const RichTextEditor = ({ value, onChange, placeholder = "Write your content..."
   const [uploading, setUploading] = useState(false);
   const isInitialized = useRef(false);
 
-  // Set initial value only once on mount or when value changes externally
+  // Set initial value only once on mount
   useEffect(() => {
     if (editorRef.current && !isInitialized.current) {
       editorRef.current.innerHTML = value || '';
@@ -20,12 +20,14 @@ const RichTextEditor = ({ value, onChange, placeholder = "Write your content..."
     }
   }, []);
 
-  // Handle external value changes (e.g., form reset)
+  // Handle external value changes (e.g., template loading, form reset)
   useEffect(() => {
     if (editorRef.current && isInitialized.current) {
-      // Only update if the value is empty (form reset) or significantly different
-      if (value === '' && editorRef.current.innerHTML !== '') {
-        editorRef.current.innerHTML = '';
+      // Update editor when value changes externally
+      const currentContent = editorRef.current.innerHTML;
+      // Only update if significantly different to avoid cursor jumping
+      if (value !== currentContent) {
+        editorRef.current.innerHTML = value || '';
       }
     }
   }, [value]);
