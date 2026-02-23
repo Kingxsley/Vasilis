@@ -186,7 +186,18 @@ export default function PhishingSimulations() {
 
   useEffect(() => {
     fetchAlertTemplates();
+    fetchCustomEmailTemplates();
   }, []);
+
+  // Fetch custom email templates
+  const fetchCustomEmailTemplates = async () => {
+    try {
+      const res = await axios.get(`${API}/custom-email-templates`, { headers });
+      setCustomEmailTemplates(res.data.templates || []);
+    } catch (err) {
+      console.log('No custom email templates');
+    }
+  };
 
   // Fetch media images for library
   const fetchMediaImages = async () => {
