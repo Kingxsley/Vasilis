@@ -208,6 +208,11 @@ export default function EmailTemplates() {
       </div>
     ` : '';
 
+    // Only show button if enabled and has text
+    const buttonHtml = data.showButton && data.buttonText ? `
+      <a href="${data.buttonUrl || '/training'}" style="display:inline-block;background:${data.titleColor};color:#000;text-decoration:none;padding:14px 40px;border-radius:8px;font-weight:bold;font-size:16px;margin-top:25px;">${data.buttonText}</a>
+    ` : '';
+
     return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
@@ -225,7 +230,7 @@ export default function EmailTemplates() {
       
       ${tipsHtml}
       
-      <a href="${data.buttonUrl}" style="display:inline-block;background:${data.titleColor};color:#000;text-decoration:none;padding:14px 40px;border-radius:8px;font-weight:bold;font-size:16px;margin-top:25px;">${data.buttonText}</a>
+      ${buttonHtml}
       
       <p style="color:#484F58;font-size:12px;margin-top:30px;">Powered by Vasilis NetShield Security Training</p>
     </div>
