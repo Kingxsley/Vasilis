@@ -66,7 +66,14 @@ A comprehensive security awareness and training platform that helps organization
 - [x] System-wide Discord webhook
 - [x] Security settings (force 2FA)
 
-## Current Status (Feb 23, 2026)
+## Current Status (Dec 2025)
+
+### Question Counter Fix - RESOLVED
+- Added `current_scenario_index` and `answers` fields to `TrainingSessionResponse` model
+- Updated all session API endpoints to include these fields in responses
+- Frontend now correctly displays "Question X of Y" during training sessions
+
+## Previous Status (Feb 23, 2026)
 
 ### Production CORS Issue - RESOLVED
 - Added missing dependencies (`python-multipart`, `pillow`, `openpyxl`)
