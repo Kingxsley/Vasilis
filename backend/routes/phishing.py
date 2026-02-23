@@ -762,10 +762,18 @@ async def get_phishing_stats(request: Request, days: int = 30):
     
     phish_campaigns = await db.phishing_campaigns.find(phish_query, {"_id": 0}).to_list(1000)
     phish_campaign_ids = [c["campaign_id"] for c in phish_campaigns]
-    phish_targets = await db.phishing_targets.find(
-        {"campaign_id": {"$in": phish_campaign_ids}} if phish_campaign_ids else {},
-        {"_id": 0}
-    ).to_list(100000)
+    
+    logger.info(f"Stats: Found {len(phish_campaigns)} campaigns, IDs: {phish_campaign_ids}")
+    
+    # Get targets for these campaigns
+    phish_targets = []
+    if phish_campaign_ids:
+        phish_targets = await db.phishing_targets.find(
+            {"campaign_id": {"$in": phish_campaign_ids}},
+            {"_id": 0}
+        ).to_list(100000)
+    
+    logger.info(f"Stats: Found {len(phish_targets)} targets")
     
     phish_active = sum(1 for c in phish_campaigns if c.get("status") in ("running", "active"))
     phish_completed = sum(1 for c in phish_campaigns if c.get("status") == "completed")
@@ -774,6 +782,8 @@ async def get_phishing_stats(request: Request, days: int = 30):
     phish_opened = sum(1 for t in phish_targets if t.get("email_opened"))
     phish_clicked = sum(1 for t in phish_targets if t.get("link_clicked"))
     phish_submitted = sum(1 for t in phish_targets if t.get("credentials_submitted"))
+    
+    logger.info(f"Stats: sent={phish_sent}, opened={phish_opened}, clicked={phish_clicked}, submitted={phish_submitted}")
     
     # --- Ad campaign data ---
     ad_query = {}
