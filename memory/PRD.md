@@ -167,14 +167,20 @@ JWT_SECRET=<secure-random-string>
 - **Enhanced Analytics Dashboard** - Added 5th stat card for "Credential Submissions" with submission rate percentage
 - **Vulnerability Breakdown** - Shows opened/clicked/submitted data with progress bars
 
+### Session Changes (Feb 23, 2026 - E1 Fork Part 5) - Custom Email Template Integration
+- **Custom Email Template Selection in Campaign Creation (DONE)** - When creating a phishing campaign, users can now select a custom email template to override the default template
+- **Backend Integration for Custom Email Templates** - Modified `/api/phishing/campaigns` endpoint to accept and store `custom_email_template_id`
+- **Launch Campaign Uses Custom Template** - Modified `launch_campaign` and `check_scheduled_campaigns` functions to fetch and use custom email template content when `custom_email_template_id` is set
+- **Fixed custom_email_templates.py Auth** - Fixed authentication import issue that was causing 500 errors
+- **Testing Verified**: 100% backend test pass rate, all UI elements working
+
 ### Production Environment Variables (Vercel Backend)
-```
-API_URL=https://api.vasilisnetshield.com
-CORS_ORIGINS=https://vasilisnetshield.com,https://www.vasilisnetshield.com
-MONGO_URL=<your-mongodb-atlas-url>
-DB_NAME=vasilisnetshield
-JWT_SECRET=<your-secret>
-```
+- `API_URL=https://api.vasilisnetshield.com` ✅ (Confirmed set by user)
+- `FRONTEND_URL=https://vasilisnetshield.com` ✅ (Confirmed set by user)
+- `CORS_ORIGINS=https://vasilisnetshield.com,https://www.vasilisnetshield.com`
+- `MONGO_URL=<your-mongodb-atlas-url>`
+- `DB_NAME=vasilisnetshield`
+- `JWT_SECRET=<your-secret>`
 
 ## Key Files Reference
 - `/app/backend/server.py` - Main API server with CORS config
