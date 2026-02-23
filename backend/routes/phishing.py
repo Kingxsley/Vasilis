@@ -237,6 +237,7 @@ async def create_campaign(data: PhishingCampaignCreate, request: Request):
         "alert_template_id": getattr(data, 'alert_template_id', None),  # Alert template for click page
         "custom_email_template_id": getattr(data, 'custom_email_template_id', None),  # Custom visual email template
         "risk_level": getattr(data, 'risk_level', 'medium'),  # Default to medium if not provided
+        "scenario_type": getattr(data, 'scenario_type', 'phishing_email'),  # Scenario type for landing page behavior
         "status": initial_status,
         "total_targets": len(target_users),
         "emails_sent": 0,
