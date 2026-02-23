@@ -521,9 +521,12 @@ export default function PhishingSimulations() {
       template_id: '',
       target_user_ids: [],
       scheduled_at: '',
-      launch_immediately: true
+      launch_immediately: true,
+      assigned_module_id: '',
+      click_page_html: ''
     });
     setEditingCampaign(null);
+    setShowCustomPageEditor(false);
   };
 
   const deleteTemplate = async (templateId) => {
