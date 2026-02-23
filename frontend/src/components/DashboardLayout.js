@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import { 
   LayoutDashboard, Building2, Users, 
-  BookOpen, BarChart3, LogOut, Menu, X, ChevronDown, ChevronRight, Mail, Monitor, Upload, Award, FileText, Settings, Layout, Crosshair, GraduationCap, Cog, ShieldAlert, TrendingUp, Mail as MailIcon, PanelLeftClose, PanelLeft, MessageSquare, Image, Search, ExternalLink, Activity, Wand2, HelpCircle, Key
+  BookOpen, BarChart3, LogOut, Menu, X, ChevronDown, ChevronRight, Mail, Monitor, Upload, Award, FileText, Settings, Layout, Crosshair, GraduationCap, Cog, ShieldAlert, TrendingUp, Mail as MailIcon, PanelLeftClose, PanelLeft, MessageSquare, Image, Search, ExternalLink, Activity, Wand2, HelpCircle, Key, AlertTriangle
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import {
