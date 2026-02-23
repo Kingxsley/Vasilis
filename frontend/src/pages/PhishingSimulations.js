@@ -810,6 +810,16 @@ export default function PhishingSimulations() {
                           <Button
                             size="sm"
                             variant="outline"
+                            onClick={() => copyEmbedUrl(campaign.campaign_id)}
+                            className={`border-[#D4A836]/30 hover:bg-[#D4A836]/10 ${copiedUrl === campaign.campaign_id ? 'text-green-400 border-green-400/30' : 'text-[#D4A836]'}`}
+                            data-testid={`copy-link-${campaign.campaign_id}`}
+                            title="Copy embed link"
+                          >
+                            <Link className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
                             onClick={() => duplicateCampaign(campaign.campaign_id)}
                             className="border-[#D4A836]/30 text-[#D4A836] hover:bg-[#D4A836]/10"
                             data-testid={`duplicate-campaign-${campaign.campaign_id}`}
