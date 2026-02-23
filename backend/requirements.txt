@@ -30,3 +30,9 @@ python-dotenv==1.0.1
 
 # Validation
 email_validator==2.2.0
+
+# Image processing
+pillow==10.4.0
+
+# Excel export
+openpyxl==3.1.5
