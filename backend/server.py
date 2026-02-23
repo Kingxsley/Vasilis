@@ -1847,6 +1847,9 @@ async def start_training_session(data: TrainingSessionCreate, user: dict = Depen
                     "difficulty": scen["difficulty"]
                 })
         total_questions = len(cached_scenarios)
+        # Randomize question order for trainees
+        import random as _rand
+        _rand.shuffle(cached_scenarios)
 
     session_doc = {
         "session_id": session_id,
