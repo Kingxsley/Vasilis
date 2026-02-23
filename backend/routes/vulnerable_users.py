@@ -117,7 +117,10 @@ async def get_vulnerable_users(
             }
         
         vu = vulnerable_users[user_email]
-        vu["clicks"] += 1
+        
+        # Only increment clicks if actually clicked
+        if target.get("link_clicked"):
+            vu["clicks"] += 1
         
         # Update risk level based on campaign's risk level (take the highest)
         risk_priority = {"low": 1, "medium": 2, "high": 3, "critical": 4}
