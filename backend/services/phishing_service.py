@@ -194,6 +194,7 @@ async def send_phishing_email(
                 text_body = template['body_text']
                 text_body = text_body.replace('{{USER_NAME}}', target.get('user_name', 'User'))
                 text_body = text_body.replace('{{TRACKING_LINK}}', generate_tracking_link(base_url, target['tracking_code']))
+                text_body = text_body.replace('{{TRACKING_URL}}', generate_tracking_link(base_url, target['tracking_code']))
                 msg.attach(MIMEText(text_body, 'plain'))
             
             msg.attach(MIMEText(html_body, 'html'))
