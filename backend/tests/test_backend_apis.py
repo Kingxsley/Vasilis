@@ -189,19 +189,9 @@ class TestAnalytics:
 class TestTrainingModules:
     """Training modules endpoint tests"""
     
-    @pytest.fixture
-    def auth_headers(self):
-        """Get auth headers for super admin"""
-        response = requests.post(f"{API}/auth/login", json={
-            "email": SUPER_ADMIN_EMAIL,
-            "password": SUPER_ADMIN_PASSWORD
-        })
-        token = response.json()["token"]
-        return {"Authorization": f"Bearer {token}"}
-    
-    def test_list_training_modules(self, auth_headers):
+    def test_list_training_modules(self):
         """Test listing training modules"""
-        response = requests.get(f"{API}/training/modules", headers=auth_headers)
+        response = requests.get(f"{API}/training/modules", headers=get_auth_headers())
         assert response.status_code == 200, f"Failed: {response.text}"
         data = response.json()
         assert isinstance(data, list), "Expected list of modules"
