@@ -524,7 +524,8 @@ export default function PhishingSimulations() {
       scheduled_at: '',
       launch_immediately: true,
       assigned_module_id: '',
-      click_page_html: ''
+      click_page_html: '',
+      risk_level: 'medium'
     });
     setEditingCampaign(null);
     setShowCustomPageEditor(false);
