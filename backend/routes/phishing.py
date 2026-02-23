@@ -655,6 +655,20 @@ async def check_scheduled_campaigns(request: Request):
         if not template:
             continue
         
+        # Check for custom email template override
+        custom_email_template_id = campaign.get("custom_email_template_id")
+        if custom_email_template_id:
+            custom_email = await db.custom_email_templates.find_one({"id": custom_email_template_id}, {"_id": 0})
+            if custom_email:
+                # Override template with custom email content
+                template = {
+                    **template,
+                    "body_html": custom_email.get("html", template["body_html"]),
+                    "subject": custom_email.get("subject", template["subject"]),
+                    "name": custom_email.get("name", template.get("name"))
+                }
+                logger.info(f"Using custom email template for scheduled campaign {campaign['campaign_id']}")
+        
         # Get base URL - use API URL for tracking links
         import os
         api_url = os.environ.get('API_URL', 'https://api.vasilisnetshield.com')
