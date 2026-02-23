@@ -96,45 +96,61 @@ async def notify_phishing_click(
 ):
     """Send notification when a user clicks a phishing link"""
     
-    title = "Phishing Link Clicked!"
+    logger.info(f"notify_phishing_click called for {user_email}, org_webhook: {bool(org_webhook_url)}")
+    
+    title = "🚨 Phishing Link Clicked!"
     description = f"A user has clicked on a simulated phishing link."
     
     fields = [
-        {"name": "User", "value": f"{user_name}\n{user_email}", "inline": True},
-        {"name": "Organization", "value": organization_name or "Unknown", "inline": True},
-        {"name": "Campaign", "value": campaign_name or "Unknown", "inline": True},
+        {"name": "👤 User", "value": f"{user_name}\n{user_email}", "inline": True},
+        {"name": "🏢 Organization", "value": organization_name or "Unknown", "inline": True},
+        {"name": "📧 Campaign", "value": campaign_name or "Unknown", "inline": True},
     ]
     
     if click_ip:
-        fields.append({"name": "IP Address", "value": click_ip, "inline": True})
+        fields.append({"name": "🌐 IP Address", "value": click_ip, "inline": True})
     
     if user_agent:
         # Truncate user agent if too long
         ua_display = user_agent[:100] + "..." if len(user_agent) > 100 else user_agent
-        fields.append({"name": "Device", "value": ua_display, "inline": False})
+        fields.append({"name": "💻 Device", "value": ua_display, "inline": False})
+    
+    notifications_sent = 0
     
     # Get super admin webhook from settings or env
     super_admin_webhook = await get_super_admin_webhook(db)
+    logger.info(f"Super admin webhook available: {bool(super_admin_webhook)}")
     
     # Send to super admin webhook
     if super_admin_webhook:
-        await send_discord_notification(
+        result = await send_discord_notification(
             webhook_url=super_admin_webhook,
             title=title,
             description=description,
             color=0xFF6B6B,  # Red
             fields=fields
         )
+        if result:
+            notifications_sent += 1
+            logger.info("Sent notification to super admin webhook")
     
     # Send to organization webhook if provided
     if org_webhook_url and org_webhook_url != super_admin_webhook:
-        await send_discord_notification(
+        result = await send_discord_notification(
             webhook_url=org_webhook_url,
             title=title,
             description=description,
             color=0xFF6B6B,
             fields=fields
         )
+        if result:
+            notifications_sent += 1
+            logger.info("Sent notification to organization webhook")
+    
+    if notifications_sent == 0:
+        logger.warning(f"No webhooks configured - notification not sent for {user_email}")
+    
+    return notifications_sent > 0
 
 
 async def notify_credential_submission(
