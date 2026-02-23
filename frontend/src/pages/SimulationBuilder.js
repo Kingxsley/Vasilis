@@ -361,6 +361,13 @@ export default function SimulationBuilder() {
     }
   };
 
+  const fetchTrainingModules = async () => {
+    try {
+      const res = await axios.get(`${API}/training/modules`, { headers });
+      setTrainingModules(res.data || []);
+    } catch { /* ignore */ }
+  };
+
   // Load template
   const loadTemplate = (template) => {
     setSelectedTemplate(template);
