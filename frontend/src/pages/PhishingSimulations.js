@@ -1170,6 +1170,23 @@ export default function PhishingSimulations() {
                 </Select>
               </div>
 
+              {/* Alert Template Selection */}
+              <div>
+                <Label className="text-gray-400 text-sm mb-1 block">Alert Page Template (shown when user clicks link)</Label>
+                <Select value={newCampaign.alert_template_id || 'default'} onValueChange={(v) => setNewCampaign(prev => ({...prev, alert_template_id: v === 'default' ? '' : v}))}>
+                  <SelectTrigger className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]" data-testid="alert-template-select">
+                    <SelectValue placeholder="Default Alert Page" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#161B22] border-[#30363D]">
+                    <SelectItem value="default" className="text-gray-400">Default Alert Page</SelectItem>
+                    {alertTemplates.map(t => (
+                      <SelectItem key={t.id} value={t.id} className="text-[#E8DDB5]">{t.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500 mt-1">Select a pre-built template or use custom HTML below</p>
+              </div>
+
               {/* Custom Awareness Page - Collapsible */}
               <div className="border border-[#30363D] rounded-lg overflow-hidden">
                 <button
