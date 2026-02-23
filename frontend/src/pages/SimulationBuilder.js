@@ -836,13 +836,31 @@ export default function SimulationBuilder() {
       case 'link':
       case 'submit_button':
         return (
-          <div className="space-y-2">
-            <Input
-              value={value}
-              onChange={(e) => updateBlockValue(block.instanceId, e.target.value)}
-              placeholder={block.type === 'link' ? 'Link display text (e.g. Reset Password)' : block.placeholder}
-              className="bg-[#0D1117] border-[#30363D] text-white"
-            />
+          <div className="space-y-3">
+            <div>
+              <Label className="text-xs text-gray-400 mb-1 block">Button/Link Text</Label>
+              <Input
+                value={value}
+                onChange={(e) => updateBlockValue(block.instanceId, e.target.value)}
+                placeholder={block.type === 'link' ? 'Link display text (e.g. Reset Password)' : block.placeholder}
+                className="bg-[#0D1117] border-[#30363D] text-white"
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-gray-400 mb-1 block">Tracking Link Name (for analytics)</Label>
+              <Input
+                value={block.trackingName || ''}
+                onChange={(e) => {
+                  const newBlocks = canvasBlocks.map(b => 
+                    b.instanceId === block.instanceId ? {...b, trackingName: e.target.value} : b
+                  );
+                  setCanvasBlocks(newBlocks);
+                }}
+                placeholder="e.g., main_cta, reset_password_link"
+                className="bg-[#0D1117] border-[#30363D] text-white text-sm"
+              />
+              <p className="text-xs text-gray-500 mt-1">This name helps identify clicks in analytics reports.</p>
+            </div>
             <div className="flex items-center gap-2 bg-[#0D1117]/50 border border-[#30363D] rounded px-3 py-2">
               <Link className="w-4 h-4 text-[#D4A836] flex-shrink-0" />
               <span className="text-xs text-gray-400">Tracking link auto-inserted</span>
