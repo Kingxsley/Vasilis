@@ -1326,6 +1326,180 @@ async def track_link_click(tracking_code: str, request: Request):
             except Exception as e:
                 logger.error(f"Error in automatic retraining flow: {e}")
     
+    # IMPORTANT: Check if this is a credential harvest campaign
+    # If so, show a fake login form first (unless credentials were already submitted)
+    show_credential_form = False
+    if campaign and scenario_type == "credential_harvest":
+        # Check if this target already submitted credentials
+        target = await db.phishing_targets.find_one(
+            {"tracking_code": tracking_code},
+            {"_id": 0, "credentials_submitted": 1}
+        )
+        if target and not target.get("credentials_submitted"):
+            show_credential_form = True
+    
+    if show_credential_form:
+        # Show a fake login form that posts to the credentials tracking endpoint
+        frontend_url = os.environ.get('FRONTEND_URL', 'https://vasilisnetshield.com')
+        api_url = os.environ.get('API_URL', str(request.base_url).rstrip('/'))
+        
+        # Get template info for branding
+        template = await db.phishing_templates.find_one(
+            {"template_id": campaign.get("template_id")},
+            {"_id": 0, "name": 1, "sender_name": 1}
+        )
+        brand_name = template.get("sender_name", "Your Company") if template else "Account Services"
+        
+        credential_form_html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Sign In - {brand_name}</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <style>
+                * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+                body {{ 
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+                    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+                    min-height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 20px;
+                }}
+                .container {{
+                    background: white;
+                    border-radius: 12px;
+                    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+                    padding: 40px;
+                    max-width: 400px;
+                    width: 100%;
+                }}
+                .logo {{
+                    text-align: center;
+                    margin-bottom: 30px;
+                }}
+                .logo-icon {{
+                    width: 60px;
+                    height: 60px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    border-radius: 12px;
+                    margin: 0 auto 15px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 28px;
+                }}
+                h1 {{
+                    color: #1a1a2e;
+                    font-size: 24px;
+                    margin-bottom: 8px;
+                }}
+                .subtitle {{
+                    color: #666;
+                    font-size: 14px;
+                    margin-bottom: 30px;
+                }}
+                .form-group {{
+                    margin-bottom: 20px;
+                }}
+                label {{
+                    display: block;
+                    color: #333;
+                    font-size: 14px;
+                    font-weight: 500;
+                    margin-bottom: 8px;
+                }}
+                input {{
+                    width: 100%;
+                    padding: 12px 15px;
+                    border: 2px solid #e1e5eb;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    transition: border-color 0.2s;
+                }}
+                input:focus {{
+                    outline: none;
+                    border-color: #667eea;
+                }}
+                .submit-btn {{
+                    width: 100%;
+                    padding: 14px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: transform 0.2s, box-shadow 0.2s;
+                }}
+                .submit-btn:hover {{
+                    transform: translateY(-2px);
+                    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+                }}
+                .footer {{
+                    text-align: center;
+                    margin-top: 25px;
+                    color: #999;
+                    font-size: 12px;
+                }}
+                .footer a {{
+                    color: #667eea;
+                    text-decoration: none;
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="logo">
+                    <div class="logo-icon">🔐</div>
+                    <h1>Sign In</h1>
+                    <p class="subtitle">Enter your credentials to continue</p>
+                </div>
+                <form id="loginForm" onsubmit="return submitCredentials(event)">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" value="{user_email}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                    </div>
+                    <button type="submit" class="submit-btn">Sign In</button>
+                </form>
+                <div class="footer">
+                    <p>Protected by {brand_name} Security</p>
+                </div>
+            </div>
+            <script>
+                async function submitCredentials(e) {{
+                    e.preventDefault();
+                    const btn = document.querySelector('.submit-btn');
+                    btn.textContent = 'Signing in...';
+                    btn.disabled = true;
+                    
+                    try {{
+                        // Send credential submission notification (we don't actually capture the password)
+                        await fetch('{api_url}/api/phishing/track/credentials/{tracking_code}', {{
+                            method: 'POST',
+                            headers: {{ 'Content-Type': 'application/json' }},
+                            body: JSON.stringify({{ submitted: true }})
+                        }});
+                    }} catch(err) {{
+                        console.error('Tracking error:', err);
+                    }}
+                    
+                    // Redirect to awareness page
+                    window.location.href = '{api_url}/api/phishing/track/click/{tracking_code}?cred_submitted=1';
+                    return false;
+                }}
+            </script>
+        </body>
+        </html>
+        """
+        return HTMLResponse(content=credential_form_html)
+    
     # IMPORTANT: Always show the phishing awareness page when someone clicks
     # Check if campaign has a custom click page or an alert template
     custom_page = None
