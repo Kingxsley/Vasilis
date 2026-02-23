@@ -540,6 +540,7 @@ async def launch_campaign(campaign_id: str, request: Request):
     ).to_list(10000)
     
     sent_count = 0
+    errors = []
     # Attempt to send to each target.  Only mark email_sent as true
     # when the send_phishing_email function returns success.  If the
     # email fails to send (e.g. SendGrid or SMTP error), the email_sent
@@ -548,8 +549,12 @@ async def launch_campaign(campaign_id: str, request: Request):
     for target in targets:
         try:
             success = await send_phishing_email(db, target, template, api_url)
-        except Exception:
+            if not success:
+                errors.append(f"Failed to send to {target.get('user_email')}: send_phishing_email returned False")
+        except Exception as e:
             success = False
+            errors.append(f"Exception sending to {target.get('user_email')}: {str(e)}")
+            logger.error(f"Exception sending phishing email to {target.get('user_email')}: {e}")
         if success:
             await db.phishing_targets.update_one(
                 {"target_id": target["target_id"]},
@@ -561,6 +566,10 @@ async def launch_campaign(campaign_id: str, request: Request):
                 }
             )
             sent_count += 1
+    
+    # Log any errors
+    if errors:
+        logger.warning(f"Campaign {campaign_id} had {len(errors)} email sending errors: {errors[:5]}")  # Log first 5 errors
     
     # Update campaign stats
     await db.phishing_campaigns.update_one(
