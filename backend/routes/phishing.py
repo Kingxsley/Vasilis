@@ -1826,9 +1826,10 @@ async def generate_qr_code(tracking_code: str, request: Request, size: int = 200
     if not target:
         raise HTTPException(status_code=404, detail="Invalid tracking code")
     
-    # Build tracking URL
+    # Build tracking URL - use API_URL for production, fallback to request base
     base_url = str(request.base_url).rstrip('/')
-    tracking_url = f"{base_url}/api/phishing/track/click/{tracking_code}"
+    api_url = os.environ.get('API_URL', base_url)
+    tracking_url = f"{api_url}/api/phishing/track/click/{tracking_code}"
     
     # Generate QR code using external service (qr-server.com)
     qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size={size}x{size}&data={tracking_url}"
@@ -1861,11 +1862,13 @@ async def generate_campaign_qr_codes(campaign_id: str, request: Request, size: i
         {"_id": 0, "tracking_code": 1, "user_name": 1, "user_email": 1}
     ).to_list(10000)
     
+    # Use API_URL for production, fallback to request base
     base_url = str(request.base_url).rstrip('/')
+    api_url = os.environ.get('API_URL', base_url)
     
     qr_codes = []
     for target in targets:
-        tracking_url = f"{base_url}/api/phishing/track/click/{target['tracking_code']}"
+        tracking_url = f"{api_url}/api/phishing/track/click/{target['tracking_code']}"
         qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size={size}x{size}&data={tracking_url}"
         
         qr_codes.append({
