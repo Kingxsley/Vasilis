@@ -13,6 +13,7 @@ import {
   ChevronDown,
   FileJson,
   FileSpreadsheet,
+  FileText,
   Building,
   Clock,
   Mail,
