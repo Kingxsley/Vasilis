@@ -66,13 +66,9 @@ const useFavicon = () => {
             applyFavicon(faviconUrl);
           }
         } else {
-          // No custom favicon set - clear cache and remove any favicons
+          // No custom favicon set - use the default SVG favicon
           localStorage.removeItem('app_favicon_url');
-          if (cachedFavicon) {
-            // Remove the cached favicon that was applied
-            const existingFavicons = document.querySelectorAll("link[rel*='icon']");
-            existingFavicons.forEach(el => el.remove());
-          }
+          applyFavicon('/favicon.svg');
         }
       } catch (error) {
         // Silently fail - keep cached favicon if available
