@@ -144,16 +144,20 @@ async def get_vulnerable_users(
                 vu["first_failure"] = click_iso
             vu["last_failure"] = click_iso
     
-    # Calculate risk levels
+    # Calculate risk levels - credential submissions always override to critical
     for email, vu in vulnerable_users.items():
+        # Credential submission is always critical - this takes priority
         if vu["credential_submissions"] > 0:
             vu["risk_level"] = "critical"
-        elif vu["clicks"] >= 3:
-            vu["risk_level"] = "high"
-        elif vu["clicks"] >= 2:
-            vu["risk_level"] = "medium"
-        else:
-            vu["risk_level"] = "low"
+        # Only adjust risk based on clicks if not already critical from credentials
+        elif vu["risk_level"] != "critical":
+            if vu["clicks"] >= 3:
+                vu["risk_level"] = "high"
+            elif vu["clicks"] >= 2:
+                vu["risk_level"] = "medium"
+            # Keep existing risk level from campaign if it's higher than "low"
+            elif vu["risk_level"] == "low":
+                vu["risk_level"] = "low"
     
     # Filter by risk level if specified
     if risk_level:
