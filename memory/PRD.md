@@ -101,11 +101,23 @@ JWT_SECRET=<secure-random-string>
 - [ ] Scheduled campaign automation
 
 ## Recent Changes (Feb 23, 2026)
+- Fixed phishing tracking - emails now use correct API URL for tracking links
+- Optimized campaign dialog UI - collapsible custom awareness page section
+- Reduced rich text editor height
 - Added PUT endpoint for phishing templates (fixes "Method Not Allowed" error)
 - Added delete button to Saved Simulations
 - Added visual editor for Custom Awareness Page
 - Fixed production CORS issues
 - Updated favicon
+
+### Production Environment Variables (Vercel Backend)
+```
+API_URL=https://api.vasilisnetshield.com
+CORS_ORIGINS=https://vasilisnetshield.com,https://www.vasilisnetshield.com
+MONGO_URL=<your-mongodb-atlas-url>
+DB_NAME=vasilisnetshield
+JWT_SECRET=<your-secret>
+```
 
 ## Key Files Reference
 - `/app/backend/server.py` - Main API server with CORS config
