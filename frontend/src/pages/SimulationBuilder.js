@@ -30,7 +30,7 @@ import {
   Save, Eye, Sparkles, Settings, Play, ChevronUp, ChevronDown,
   Layout, MousePointerClick, QrCode, Usb, Lock, Briefcase, Database, Cloud,
   Smartphone, Bell, KeyRound, FormInput, Square, Circle, Palette,
-  Copy, Check, X, Loader2, Zap, FileWarning, CreditCard, Download
+  Copy, Check, X, Loader2, Zap, FileWarning, CreditCard, Download, Edit
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
