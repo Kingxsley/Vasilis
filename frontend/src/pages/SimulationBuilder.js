@@ -636,6 +636,7 @@ export default function SimulationBuilder() {
       setShowLaunchDialog(false);
       setCampaignToLaunch(null);
       setSelectedTargets([]);
+      setAssignedModuleId('');
       setSimulationType(null);
       setSimulationName('');
       setSelectedBlocks([]);
