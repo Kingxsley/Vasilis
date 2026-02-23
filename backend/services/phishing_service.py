@@ -50,8 +50,9 @@ def inject_tracking_into_email(html_body: str, tracking_code: str, base_url: str
     
     # Replace the primary CTA link with tracking link
     click_url = generate_tracking_link(base_url, tracking_code)
-    # Look for {{TRACKING_LINK}} placeholder
+    # Look for {{TRACKING_LINK}} or {{TRACKING_URL}} placeholder
     html_body = html_body.replace('{{TRACKING_LINK}}', click_url)
+    html_body = html_body.replace('{{TRACKING_URL}}', click_url)
     
     return html_body
 
