@@ -2410,11 +2410,17 @@ async def get_training_analytics(
     ).to_list(100)
     module_name_map = {m["module_id"]: m["name"] for m in modules}
     
-    # Add module names to by_module
+    # Filter out deleted modules and add module names to remaining
+    filtered_by_module = []
     for m in by_module:
-        m["module_name"] = module_name_map.get(m["_id"], m["_id"].replace("mod_", "").replace("_", " ").title() if m["_id"] else "Unknown")
+        module_id = m["_id"]
+        # Skip sessions for deleted modules (not in module_name_map)
+        if module_id and module_id not in module_name_map:
+            continue
+        m["module_name"] = module_name_map.get(module_id, "Unknown Module") if module_id else "Unknown"
         # Calculate completion percentage
         m["completion_rate"] = round((m["completed"] / m["total_sessions"] * 100) if m["total_sessions"] > 0 else 0, 1)
+        filtered_by_module.append(m)
     
     # Recent activity with module names
     recent = await db.training_sessions.find(
@@ -2422,14 +2428,19 @@ async def get_training_analytics(
         {"_id": 0}
     ).sort("started_at", -1).limit(10).to_list(10)
     
-    # Add module names to recent sessions
+    # Add module names to recent sessions, filter out deleted modules
+    filtered_recent = []
     for session in recent:
         module_id = session.get("module_id")
-        session["module_name"] = module_name_map.get(module_id, module_id.replace("mod_", "").replace("_", " ").title() if module_id else "Unknown")
+        # Skip sessions for deleted modules
+        if module_id and module_id not in module_name_map:
+            continue
+        session["module_name"] = module_name_map.get(module_id, "Unknown Module") if module_id else "Unknown"
+        filtered_recent.append(session)
     
     return {
-        "by_module": by_module,
-        "recent_sessions": recent
+        "by_module": filtered_by_module,
+        "recent_sessions": filtered_recent
     }
 
 # New endpoint to provide user analytics including active/inactive counts
