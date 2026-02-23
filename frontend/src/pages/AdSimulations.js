@@ -165,31 +165,29 @@ export default function AdSimulations() {
     );
   };
 
-  // Copy tracking URL to clipboard - masked URL format
-  // Uses clean URL: {domain}/{campaign_id}
+  // Copy embed/tracking URL to clipboard
+  // Copies the embeddable API URL for the campaign
   const copyTrackingUrl = async (campaignId) => {
-    // Build the masked tracking URL using the website's domain
-    // Format: vasilisnetshield.com/{campaign_id}
-    const baseUrl = window.location.origin;
-    const trackingUrl = `${baseUrl}/${campaignId}`;
+    // Build the embed tracking URL using the API endpoint
+    const embedUrl = `${API}/track/${campaignId}`;
     
     try {
-      await navigator.clipboard.writeText(trackingUrl);
+      await navigator.clipboard.writeText(embedUrl);
       setCopiedUrl(campaignId);
-      toast.success('Tracking URL copied to clipboard');
+      toast.success('Embed URL copied to clipboard');
       
       // Reset copied state after 2 seconds
       setTimeout(() => setCopiedUrl(null), 2000);
     } catch (err) {
       // Fallback for browsers that don't support clipboard API
       const textArea = document.createElement('textarea');
-      textArea.value = trackingUrl;
+      textArea.value = embedUrl;
       document.body.appendChild(textArea);
       textArea.select();
       document.execCommand('copy');
       document.body.removeChild(textArea);
       setCopiedUrl(campaignId);
-      toast.success('Tracking URL copied to clipboard');
+      toast.success('Embed URL copied to clipboard');
       setTimeout(() => setCopiedUrl(null), 2000);
     }
   };
