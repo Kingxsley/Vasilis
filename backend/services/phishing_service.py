@@ -346,8 +346,14 @@ async def send_training_assignment_email(user_email: str, user_name: str, module
     """Send branded email notifying user they've been assigned training after clicking a simulation link."""
     try:
         sendgrid_key = os.environ.get("SENDGRID_API_KEY")
+        sender_email = os.environ.get("SENDER_EMAIL")
+        
         if not sendgrid_key:
             logger.warning("No SendGrid API key - skipping training assignment email")
+            return False
+        
+        if not sender_email:
+            logger.warning("No SENDER_EMAIL configured - skipping training assignment email")
             return False
 
         # Get branding from DB
