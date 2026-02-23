@@ -1840,7 +1840,7 @@ async def track_link_click(tracking_code: str, request: Request, cred_submitted:
             <div class="alert-card">
                 <h3>⚠️ You Clicked a Test Link</h3>
                 <p>
-                    Hello <span class="user-highlight">{user_name}</span>, this was a security awareness exercise 
+                    Hello <span class="user-highlight">{escape_html(user_name)}</span>, this was a security awareness exercise 
                     conducted by your organization. In a real attack scenario, your actions could have had serious consequences.
                 </p>
             </div>
