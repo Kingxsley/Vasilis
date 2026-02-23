@@ -2391,11 +2391,30 @@ async def get_training_analytics(
     
     by_module = await db.training_sessions.aggregate(pipeline).to_list(100)
     
-    # Recent activity
+    # Get module names for by_module results
+    module_ids = [m["_id"] for m in by_module if m["_id"]]
+    modules = await db.training_modules.find(
+        {"module_id": {"$in": module_ids}},
+        {"_id": 0, "module_id": 1, "name": 1}
+    ).to_list(100)
+    module_name_map = {m["module_id"]: m["name"] for m in modules}
+    
+    # Add module names to by_module
+    for m in by_module:
+        m["module_name"] = module_name_map.get(m["_id"], m["_id"].replace("mod_", "").replace("_", " ").title() if m["_id"] else "Unknown")
+        # Calculate completion percentage
+        m["completion_rate"] = round((m["completed"] / m["total_sessions"] * 100) if m["total_sessions"] > 0 else 0, 1)
+    
+    # Recent activity with module names
     recent = await db.training_sessions.find(
         match_stage,
         {"_id": 0}
     ).sort("started_at", -1).limit(10).to_list(10)
+    
+    # Add module names to recent sessions
+    for session in recent:
+        module_id = session.get("module_id")
+        session["module_name"] = module_name_map.get(module_id, module_id.replace("mod_", "").replace("_", " ").title() if module_id else "Unknown")
     
     return {
         "by_module": by_module,
