@@ -232,7 +232,7 @@ export default function Dashboard() {
                 <div className="space-y-4">
                   {recentSessions.slice(0, 5).map((session, index) => (
                     <div 
-                      key={session.session_id} 
+                      key={session.session_id || index} 
                       className="flex items-center justify-between p-4 rounded-lg bg-[#21262D]/50 border border-[#30363D]"
                     >
                       <div className="flex items-center gap-4">
@@ -245,7 +245,7 @@ export default function Dashboard() {
                           );
                         })()}
                         <div>
-                          <p className="font-medium text-white">{session.module_id.replace('mod_', '').replace(/_/g, ' ')}</p>
+                          <p className="font-medium text-white">{session.module_name || session.module_id?.replace('mod_', '').replace(/_/g, ' ')}</p>
                           <p className="text-xs text-gray-500">
                             {new Date(session.started_at).toLocaleDateString()}
                           </p>
@@ -255,10 +255,10 @@ export default function Dashboard() {
                         <p className={`text-lg font-bold ${
                           session.score >= 70 ? 'text-[#00E676]' : session.score >= 50 ? 'text-[#FFB300]' : 'text-[#FF3B30]'
                         }`}>
-                          {session.score}%
+                          {session.score !== null && session.score !== undefined ? `${session.score}%` : '-'}
                         </p>
                         <p className={`text-xs capitalize ${getSessionStatusStyles(session.status).text}`}>
-                          {session.status.replace(/_/g, ' ')}
+                          {session.status?.replace(/_/g, ' ') || 'Unknown'}
                         </p>
                       </div>
                     </div>
