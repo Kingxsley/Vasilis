@@ -528,7 +528,7 @@ async def launch_campaign(campaign_id: str, request: Request):
     # statistics.
     for target in targets:
         try:
-            success = await send_phishing_email(db, target, template, frontend_url)
+            success = await send_phishing_email(db, target, template, api_url)
         except Exception:
             success = False
         if success:
