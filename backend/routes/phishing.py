@@ -1098,35 +1098,68 @@ async def track_link_click(tracking_code: str, request: Request):
                 #    sessions are created with status "reassigned" so the UI
                 #    can differentiate them from normal sessions.
                 try:
-                    active_modules = await db.training_modules.find(
-                        {"is_active": True}, {"_id": 0, "module_id": 1, "scenarios_count": 1}
-                    ).to_list(1000)
-                    for mod in active_modules:
-                        module_id = mod.get("module_id")
-                        total_q = mod.get("scenarios_count", 0)
-                        # Do not create duplicate reassigned sessions for the same user/module
-                        existing = await db.training_sessions.find_one(
-                            {"user_id": user_id, "module_id": module_id, "status": "reassigned"},
-                            {"_id": 1}
+                    # Get the assigned module for this campaign, if any
+                    assigned_module_id = campaign.get("assigned_module_id") if campaign else None
+                    
+                    if assigned_module_id:
+                        # Assign only the specific module linked to this campaign
+                        mod = await db.training_modules.find_one(
+                            {"module_id": assigned_module_id, "is_active": True},
+                            {"_id": 0, "module_id": 1, "scenarios_count": 1, "questions": 1}
                         )
-                        if existing:
-                            continue
-                        session_id = f"sess_{uuid.uuid4().hex[:12]}"
-                        session_doc = {
-                            "session_id": session_id,
-                            "user_id": user_id,
-                            "module_id": module_id,
-                            "campaign_id": campaign_id,
-                            "status": "reassigned",
-                            "score": 0,
-                            "total_questions": total_q,
-                            "correct_answers": 0,
-                            "current_scenario_index": 0,
-                            "answers": [],
-                            "started_at": datetime.now(timezone.utc).isoformat(),
-                            "completed_at": None
-                        }
-                        await db.training_sessions.insert_one(session_doc)
+                        if mod:
+                            total_q = len(mod.get("questions") or []) or mod.get("scenarios_count", 0)
+                            existing = await db.training_sessions.find_one(
+                                {"user_id": user_id, "module_id": assigned_module_id, "status": "reassigned"},
+                                {"_id": 1}
+                            )
+                            if not existing:
+                                session_id = f"sess_{uuid.uuid4().hex[:12]}"
+                                session_doc = {
+                                    "session_id": session_id,
+                                    "user_id": user_id,
+                                    "module_id": assigned_module_id,
+                                    "campaign_id": campaign_id,
+                                    "status": "reassigned",
+                                    "score": 0,
+                                    "total_questions": total_q,
+                                    "correct_answers": 0,
+                                    "current_scenario_index": 0,
+                                    "answers": [],
+                                    "started_at": datetime.now(timezone.utc).isoformat(),
+                                    "completed_at": None
+                                }
+                                await db.training_sessions.insert_one(session_doc)
+                    else:
+                        # No specific module assigned - assign all active modules
+                        active_modules = await db.training_modules.find(
+                            {"is_active": True}, {"_id": 0, "module_id": 1, "scenarios_count": 1, "questions": 1}
+                        ).to_list(1000)
+                        for mod in active_modules:
+                            module_id = mod.get("module_id")
+                            total_q = len(mod.get("questions") or []) or mod.get("scenarios_count", 0)
+                            existing = await db.training_sessions.find_one(
+                                {"user_id": user_id, "module_id": module_id, "status": "reassigned"},
+                                {"_id": 1}
+                            )
+                            if existing:
+                                continue
+                            session_id = f"sess_{uuid.uuid4().hex[:12]}"
+                            session_doc = {
+                                "session_id": session_id,
+                                "user_id": user_id,
+                                "module_id": module_id,
+                                "campaign_id": campaign_id,
+                                "status": "reassigned",
+                                "score": 0,
+                                "total_questions": total_q,
+                                "correct_answers": 0,
+                                "current_scenario_index": 0,
+                                "answers": [],
+                                "started_at": datetime.now(timezone.utc).isoformat(),
+                                "completed_at": None
+                            }
+                            await db.training_sessions.insert_one(session_doc)
                     logger.info(f"Auto-reassigned training modules for user {user_email}")
                 except Exception as reassign_err:
                     logger.error(f"Failed to auto reassign training: {reassign_err}")
