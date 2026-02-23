@@ -595,11 +595,20 @@ async def launch_campaign(campaign_id: str, request: Request):
         severity="info"
     )
     
-    return {
+    response = {
         "message": f"Campaign launched. {sent_count} emails sent.",
         "emails_sent": sent_count,
         "total_targets": len(targets)
     }
+    
+    # Include error details if any emails failed
+    if errors:
+        response["errors"] = errors[:10]  # Include first 10 errors
+        response["total_errors"] = len(errors)
+        if sent_count == 0:
+            response["message"] = f"Campaign launched but no emails were sent. Check email configuration (SENDGRID_API_KEY, SENDER_EMAIL)."
+    
+    return response
 
 
 @router.post("/campaigns/{campaign_id}/pause")
