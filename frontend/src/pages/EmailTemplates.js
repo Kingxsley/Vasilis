@@ -15,7 +15,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../components/ui/dialog';
-import { Mail, Edit2, Eye, RotateCcw, Save, Loader2, Info, CheckCircle, Code, FileText } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../components/ui/select';
+import { Mail, Edit2, Eye, RotateCcw, Save, Loader2, Info, CheckCircle, Code, FileText, Plus, Trash2, Image, Palette, Type, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 
@@ -23,6 +30,40 @@ import axios from 'axios';
 const RichTextEditor = lazy(() => import('../components/common/RichTextEditor'));
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+// Available icons for templates
+const TEMPLATE_ICONS = [
+  { value: '⚠️', label: 'Warning' },
+  { value: '🚨', label: 'Alert' },
+  { value: '🎣', label: 'Phishing' },
+  { value: '🔒', label: 'Lock' },
+  { value: '🛡️', label: 'Shield' },
+  { value: '📧', label: 'Email' },
+  { value: '📱', label: 'Mobile' },
+  { value: '💻', label: 'Computer' },
+  { value: '🔐', label: 'Security' },
+  { value: '📚', label: 'Training' },
+  { value: '✅', label: 'Success' },
+  { value: '❌', label: 'Error' },
+  { value: '👋', label: 'Wave' },
+  { value: '🔑', label: 'Key' },
+  { value: '⏰', label: 'Clock' },
+  { value: '📝', label: 'Document' },
+  { value: '🎯', label: 'Target' },
+  { value: '💡', label: 'Idea' },
+];
+
+// Color presets for templates
+const COLOR_PRESETS = [
+  { value: '#FF6B6B', label: 'Red Alert' },
+  { value: '#D4A836', label: 'Gold Warning' },
+  { value: '#4CAF50', label: 'Green Success' },
+  { value: '#2196F3', label: 'Blue Info' },
+  { value: '#9C27B0', label: 'Purple' },
+  { value: '#FF5722', label: 'Orange' },
+  { value: '#00BCD4', label: 'Cyan' },
+  { value: '#E91E63', label: 'Pink' },
+];
 
 const TEMPLATE_LABELS = {
   welcome: { name: 'Welcome Email', icon: '👋', category: 'notification' },
@@ -33,83 +74,11 @@ const TEMPLATE_LABELS = {
   training_reminder: { name: 'Training Reminder', icon: '⏰', category: 'notification' }
 };
 
-const DEFAULT_ALERT_TEMPLATES = [
-  {
-    id: 'default_alert',
-    name: 'Default Security Alert',
-    description: 'Standard phishing awareness alert',
-    preview: '⚠️ Security Alert - Yellow warning theme',
-    html: `<div style="text-align:center;padding:40px;font-family:'Segoe UI',Arial,sans-serif;background:#0D1117;min-height:100vh;">
-<div style="background:#161B22;padding:40px;border-radius:16px;max-width:600px;margin:0 auto;border:1px solid #30363D;">
-<div style="font-size:64px;margin-bottom:20px;">⚠️</div>
-<h1 style="color:#FF6B6B;margin-bottom:10px;">Security Alert!</h1>
-<p style="color:#8B949E;margin-bottom:30px;">This was a phishing simulation</p>
-<div style="background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.25);padding:20px;border-radius:12px;text-align:left;">
-<h3 style="color:#FF6B6B;margin-top:0;">Hello {{USER_NAME}},</h3>
-<p style="color:#E6EDF3;">You clicked on a simulated phishing link in the "<strong>{{CAMPAIGN_NAME}}</strong>" campaign.</p>
-<p style="color:#E6EDF3;">This was a test to help you identify potential threats.</p>
-</div>
-<p style="color:#8B949E;margin-top:20px;font-size:14px;">Training has been assigned to help you learn more.</p>
-</div></div>`
-  },
-  {
-    id: 'phishing_caught',
-    name: 'Phishing Caught',
-    description: 'You\'ve been caught theme',
-    preview: '🎣 Phishing Detected - Dark theme',
-    html: `<div style="text-align:center;padding:40px;font-family:'Segoe UI',Arial,sans-serif;background:linear-gradient(135deg,#0D1117,#161B22);min-height:100vh;">
-<div style="background:#161B22;padding:40px;border-radius:16px;max-width:600px;margin:0 auto;border:1px solid #30363D;">
-<div style="font-size:64px;margin-bottom:20px;">🎣</div>
-<h1 style="color:#FF6B6B;margin-bottom:10px;">Phishing Detected!</h1>
-<p style="color:#8B949E;margin-bottom:30px;">You've been caught in a training exercise</p>
-<div style="background:rgba(212,168,54,0.1);border-left:4px solid #D4A836;padding:20px;border-radius:8px;text-align:left;">
-<p style="color:#E8DDB5;margin:0;"><strong>User:</strong> {{USER_NAME}}</p>
-<p style="color:#E8DDB5;margin:10px 0 0 0;"><strong>Campaign:</strong> {{CAMPAIGN_NAME}}</p>
-</div>
-<p style="color:#8B949E;margin-top:20px;font-size:14px;">Security training will help you recognize threats.</p>
-</div></div>`
-  },
-  {
-    id: 'credential_warning',
-    name: 'Credential Warning',
-    description: 'Critical credential submission alert',
-    preview: '🔴 Critical Alert - Red warning theme',
-    html: `<div style="text-align:center;padding:40px;font-family:'Segoe UI',Arial,sans-serif;background:#1a0a0a;min-height:100vh;">
-<div style="background:#2a0f0f;padding:40px;border-radius:16px;max-width:600px;margin:0 auto;border:2px solid #FF4444;">
-<div style="font-size:64px;margin-bottom:20px;">🚨</div>
-<h1 style="color:#FF4444;margin-bottom:10px;">CRITICAL: Credentials Submitted!</h1>
-<p style="color:#ffaaaa;margin-bottom:30px;">You entered login credentials on a simulated phishing page</p>
-<div style="background:rgba(255,68,68,0.1);border:1px solid #FF4444;padding:20px;border-radius:8px;text-align:left;">
-<p style="color:#ffcccc;margin:0;"><strong>{{USER_NAME}}</strong>, this was a test. In a real attack, your credentials would now be compromised.</p>
-<p style="color:#ffaaaa;margin:15px 0 0 0;">Campaign: <strong>{{CAMPAIGN_NAME}}</strong></p>
-</div>
-<p style="color:#FF4444;margin-top:20px;font-size:14px;font-weight:bold;">Mandatory training has been assigned.</p>
-</div></div>`
-  },
-  {
-    id: 'qr_scan_alert',
-    name: 'QR Code Scan Alert',
-    description: 'Alert for QR code scans',
-    preview: '📱 QR Code Alert - Modern theme',
-    html: `<div style="text-align:center;padding:40px;font-family:'Segoe UI',Arial,sans-serif;background:#0f0f1a;min-height:100vh;">
-<div style="background:#1a1a2e;padding:40px;border-radius:16px;max-width:600px;margin:0 auto;border:1px solid #4a4a6a;">
-<div style="font-size:64px;margin-bottom:20px;">📱</div>
-<h1 style="color:#9966FF;margin-bottom:10px;">QR Code Security Test</h1>
-<p style="color:#a0a0c0;margin-bottom:30px;">You scanned a simulated malicious QR code</p>
-<div style="background:rgba(153,102,255,0.1);border-left:4px solid #9966FF;padding:20px;border-radius:8px;text-align:left;">
-<p style="color:#c0c0ff;margin:0;">Hello <strong>{{USER_NAME}}</strong>,</p>
-<p style="color:#a0a0c0;margin:10px 0 0 0;">This QR code was part of the "{{CAMPAIGN_NAME}}" security awareness campaign.</p>
-</div>
-<p style="color:#a0a0c0;margin-top:20px;font-size:14px;">Always verify QR codes before scanning them.</p>
-</div></div>`
-  }
-];
-
 export default function EmailTemplates() {
   const { token } = useAuth();
   const [templates, setTemplates] = useState({});
-  const [alertTemplates, setAlertTemplates] = useState(DEFAULT_ALERT_TEMPLATES);
   const [customAlertTemplates, setCustomAlertTemplates] = useState([]);
+  const [phishingEmailTemplates, setPhishingEmailTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingTemplate, setEditingTemplate] = useState(null);
   const [editingAlertTemplate, setEditingAlertTemplate] = useState(null);
@@ -117,34 +86,58 @@ export default function EmailTemplates() {
   const [alertPreview, setAlertPreview] = useState(null);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({ subject: '', body: '' });
-  const [alertFormData, setAlertFormData] = useState({ name: '', description: '', html: '' });
-  const [editorMode, setEditorMode] = useState('visual'); // 'visual' or 'html'
+  const [editorMode, setEditorMode] = useState('visual');
   const [activeTab, setActiveTab] = useState('notifications');
+  
+  // Visual Alert Template Builder State
+  const [alertFormData, setAlertFormData] = useState({
+    name: '',
+    description: '',
+    icon: '⚠️',
+    title: 'Security Alert!',
+    titleColor: '#FF6B6B',
+    subtitle: 'This was a phishing simulation',
+    backgroundColor: '#0D1117',
+    cardColor: '#161B22',
+    messageTitle: 'Hello {{USER_NAME}},',
+    messageBody: 'You clicked on a simulated phishing link in the "{{CAMPAIGN_NAME}}" campaign. This was a test to help you identify potential threats.',
+    showTips: true,
+    tips: ['Always verify the sender\'s email address', 'Hover over links before clicking', 'When in doubt, contact IT directly', 'Report suspicious emails immediately'],
+    buttonText: 'Start Training Now',
+    buttonUrl: '/training'
+  });
+
+  const headers = { Authorization: `Bearer ${token}` };
 
   useEffect(() => {
     fetchTemplates();
     fetchAlertTemplates();
+    fetchPhishingEmailTemplates();
   }, []);
 
   const fetchAlertTemplates = async () => {
     try {
-      const res = await axios.get(`${API}/alert-templates`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await axios.get(`${API}/alert-templates`, { headers });
       if (res.data.templates) {
         setCustomAlertTemplates(res.data.templates);
       }
     } catch (err) {
-      // Alert templates endpoint may not exist yet, use defaults
       console.log('Using default alert templates');
+    }
+  };
+
+  const fetchPhishingEmailTemplates = async () => {
+    try {
+      const res = await axios.get(`${API}/phishing/templates`, { headers });
+      setPhishingEmailTemplates(res.data || []);
+    } catch (err) {
+      console.log('No phishing templates');
     }
   };
 
   const fetchTemplates = async () => {
     try {
-      const res = await axios.get(`${API}/email-templates`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await axios.get(`${API}/email-templates`, { headers });
       setTemplates(res.data.templates);
     } catch (err) {
       toast.error('Failed to load email templates');
@@ -167,9 +160,7 @@ export default function EmailTemplates() {
     setSaving(true);
 
     try {
-      await axios.put(`${API}/email-templates/${editingTemplate.id}`, formData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axios.put(`${API}/email-templates/${editingTemplate.id}`, formData, { headers });
       toast.success('Template saved');
       fetchTemplates();
       setEditingTemplate(null);
@@ -184,9 +175,7 @@ export default function EmailTemplates() {
     if (!window.confirm('Reset this template to default? Your customizations will be lost.')) return;
 
     try {
-      await axios.post(`${API}/email-templates/${templateId}/reset`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axios.post(`${API}/email-templates/${templateId}/reset`, {}, { headers });
       toast.success('Template reset to default');
       fetchTemplates();
       setEditingTemplate(null);
@@ -197,9 +186,7 @@ export default function EmailTemplates() {
 
   const handlePreview = async (templateId) => {
     try {
-      const res = await axios.post(`${API}/email-templates/${templateId}/preview`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await axios.post(`${API}/email-templates/${templateId}/preview`, {}, { headers });
       setPreviewData(res.data);
     } catch (err) {
       toast.error('Failed to generate preview');
@@ -207,15 +194,136 @@ export default function EmailTemplates() {
   };
 
   const insertVariable = (variable) => {
-    const textarea = document.getElementById('template-body');
-    if (textarea) {
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const newBody = formData.body.substring(0, start) + `{${variable}}` + formData.body.substring(end);
-      setFormData({ ...formData, body: newBody });
-    } else {
-      setFormData({ ...formData, body: formData.body + `{${variable}}` });
+    setFormData({ ...formData, body: formData.body + `{${variable}}` });
+  };
+
+  // Generate HTML from visual builder
+  const generateAlertHtml = (data) => {
+    const tipsHtml = data.showTips && data.tips.length > 0 ? `
+      <div style="background:#1a1a24;border-radius:8px;padding:20px;margin-top:20px;text-align:left;">
+        <p style="color:${data.titleColor};margin:0 0 10px 0;font-weight:bold;">Tips to Stay Safe:</p>
+        <ul style="color:#8B949E;margin:0;padding-left:20px;">
+          ${data.tips.map(tip => `<li style="margin:5px 0;">${tip}</li>`).join('')}
+        </ul>
+      </div>
+    ` : '';
+
+    return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="margin:0;padding:0;background:${data.backgroundColor};min-height:100vh;font-family:'Segoe UI',Arial,sans-serif;">
+  <div style="padding:40px 20px;">
+    <div style="background:${data.cardColor};padding:40px;border-radius:16px;max-width:600px;margin:0 auto;border:1px solid #30363D;text-align:center;">
+      <div style="font-size:64px;margin-bottom:20px;">${data.icon}</div>
+      <h1 style="color:${data.titleColor};margin:0 0 10px 0;font-size:28px;">${data.title}</h1>
+      <p style="color:#8B949E;margin:0 0 30px 0;">${data.subtitle}</p>
+      
+      <div style="background:rgba(${parseInt(data.titleColor.slice(1,3),16)},${parseInt(data.titleColor.slice(3,5),16)},${parseInt(data.titleColor.slice(5,7),16)},0.1);border:1px solid ${data.titleColor}40;padding:20px;border-radius:12px;text-align:left;margin-bottom:20px;">
+        <h3 style="color:${data.titleColor};margin:0 0 10px 0;">${data.messageTitle}</h3>
+        <p style="color:#E6EDF3;margin:0;line-height:1.6;">${data.messageBody}</p>
+      </div>
+      
+      ${tipsHtml}
+      
+      <a href="${data.buttonUrl}" style="display:inline-block;background:${data.titleColor};color:#000;text-decoration:none;padding:14px 40px;border-radius:8px;font-weight:bold;font-size:16px;margin-top:25px;">${data.buttonText}</a>
+      
+      <p style="color:#484F58;font-size:12px;margin-top:30px;">Powered by Vasilis NetShield Security Training</p>
+    </div>
+  </div>
+</body>
+</html>`;
+  };
+
+  // Save alert template
+  const saveAlertTemplate = async () => {
+    if (!alertFormData.name || !alertFormData.title) {
+      toast.error('Please fill in the template name and title');
+      return;
     }
+
+    setSaving(true);
+    const html = generateAlertHtml(alertFormData);
+
+    try {
+      if (editingAlertTemplate?.id && editingAlertTemplate.id !== 'new') {
+        await axios.put(`${API}/alert-templates/${editingAlertTemplate.id}`, {
+          name: alertFormData.name,
+          description: alertFormData.description,
+          html: html,
+          config: alertFormData // Store the visual config for future editing
+        }, { headers });
+        toast.success('Alert template updated');
+      } else {
+        await axios.post(`${API}/alert-templates`, {
+          name: alertFormData.name,
+          description: alertFormData.description,
+          html: html,
+          config: alertFormData
+        }, { headers });
+        toast.success('Alert template created');
+      }
+      fetchAlertTemplates();
+      setEditingAlertTemplate(null);
+    } catch (err) {
+      toast.error('Failed to save alert template');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteAlertTemplate = async (templateId) => {
+    if (!window.confirm('Delete this alert template?')) return;
+    try {
+      await axios.delete(`${API}/alert-templates/${templateId}`, { headers });
+      toast.success('Template deleted');
+      fetchAlertTemplates();
+    } catch (err) {
+      toast.error('Failed to delete template');
+    }
+  };
+
+  const openAlertEditor = (template = null) => {
+    if (template && template.config) {
+      // Load existing config
+      setAlertFormData(template.config);
+    } else if (template) {
+      // Existing template without config - set defaults with name
+      setAlertFormData({
+        name: template.name || '',
+        description: template.description || '',
+        icon: '⚠️',
+        title: 'Security Alert!',
+        titleColor: '#FF6B6B',
+        subtitle: 'This was a phishing simulation',
+        backgroundColor: '#0D1117',
+        cardColor: '#161B22',
+        messageTitle: 'Hello {{USER_NAME}},',
+        messageBody: 'You clicked on a simulated phishing link in the "{{CAMPAIGN_NAME}}" campaign.',
+        showTips: true,
+        tips: ['Always verify the sender\'s email address', 'Hover over links before clicking', 'When in doubt, contact IT directly', 'Report suspicious emails immediately'],
+        buttonText: 'Start Training Now',
+        buttonUrl: '/training'
+      });
+    } else {
+      // New template - reset form
+      setAlertFormData({
+        name: '',
+        description: '',
+        icon: '⚠️',
+        title: 'Security Alert!',
+        titleColor: '#FF6B6B',
+        subtitle: 'This was a phishing simulation',
+        backgroundColor: '#0D1117',
+        cardColor: '#161B22',
+        messageTitle: 'Hello {{USER_NAME}},',
+        messageBody: 'You clicked on a simulated phishing link in the "{{CAMPAIGN_NAME}}" campaign.',
+        showTips: true,
+        tips: ['Always verify the sender\'s email address', 'Hover over links before clicking', 'When in doubt, contact IT directly', 'Report suspicious emails immediately'],
+        buttonText: 'Start Training Now',
+        buttonUrl: '/training'
+      });
+    }
+    setEditingAlertTemplate(template || { id: 'new' });
   };
 
   if (loading) {
@@ -234,7 +342,7 @@ export default function EmailTemplates() {
         {/* Header */}
         <div>
           <h1 className="text-2xl font-bold text-[#E8DDB5]">Email & Alert Templates</h1>
-          <p className="text-gray-400">Customize emails and security awareness alerts</p>
+          <p className="text-gray-400">Customize notification emails and security awareness alerts</p>
         </div>
 
         {/* Tabs */}
@@ -245,8 +353,8 @@ export default function EmailTemplates() {
               Notification Emails
             </TabsTrigger>
             <TabsTrigger value="alerts" className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">
-              <FileText className="w-4 h-4 mr-2" />
-              Alert Templates
+              <AlertTriangle className="w-4 h-4 mr-2" />
+              Alert Pages
             </TabsTrigger>
           </TabsList>
 
@@ -330,7 +438,7 @@ export default function EmailTemplates() {
             </div>
           </TabsContent>
 
-          {/* Alert Templates Tab */}
+          {/* Alert Pages Tab */}
           <TabsContent value="alerts" className="space-y-6">
             {/* Info Card */}
             <Card className="bg-orange-500/10 border-orange-500/30">
@@ -338,31 +446,39 @@ export default function EmailTemplates() {
                 <div className="flex items-start gap-3">
                   <Info className="w-5 h-5 text-orange-400 mt-0.5" />
                   <div className="text-sm text-orange-200">
-                    <p className="font-medium mb-1">Alert Templates</p>
+                    <p className="font-medium mb-1">Alert Page Templates</p>
                     <p className="text-orange-300/80">
-                      These templates are shown when users click on phishing links. Use variables like <code className="bg-orange-500/20 px-1 rounded">{'{{USER_NAME}}'}</code> and <code className="bg-orange-500/20 px-1 rounded">{'{{CAMPAIGN_NAME}}'}</code>.
+                      Create custom awareness pages shown when users click phishing links. Use the visual builder to customize icons, colors, titles, and messages without code.
                     </p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
+            {/* Create New Button */}
+            <div className="flex justify-end">
+              <Button onClick={() => openAlertEditor()} className="bg-[#D4A836] hover:bg-[#C49A30] text-black">
+                <Plus className="w-4 h-4 mr-2" />
+                Create Alert Template
+              </Button>
+            </div>
+
             {/* Alert Templates Grid */}
-            <div className="grid md:grid-cols-2 gap-4">
-              {[...alertTemplates, ...customAlertTemplates].map((alert) => (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {customAlertTemplates.map((alert) => (
                 <Card key={alert.id} className="bg-[#161B22] border-[#D4A836]/20 hover:border-[#D4A836]/40 transition-colors">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h3 className="text-[#E8DDB5] font-medium">{alert.name}</h3>
-                        <p className="text-xs text-gray-400 mt-1">{alert.description}</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">{alert.config?.icon || '⚠️'}</span>
+                        <div>
+                          <h3 className="text-[#E8DDB5] font-medium">{alert.name}</h3>
+                          <p className="text-xs text-gray-400">{alert.description}</p>
+                        </div>
                       </div>
-                      {alert.isCustom && (
-                        <Badge className="bg-[#D4A836]/20 text-[#D4A836] text-xs">Custom</Badge>
-                      )}
+                      <Badge className="bg-[#D4A836]/20 text-[#D4A836] text-xs">Custom</Badge>
                     </div>
-                    <p className="text-sm text-gray-500 mb-3">{alert.preview}</p>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 mt-4">
                       <Button
                         size="sm"
                         variant="outline"
@@ -376,40 +492,42 @@ export default function EmailTemplates() {
                         size="sm"
                         variant="outline"
                         className="border-[#D4A836]/30 text-[#E8DDB5]"
-                        onClick={() => {
-                          setEditingAlertTemplate(alert);
-                          setAlertFormData({ name: alert.name, description: alert.description, html: alert.html });
-                        }}
+                        onClick={() => openAlertEditor(alert)}
                       >
                         <Edit2 className="w-4 h-4 mr-1" />
                         Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-red-500/30 text-red-400"
+                        onClick={() => deleteAlertTemplate(alert.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
                   </CardContent>
                 </Card>
               ))}
 
-              {/* Add New Alert Template Card */}
-              <Card 
-                className="bg-[#161B22] border-[#30363D] border-dashed hover:border-[#D4A836]/40 transition-colors cursor-pointer"
-                onClick={() => {
-                  setEditingAlertTemplate({ id: 'new', isCustom: true });
-                  setAlertFormData({ name: '', description: '', html: '' });
-                }}
-              >
-                <CardContent className="p-4 h-full flex flex-col items-center justify-center text-center">
-                  <div className="w-12 h-12 rounded-full bg-[#D4A836]/10 flex items-center justify-center mb-3">
-                    <FileText className="w-6 h-6 text-[#D4A836]" />
-                  </div>
-                  <p className="text-[#E8DDB5] font-medium">Create Custom Alert</p>
-                  <p className="text-xs text-gray-500 mt-1">Design your own awareness page</p>
-                </CardContent>
-              </Card>
+              {customAlertTemplates.length === 0 && (
+                <Card className="bg-[#161B22] border-[#30363D] border-dashed col-span-full">
+                  <CardContent className="p-8 text-center">
+                    <AlertTriangle className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-[#E8DDB5] mb-2">No Custom Alert Templates</h3>
+                    <p className="text-gray-400 mb-4">Create your first custom alert page for phishing simulations</p>
+                    <Button onClick={() => openAlertEditor()} className="bg-[#D4A836] hover:bg-[#C49A30] text-black">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Template
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </TabsContent>
         </Tabs>
 
-        {/* Edit Dialog */}
+        {/* Edit Notification Email Dialog */}
         <Dialog open={!!editingTemplate} onOpenChange={() => setEditingTemplate(null)}>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-[#0f0f15] border-[#D4A836]/30">
             <DialogHeader>
@@ -486,36 +604,16 @@ export default function EmailTemplates() {
                     style={{ direction: 'ltr', textAlign: 'left' }}
                   />
                 )}
-                <p className="text-xs text-gray-500">
-                  Use Visual mode for easy editing, or HTML mode for advanced customization.
-                </p>
               </div>
 
               {/* Actions */}
               <div className="flex justify-end gap-2 pt-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setEditingTemplate(null)}
-                  className="border-gray-600"
-                >
+                <Button variant="outline" onClick={() => setEditingTemplate(null)} className="border-gray-600">
                   Cancel
                 </Button>
-                <Button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="bg-[#D4A836] text-black hover:bg-[#C49A30]"
-                >
-                  {saving ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-4 h-4 mr-2" />
-                      Save Template
-                    </>
-                  )}
+                <Button onClick={handleSave} disabled={saving} className="bg-[#D4A836] text-black hover:bg-[#C49A30]">
+                  {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                  Save Template
                 </Button>
               </div>
             </div>
@@ -543,19 +641,13 @@ export default function EmailTemplates() {
                   <div className="bg-[#1a1a24] p-6">
                     <div 
                       className="prose prose-invert max-w-none"
-                      style={{ 
-                        fontFamily: 'Arial, sans-serif',
-                        color: '#E8DDB5'
-                      }}
+                      style={{ fontFamily: 'Arial, sans-serif', color: '#E8DDB5' }}
                       dangerouslySetInnerHTML={{ __html: previewData.body }}
                     />
                   </div>
                 </div>
 
-                <Button
-                  onClick={() => setPreviewData(null)}
-                  className="w-full bg-[#D4A836] text-black hover:bg-[#C49A30]"
-                >
+                <Button onClick={() => setPreviewData(null)} className="w-full bg-[#D4A836] text-black hover:bg-[#C49A30]">
                   Close Preview
                 </Button>
               </div>
@@ -582,14 +674,11 @@ export default function EmailTemplates() {
                       .replace(/\{\{USER_EMAIL\}\}/g, 'john.doe@example.com')
                       .replace(/\{\{CAMPAIGN_NAME\}\}/g, 'Security Test Campaign')
                     }
-                    className="w-full h-[400px] bg-[#0D1117]"
+                    className="w-full h-[500px] bg-[#0D1117]"
                     title="Alert Preview"
                   />
                 </div>
-                <Button
-                  onClick={() => setAlertPreview(null)}
-                  className="w-full bg-[#D4A836] text-black hover:bg-[#C49A30]"
-                >
+                <Button onClick={() => setAlertPreview(null)} className="w-full bg-[#D4A836] text-black hover:bg-[#C49A30]">
                   Close Preview
                 </Button>
               </div>
@@ -597,111 +686,240 @@ export default function EmailTemplates() {
           </DialogContent>
         </Dialog>
 
-        {/* Edit Alert Template Dialog */}
+        {/* Visual Alert Template Builder Dialog */}
         <Dialog open={!!editingAlertTemplate} onOpenChange={() => setEditingAlertTemplate(null)}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-[#0f0f15] border-[#D4A836]/30">
+          <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto bg-[#0f0f15] border-[#D4A836]/30">
             <DialogHeader>
               <DialogTitle className="text-[#E8DDB5]">
-                {editingAlertTemplate?.id === 'new' ? 'Create Alert Template' : `Edit: ${editingAlertTemplate?.name}`}
+                {editingAlertTemplate?.id === 'new' ? 'Create Alert Template' : 'Edit Alert Template'}
               </DialogTitle>
               <DialogDescription>
-                Design the awareness page shown when users click phishing links.
+                Design your alert page visually. Changes are reflected in the live preview.
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4 mt-4">
-              {/* Name and Description */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-gray-400">Template Name</Label>
-                  <Input
-                    value={alertFormData.name}
-                    onChange={(e) => setAlertFormData({ ...alertFormData, name: e.target.value })}
-                    placeholder="e.g., Custom Warning Alert"
-                    className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]"
-                  />
+            <div className="grid md:grid-cols-2 gap-6 mt-4">
+              {/* Left: Form Controls */}
+              <div className="space-y-4 overflow-y-auto max-h-[70vh] pr-2">
+                {/* Basic Info */}
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium text-[#D4A836]">Basic Information</h3>
+                  <div>
+                    <Label className="text-gray-400 text-xs">Template Name *</Label>
+                    <Input
+                      value={alertFormData.name}
+                      onChange={(e) => setAlertFormData({ ...alertFormData, name: e.target.value })}
+                      placeholder="e.g., Phishing Warning Alert"
+                      className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-gray-400 text-xs">Description</Label>
+                    <Input
+                      value={alertFormData.description}
+                      onChange={(e) => setAlertFormData({ ...alertFormData, description: e.target.value })}
+                      placeholder="Brief description"
+                      className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Label className="text-gray-400">Description</Label>
-                  <Input
-                    value={alertFormData.description}
-                    onChange={(e) => setAlertFormData({ ...alertFormData, description: e.target.value })}
-                    placeholder="Brief description"
-                    className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]"
-                  />
+
+                {/* Icon & Colors */}
+                <div className="space-y-3 pt-4 border-t border-[#30363D]">
+                  <h3 className="text-sm font-medium text-[#D4A836] flex items-center gap-2">
+                    <Palette className="w-4 h-4" />
+                    Icon & Colors
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-gray-400 text-xs">Icon</Label>
+                      <Select value={alertFormData.icon} onValueChange={(v) => setAlertFormData({ ...alertFormData, icon: v })}>
+                        <SelectTrigger className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#161B22] border-[#30363D]">
+                          {TEMPLATE_ICONS.map((icon) => (
+                            <SelectItem key={icon.value} value={icon.value}>
+                              <span className="flex items-center gap-2">{icon.value} {icon.label}</span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-gray-400 text-xs">Accent Color</Label>
+                      <Select value={alertFormData.titleColor} onValueChange={(v) => setAlertFormData({ ...alertFormData, titleColor: v })}>
+                        <SelectTrigger className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#161B22] border-[#30363D]">
+                          {COLOR_PRESETS.map((color) => (
+                            <SelectItem key={color.value} value={color.value}>
+                              <span className="flex items-center gap-2">
+                                <span className="w-4 h-4 rounded" style={{ backgroundColor: color.value }}></span>
+                                {color.label}
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Title & Subtitle */}
+                <div className="space-y-3 pt-4 border-t border-[#30363D]">
+                  <h3 className="text-sm font-medium text-[#D4A836] flex items-center gap-2">
+                    <Type className="w-4 h-4" />
+                    Title & Subtitle
+                  </h3>
+                  <div>
+                    <Label className="text-gray-400 text-xs">Main Title</Label>
+                    <Input
+                      value={alertFormData.title}
+                      onChange={(e) => setAlertFormData({ ...alertFormData, title: e.target.value })}
+                      placeholder="Security Alert!"
+                      className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-gray-400 text-xs">Subtitle</Label>
+                    <Input
+                      value={alertFormData.subtitle}
+                      onChange={(e) => setAlertFormData({ ...alertFormData, subtitle: e.target.value })}
+                      placeholder="This was a phishing simulation"
+                      className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]"
+                    />
+                  </div>
+                </div>
+
+                {/* Message Content */}
+                <div className="space-y-3 pt-4 border-t border-[#30363D]">
+                  <h3 className="text-sm font-medium text-[#D4A836]">Message Content</h3>
+                  <div>
+                    <Label className="text-gray-400 text-xs">Greeting (use {'{{USER_NAME}}'} for personalization)</Label>
+                    <Input
+                      value={alertFormData.messageTitle}
+                      onChange={(e) => setAlertFormData({ ...alertFormData, messageTitle: e.target.value })}
+                      placeholder="Hello {{USER_NAME}},"
+                      className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-gray-400 text-xs">Message Body (use {'{{CAMPAIGN_NAME}}'} for campaign)</Label>
+                    <Textarea
+                      value={alertFormData.messageBody}
+                      onChange={(e) => setAlertFormData({ ...alertFormData, messageBody: e.target.value })}
+                      placeholder="You clicked on a simulated phishing link..."
+                      className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5] min-h-[80px]"
+                    />
+                  </div>
+                </div>
+
+                {/* Tips Section */}
+                <div className="space-y-3 pt-4 border-t border-[#30363D]">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-medium text-[#D4A836]">Safety Tips</h3>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={alertFormData.showTips}
+                        onChange={(e) => setAlertFormData({ ...alertFormData, showTips: e.target.checked })}
+                        className="rounded border-[#30363D]"
+                      />
+                      <span className="text-xs text-gray-400">Show tips section</span>
+                    </label>
+                  </div>
+                  {alertFormData.showTips && (
+                    <div className="space-y-2">
+                      {alertFormData.tips.map((tip, index) => (
+                        <div key={index} className="flex gap-2">
+                          <Input
+                            value={tip}
+                            onChange={(e) => {
+                              const newTips = [...alertFormData.tips];
+                              newTips[index] = e.target.value;
+                              setAlertFormData({ ...alertFormData, tips: newTips });
+                            }}
+                            className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5] text-sm"
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const newTips = alertFormData.tips.filter((_, i) => i !== index);
+                              setAlertFormData({ ...alertFormData, tips: newTips });
+                            }}
+                            className="border-red-500/30 text-red-400 px-2"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setAlertFormData({ ...alertFormData, tips: [...alertFormData.tips, ''] })}
+                        className="border-[#D4A836]/30 text-[#D4A836]"
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        Add Tip
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Button */}
+                <div className="space-y-3 pt-4 border-t border-[#30363D]">
+                  <h3 className="text-sm font-medium text-[#D4A836]">Call-to-Action Button</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-gray-400 text-xs">Button Text</Label>
+                      <Input
+                        value={alertFormData.buttonText}
+                        onChange={(e) => setAlertFormData({ ...alertFormData, buttonText: e.target.value })}
+                        placeholder="Start Training Now"
+                        className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-400 text-xs">Button URL</Label>
+                      <Input
+                        value={alertFormData.buttonUrl}
+                        onChange={(e) => setAlertFormData({ ...alertFormData, buttonUrl: e.target.value })}
+                        placeholder="/training"
+                        className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Variables Info */}
-              <div className="p-3 bg-[#1a1a24] rounded-lg">
-                <p className="text-xs text-gray-400 mb-2">Available Variables:</p>
-                <div className="flex flex-wrap gap-1">
-                  {['USER_NAME', 'USER_EMAIL', 'CAMPAIGN_NAME', 'SCENARIO_TYPE'].map((v) => (
-                    <code key={v} className="px-2 py-1 text-xs bg-[#D4A836]/20 text-[#D4A836] rounded">
-                      {`{{${v}}}`}
-                    </code>
-                  ))}
-                </div>
-              </div>
-
-              {/* HTML Editor */}
-              <div>
-                <Label className="text-gray-400">Alert HTML</Label>
-                <Textarea
-                  value={alertFormData.html}
-                  onChange={(e) => setAlertFormData({ ...alertFormData, html: e.target.value })}
-                  placeholder="<div>Your custom alert HTML...</div>"
-                  className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5] font-mono text-sm min-h-[200px]"
-                />
-              </div>
-
-              {/* Live Preview */}
-              <div>
-                <Label className="text-gray-400 mb-2 block">Live Preview</Label>
-                <div className="border border-[#30363D] rounded-lg overflow-hidden">
+              {/* Right: Live Preview */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium text-[#D4A836]">Live Preview</h3>
+                <div className="border border-[#30363D] rounded-lg overflow-hidden bg-[#0D1117]">
                   <iframe
-                    srcDoc={alertFormData.html
+                    srcDoc={generateAlertHtml(alertFormData)
                       .replace(/\{\{USER_NAME\}\}/g, 'John Doe')
-                      .replace(/\{\{USER_EMAIL\}\}/g, 'john.doe@example.com')
                       .replace(/\{\{CAMPAIGN_NAME\}\}/g, 'Test Campaign')
                     }
-                    className="w-full h-[250px] bg-[#0D1117]"
+                    className="w-full h-[500px]"
                     title="Live Preview"
                   />
                 </div>
               </div>
+            </div>
 
-              {/* Actions */}
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setEditingAlertTemplate(null)}>
-                  Cancel
-                </Button>
-                <Button
-                  onClick={async () => {
-                    try {
-                      if (editingAlertTemplate.id === 'new') {
-                        await axios.post(`${API}/alert-templates`, alertFormData, {
-                          headers: { Authorization: `Bearer ${token}` }
-                        });
-                        toast.success('Alert template created');
-                      } else {
-                        await axios.put(`${API}/alert-templates/${editingAlertTemplate.id}`, alertFormData, {
-                          headers: { Authorization: `Bearer ${token}` }
-                        });
-                        toast.success('Alert template updated');
-                      }
-                      fetchAlertTemplates();
-                      setEditingAlertTemplate(null);
-                    } catch (err) {
-                      toast.error('Failed to save alert template');
-                    }
-                  }}
-                  className="bg-[#D4A836] text-black hover:bg-[#C49A30]"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  Save Template
-                </Button>
-              </div>
+            {/* Actions */}
+            <div className="flex justify-end gap-2 pt-4 border-t border-[#30363D]">
+              <Button variant="outline" onClick={() => setEditingAlertTemplate(null)} className="border-gray-600">
+                Cancel
+              </Button>
+              <Button onClick={saveAlertTemplate} disabled={saving} className="bg-[#D4A836] text-black hover:bg-[#C49A30]">
+                {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                Save Template
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
