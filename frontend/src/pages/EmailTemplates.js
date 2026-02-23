@@ -1265,6 +1265,480 @@ export default function EmailTemplates() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Email Preview Dialog */}
+        <Dialog open={!!emailPreview} onOpenChange={() => setEmailPreview(null)}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-[#0f0f15] border-[#D4A836]/30">
+            <DialogHeader>
+              <DialogTitle className="text-[#E8DDB5]">Email Preview: {emailPreview?.name}</DialogTitle>
+              <DialogDescription>
+                Subject: {emailPreview?.subject}
+              </DialogDescription>
+            </DialogHeader>
+
+            {emailPreview && (
+              <div className="space-y-4 mt-4">
+                <div className="border border-[#D4A836]/20 rounded-lg overflow-hidden">
+                  <iframe
+                    srcDoc={emailPreview.html
+                      .replace(/\{\{USER_NAME\}\}/g, 'John Doe')
+                      .replace(/\{\{USER_EMAIL\}\}/g, 'john.doe@example.com')
+                      .replace(/\{\{TRAINING_URL\}\}/g, '#')
+                      .replace(/\{\{CAMPAIGN_NAME\}\}/g, 'Security Test')
+                    }
+                    className="w-full h-[500px] bg-[#0D1117]"
+                    title="Email Preview"
+                  />
+                </div>
+                <Button onClick={() => setEmailPreview(null)} className="w-full bg-[#D4A836] text-black hover:bg-[#C49A30]">
+                  Close Preview
+                </Button>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Visual Email Template Builder Dialog */}
+        <Dialog open={!!editingEmailTemplate} onOpenChange={() => setEditingEmailTemplate(null)}>
+          <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto bg-[#0f0f15] border-[#D4A836]/30">
+            <DialogHeader>
+              <DialogTitle className="text-[#E8DDB5]">
+                {editingEmailTemplate?.id === 'new' ? 'Create Email Template' : 'Edit Email Template'}
+              </DialogTitle>
+              <DialogDescription>
+                Design your email visually. Changes are reflected in the live preview.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="grid md:grid-cols-2 gap-6 mt-4">
+              {/* Left: Form Controls */}
+              <div className="space-y-4 overflow-y-auto max-h-[70vh] pr-2">
+                {/* Basic Info */}
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium text-[#D4A836]">Basic Information</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-gray-400 text-xs">Template Name *</Label>
+                      <Input
+                        value={emailFormData.name}
+                        onChange={(e) => setEmailFormData({ ...emailFormData, name: e.target.value })}
+                        placeholder="e.g., Training Assignment"
+                        className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-400 text-xs">Type</Label>
+                      <Select value={emailFormData.type} onValueChange={(v) => setEmailFormData({ ...emailFormData, type: v })}>
+                        <SelectTrigger className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#161B22] border-[#30363D]">
+                          <SelectItem value="training">Training</SelectItem>
+                          <SelectItem value="notification">Notification</SelectItem>
+                          <SelectItem value="phishing">Phishing Simulation</SelectItem>
+                          <SelectItem value="reminder">Reminder</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-gray-400 text-xs">Email Subject *</Label>
+                    <Input
+                      value={emailFormData.subject}
+                      onChange={(e) => setEmailFormData({ ...emailFormData, subject: e.target.value })}
+                      placeholder="Security Training Required"
+                      className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-gray-400 text-xs">Description</Label>
+                    <Input
+                      value={emailFormData.description}
+                      onChange={(e) => setEmailFormData({ ...emailFormData, description: e.target.value })}
+                      placeholder="Brief description of when to use this template"
+                      className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]"
+                    />
+                  </div>
+                </div>
+
+                {/* Logo & Colors */}
+                <div className="space-y-3 pt-4 border-t border-[#30363D]">
+                  <h3 className="text-sm font-medium text-[#D4A836] flex items-center gap-2">
+                    <Palette className="w-4 h-4" />
+                    Logo & Colors
+                  </h3>
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        checked={emailFormData.useIcon}
+                        onChange={() => setEmailFormData({ ...emailFormData, useIcon: true })}
+                        className="text-[#D4A836]"
+                      />
+                      <span className="text-xs text-gray-400">Use Icon</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        checked={!emailFormData.useIcon}
+                        onChange={() => setEmailFormData({ ...emailFormData, useIcon: false })}
+                        className="text-[#D4A836]"
+                      />
+                      <span className="text-xs text-gray-400">Use Logo URL</span>
+                    </label>
+                  </div>
+                  {emailFormData.useIcon ? (
+                    <div>
+                      <Label className="text-gray-400 text-xs">Icon</Label>
+                      <Select value={emailFormData.logoIcon} onValueChange={(v) => setEmailFormData({ ...emailFormData, logoIcon: v })}>
+                        <SelectTrigger className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#161B22] border-[#30363D]">
+                          {TEMPLATE_ICONS.map((icon) => (
+                            <SelectItem key={icon.value} value={icon.value}>
+                              <span className="flex items-center gap-2">{icon.value} {icon.label}</span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ) : (
+                    <div>
+                      <Label className="text-gray-400 text-xs">Logo URL</Label>
+                      <Input
+                        value={emailFormData.logoUrl}
+                        onChange={(e) => setEmailFormData({ ...emailFormData, logoUrl: e.target.value })}
+                        placeholder="https://example.com/logo.png"
+                        className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]"
+                      />
+                    </div>
+                  )}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-gray-400 text-xs">Primary Color</Label>
+                      <Select value={emailFormData.primaryColor} onValueChange={(v) => setEmailFormData({ ...emailFormData, primaryColor: v, buttonColor: v })}>
+                        <SelectTrigger className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#161B22] border-[#30363D]">
+                          {COLOR_PRESETS.map((color) => (
+                            <SelectItem key={color.value} value={color.value}>
+                              <span className="flex items-center gap-2">
+                                <span className="w-4 h-4 rounded" style={{ backgroundColor: color.value }}></span>
+                                {color.label}
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-gray-400 text-xs">Header Title Color</Label>
+                      <Select value={emailFormData.headerTitleColor} onValueChange={(v) => setEmailFormData({ ...emailFormData, headerTitleColor: v })}>
+                        <SelectTrigger className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#161B22] border-[#30363D]">
+                          {COLOR_PRESETS.map((color) => (
+                            <SelectItem key={color.value} value={color.value}>
+                              <span className="flex items-center gap-2">
+                                <span className="w-4 h-4 rounded" style={{ backgroundColor: color.value }}></span>
+                                {color.label}
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Header */}
+                <div className="space-y-3 pt-4 border-t border-[#30363D]">
+                  <h3 className="text-sm font-medium text-[#D4A836] flex items-center gap-2">
+                    <Type className="w-4 h-4" />
+                    Header
+                  </h3>
+                  <div>
+                    <Label className="text-gray-400 text-xs">Header Title</Label>
+                    <Input
+                      value={emailFormData.headerTitle}
+                      onChange={(e) => setEmailFormData({ ...emailFormData, headerTitle: e.target.value })}
+                      placeholder="Security Training Required"
+                      className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]"
+                    />
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="space-y-3 pt-4 border-t border-[#30363D]">
+                  <h3 className="text-sm font-medium text-[#D4A836]">Content</h3>
+                  <div>
+                    <Label className="text-gray-400 text-xs">Greeting (use {'{{USER_NAME}}'} for personalization)</Label>
+                    <Input
+                      value={emailFormData.greeting}
+                      onChange={(e) => setEmailFormData({ ...emailFormData, greeting: e.target.value })}
+                      placeholder="Hello {{USER_NAME}},"
+                      className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-gray-400 text-xs">Main Message</Label>
+                    <Textarea
+                      value={emailFormData.mainMessage}
+                      onChange={(e) => setEmailFormData({ ...emailFormData, mainMessage: e.target.value })}
+                      placeholder="You recently clicked on a simulated security threat..."
+                      className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5] min-h-[60px]"
+                    />
+                  </div>
+                </div>
+
+                {/* Highlight Box */}
+                <div className="space-y-3 pt-4 border-t border-[#30363D]">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-medium text-[#D4A836]">Highlight Box</h3>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={emailFormData.highlightBox?.show || false}
+                        onChange={(e) => setEmailFormData({ 
+                          ...emailFormData, 
+                          highlightBox: { ...emailFormData.highlightBox, show: e.target.checked }
+                        })}
+                        className="rounded border-[#30363D]"
+                      />
+                      <span className="text-xs text-gray-400">Show highlight</span>
+                    </label>
+                  </div>
+                  {emailFormData.highlightBox?.show && (
+                    <>
+                      <div className="grid grid-cols-3 gap-2">
+                        <div>
+                          <Label className="text-gray-400 text-xs">Icon</Label>
+                          <Select 
+                            value={emailFormData.highlightBox?.icon || '⚠️'} 
+                            onValueChange={(v) => setEmailFormData({ 
+                              ...emailFormData, 
+                              highlightBox: { ...emailFormData.highlightBox, icon: v }
+                            })}
+                          >
+                            <SelectTrigger className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="bg-[#161B22] border-[#30363D]">
+                              {TEMPLATE_ICONS.slice(0, 8).map((icon) => (
+                                <SelectItem key={icon.value} value={icon.value}>
+                                  {icon.value}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label className="text-gray-400 text-xs">BG Color</Label>
+                          <Select 
+                            value={emailFormData.highlightBox?.backgroundColor || '#D4A836'} 
+                            onValueChange={(v) => setEmailFormData({ 
+                              ...emailFormData, 
+                              highlightBox: { ...emailFormData.highlightBox, backgroundColor: v }
+                            })}
+                          >
+                            <SelectTrigger className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="bg-[#161B22] border-[#30363D]">
+                              {COLOR_PRESETS.map((color) => (
+                                <SelectItem key={color.value} value={color.value}>
+                                  <span className="w-4 h-4 rounded inline-block" style={{ backgroundColor: color.value }}></span>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label className="text-gray-400 text-xs">Text Color</Label>
+                          <Select 
+                            value={emailFormData.highlightBox?.textColor || '#000000'} 
+                            onValueChange={(v) => setEmailFormData({ 
+                              ...emailFormData, 
+                              highlightBox: { ...emailFormData.highlightBox, textColor: v }
+                            })}
+                          >
+                            <SelectTrigger className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="bg-[#161B22] border-[#30363D]">
+                              <SelectItem value="#000000">Black</SelectItem>
+                              <SelectItem value="#FFFFFF">White</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div>
+                        <Label className="text-gray-400 text-xs">Highlight Text</Label>
+                        <Textarea
+                          value={emailFormData.highlightBox?.text || ''}
+                          onChange={(e) => setEmailFormData({ 
+                            ...emailFormData, 
+                            highlightBox: { ...emailFormData.highlightBox, text: e.target.value }
+                          })}
+                          placeholder="Don't worry! This was a training simulation..."
+                          className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5] min-h-[50px]"
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Additional Message */}
+                <div className="space-y-3 pt-4 border-t border-[#30363D]">
+                  <div>
+                    <Label className="text-gray-400 text-xs">Additional Message</Label>
+                    <Textarea
+                      value={emailFormData.additionalMessage}
+                      onChange={(e) => setEmailFormData({ ...emailFormData, additionalMessage: e.target.value })}
+                      placeholder="Please complete the training..."
+                      className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5] min-h-[60px]"
+                    />
+                  </div>
+                </div>
+
+                {/* Button */}
+                <div className="space-y-3 pt-4 border-t border-[#30363D]">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-medium text-[#D4A836]">Call-to-Action Button</h3>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={emailFormData.showButton || false}
+                        onChange={(e) => setEmailFormData({ ...emailFormData, showButton: e.target.checked })}
+                        className="rounded border-[#30363D]"
+                      />
+                      <span className="text-xs text-gray-400">Show button</span>
+                    </label>
+                  </div>
+                  {emailFormData.showButton && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-gray-400 text-xs">Button Text</Label>
+                        <Input
+                          value={emailFormData.buttonText}
+                          onChange={(e) => setEmailFormData({ ...emailFormData, buttonText: e.target.value })}
+                          placeholder="Start Training Now"
+                          className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-gray-400 text-xs">Button URL</Label>
+                        <Input
+                          value={emailFormData.buttonUrl}
+                          onChange={(e) => setEmailFormData({ ...emailFormData, buttonUrl: e.target.value })}
+                          placeholder="{{TRAINING_URL}}"
+                          className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Tips Section */}
+                <div className="space-y-3 pt-4 border-t border-[#30363D]">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-medium text-[#D4A836]">Safety Tips</h3>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={emailFormData.showTips || false}
+                        onChange={(e) => setEmailFormData({ ...emailFormData, showTips: e.target.checked })}
+                        className="rounded border-[#30363D]"
+                      />
+                      <span className="text-xs text-gray-400">Show tips</span>
+                    </label>
+                  </div>
+                  {emailFormData.showTips && (
+                    <div className="space-y-2">
+                      {(emailFormData.tips || []).map((tip, index) => (
+                        <div key={index} className="flex gap-2">
+                          <Input
+                            value={tip}
+                            onChange={(e) => {
+                              const newTips = [...(emailFormData.tips || [])];
+                              newTips[index] = e.target.value;
+                              setEmailFormData({ ...emailFormData, tips: newTips });
+                            }}
+                            className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5] text-sm"
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const newTips = (emailFormData.tips || []).filter((_, i) => i !== index);
+                              setEmailFormData({ ...emailFormData, tips: newTips });
+                            }}
+                            className="border-red-500/30 text-red-400 px-2"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEmailFormData({ ...emailFormData, tips: [...(emailFormData.tips || []), ''] })}
+                        className="border-[#D4A836]/30 text-[#D4A836]"
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        Add Tip
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer */}
+                <div className="space-y-3 pt-4 border-t border-[#30363D]">
+                  <div>
+                    <Label className="text-gray-400 text-xs">Footer Text</Label>
+                    <Input
+                      value={emailFormData.footerText}
+                      onChange={(e) => setEmailFormData({ ...emailFormData, footerText: e.target.value })}
+                      placeholder="Vasilis NetShield Security Training"
+                      className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: Live Preview */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium text-[#D4A836]">Live Preview</h3>
+                <div className="border border-[#30363D] rounded-lg overflow-hidden bg-[#0D1117]">
+                  <iframe
+                    srcDoc={generateEmailHtml(emailFormData)
+                      .replace(/\{\{USER_NAME\}\}/g, 'John Doe')
+                      .replace(/\{\{USER_EMAIL\}\}/g, 'john.doe@example.com')
+                      .replace(/\{\{TRAINING_URL\}\}/g, '#')
+                      .replace(/\{\{CAMPAIGN_NAME\}\}/g, 'Test Campaign')
+                    }
+                    className="w-full h-[600px]"
+                    title="Live Preview"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-2 pt-4 border-t border-[#30363D]">
+              <Button variant="outline" onClick={() => setEditingEmailTemplate(null)} className="border-gray-600">
+                Cancel
+              </Button>
+              <Button onClick={saveEmailTemplate} disabled={saving} className="bg-[#D4A836] text-black hover:bg-[#C49A30]">
+                {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                Save Template
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );
