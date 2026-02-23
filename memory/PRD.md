@@ -159,6 +159,13 @@ JWT_SECRET=<secure-random-string>
 - **New Backend Route** - `/api/custom-email-templates` for CRUD operations on custom email templates
 - **Three-Tab Interface** - System Emails | Custom Emails | Alert Pages
 
+### Session Changes (Feb 23, 2026 - E1 Fork Part 4) - P2 & Backlog Fixes
+- **QR Code Custom Preview URL** - Added optional "Preview URL" field in QR code block for showing different URL in preview mode
+- **CTA Tracking Link Naming** - Added "Tracking Link Name" field for buttons/links to help identify clicks in analytics
+- **Custom Email Template Selection** - Campaign creation dialog now shows "Custom Email Override" dropdown when custom templates exist
+- **Enhanced Analytics Dashboard** - Added 5th stat card for "Credential Submissions" with submission rate percentage
+- **Vulnerability Breakdown** - Shows opened/clicked/submitted data with progress bars
+
 ### Production Environment Variables (Vercel Backend)
 ```
 API_URL=https://api.vasilisnetshield.com
