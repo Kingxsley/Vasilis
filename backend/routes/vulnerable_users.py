@@ -47,7 +47,12 @@ async def get_vulnerable_users(
     target_query = {"$or": [{"link_clicked": True}, {"credentials_submitted": True}]}
     
     if campaign_id:
-        target_query["campaign_id"] = campaign_id
+        target_query = {
+            "$and": [
+                {"$or": [{"link_clicked": True}, {"credentials_submitted": True}]},
+                {"campaign_id": campaign_id}
+            ]
+        }
     
     # Get all clicked/submitted targets
     targets = await db.phishing_targets.find(
