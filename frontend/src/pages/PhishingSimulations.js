@@ -94,6 +94,7 @@ export default function PhishingSimulations() {
   
   // Campaign filter states
   const [campaignFilter, setCampaignFilter] = useState('all');
+  const [trainingModules, setTrainingModules] = useState([]);
 
   const headers = { Authorization: `Bearer ${token}` };
 
