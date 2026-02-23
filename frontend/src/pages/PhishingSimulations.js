@@ -1112,78 +1112,75 @@ export default function PhishingSimulations() {
                 </Select>
               </div>
 
-              {/* Custom Awareness Page */}
-              <div>
-                <Label className="text-gray-400 text-sm mb-2 block">Custom Awareness Page (leave empty for default)</Label>
-                <div className="flex gap-2 mb-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setNewCampaign(prev => ({
-                      ...prev, 
-                      click_page_html: `<div style="text-align: center; padding: 40px; font-family: 'Segoe UI', Arial, sans-serif;">
-  <div style="font-size: 64px; margin-bottom: 20px;">⚠️</div>
-  <h1 style="color: #FF6B6B; margin-bottom: 10px;">Security Alert!</h1>
-  <p style="color: #8B949E; margin-bottom: 30px;">This was a phishing simulation</p>
-  <div style="background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.25); padding: 20px; border-radius: 12px; max-width: 500px; margin: 0 auto; text-align: left;">
-    <h3 style="color: #FF6B6B; margin-top: 0;">Hello {{USER_NAME}},</h3>
-    <p style="color: #E6EDF3;">You clicked on a simulated phishing link in the "<strong>{{CAMPAIGN_NAME}}</strong>" campaign.</p>
-    <p style="color: #E6EDF3;">This was a test to help you identify potential threats. In a real attack, clicking such links could compromise your security.</p>
-  </div>
-  <p style="color: #8B949E; margin-top: 20px; font-size: 14px;">Training has been assigned to help you learn more.</p>
-</div>`
-                    }))}
-                    className="border-[#D4A836]/30 text-[#E8DDB5] hover:bg-[#D4A836]/10 text-xs"
-                  >
-                    📋 Load Alert Template
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setNewCampaign(prev => ({
-                      ...prev, 
-                      click_page_html: `<div style="text-align: center; padding: 40px; font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #0D1117, #161B22); min-height: 100vh;">
-  <div style="background: #161B22; padding: 40px; border-radius: 16px; max-width: 600px; margin: 0 auto; border: 1px solid #30363D;">
-    <div style="font-size: 64px; margin-bottom: 20px;">🎣</div>
-    <h1 style="color: #FF6B6B; margin-bottom: 10px;">Phishing Detected!</h1>
-    <p style="color: #8B949E; margin-bottom: 30px;">You've been caught in a training exercise</p>
-    <div style="background: rgba(212,168,54,0.1); border-left: 4px solid #D4A836; padding: 20px; border-radius: 8px; text-align: left; margin-bottom: 20px;">
-      <p style="color: #E8DDB5; margin: 0;"><strong>User:</strong> {{USER_NAME}}</p>
-      <p style="color: #E8DDB5; margin: 10px 0 0 0;"><strong>Campaign:</strong> {{CAMPAIGN_NAME}}</p>
-    </div>
-    <p style="color: #8B949E; font-size: 14px;">Security training will help you recognize threats in the future.</p>
-  </div>
-</div>`
-                    }))}
-                    className="border-[#D4A836]/30 text-[#E8DDB5] hover:bg-[#D4A836]/10 text-xs"
-                  >
-                    🎣 Load Phishing Template
-                  </Button>
-                  {newCampaign.click_page_html && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setNewCampaign(prev => ({...prev, click_page_html: ''}))}
-                      className="border-red-500/30 text-red-400 hover:bg-red-500/10 text-xs"
-                    >
-                      ✕ Clear
-                    </Button>
-                  )}
-                </div>
-                <Suspense fallback={<div className="h-[200px] bg-[#0D1117] border border-[#30363D] rounded-lg flex items-center justify-center text-gray-500">Loading editor...</div>}>
-                  <RichTextEditor
-                    value={newCampaign.click_page_html}
-                    onChange={(html) => setNewCampaign(prev => ({...prev, click_page_html: html}))}
-                    placeholder="Design your custom awareness page here... Use the templates above or create your own."
-                    token={token}
-                  />
-                </Suspense>
-                <p className="text-xs text-gray-500 mt-2">
-                  <span className="text-[#D4A836]">Variables:</span> {'{{USER_NAME}}'}, {'{{USER_EMAIL}}'}, {'{{CAMPAIGN_NAME}}'}, {'{{SCENARIO_TYPE}}'}
-                </p>
+              {/* Custom Awareness Page - Collapsible */}
+              <div className="border border-[#30363D] rounded-lg overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setShowCustomPageEditor(!showCustomPageEditor)}
+                  className="w-full flex items-center justify-between p-3 bg-[#0D1117] hover:bg-[#161B22] transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <Label className="text-gray-400 text-sm cursor-pointer">Custom Awareness Page</Label>
+                    {newCampaign.click_page_html && (
+                      <Badge className="bg-[#D4A836]/20 text-[#D4A836] text-xs">Custom</Badge>
+                    )}
+                  </div>
+                  <span className="text-gray-400 text-xs">
+                    {showCustomPageEditor ? '▲ Collapse' : '▼ Expand (optional)'}
+                  </span>
+                </button>
+                {showCustomPageEditor && (
+                  <div className="p-3 border-t border-[#30363D]">
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setNewCampaign(prev => ({
+                          ...prev, 
+                          click_page_html: `<div style="text-align:center;padding:40px;font-family:'Segoe UI',Arial,sans-serif;"><div style="font-size:64px;margin-bottom:20px;">⚠️</div><h1 style="color:#FF6B6B;margin-bottom:10px;">Security Alert!</h1><p style="color:#8B949E;margin-bottom:30px;">This was a phishing simulation</p><div style="background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.25);padding:20px;border-radius:12px;max-width:500px;margin:0 auto;text-align:left;"><h3 style="color:#FF6B6B;margin-top:0;">Hello {{USER_NAME}},</h3><p style="color:#E6EDF3;">You clicked on a simulated phishing link in the "<strong>{{CAMPAIGN_NAME}}</strong>" campaign.</p><p style="color:#E6EDF3;">This was a test to help you identify potential threats.</p></div></div>`
+                        }))}
+                        className="border-[#D4A836]/30 text-[#E8DDB5] hover:bg-[#D4A836]/10 text-xs"
+                      >
+                        📋 Alert
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setNewCampaign(prev => ({
+                          ...prev, 
+                          click_page_html: `<div style="text-align:center;padding:40px;font-family:'Segoe UI',Arial,sans-serif;"><div style="font-size:64px;margin-bottom:20px;">🎣</div><h1 style="color:#FF6B6B;margin-bottom:10px;">Phishing Detected!</h1><p style="color:#8B949E;margin-bottom:30px;">You've been caught in a training exercise</p><div style="background:rgba(212,168,54,0.1);border-left:4px solid #D4A836;padding:20px;border-radius:8px;text-align:left;margin-bottom:20px;"><p style="color:#E8DDB5;margin:0;"><strong>User:</strong> {{USER_NAME}}</p><p style="color:#E8DDB5;margin:10px 0 0 0;"><strong>Campaign:</strong> {{CAMPAIGN_NAME}}</p></div></div>`
+                        }))}
+                        className="border-[#D4A836]/30 text-[#E8DDB5] hover:bg-[#D4A836]/10 text-xs"
+                      >
+                        🎣 Phishing
+                      </Button>
+                      {newCampaign.click_page_html && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setNewCampaign(prev => ({...prev, click_page_html: ''}))}
+                          className="border-red-500/30 text-red-400 hover:bg-red-500/10 text-xs"
+                        >
+                          ✕ Clear
+                        </Button>
+                      )}
+                    </div>
+                    <Suspense fallback={<div className="h-[150px] bg-[#0D1117] border border-[#30363D] rounded-lg flex items-center justify-center text-gray-500">Loading editor...</div>}>
+                      <RichTextEditor
+                        value={newCampaign.click_page_html}
+                        onChange={(html) => setNewCampaign(prev => ({...prev, click_page_html: html}))}
+                        placeholder="Design your custom awareness page here..."
+                        token={token}
+                      />
+                    </Suspense>
+                    <p className="text-xs text-gray-500 mt-2">
+                      <span className="text-[#D4A836]">Variables:</span> {'{{USER_NAME}}'}, {'{{USER_EMAIL}}'}, {'{{CAMPAIGN_NAME}}'}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
             <DialogFooter>
