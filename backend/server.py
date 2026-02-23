@@ -1636,6 +1636,12 @@ async def update_training_module(
     if data.scenarios is not None:
         update_dict["scenarios"] = data.scenarios
         update_dict["scenarios_count"] = len(data.scenarios)
+    # If questions are provided, update questions and scenarios_count
+    if data.questions is not None:
+        update_dict["questions"] = data.questions
+        update_dict["scenarios_count"] = len(data.questions)
+    if data.module_type is not None:
+        update_dict["module_type"] = data.module_type
 
     if data.name is not None:
         update_dict["name"] = data.name
