@@ -16,7 +16,7 @@ from datetime import datetime
 import uuid
 
 class VasilisNetShieldTesterIteration4:
-    def __init__(self, base_url="https://security-sim-builder.preview.emergentagent.com"):
+    def __init__(self, base_url="https://security-training-32.preview.emergentagent.com"):
         self.base_url = base_url.rstrip('/')
         self.api_base = f"{self.base_url}/api"
         self.token = None
