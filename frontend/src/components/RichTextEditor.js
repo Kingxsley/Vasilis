@@ -180,9 +180,10 @@ const RichTextEditor = ({ value, onChange, placeholder = "Write your content..."
         ref={editorRef}
         contentEditable
         onInput={handleInput}
-        className="min-h-[200px] p-4 bg-[#1a1a24] text-[#E8DDB5] focus:outline-none prose prose-invert max-w-none"
+        className="min-h-[120px] max-h-[250px] overflow-y-auto p-4 bg-[#1a1a24] text-[#E8DDB5] focus:outline-none prose prose-invert max-w-none"
         style={{
-          minHeight: '200px',
+          minHeight: '120px',
+          maxHeight: '250px',
           direction: 'ltr',
           textAlign: 'left'
         }}
