@@ -406,7 +406,7 @@ export default function AdvancedAnalytics() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <StatCard
             title="Total Users"
             value={userStats?.total || 0}
@@ -431,6 +431,13 @@ export default function AdvancedAnalytics() {
             subtitle="Industry avg: 15%"
             icon={MousePointerClick}
             color={phishingStats?.click_rate > 15 ? 'text-red-400' : 'text-green-400'}
+          />
+          <StatCard
+            title="Credential Submissions"
+            value={phishingStats?.total_submitted || 0}
+            subtitle={`${((phishingStats?.total_submitted || 0) / Math.max(phishingStats?.total_sent || 1, 1) * 100).toFixed(1)}% submission rate`}
+            icon={AlertTriangle}
+            color="text-red-500"
           />
         </div>
 
