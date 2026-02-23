@@ -1338,6 +1338,7 @@ export default function PhishingSimulations() {
                         <th className="text-center px-4 py-3 text-sm font-medium text-gray-400">Sent</th>
                         <th className="text-center px-4 py-3 text-sm font-medium text-gray-400">Opened</th>
                         <th className="text-center px-4 py-3 text-sm font-medium text-gray-400">Clicked</th>
+                        <th className="text-center px-4 py-3 text-sm font-medium text-gray-400">Embed</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#30363D]">
@@ -1382,6 +1383,21 @@ export default function PhishingSimulations() {
                             ) : (
                               <span className="text-gray-500">-</span>
                             )}
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                const embedUrl = `${API}/phishing/track/click/${target.tracking_code}`;
+                                navigator.clipboard.writeText(embedUrl);
+                                toast.success('Embed URL copied to clipboard');
+                              }}
+                              className="border-[#D4A836]/30 text-[#D4A836]"
+                              data-testid={`copy-embed-${target.tracking_code}`}
+                            >
+                              <Link className="w-4 h-4" />
+                            </Button>
                           </td>
                         </tr>
                       ))}
