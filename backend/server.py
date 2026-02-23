@@ -2615,44 +2615,31 @@ async def get_phishing_stats(
         cutoff_start = datetime.now(timezone.utc) - timedelta(days=days)
         cutoff_end = datetime.now(timezone.utc)
 
-    # Count phishing campaigns in range
-    total_campaigns = await db.phishing_campaigns.count_documents({
-        "$or": [
-            {"created_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}},
-            {"launched_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}}
-        ]
-    })
-    active_campaigns = await db.phishing_campaigns.count_documents({
-        "status": "active",
-        "$or": [
-            {"created_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}},
-            {"launched_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}}
-        ]
-    })
-    completed_campaigns = await db.phishing_campaigns.count_documents({
-        "status": "completed",
-        "$or": [
-            {"created_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}},
-            {"launched_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}}
-        ]
-    })
+    # Get all campaigns (we'll filter targets based on campaigns in date range)
+    campaign_query = {
+        "created_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}
+    }
+    
+    campaigns = await db.phishing_campaigns.find(campaign_query, {"_id": 0, "campaign_id": 1, "status": 1}).to_list(1000)
+    campaign_ids = [c["campaign_id"] for c in campaigns]
+    
+    total_campaigns = len(campaigns)
+    active_campaigns = sum(1 for c in campaigns if c.get("status") in ("active", "running"))
+    completed_campaigns = sum(1 for c in campaigns if c.get("status") == "completed")
 
-    # Collect targets within the range based on any event timestamp
-    targets = await db.phishing_targets.find({
-        "$or": [
-            {"created_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}},
-            {"sent_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}},
-            {"opened_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}},
-            {"clicked_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}},
-            {"submitted_at": {"$gte": cutoff_start.isoformat(), "$lte": cutoff_end.isoformat()}}
-        ]
-    }, {"_id": 0}).to_list(100000)
+    # Get all targets for these campaigns
+    targets = []
+    if campaign_ids:
+        targets = await db.phishing_targets.find(
+            {"campaign_id": {"$in": campaign_ids}},
+            {"_id": 0}
+        ).to_list(100000)
 
-    # Count events based on current field names.  Fall back to older fields
-    total_sent = sum(1 for t in targets if t.get("email_sent"))
-    total_opened = sum(1 for t in targets if t.get("email_opened") or t.get("opened_at"))
-    total_clicked = sum(1 for t in targets if t.get("link_clicked") or t.get("clicked_at"))
-    total_submitted = sum(1 for t in targets if t.get("credentials_submitted") or t.get("submitted_at"))
+    # Count events - use actual field names from the database
+    total_sent = len(targets)  # All targets are considered "sent"
+    total_opened = sum(1 for t in targets if t.get("email_opened"))
+    total_clicked = sum(1 for t in targets if t.get("link_clicked"))
+    total_submitted = sum(1 for t in targets if t.get("credentials_submitted"))
 
     # Calculate rates
     open_rate = (total_opened / total_sent * 100) if total_sent > 0 else 0
