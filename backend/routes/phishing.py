@@ -795,6 +795,33 @@ async def list_campaign_targets(campaign_id: str, request: Request):
 
 # ============== AGGREGATED STATS (for Analytics Dashboard) ==============
 
+@router.get("/email-config-check")
+async def check_email_config(request: Request):
+    """Check if email configuration is properly set up (admin only)"""
+    await require_admin(request)
+    
+    sendgrid_key = os.environ.get('SENDGRID_API_KEY', '')
+    sender_email = os.environ.get('SENDER_EMAIL', '')
+    smtp_host = os.environ.get('SMTP_HOST', '')
+    
+    config = {
+        "sendgrid_configured": bool(sendgrid_key and sender_email),
+        "sendgrid_key_present": bool(sendgrid_key),
+        "sendgrid_key_length": len(sendgrid_key) if sendgrid_key else 0,
+        "sendgrid_key_prefix": sendgrid_key[:10] + "..." if sendgrid_key and len(sendgrid_key) > 10 else "N/A",
+        "sender_email": sender_email if sender_email else "NOT SET",
+        "smtp_configured": bool(smtp_host),
+        "smtp_host": smtp_host if smtp_host else "NOT SET",
+        "email_ready": bool((sendgrid_key and sender_email) or smtp_host)
+    }
+    
+    if not config["email_ready"]:
+        config["message"] = "Email is NOT configured. Set SENDGRID_API_KEY and SENDER_EMAIL environment variables."
+    else:
+        config["message"] = "Email configuration looks good!"
+    
+    return config
+
 @router.get("/stats")
 async def get_phishing_stats(request: Request, days: int = 30):
     """Get aggregated simulation statistics for analytics dashboard (phishing + ad campaigns)"""
