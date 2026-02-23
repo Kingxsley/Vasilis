@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../components/ui/dialog';
-import { Building2, Plus, Users, Pencil, Trash2, Globe, Search, Loader2 } from 'lucide-react';
+import { Building2, Plus, Users, Pencil, Trash2, Globe, Search, Loader2, Bell } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 
@@ -32,7 +32,8 @@ export default function Organizations() {
     name: '',
     domain: '',
     description: '',
-    certificate_template_id: ''
+    certificate_template_id: '',
+    discord_webhook_url: ''
   });
   const [submitting, setSubmitting] = useState(false);
 
