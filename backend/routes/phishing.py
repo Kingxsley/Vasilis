@@ -1035,6 +1035,36 @@ async def track_link_click(tracking_code: str, request: Request):
             }
             await db.training_failures.insert_one(failure_record)
             
+            # ===== SEND DISCORD NOTIFICATION =====
+            try:
+                from services.notification_service import notify_phishing_click, get_org_webhook
+                
+                # Get organization name and webhook
+                org_name = None
+                org_webhook = None
+                if organization_id:
+                    org_doc = await db.organizations.find_one(
+                        {"organization_id": organization_id},
+                        {"_id": 0, "name": 1, "discord_webhook_url": 1}
+                    )
+                    if org_doc:
+                        org_name = org_doc.get("name")
+                        org_webhook = org_doc.get("discord_webhook_url")
+                
+                await notify_phishing_click(
+                    user_name=user_name,
+                    user_email=user_email,
+                    organization_name=org_name or "Unknown",
+                    campaign_name=campaign.get("name", "Unknown") if campaign else "Unknown",
+                    click_ip=request_info.get("ip"),
+                    user_agent=request_info.get("user_agent"),
+                    org_webhook_url=org_webhook,
+                    db=db
+                )
+                logger.info(f"Discord notification sent for phishing click: {user_email}")
+            except Exception as discord_err:
+                logger.warning(f"Failed to send Discord notification: {discord_err}")
+            
             # ===== AUTOMATIC RETRAINING FLOW =====
             try:
                 from services.email_service import (
