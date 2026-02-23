@@ -6,6 +6,7 @@ import uuid
 import secrets
 import base64
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
