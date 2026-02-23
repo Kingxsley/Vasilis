@@ -100,6 +100,27 @@ export default function PhishingSimulations() {
     fetchData();
   }, []);
 
+  // Copy embed/tracking URL for a phishing campaign
+  const copyEmbedUrl = async (campaignId) => {
+    const embedUrl = `${API}/track/${campaignId}`;
+    try {
+      await navigator.clipboard.writeText(embedUrl);
+      setCopiedUrl(campaignId);
+      toast.success('Embed URL copied to clipboard');
+      setTimeout(() => setCopiedUrl(null), 2000);
+    } catch {
+      const textArea = document.createElement('textarea');
+      textArea.value = embedUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopiedUrl(campaignId);
+      toast.success('Embed URL copied to clipboard');
+      setTimeout(() => setCopiedUrl(null), 2000);
+    }
+  };
+
   const fetchData = async () => {
     setLoading(true);
     try {
