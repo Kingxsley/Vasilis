@@ -91,11 +91,17 @@ JWT_SECRET=<secure-random-string>
 
 ## Pending Tasks
 
+### P0 - Critical (User must set ENV vars in Vercel)
+- [ ] **Verify Phishing Tracking Works in Production** - User must set `API_URL=https://api.vasilisnetshield.com` in Vercel backend env vars
+- [ ] **Verify Training Email Links** - User must set `FRONTEND_URL=https://vasilisnetshield.com` in Vercel backend env vars
+
 ### P1 - Upcoming
-- [ ] Bulk user import (CSV)
+- [ ] Bulk user import (CSV) - needs debugging
+- [ ] QR Code Custom Preview URL in Simulation Builder
+- [ ] Vulnerable Users data accuracy verification
 
 ### P2 - Future/Backlog
-- [ ] Advanced analytics dashboard
+- [ ] Advanced analytics dashboard enhancements
 - [ ] Scheduled campaign automation
 - [ ] Simulation Builder CTA Enhancement (tracking link naming)
 
