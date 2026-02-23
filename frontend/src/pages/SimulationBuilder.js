@@ -1621,6 +1621,22 @@ export default function SimulationBuilder() {
                 </div>
               </div>
             )}
+
+            {/* Assign Training Module */}
+            <div className="mt-4">
+              <Label className="text-gray-400 text-sm mb-1 block">Assign Training Module (auto-assigned on link click)</Label>
+              <Select value={assignedModuleId || 'none'} onValueChange={(v) => setAssignedModuleId(v === 'none' ? '' : v)}>
+                <SelectTrigger className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]" data-testid="launch-assigned-module">
+                  <SelectValue placeholder="None (assign all modules)" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#161B22] border-[#30363D]">
+                  <SelectItem value="none" className="text-gray-400">None (assign all active modules)</SelectItem>
+                  {trainingModules.filter(m => m.is_active).map(m => (
+                    <SelectItem key={m.module_id} value={m.module_id} className="text-[#E8DDB5]">{m.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             
             <DialogFooter className="gap-2">
               <Button 
