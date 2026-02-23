@@ -312,6 +312,7 @@ async def get_campaign(campaign_id: str, request: Request):
         emails_sent=campaign.get("emails_sent", 0),
         emails_opened=campaign.get("emails_opened", 0),
         links_clicked=campaign.get("links_clicked", 0),
+        assigned_module_id=campaign.get("assigned_module_id"),
         created_at=parse_dt(campaign.get("created_at")),
         scheduled_at=parse_dt(campaign.get("scheduled_at")),
         started_at=parse_dt(campaign.get("started_at")),
