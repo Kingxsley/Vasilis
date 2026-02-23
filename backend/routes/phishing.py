@@ -1329,7 +1329,7 @@ async def track_link_click(tracking_code: str, request: Request, cred_submitted:
     # IMPORTANT: Check if this is a credential harvest campaign
     # If so, show a fake login form first (unless credentials were already submitted)
     show_credential_form = False
-    if campaign and scenario_type == "credential_harvest":
+    if campaign and scenario_type == "credential_harvest" and not cred_submitted:
         # Check if this target already submitted credentials
         target = await db.phishing_targets.find_one(
             {"tracking_code": tracking_code},
