@@ -122,7 +122,8 @@ async def get_email_templates(user: dict = Depends(lambda: require_admin)):
                 "body": custom.get("body", default["body"]),
                 "description": default["description"],
                 "is_customized": True,
-                "updated_at": custom.get("updated_at")
+                "updated_at": custom.get("updated_at"),
+                "available_variables": get_template_variables(template_id)
             }
         else:
             templates[template_id] = {
@@ -131,7 +132,8 @@ async def get_email_templates(user: dict = Depends(lambda: require_admin)):
                 "body": default["body"],
                 "description": default["description"],
                 "is_customized": False,
-                "updated_at": None
+                "updated_at": None,
+                "available_variables": get_template_variables(template_id)
             }
     
     return {"templates": templates}
