@@ -360,7 +360,8 @@ export default function PhishingSimulations() {
         click_page_html: newCampaign.click_page_html || null,
         alert_template_id: newCampaign.alert_template_id || null,
         risk_level: newCampaign.risk_level || 'medium',
-        custom_email_template_id: newCampaign.custom_email_template_id || null
+        custom_email_template_id: newCampaign.custom_email_template_id || null,
+        scenario_type: newCampaign.scenario_type || 'phishing_email'
       };
       
       await axios.post(`${API}/phishing/campaigns`, payload, { headers });
