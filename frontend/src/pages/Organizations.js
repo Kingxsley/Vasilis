@@ -111,7 +111,8 @@ export default function Organizations() {
       name: org.name,
       domain: org.domain || '',
       description: org.description || '',
-      certificate_template_id: org.certificate_template_id || ''
+      certificate_template_id: org.certificate_template_id || '',
+      discord_webhook_url: org.discord_webhook_url || ''
     });
     setDialogOpen(true);
   };
