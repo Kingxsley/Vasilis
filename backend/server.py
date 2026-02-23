@@ -1511,12 +1511,8 @@ async def list_training_modules(user: dict = Depends(get_current_user)):
     """
     List all training modules.  For trainees, only return active modules.
     Super administrators and organization administrators can view
-    inactive (paused) modules as well.  If the collection is empty the
-    default modules will be seeded automatically.
+    inactive (paused) modules as well.
     """
-    # Ensure database is seeded on first call
-    await _ensure_training_modules_seeded()
-
     query = {}
     # Trainees only see active modules
     if user.get("role") == UserRole.TRAINEE:
