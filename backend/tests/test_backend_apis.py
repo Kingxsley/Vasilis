@@ -78,25 +78,25 @@ class TestAuthentication:
 class TestPhishingCampaigns:
     """Phishing campaigns and tracking tests"""
     
-    def test_list_phishing_campaigns(self, auth_headers):
+    def test_list_phishing_campaigns(self):
         """Test listing phishing campaigns"""
-        response = requests.get(f"{API}/phishing/campaigns", headers=auth_headers)
+        response = requests.get(f"{API}/phishing/campaigns", headers=get_auth_headers())
         assert response.status_code == 200, f"Failed: {response.text}"
         data = response.json()
         assert isinstance(data, list), "Expected list of campaigns"
         print(f"PASS: Listed {len(data)} phishing campaigns")
     
-    def test_list_phishing_templates(self, auth_headers):
+    def test_list_phishing_templates(self):
         """Test listing phishing templates"""
-        response = requests.get(f"{API}/phishing/templates", headers=auth_headers)
+        response = requests.get(f"{API}/phishing/templates", headers=get_auth_headers())
         assert response.status_code == 200, f"Failed: {response.text}"
         data = response.json()
         assert isinstance(data, list), "Expected list of templates"
         print(f"PASS: Listed {len(data)} phishing templates")
     
-    def test_phishing_stats_unified(self, auth_headers):
+    def test_phishing_stats_unified(self):
         """Test unified phishing stats (includes ad campaigns)"""
-        response = requests.get(f"{API}/phishing/stats?days=30", headers=auth_headers)
+        response = requests.get(f"{API}/phishing/stats?days=30", headers=get_auth_headers())
         assert response.status_code == 200, f"Failed: {response.text}"
         data = response.json()
         # Verify unified stats structure
