@@ -7,8 +7,16 @@ import secrets
 import base64
 import logging
 import os
+import html
 
 logger = logging.getLogger(__name__)
+
+
+def escape_html(text: str) -> str:
+    """Escape HTML characters to prevent XSS"""
+    if text is None:
+        return ""
+    return html.escape(str(text))
 
 from models import (
     PhishingTemplateCreate, PhishingTemplateResponse,
