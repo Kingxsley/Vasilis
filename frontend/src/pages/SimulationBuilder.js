@@ -1003,12 +1003,25 @@ export default function SimulationBuilder() {
                 </label>
               );
             case 'qr_code':
+              const qrUrl = value || '{{TRACKING_URL}}';
+              const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrUrl)}`;
               return (
                 <div key={block.instanceId} className="mb-4 flex flex-col items-center">
-                  <div className="w-48 h-48 bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center rounded">
-                    <QrCode className="w-24 h-24 text-gray-400" />
+                  <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+                    <img 
+                      src={qrApiUrl}
+                      alt="QR Code"
+                      className="w-36 h-36"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                    <div className="w-36 h-36 bg-gray-100 border-2 border-dashed border-gray-300 items-center justify-center rounded hidden">
+                      <QrCode className="w-16 h-16 text-gray-400" />
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">QR: {value || 'URL'}</p>
+                  <p className="text-xs text-gray-500 mt-2 max-w-[150px] truncate">{qrUrl.includes('TRACKING') ? 'Tracking QR' : qrUrl}</p>
                 </div>
               );
             case 'mfa_prompt':
