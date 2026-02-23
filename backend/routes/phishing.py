@@ -493,11 +493,15 @@ async def launch_campaign(campaign_id: str, request: Request):
     if not template:
         raise HTTPException(status_code=404, detail="Template not found")
     
-    # Get base URL from request
+    # Get base URL from request - this is the backend API URL
     base_url = str(request.base_url).rstrip('/')
-    # Use the frontend URL if available in env
+    # For tracking links, we need the API URL (backend)
+    # Check if there's an explicit API URL set, otherwise use the request base
     import os
-    frontend_url = os.environ.get('FRONTEND_URL', base_url)
+    api_url = os.environ.get('API_URL', base_url)
+    # Ensure it uses HTTPS in production
+    if api_url.startswith('http://') and 'localhost' not in api_url:
+        api_url = api_url.replace('http://', 'https://')
     
     # Update campaign status
     await db.phishing_campaigns.update_one(
