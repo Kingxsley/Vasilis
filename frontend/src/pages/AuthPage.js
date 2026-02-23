@@ -186,23 +186,7 @@ export default function AuthPage() {
             {branding?.logo_url ? (
               <img src={branding.logo_url} alt="Logo" className="w-24 h-24 object-contain" />
             ) : (
-              <svg viewBox="0 0 100 100" className="w-24 h-24">
-                <defs>
-                  <linearGradient id="authShieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#D4A836" />
-                    <stop offset="100%" stopColor="#C49A30" />
-                  </linearGradient>
-                </defs>
-                <path 
-                  d="M50 5 L90 20 L90 50 C90 75 70 90 50 95 C30 90 10 75 10 50 L10 20 Z" 
-                  fill="url(#authShieldGrad)" 
-                />
-                <rect x="38" y="42" width="24" height="20" rx="3" fill="#0a0a0f" opacity="0.9" />
-                <path d="M42 42 L42 35 C42 30 46 26 50 26 C54 26 58 30 58 35 L58 42" 
-                      stroke="#0a0a0f" strokeWidth="4" fill="none" opacity="0.9" />
-                <circle cx="50" cy="52" r="3" fill="#D4A836" />
-                <rect x="49" y="52" width="2" height="6" fill="#D4A836" />
-              </svg>
+              <img src="/favicon.svg" alt="Logo" className="w-24 h-24 object-contain" />
             )}
           </div>
           <h2 className="text-4xl font-bold mb-4 text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
