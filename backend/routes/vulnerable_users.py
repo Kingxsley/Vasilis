@@ -43,13 +43,13 @@ async def get_vulnerable_users(
     if user_role not in ["super_admin", "org_admin"]:
         raise HTTPException(status_code=403, detail="Admin access required")
     
-    # Build query for phishing targets who clicked
-    target_query = {"link_clicked": True}
+    # Build query for phishing targets who clicked OR submitted credentials
+    target_query = {"$or": [{"link_clicked": True}, {"credentials_submitted": True}]}
     
     if campaign_id:
         target_query["campaign_id"] = campaign_id
     
-    # Get all clicked targets
+    # Get all clicked/submitted targets
     targets = await db.phishing_targets.find(
         target_query,
         {"_id": 0}
