@@ -668,6 +668,21 @@ export default function SimulationBuilder() {
       setSelectedTargets(availableUsers.map(u => u.user_id));
     }
   };
+
+  // Edit saved simulation - load it back into the builder
+  const editSavedSimulation = (sim) => {
+    const simType = SIMULATION_TYPES.find(t => t.id === sim.scenario_type) || SIMULATION_TYPES[0];
+    setSimulationType(simType);
+    setSimulationName(sim.name || sim.title || '');
+    setEmailFrom(sim.sender_name && sim.sender_email ? `${sim.sender_name} <${sim.sender_email}>` : 'Security Team <security@company.com>');
+    setEmailSubject(sim.subject || '');
+    setDifficulty(sim.difficulty || 'medium');
+    // Store the template_id so we can update instead of creating new
+    setEditingTemplateId(sim.template_id || null);
+    // Switch to builder tab
+    setActiveTab('builder');
+    toast.success('Template loaded for editing');
+  };
   
   // Launch saved simulation
   const launchSavedSimulation = async (simulation) => {
