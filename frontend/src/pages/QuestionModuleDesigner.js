@@ -167,7 +167,7 @@ export default function QuestionModuleDesigner() {
                 </div>
                 <div>
                   <Label htmlFor="certificate_template_id">Certificate Template</Label>
-                  <Select value={moduleData.certificate_template_id || ''} onValueChange={(val) => setModuleData((prev) => ({ ...prev, certificate_template_id: val }))}>
+                  <Select value={moduleData.certificate_template_id || 'default'} onValueChange={(val) => setModuleData((prev) => ({ ...prev, certificate_template_id: val === 'default' ? '' : val }))}>
                     <SelectTrigger id="certificate_template_id" name="certificate_template_id">
                       <SelectValue placeholder="Select template" />
                     </SelectTrigger>
