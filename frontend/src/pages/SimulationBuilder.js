@@ -1385,7 +1385,7 @@ export default function SimulationBuilder() {
                       const Icon = simType?.icon || FileText;
                       return (
                         <div
-                          key={sim.scenario_id || sim._id}
+                          key={sim.template_id || sim.scenario_id || sim._id}
                           className="p-4 bg-[#0D1117] border border-[#30363D] rounded-lg hover:border-[#D4A836]/50 transition-colors"
                         >
                           <div className="flex items-start gap-3">
@@ -1393,7 +1393,7 @@ export default function SimulationBuilder() {
                               <Icon className="w-5 h-5 text-white" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h4 className="font-medium text-[#E8DDB5] truncate">{sim.title}</h4>
+                              <h4 className="font-medium text-[#E8DDB5] truncate">{sim.name || sim.title}</h4>
                               <p className="text-sm text-gray-400">{simType?.name || sim.scenario_type}</p>
                               <div className="flex items-center gap-2 mt-2">
                                 <Badge className={`text-xs ${
@@ -1401,7 +1401,7 @@ export default function SimulationBuilder() {
                                   sim.difficulty === 'hard' ? 'bg-red-500/20 text-red-400' :
                                   'bg-yellow-500/20 text-yellow-400'
                                 }`}>
-                                  {sim.difficulty}
+                                  {sim.difficulty || 'medium'}
                                 </Badge>
                               </div>
                             </div>
@@ -1410,7 +1410,7 @@ export default function SimulationBuilder() {
                             size="sm"
                             onClick={() => launchSavedSimulation(sim)}
                             className="mt-3 bg-[#D4A836] hover:bg-[#C49A30] text-black w-full"
-                            data-testid={`launch-sim-${sim.scenario_id}`}
+                            data-testid={`launch-sim-${sim.template_id || sim.scenario_id}`}
                           >
                             <Play className="w-4 h-4 mr-2" />
                             Launch Campaign
