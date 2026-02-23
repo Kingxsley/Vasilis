@@ -103,7 +103,8 @@ export default function EmailTemplates() {
     messageBody: 'You clicked on a simulated phishing link in the "{{CAMPAIGN_NAME}}" campaign. This was a test to help you identify potential threats.',
     showTips: true,
     tips: ['Always verify the sender\'s email address', 'Hover over links before clicking', 'When in doubt, contact IT directly', 'Report suspicious emails immediately'],
-    buttonText: 'Start Training Now',
+    showButton: false,  // Button hidden by default (no countdown/training button)
+    buttonText: '',
     buttonUrl: '/training'
   });
 
