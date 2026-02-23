@@ -136,10 +136,12 @@ JWT_SECRET=<secure-random-string>
   - Editable title and subtitle fields
   - Customizable greeting and message body with template variables
   - Configurable safety tips section
-  - Call-to-action button text and URL
+  - **Optional** Call-to-action button (hidden by default)
   - **Live preview** showing changes in real-time
 - **Fixed All Tracking URL Generation** - QR code and tracking URL endpoints now properly use `API_URL` env var
 - **Alert Template Config Storage** - Visual builder settings are saved with templates for future editing
+- **Fixed Vulnerable Users Credential Tracking** - Credential submissions now properly count and mark users as Critical risk
+- **Removed Default Button from Alerts** - The "Start Training Now" button is now optional and disabled by default
 
 ### Production Environment Variables (Vercel Backend)
 ```
