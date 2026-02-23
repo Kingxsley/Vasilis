@@ -637,9 +637,9 @@ async def check_scheduled_campaigns(request: Request):
         if not template:
             continue
         
-        # Get base URL
+        # Get base URL - use API URL for tracking links
         import os
-        frontend_url = os.environ.get('FRONTEND_URL', 'https://vasilisnetshield.com')
+        api_url = os.environ.get('API_URL', 'https://api.vasilisnetshield.com')
         
         # Update status to active
         await db.phishing_campaigns.update_one(
