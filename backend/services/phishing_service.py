@@ -419,7 +419,7 @@ async def send_training_assignment_email(user_email: str, user_name: str, module
 
         sg = sendgrid.SendGridAPIClient(api_key=sendgrid_key)
         message = Mail(
-            from_email=Email(f"noreply@{company.lower().replace(' ', '')}.com", company),
+            from_email=Email(sender_email, company),
             to_emails=To(user_email),
             subject=f"Security Training Assigned - {module_name}",
             html_content=Content("text/html", html)
