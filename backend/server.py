@@ -3649,27 +3649,30 @@ async def root_health_check():
 # CORS - Tighten origins for production
 cors_origins = os.environ.get('CORS_ORIGINS', '*')
 if cors_origins == '*':
-    # Allow all for development, but log warning
+    # Allow all for development
     logger.warning("CORS is set to allow all origins (*). Tighten this in production!")
     allow_origins = ["*"]
-    allow_credentials = False  # Can't use credentials with wildcard origin
+    allow_credentials = False
 else:
     allow_origins = [origin.strip() for origin in cors_origins.split(',')]
     allow_credentials = True
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=allow_credentials,
-    allow_origins=allow_origins,
-    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["*"],
-)
+# Add Rate Limiting Middleware (added first, runs last)
+app.add_middleware(RateLimitMiddleware)
 
 # Add Security Headers Middleware
 app.add_middleware(SecurityHeadersMiddleware)
 
-# Add Rate Limiting Middleware
-app.add_middleware(RateLimitMiddleware)
+# CORS Middleware - MUST be added last so it runs first
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=allow_credentials,
+    allow_origins=allow_origins,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"],
+    allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=86400,
+)
 
 # Logging
 logging.basicConfig(
