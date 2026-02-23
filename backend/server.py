@@ -1597,11 +1597,15 @@ async def create_training_module(
 
     # If a list of scenarios is provided, derive scenarios_count from its length
     scenarios_list = module_doc.get("scenarios") or []
-    if scenarios_list:
+    questions_list = module_doc.get("questions") or []
+    if questions_list:
+        module_doc["scenarios_count"] = len(questions_list)
+    elif scenarios_list:
         module_doc["scenarios_count"] = len(scenarios_list)
     else:
         # Ensure scenarios is an empty list rather than None for consistency
         module_doc["scenarios"] = []
+        module_doc["questions"] = []
 
     # Insert into DB
     await db.training_modules.insert_one(module_doc)
