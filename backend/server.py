@@ -1080,7 +1080,8 @@ async def get_organization(org_id: str, user: dict = Depends(require_admin)):
         is_active=org.get("is_active", True),
         created_at=created_at,
         user_count=user_count,
-        certificate_template_id=org.get("certificate_template_id")
+        certificate_template_id=org.get("certificate_template_id"),
+        discord_webhook_url=org.get("discord_webhook_url")
     )
 
 @org_router.patch("/{org_id}", response_model=OrganizationResponse)
