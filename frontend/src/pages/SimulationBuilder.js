@@ -297,6 +297,7 @@ export default function SimulationBuilder() {
   const [activeTab, setActiveTab] = useState('builder');
   const [simulationType, setSimulationType] = useState(null);
   const [simulationName, setSimulationName] = useState('');
+  const [editingTemplateId, setEditingTemplateId] = useState(null);
   const [difficulty, setDifficulty] = useState('medium');
   const [selectedBlocks, setSelectedBlocks] = useState([]);
   const [blockValues, setBlockValues] = useState({});
