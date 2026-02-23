@@ -340,3 +340,89 @@ async def get_campaign_stats(db, campaign_id: str) -> dict:
         "click_rate": round((clicked / sent * 100), 1) if sent > 0 else 0,
         "targets": targets
     }
+
+
+async def send_training_assignment_email(user_email: str, user_name: str, module_name: str, training_url: str, db=None):
+    """Send branded email notifying user they've been assigned training after clicking a simulation link."""
+    try:
+        sendgrid_key = os.environ.get("SENDGRID_API_KEY")
+        if not sendgrid_key:
+            logger.warning("No SendGrid API key - skipping training assignment email")
+            return False
+
+        # Get branding from DB
+        branding = {}
+        if db:
+            branding_doc = await db.branding.find_one({}, {"_id": 0})
+            if branding_doc:
+                branding = branding_doc
+
+        company = branding.get("company_name", "Vasilis NetShield")
+        primary_color = branding.get("primary_color", "#D4A836")
+
+        html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+        <body style="margin:0;padding:0;background:#f4f4f4;font-family:'Segoe UI',Arial,sans-serif;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:8px;overflow:hidden;margin-top:20px;margin-bottom:20px;">
+            <tr><td style="background:{primary_color};padding:24px 32px;">
+              <h1 style="color:#0D1117;margin:0;font-size:22px;">{company}</h1>
+              <p style="color:#0D1117;margin:4px 0 0;opacity:0.8;font-size:14px;">Security Training Assignment</p>
+            </td></tr>
+            <tr><td style="padding:32px;">
+              <h2 style="color:#333;margin:0 0 16px;">Hi {user_name},</h2>
+              <p style="color:#555;line-height:1.6;margin:0 0 16px;">
+                You've been assigned a security training module based on a recent simulation exercise.
+                Completing this training will help you recognize and avoid common cyber threats.
+              </p>
+              <div style="background:#f8f9fa;border-left:4px solid {primary_color};padding:16px;border-radius:4px;margin:20px 0;">
+                <p style="margin:0;color:#333;font-weight:600;">Assigned Module:</p>
+                <p style="margin:4px 0 0;color:#555;">{module_name}</p>
+              </div>
+              <div style="text-align:center;margin:28px 0;">
+                <a href="{training_url}" style="display:inline-block;background:{primary_color};color:#0D1117;text-decoration:none;padding:14px 32px;border-radius:6px;font-weight:600;font-size:16px;">Start Training</a>
+              </div>
+              <p style="color:#888;font-size:13px;margin:20px 0 0;">
+                This training is part of our security awareness program. If you have questions, contact your administrator.
+              </p>
+            </td></tr>
+            <tr><td style="background:#f8f9fa;padding:16px 32px;text-align:center;">
+              <p style="color:#999;font-size:12px;margin:0;">{company} Security Awareness Training</p>
+            </td></tr>
+          </table>
+        </body>
+        </html>
+        """
+
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText
+        import smtplib
+
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = f"Security Training Assigned - {module_name}"
+        msg["From"] = f"{company} <noreply@{company.lower().replace(' ', '')}.com>"
+        msg["To"] = user_email
+
+        text = f"Hi {user_name}, you've been assigned security training: {module_name}. Start here: {training_url}"
+        msg.attach(MIMEText(text, "plain"))
+        msg.attach(MIMEText(html, "html"))
+
+        import sendgrid
+        from sendgrid.helpers.mail import Mail, Email, To, Content
+
+        sg = sendgrid.SendGridAPIClient(api_key=sendgrid_key)
+        message = Mail(
+            from_email=Email(f"noreply@{company.lower().replace(' ', '')}.com", company),
+            to_emails=To(user_email),
+            subject=f"Security Training Assigned - {module_name}",
+            html_content=Content("text/html", html)
+        )
+        sg.send(message)
+        logger.info(f"Training assignment email sent to {user_email}")
+        return True
+
+    except Exception as e:
+        logger.error(f"Failed to send training assignment email: {e}")
+        return False
+
