@@ -1721,7 +1721,6 @@ async def reassign_training_modules(
 @training_router.get("/modules/{module_id}", response_model=TrainingModuleResponse)
 async def get_training_module(module_id: str, user: dict = Depends(get_current_user)):
     """Retrieve a single training module by ID"""
-    await _ensure_training_modules_seeded()
     module = await db.training_modules.find_one({"module_id": module_id}, {"_id": 0})
     if not module:
         raise HTTPException(status_code=404, detail="Module not found")
@@ -1735,7 +1734,6 @@ async def start_training_session(data: TrainingSessionCreate, user: dict = Depen
     session_id = f"sess_{uuid.uuid4().hex[:12]}"
 
     # Fetch module from database and ensure it's active
-    await _ensure_training_modules_seeded()
     module = await db.training_modules.find_one({"module_id": data.module_id}, {"_id": 0})
     if not module:
         raise HTTPException(status_code=404, detail="Module not found")
