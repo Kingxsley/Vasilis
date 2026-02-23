@@ -126,16 +126,18 @@ export default function PhishingSimulations() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [campaignsRes, templatesRes, orgsRes, usersRes] = await Promise.all([
+      const [campaignsRes, templatesRes, orgsRes, usersRes, modulesRes] = await Promise.all([
         axios.get(`${API}/phishing/campaigns`, { headers }),
         axios.get(`${API}/phishing/templates`, { headers }),
         axios.get(`${API}/organizations`, { headers }),
-        axios.get(`${API}/users`, { headers })
+        axios.get(`${API}/users`, { headers }),
+        axios.get(`${API}/training/modules`, { headers }).catch(() => ({ data: [] }))
       ]);
       setCampaigns(campaignsRes.data);
       setTemplates(templatesRes.data);
       setOrganizations(orgsRes.data);
       setUsers(usersRes.data);
+      setTrainingModules(modulesRes.data || []);
     } catch (err) {
       console.error('Failed to fetch data:', err);
       toast.error('Failed to load data');
