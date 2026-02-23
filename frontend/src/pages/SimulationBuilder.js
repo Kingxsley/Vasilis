@@ -545,7 +545,7 @@ export default function SimulationBuilder() {
       // Create phishing template first
       const templateData = {
         name: simulationName,
-        subject: emailSubject,
+        subject: subject,
         sender_name: senderInfo.split('<')[0].trim() || 'Security Team',
         sender_email: senderInfo.match(/<(.+)>/)?.[1] || 'security@company.com',
         body_html: bodyHtml || '<p>{{TRACKING_URL}}</p>',
