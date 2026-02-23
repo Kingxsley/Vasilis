@@ -1110,6 +1110,19 @@ export default function PhishingSimulations() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Custom Awareness Page */}
+              <div>
+                <Label className="text-gray-400 text-sm mb-1 block">Custom Click Page (HTML - leave empty for default awareness page)</Label>
+                <Textarea
+                  value={newCampaign.click_page_html}
+                  onChange={(e) => setNewCampaign(prev => ({...prev, click_page_html: e.target.value}))}
+                  placeholder={"<html><body><h1>Security Awareness</h1><p>Hi {{USER_NAME}}, you clicked a simulated phishing link!</p><p>Module: {{CAMPAIGN_NAME}}</p></body></html>"}
+                  className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5] min-h-[80px] font-mono text-xs"
+                  data-testid="click-page-html"
+                />
+                <p className="text-xs text-gray-500 mt-1">Variables: {'{{USER_NAME}}'}, {'{{USER_EMAIL}}'}, {'{{CAMPAIGN_NAME}}'}, {'{{SCENARIO_TYPE}}'}</p>
+              </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => {
