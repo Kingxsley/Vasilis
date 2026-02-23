@@ -1480,15 +1480,27 @@ export default function SimulationBuilder() {
                               </div>
                             </div>
                           </div>
-                          <Button
-                            size="sm"
-                            onClick={() => launchSavedSimulation(sim)}
-                            className="mt-3 bg-[#D4A836] hover:bg-[#C49A30] text-black w-full"
-                            data-testid={`launch-sim-${sim.template_id || sim.scenario_id}`}
-                          >
-                            <Play className="w-4 h-4 mr-2" />
-                            Launch Campaign
-                          </Button>
+                          <div className="flex gap-2 mt-3">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => editSavedSimulation(sim)}
+                              className="flex-1 border-[#D4A836]/30 text-[#D4A836]"
+                              data-testid={`edit-sim-${sim.template_id || sim.scenario_id}`}
+                            >
+                              <Edit className="w-4 h-4 mr-1" />
+                              Edit
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => launchSavedSimulation(sim)}
+                              className="flex-1 bg-[#D4A836] hover:bg-[#C49A30] text-black"
+                              data-testid={`launch-sim-${sim.template_id || sim.scenario_id}`}
+                            >
+                              <Play className="w-4 h-4 mr-1" />
+                              Launch
+                            </Button>
+                          </div>
                         </div>
                       );
                     })}
