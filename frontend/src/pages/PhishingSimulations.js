@@ -1057,6 +1057,34 @@ export default function PhishingSimulations() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Custom Email Template Override */}
+              {customEmailTemplates.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-gray-400 flex items-center gap-2">
+                    Custom Email Override
+                    <span className="text-xs text-gray-500">(optional)</span>
+                  </Label>
+                  <Select
+                    value={newCampaign.custom_email_template_id || 'none'}
+                    onValueChange={(value) => setNewCampaign({...newCampaign, custom_email_template_id: value === 'none' ? '' : value})}
+                  >
+                    <SelectTrigger className="bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5]" data-testid="custom-email-template-select">
+                      <SelectValue placeholder="Use default template" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#161B22] border-[#30363D]">
+                      <SelectItem value="none" className="text-gray-400">Use default template</SelectItem>
+                      {customEmailTemplates.map((template) => (
+                        <SelectItem key={template.id} value={template.id} className="text-[#E8DDB5]">
+                          {template.config?.logoIcon || '📧'} {template.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500">Override with a custom visual email template you created</p>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label className="text-gray-400">Target Users ({newCampaign.target_user_ids.length} selected)</Label>
                 {!newCampaign.organization_id ? (
