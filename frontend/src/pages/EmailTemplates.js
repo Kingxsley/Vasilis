@@ -586,7 +586,11 @@ export default function EmailTemplates() {
           <TabsList className="bg-[#0D1117] border border-[#30363D]">
             <TabsTrigger value="notifications" className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">
               <Mail className="w-4 h-4 mr-2" />
-              Notification Emails
+              System Emails
+            </TabsTrigger>
+            <TabsTrigger value="custom-emails" className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">
+              <FileText className="w-4 h-4 mr-2" />
+              Custom Emails
             </TabsTrigger>
             <TabsTrigger value="alerts" className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">
               <AlertTriangle className="w-4 h-4 mr-2" />
