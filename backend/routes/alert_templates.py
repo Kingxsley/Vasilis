@@ -34,6 +34,7 @@ class AlertTemplateCreate(BaseModel):
     name: str
     description: Optional[str] = ""
     html: str
+    config: Optional[dict] = None  # Store visual builder config for future editing
 
 
 class AlertTemplateResponse(BaseModel):
