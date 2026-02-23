@@ -134,6 +134,53 @@ async def get_template(template_id: str, request: Request):
     )
 
 
+@router.put("/templates/{template_id}", response_model=PhishingTemplateResponse)
+async def update_template(template_id: str, data: PhishingTemplateCreate, request: Request):
+    """Update an existing phishing email template"""
+    user = await require_admin(request)
+    db = get_db()
+    
+    # Check if template exists
+    existing = await db.phishing_templates.find_one({"template_id": template_id}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Template not found")
+    
+    # Update the template
+    update_doc = {
+        "name": data.name,
+        "subject": data.subject,
+        "sender_name": data.sender_name,
+        "sender_email": data.sender_email,
+        "body_html": data.body_html,
+        "body_text": data.body_text,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "updated_by": user["user_id"]
+    }
+    
+    await db.phishing_templates.update_one(
+        {"template_id": template_id},
+        {"$set": update_doc}
+    )
+    
+    # Fetch updated template
+    updated = await db.phishing_templates.find_one({"template_id": template_id}, {"_id": 0})
+    created_at = updated.get("created_at")
+    if isinstance(created_at, str):
+        created_at = datetime.fromisoformat(created_at)
+    
+    return PhishingTemplateResponse(
+        template_id=template_id,
+        name=updated["name"],
+        subject=updated["subject"],
+        sender_name=updated["sender_name"],
+        sender_email=updated["sender_email"],
+        body_html=updated["body_html"],
+        body_text=updated.get("body_text"),
+        created_at=created_at,
+        created_by=updated["created_by"]
+    )
+
+
 @router.delete("/templates/{template_id}")
 async def delete_template(template_id: str, request: Request):
     """Delete a template"""
