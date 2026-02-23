@@ -290,8 +290,11 @@ export default function EmailTemplates() {
 
   const openAlertEditor = (template = null) => {
     if (template && template.config) {
-      // Load existing config
-      setAlertFormData(template.config);
+      // Load existing config - ensure showButton is set
+      setAlertFormData({
+        ...template.config,
+        showButton: template.config.showButton ?? false
+      });
     } else if (template) {
       // Existing template without config - set defaults with name
       setAlertFormData({
@@ -307,7 +310,8 @@ export default function EmailTemplates() {
         messageBody: 'You clicked on a simulated phishing link in the "{{CAMPAIGN_NAME}}" campaign.',
         showTips: true,
         tips: ['Always verify the sender\'s email address', 'Hover over links before clicking', 'When in doubt, contact IT directly', 'Report suspicious emails immediately'],
-        buttonText: 'Start Training Now',
+        showButton: false,
+        buttonText: '',
         buttonUrl: '/training'
       });
     } else {
