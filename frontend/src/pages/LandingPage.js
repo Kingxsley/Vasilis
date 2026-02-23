@@ -509,33 +509,12 @@ export default function LandingPage() {
                     className="w-32 h-32 object-contain drop-shadow-2xl platform-glow"
                   />
                 ) : (
-                  /* Professional animated security shield visualization when no logo uploaded */
+                  /* Use the site favicon when no logo is uploaded */
                   <div className="relative w-48 h-48">
                     <div className="absolute inset-0 bg-gradient-to-br from-[#D4A836]/20 to-[#0f3460]/30 rounded-full animate-ping opacity-20" style={{ animationDuration: '3s' }} />
                     <div className="absolute inset-4 bg-gradient-to-br from-[#D4A836]/10 to-[#0f3460]/20 rounded-full animate-pulse" />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-32 h-32 relative">
-                        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-2xl">
-                          <defs>
-                            <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                              <stop offset="0%" stopColor="#D4A836" />
-                              <stop offset="100%" stopColor="#C49A30" />
-                            </linearGradient>
-                          </defs>
-                          {/* Shield shape */}
-                          <path 
-                            d="M50 5 L90 20 L90 50 C90 75 70 90 50 95 C30 90 10 75 10 50 L10 20 Z" 
-                            fill="url(#shieldGradient)" 
-                            className="drop-shadow-lg"
-                          />
-                          {/* Lock icon inside shield */}
-                          <rect x="38" y="42" width="24" height="20" rx="3" fill="#0a0a0f" opacity="0.9" />
-                          <path d="M42 42 L42 35 C42 30 46 26 50 26 C54 26 58 30 58 35 L58 42" 
-                                stroke="#0a0a0f" strokeWidth="4" fill="none" opacity="0.9" />
-                          <circle cx="50" cy="52" r="3" fill="#D4A836" />
-                          <rect x="49" y="52" width="2" height="6" fill="#D4A836" />
-                        </svg>
-                      </div>
+                      <img src="/favicon.svg" alt="Logo" className="w-32 h-32 object-contain drop-shadow-2xl" />
                     </div>
                   </div>
                 )}
