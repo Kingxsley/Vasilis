@@ -358,7 +358,8 @@ export default function PhishingSimulations() {
         assigned_module_id: newCampaign.assigned_module_id || null,
         click_page_html: newCampaign.click_page_html || null,
         alert_template_id: newCampaign.alert_template_id || null,
-        risk_level: newCampaign.risk_level || 'medium'
+        risk_level: newCampaign.risk_level || 'medium',
+        custom_email_template_id: newCampaign.custom_email_template_id || null
       };
       
       await axios.post(`${API}/phishing/campaigns`, payload, { headers });

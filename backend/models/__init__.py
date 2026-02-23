@@ -287,6 +287,7 @@ class PhishingCampaignCreate(BaseModel):
     click_page_html: Optional[str] = None
     risk_level: Optional[str] = "medium"  # low, medium, high, critical
     alert_template_id: Optional[str] = None  # Alert template to show on click
+    custom_email_template_id: Optional[str] = None  # Custom visual email template override
 
 
 class PhishingCampaignResponse(BaseModel):
