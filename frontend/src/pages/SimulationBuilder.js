@@ -1189,6 +1189,35 @@ export default function SimulationBuilder() {
                   </CardContent>
                 </Card>
 
+                {/* Email Header Fields */}
+                <Card className="bg-[#161B22] border-[#30363D]">
+                  <CardContent className="py-4 space-y-3">
+                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Email Headers</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-gray-400 text-xs mb-1 block">From (Sender)</Label>
+                        <Input
+                          value={emailFrom}
+                          onChange={(e) => setEmailFrom(e.target.value)}
+                          placeholder="Security Team <security@company.com>"
+                          className="bg-[#0D1117] border-[#30363D] text-white"
+                          data-testid="email-from-input"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-gray-400 text-xs mb-1 block">Subject Line</Label>
+                        <Input
+                          value={emailSubject}
+                          onChange={(e) => setEmailSubject(e.target.value)}
+                          placeholder={simulationName || 'Email subject...'}
+                          className="bg-[#0D1117] border-[#30363D] text-white"
+                          data-testid="email-subject-input"
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* Quick Templates for this type */}
                 {PREBUILT_TEMPLATES[simulationType.id] && (
                   <Card className="bg-[#161B22] border-[#30363D]">
