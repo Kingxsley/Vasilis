@@ -390,6 +390,178 @@ export default function EmailTemplates() {
     setEditingAlertTemplate(template || { id: 'new' });
   };
 
+  // Generate Email HTML from visual builder
+  const generateEmailHtml = (data) => {
+    const logoHtml = data.useIcon ? 
+      `<div style="font-size:48px;margin-bottom:15px;">${data.logoIcon}</div>` :
+      data.logoUrl ? `<img src="${data.logoUrl}" alt="Logo" style="max-height:60px;margin-bottom:15px;">` : '';
+
+    const highlightHtml = data.highlightBox?.show ? `
+      <div style="background:${data.highlightBox.backgroundColor};border-radius:8px;padding:15px 20px;margin:20px 0;text-align:left;">
+        <span style="font-size:20px;margin-right:10px;">${data.highlightBox.icon}</span>
+        <span style="color:${data.highlightBox.textColor};font-weight:500;">${data.highlightBox.text}</span>
+      </div>
+    ` : '';
+
+    const buttonHtml = data.showButton && data.buttonText ? `
+      <div style="text-align:center;margin:25px 0;">
+        <a href="${data.buttonUrl}" style="display:inline-block;background:${data.buttonColor};color:#000;text-decoration:none;padding:14px 40px;border-radius:8px;font-weight:bold;font-size:16px;">${data.buttonText}</a>
+      </div>
+    ` : '';
+
+    const tipsHtml = data.showTips && data.tips?.length > 0 ? `
+      <div style="background:#1a1a24;border:1px solid #30363D;border-radius:8px;padding:20px;margin:20px 0;text-align:left;">
+        <p style="color:${data.primaryColor};margin:0 0 12px 0;font-weight:bold;">Tips to Stay Safe:</p>
+        <ul style="color:#8B949E;margin:0;padding-left:20px;">
+          ${data.tips.map(tip => `<li style="margin:6px 0;">${tip}</li>`).join('')}
+        </ul>
+      </div>
+    ` : '';
+
+    return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body style="margin:0;padding:0;background:${data.backgroundColor};font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+  <div style="padding:40px 20px;">
+    <div style="background:${data.cardColor};border-radius:16px;max-width:600px;margin:0 auto;border:1px solid #30363D;overflow:hidden;">
+      <!-- Header -->
+      <div style="text-align:center;padding:30px 20px 20px;">
+        ${logoHtml}
+        <h1 style="color:${data.headerTitleColor};margin:0;font-size:24px;font-weight:600;">${data.headerTitle}</h1>
+      </div>
+      
+      <!-- Content -->
+      <div style="padding:0 30px 30px;">
+        <p style="color:#E8DDB5;font-size:16px;margin:0 0 15px;">${data.greeting}</p>
+        
+        <p style="color:#9CA3AF;font-size:15px;line-height:1.6;margin:0 0 15px;">${data.mainMessage}</p>
+        
+        ${highlightHtml}
+        
+        <p style="color:#9CA3AF;font-size:15px;line-height:1.6;margin:15px 0;">${data.additionalMessage}</p>
+        
+        ${buttonHtml}
+        
+        ${tipsHtml}
+      </div>
+      
+      <!-- Footer -->
+      <div style="text-align:center;padding:20px;border-top:1px solid #30363D;">
+        <p style="color:#6B7280;font-size:12px;margin:0;">${data.footerText}</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+  };
+
+  // Save custom email template
+  const saveEmailTemplate = async () => {
+    if (!emailFormData.name || !emailFormData.subject) {
+      toast.error('Please fill in the template name and subject');
+      return;
+    }
+
+    setSaving(true);
+    const html = generateEmailHtml(emailFormData);
+
+    try {
+      if (editingEmailTemplate?.id && editingEmailTemplate.id !== 'new') {
+        await axios.put(`${API}/custom-email-templates/${editingEmailTemplate.id}`, {
+          name: emailFormData.name,
+          description: emailFormData.description,
+          subject: emailFormData.subject,
+          type: emailFormData.type,
+          html: html,
+          config: emailFormData
+        }, { headers });
+        toast.success('Email template updated');
+      } else {
+        await axios.post(`${API}/custom-email-templates`, {
+          name: emailFormData.name,
+          description: emailFormData.description,
+          subject: emailFormData.subject,
+          type: emailFormData.type,
+          html: html,
+          config: emailFormData
+        }, { headers });
+        toast.success('Email template created');
+      }
+      fetchCustomEmailTemplates();
+      setEditingEmailTemplate(null);
+    } catch (err) {
+      toast.error('Failed to save email template');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteEmailTemplate = async (templateId) => {
+    if (!window.confirm('Delete this email template?')) return;
+    try {
+      await axios.delete(`${API}/custom-email-templates/${templateId}`, { headers });
+      toast.success('Template deleted');
+      fetchCustomEmailTemplates();
+    } catch (err) {
+      toast.error('Failed to delete template');
+    }
+  };
+
+  const openEmailEditor = (template = null) => {
+    if (template && template.config) {
+      setEmailFormData(template.config);
+    } else if (template) {
+      setEmailFormData({
+        ...emailFormData,
+        name: template.name || '',
+        description: template.description || '',
+        subject: template.subject || ''
+      });
+    } else {
+      // Reset to defaults for new template
+      setEmailFormData({
+        name: '',
+        description: '',
+        subject: '',
+        type: 'training',
+        logoUrl: '',
+        logoIcon: '📚',
+        useIcon: true,
+        primaryColor: '#D4A836',
+        backgroundColor: '#0D1117',
+        cardColor: '#161B22',
+        headerTitle: 'Security Training Required',
+        headerTitleColor: '#4CAF50',
+        greeting: 'Hello {{USER_NAME}},',
+        mainMessage: 'You recently clicked on a simulated security threat during our awareness exercise.',
+        highlightBox: {
+          show: true,
+          icon: '⚠️',
+          text: "Don't worry! This was a training simulation. No harm was done, but it's important to improve your awareness.",
+          backgroundColor: '#D4A836',
+          textColor: '#000000'
+        },
+        additionalMessage: 'Your training progress has been reset for this module. Please complete the training to strengthen your security awareness skills.',
+        showButton: true,
+        buttonText: 'Start Training Now',
+        buttonUrl: '{{TRAINING_URL}}',
+        buttonColor: '#D4A836',
+        showTips: true,
+        tips: [
+          'Always verify the sender\'s email address',
+          'Hover over links before clicking',
+          'When in doubt, contact IT directly',
+          'Report suspicious emails immediately'
+        ],
+        footerText: 'Vasilis NetShield Security Training'
+      });
+    }
+    setEditingEmailTemplate(template || { id: 'new' });
+  };
+
   if (loading) {
     return (
       <DashboardLayout>
