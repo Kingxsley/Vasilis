@@ -276,6 +276,7 @@ async def list_campaigns(
             emails_sent=c.get("emails_sent", 0),
             emails_opened=c.get("emails_opened", 0),
             links_clicked=c.get("links_clicked", 0),
+            assigned_module_id=c.get("assigned_module_id"),
             created_at=parse_dt(c.get("created_at")),
             scheduled_at=parse_dt(c.get("scheduled_at")),
             started_at=parse_dt(c.get("started_at")),
