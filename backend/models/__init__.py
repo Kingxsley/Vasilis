@@ -320,6 +320,9 @@ class PhishingTargetResponse(BaseModel):
     link_clicked_at: Optional[datetime] = None
     click_ip: Optional[str] = None
     click_user_agent: Optional[str] = None
+    # Credential submission tracking
+    credentials_submitted: bool = False
+    credentials_submitted_at: Optional[datetime] = None
 
 
 class PhishingStatsResponse(BaseModel):
@@ -329,6 +332,8 @@ class PhishingStatsResponse(BaseModel):
     emails_sent: int
     emails_opened: int
     links_clicked: int
+    credentials_submitted: int = 0  # Track credential submissions
     open_rate: float
     click_rate: float
+    submission_rate: float = 0.0  # Credential submission rate
     status: str
