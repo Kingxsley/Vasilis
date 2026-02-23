@@ -763,7 +763,7 @@ async def get_phishing_stats(request: Request, days: int = 30):
     phish_campaigns = await db.phishing_campaigns.find(phish_query, {"_id": 0}).to_list(1000)
     phish_campaign_ids = [c["campaign_id"] for c in phish_campaigns]
     
-    logger.info(f"Stats: Found {len(phish_campaigns)} campaigns, IDs: {phish_campaign_ids}")
+    print(f"DEBUG Stats: query={phish_query}, found {len(phish_campaigns)} campaigns, IDs: {phish_campaign_ids}")
     
     # Get targets for these campaigns
     phish_targets = []
@@ -773,7 +773,7 @@ async def get_phishing_stats(request: Request, days: int = 30):
             {"_id": 0}
         ).to_list(100000)
     
-    logger.info(f"Stats: Found {len(phish_targets)} targets")
+    print(f"DEBUG Stats: Found {len(phish_targets)} targets")
     
     phish_active = sum(1 for c in phish_campaigns if c.get("status") in ("running", "active"))
     phish_completed = sum(1 for c in phish_campaigns if c.get("status") == "completed")
