@@ -214,6 +214,10 @@ export default function VulnerableUsers() {
                 <FileJson className="h-4 w-4 mr-2" />
                 Export as JSON
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => exportData('pdf')} data-testid="export-pdf">
+                <FileText className="h-4 w-4 mr-2" />
+                Export as PDF
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
