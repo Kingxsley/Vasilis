@@ -1165,6 +1165,27 @@ async def track_link_click(tracking_code: str, request: Request):
                             }
                             await db.training_sessions.insert_one(session_doc)
                     logger.info(f"Auto-reassigned training modules for user {user_email}")
+                    
+                    # Send training assignment notification email
+                    try:
+                        from services.phishing_service import send_training_assignment_email
+                        assigned_mod = None
+                        if assigned_module_id:
+                            assigned_mod = await db.training_modules.find_one({"module_id": assigned_module_id}, {"_id": 0, "name": 1})
+                        else:
+                            assigned_mod = await db.training_modules.find_one({"is_active": True}, {"_id": 0, "name": 1})
+                        if assigned_mod:
+                            base_url = str(request.base_url).rstrip("/")
+                            training_url = f"{base_url}/training"
+                            await send_training_assignment_email(
+                                user_email=user_email,
+                                user_name=user_name,
+                                module_name=assigned_mod.get("name", "Security Training"),
+                                training_url=training_url,
+                                db=db
+                            )
+                    except Exception as email_err:
+                        logger.warning(f"Could not send training assignment email: {email_err}")
                 except Exception as reassign_err:
                     logger.error(f"Failed to auto reassign training: {reassign_err}")
                     
