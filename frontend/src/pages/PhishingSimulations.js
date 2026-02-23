@@ -70,7 +70,8 @@ export default function PhishingSimulations() {
     target_user_ids: [],
     scheduled_at: '',
     launch_immediately: true,
-    assigned_module_id: ''
+    assigned_module_id: '',
+    click_page_html: ''
   });
   
   const [newTemplate, setNewTemplate] = useState({
