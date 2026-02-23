@@ -285,6 +285,7 @@ class PhishingCampaignCreate(BaseModel):
     scheduled_at: Optional[datetime] = None
     assigned_module_id: Optional[str] = None
     click_page_html: Optional[str] = None
+    risk_level: Optional[str] = "medium"  # low, medium, high, critical
 
 
 class PhishingCampaignResponse(BaseModel):
@@ -298,6 +299,7 @@ class PhishingCampaignResponse(BaseModel):
     emails_opened: int
     links_clicked: int
     assigned_module_id: Optional[str] = None
+    risk_level: Optional[str] = "medium"
     click_page_html: Optional[str] = None
     created_at: datetime
     scheduled_at: Optional[datetime] = None
