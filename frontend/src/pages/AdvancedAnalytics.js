@@ -723,51 +723,6 @@ export default function AdvancedAnalytics() {
 
         <Card className="bg-[#0f0f15] border-[#D4A836]/20">
           <CardHeader>
-            <CardTitle className="text-[#E8DDB5] flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-yellow-400" />
-              Risk Assessment Summary
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-4 gap-4">
-              <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg text-center">
-                <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-2" />
-                <p className="text-2xl font-bold text-green-400">
-                  {phishingStats?.total_sent > 0
-                    ? Math.round(((phishingStats.total_sent - (phishingStats.total_clicked || 0)) / phishingStats.total_sent) * 100)
-                    : 100}
-                  %
-                </p>
-                <p className="text-xs text-gray-400">Resilient Users</p>
-                <p className="text-xs text-green-400/70 mt-1">Didn't click phishing links</p>
-              </div>
-
-              <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-center">
-                <AlertTriangle className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
-                <p className="text-2xl font-bold text-yellow-400">{phishingStats?.open_rate?.toFixed(0) || 0}%</p>
-                <p className="text-xs text-gray-400">Opened Suspicious</p>
-                <p className="text-xs text-yellow-400/70 mt-1">Opened phishing emails</p>
-              </div>
-
-              <div className="p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg text-center">
-                <MousePointerClick className="w-8 h-8 text-orange-400 mx-auto mb-2" />
-                <p className="text-2xl font-bold text-orange-400">{phishingStats?.click_rate?.toFixed(0) || 0}%</p>
-                <p className="text-xs text-gray-400">At Risk</p>
-                <p className="text-xs text-orange-400/70 mt-1">Clicked malicious links</p>
-              </div>
-
-              <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-center">
-                <Target className="w-8 h-8 text-red-400 mx-auto mb-2" />
-                <p className="text-2xl font-bold text-red-400">{phishingStats?.submission_rate?.toFixed(0) || 0}%</p>
-                <p className="text-xs text-gray-400">Compromised</p>
-                <p className="text-xs text-red-400/70 mt-1">Submitted credentials</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-[#0f0f15] border-[#D4A836]/20">
-          <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <CardTitle className="text-[#E8DDB5] flex items-center gap-2">
                 <BarChart3 className="w-5 h-5 text-[#D4A836]" />
