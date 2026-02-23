@@ -57,6 +57,9 @@ export default function PhishingSimulations() {
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(null);
   
+  // Alert templates
+  const [alertTemplates, setAlertTemplates] = useState([]);
+  
   // Dialog states
   const [showNewCampaign, setShowNewCampaign] = useState(false);
   const [showNewTemplate, setShowNewTemplate] = useState(false);
