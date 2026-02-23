@@ -329,7 +329,8 @@ export default function SimulationBuilder() {
   useEffect(() => {
     fetchSavedSimulations();
     fetchUsers();
-  }, []);
+    fetchTrainingModules();
+  }, []); // eslint-disable-line
 
   const fetchSavedSimulations = async () => {
     setLoadingSimulations(true);
