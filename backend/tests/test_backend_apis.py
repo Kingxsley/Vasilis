@@ -211,7 +211,7 @@ class TestSimulationBuilder:
         if len(templates) > 0:
             template_id = templates[0]["template_id"]
             # Get specific template
-            response = requests.get(f"{API}/phishing/templates/{template_id}", headers=auth_headers)
+            response = requests.get(f"{API}/phishing/templates/{template_id}", headers=get_auth_headers())
             assert response.status_code == 200, f"Failed to get template: {response.text}"
             template = response.json()
             assert "name" in template
