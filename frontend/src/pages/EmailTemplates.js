@@ -882,27 +882,40 @@ export default function EmailTemplates() {
 
                 {/* Button */}
                 <div className="space-y-3 pt-4 border-t border-[#30363D]">
-                  <h3 className="text-sm font-medium text-[#D4A836]">Call-to-Action Button</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label className="text-gray-400 text-xs">Button Text</Label>
-                      <Input
-                        value={alertFormData.buttonText}
-                        onChange={(e) => setAlertFormData({ ...alertFormData, buttonText: e.target.value })}
-                        placeholder="Start Training Now"
-                        className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]"
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-medium text-[#D4A836]">Call-to-Action Button</h3>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={alertFormData.showButton || false}
+                        onChange={(e) => setAlertFormData({ ...alertFormData, showButton: e.target.checked })}
+                        className="rounded border-[#30363D]"
                       />
-                    </div>
-                    <div>
-                      <Label className="text-gray-400 text-xs">Button URL</Label>
-                      <Input
-                        value={alertFormData.buttonUrl}
-                        onChange={(e) => setAlertFormData({ ...alertFormData, buttonUrl: e.target.value })}
-                        placeholder="/training"
-                        className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]"
-                      />
-                    </div>
+                      <span className="text-xs text-gray-400">Show button</span>
+                    </label>
                   </div>
+                  {alertFormData.showButton && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-gray-400 text-xs">Button Text</Label>
+                        <Input
+                          value={alertFormData.buttonText}
+                          onChange={(e) => setAlertFormData({ ...alertFormData, buttonText: e.target.value })}
+                          placeholder="Start Training Now"
+                          className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-gray-400 text-xs">Button URL</Label>
+                        <Input
+                          value={alertFormData.buttonUrl}
+                          onChange={(e) => setAlertFormData({ ...alertFormData, buttonUrl: e.target.value })}
+                          placeholder="/training"
+                          className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
