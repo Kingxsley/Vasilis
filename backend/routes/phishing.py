@@ -1568,7 +1568,205 @@ async def mark_training_completed(failure_id: str, request: Request):
     return {"message": "Training marked as completed", "failure_id": failure_id}
 
 
-# ============== DEFAULT TEMPLATES ==============
+# ============== CREDENTIAL SUBMISSION TRACKING ==============
+
+@router.post("/track/credentials/{tracking_code}")
+async def track_credential_submission(tracking_code: str, request: Request):
+    """
+    Track when a user submits credentials to a fake login page.
+    This is called when the simulated phishing page captures form submission.
+    Note: We don't store actual credentials, just track that submission occurred.
+    """
+    db = get_db()
+    
+    request_info = {
+        "ip": request.client.host if request.client else None,
+        "user_agent": request.headers.get("user-agent")
+    }
+    
+    # Find the target by tracking code
+    target = await db.phishing_targets.find_one(
+        {"tracking_code": tracking_code},
+        {"_id": 0}
+    )
+    
+    if not target:
+        raise HTTPException(status_code=404, detail="Invalid tracking code")
+    
+    # Update target with credential submission
+    await db.phishing_targets.update_one(
+        {"tracking_code": tracking_code},
+        {
+            "$set": {
+                "credentials_submitted": True,
+                "credentials_submitted_at": datetime.now(timezone.utc).isoformat()
+            }
+        }
+    )
+    
+    # Update campaign stats
+    await db.phishing_campaigns.update_one(
+        {"campaign_id": target.get("campaign_id")},
+        {"$inc": {"credentials_submitted": 1}}
+    )
+    
+    # Get campaign and org info for notification
+    campaign = await db.phishing_campaigns.find_one(
+        {"campaign_id": target.get("campaign_id")},
+        {"_id": 0, "name": 1, "organization_id": 1}
+    )
+    
+    org_name = "Unknown"
+    org_webhook = None
+    if campaign and campaign.get("organization_id"):
+        org = await db.organizations.find_one(
+            {"organization_id": campaign.get("organization_id")},
+            {"_id": 0, "name": 1, "discord_webhook_url": 1}
+        )
+        if org:
+            org_name = org.get("name", "Unknown")
+            org_webhook = org.get("discord_webhook_url")
+    
+    # Send Discord notification
+    try:
+        from services.notification_service import notify_credential_submission
+        await notify_credential_submission(
+            user_name=target.get("user_name", "Unknown"),
+            user_email=target.get("user_email", "Unknown"),
+            organization_name=org_name,
+            campaign_name=campaign.get("name") if campaign else "Unknown",
+            org_webhook_url=org_webhook
+        )
+    except Exception as e:
+        logger.error(f"Failed to send credential submission notification: {e}")
+    
+    # Record in training failures with higher severity
+    failure_record = {
+        "failure_id": f"fail_{uuid.uuid4().hex[:12]}",
+        "user_id": target.get("user_id"),
+        "user_email": target.get("user_email"),
+        "organization_id": campaign.get("organization_id") if campaign else None,
+        "campaign_id": target.get("campaign_id"),
+        "scenario_type": "credential_harvest",
+        "failure_type": "submitted_credentials",
+        "tracking_code": tracking_code,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "status": "pending_training",
+        "severity": "critical"
+    }
+    await db.training_failures.insert_one(failure_record)
+    
+    logger.warning(f"Credential submission tracked: {target.get('user_email')} - Campaign: {campaign.get('name') if campaign else 'Unknown'}")
+    
+    # Return success page (fake "password reset successful" to maintain simulation)
+    return HTMLResponse(content="""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Password Updated</title>
+        <meta http-equiv="refresh" content="3;url=/training">
+        <style>
+            body { font-family: Arial, sans-serif; background: #0D1117; color: white; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+            .container { text-align: center; padding: 40px; background: #161B22; border-radius: 16px; border: 1px solid #30363D; max-width: 500px; }
+            .icon { font-size: 64px; margin-bottom: 20px; }
+            h1 { color: #FF6B6B; margin-bottom: 10px; }
+            p { color: #8B949E; }
+            .alert { background: rgba(255, 107, 107, 0.1); border: 1px solid #FF6B6B40; padding: 20px; border-radius: 12px; margin: 20px 0; }
+            .alert h3 { color: #FF6B6B; margin: 0 0 10px 0; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="icon">⚠️</div>
+            <h1>Security Training Alert</h1>
+            <p>This was a simulated phishing test</p>
+            <div class="alert">
+                <h3>🔐 You Entered Credentials!</h3>
+                <p style="color: #E6EDF3;">
+                    In a real attack, your password would now be compromised.<br><br>
+                    <strong>This is a critical security awareness exercise.</strong><br>
+                    Never enter your credentials on unfamiliar or suspicious websites.
+                </p>
+            </div>
+            <p>Redirecting to security training...</p>
+        </div>
+    </body>
+    </html>
+    """)
+
+
+# ============== QR CODE GENERATION ==============
+
+@router.get("/qr-code/{tracking_code}")
+async def generate_qr_code(tracking_code: str, request: Request, size: int = 200):
+    """Generate a QR code for a phishing tracking URL"""
+    db = get_db()
+    
+    # Verify tracking code exists
+    target = await db.phishing_targets.find_one(
+        {"tracking_code": tracking_code},
+        {"_id": 0, "target_id": 1}
+    )
+    
+    if not target:
+        raise HTTPException(status_code=404, detail="Invalid tracking code")
+    
+    # Build tracking URL
+    base_url = str(request.base_url).rstrip('/')
+    tracking_url = f"{base_url}/api/phishing/track/click/{tracking_code}"
+    
+    # Generate QR code using external service (qr-server.com)
+    qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size={size}x{size}&data={tracking_url}"
+    
+    return {
+        "qr_code_url": qr_url,
+        "tracking_url": tracking_url,
+        "tracking_code": tracking_code
+    }
+
+
+@router.post("/campaigns/{campaign_id}/generate-qr-codes")
+async def generate_campaign_qr_codes(campaign_id: str, request: Request, size: int = 200):
+    """Generate QR codes for all targets in a campaign"""
+    await require_admin(request)
+    db = get_db()
+    
+    # Get campaign
+    campaign = await db.phishing_campaigns.find_one(
+        {"campaign_id": campaign_id},
+        {"_id": 0}
+    )
+    
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    
+    # Get all targets
+    targets = await db.phishing_targets.find(
+        {"campaign_id": campaign_id},
+        {"_id": 0, "tracking_code": 1, "user_name": 1, "user_email": 1}
+    ).to_list(10000)
+    
+    base_url = str(request.base_url).rstrip('/')
+    
+    qr_codes = []
+    for target in targets:
+        tracking_url = f"{base_url}/api/phishing/track/click/{target['tracking_code']}"
+        qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size={size}x{size}&data={tracking_url}"
+        
+        qr_codes.append({
+            "user_name": target.get("user_name"),
+            "user_email": target.get("user_email"),
+            "tracking_code": target.get("tracking_code"),
+            "qr_code_url": qr_url,
+            "tracking_url": tracking_url
+        })
+    
+    return {
+        "campaign_id": campaign_id,
+        "campaign_name": campaign.get("name"),
+        "qr_codes": qr_codes,
+        "total": len(qr_codes)
+    }
 
 @router.post("/templates/seed-defaults")
 async def seed_default_templates(request: Request):
