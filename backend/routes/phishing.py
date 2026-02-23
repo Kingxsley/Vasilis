@@ -1172,7 +1172,19 @@ async def track_link_click(tracking_code: str, request: Request):
                 logger.error(f"Error in automatic retraining flow: {e}")
     
     # IMPORTANT: Always show the phishing awareness page when someone clicks
-    # Do NOT redirect to custom landing page - that defeats the purpose
+    # Check if campaign has a custom click page
+    custom_page = None
+    if campaign:
+        custom_page = campaign.get("click_page_html")
+    
+    if custom_page:
+        # Use custom awareness page designed by admin
+        # Replace template variables
+        custom_html = custom_page.replace("{{USER_NAME}}", user_name or "User")
+        custom_html = custom_html.replace("{{USER_EMAIL}}", user_email or "")
+        custom_html = custom_html.replace("{{SCENARIO_TYPE}}", scenario_type or "security_test")
+        custom_html = custom_html.replace("{{CAMPAIGN_NAME}}", campaign.get("name", "Security Test") if campaign else "Security Test")
+        return HTMLResponse(content=custom_html)
     
     # Build personalized landing page with auto-redirect
     scenario_messages = {
