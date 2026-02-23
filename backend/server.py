@@ -245,6 +245,8 @@ class TrainingSessionResponse(BaseModel):
     score: int
     total_questions: int
     correct_answers: int
+    current_scenario_index: int = 0
+    answers: Optional[List[dict]] = None
     started_at: datetime
     completed_at: Optional[datetime] = None
 
