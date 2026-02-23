@@ -1297,10 +1297,20 @@ async def track_link_click(tracking_code: str, request: Request):
                 logger.error(f"Error in automatic retraining flow: {e}")
     
     # IMPORTANT: Always show the phishing awareness page when someone clicks
-    # Check if campaign has a custom click page
+    # Check if campaign has a custom click page or an alert template
     custom_page = None
     if campaign:
+        # First check for custom HTML in the campaign
         custom_page = campaign.get("click_page_html")
+        
+        # If no custom HTML, check for alert_template_id
+        if not custom_page:
+            alert_template_id = campaign.get("alert_template_id")
+            if alert_template_id:
+                # Fetch the alert template from the database
+                alert_template = await db.alert_templates.find_one({"id": alert_template_id}, {"_id": 0})
+                if alert_template:
+                    custom_page = alert_template.get("html")
     
     if custom_page:
         # Use custom awareness page designed by admin
