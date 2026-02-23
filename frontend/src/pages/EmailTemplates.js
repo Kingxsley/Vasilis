@@ -25,11 +25,85 @@ const RichTextEditor = lazy(() => import('../components/common/RichTextEditor'))
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const TEMPLATE_LABELS = {
-  welcome: { name: 'Welcome Email', icon: '👋' },
-  password_reset: { name: 'Password Reset (Admin)', icon: '🔐' },
-  forgot_password: { name: 'Forgot Password', icon: '🔑' },
-  password_expiry_reminder: { name: 'Password Expiry Reminder', icon: '⏰' }
+  welcome: { name: 'Welcome Email', icon: '👋', category: 'notification' },
+  password_reset: { name: 'Password Reset (Admin)', icon: '🔐', category: 'notification' },
+  forgot_password: { name: 'Forgot Password', icon: '🔑', category: 'notification' },
+  password_expiry_reminder: { name: 'Password Expiry Reminder', icon: '⏰', category: 'notification' },
+  training_assigned: { name: 'Training Assigned', icon: '📚', category: 'notification' },
+  training_reminder: { name: 'Training Reminder', icon: '⏰', category: 'notification' }
 };
+
+const DEFAULT_ALERT_TEMPLATES = [
+  {
+    id: 'default_alert',
+    name: 'Default Security Alert',
+    description: 'Standard phishing awareness alert',
+    preview: '⚠️ Security Alert - Yellow warning theme',
+    html: `<div style="text-align:center;padding:40px;font-family:'Segoe UI',Arial,sans-serif;background:#0D1117;min-height:100vh;">
+<div style="background:#161B22;padding:40px;border-radius:16px;max-width:600px;margin:0 auto;border:1px solid #30363D;">
+<div style="font-size:64px;margin-bottom:20px;">⚠️</div>
+<h1 style="color:#FF6B6B;margin-bottom:10px;">Security Alert!</h1>
+<p style="color:#8B949E;margin-bottom:30px;">This was a phishing simulation</p>
+<div style="background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.25);padding:20px;border-radius:12px;text-align:left;">
+<h3 style="color:#FF6B6B;margin-top:0;">Hello {{USER_NAME}},</h3>
+<p style="color:#E6EDF3;">You clicked on a simulated phishing link in the "<strong>{{CAMPAIGN_NAME}}</strong>" campaign.</p>
+<p style="color:#E6EDF3;">This was a test to help you identify potential threats.</p>
+</div>
+<p style="color:#8B949E;margin-top:20px;font-size:14px;">Training has been assigned to help you learn more.</p>
+</div></div>`
+  },
+  {
+    id: 'phishing_caught',
+    name: 'Phishing Caught',
+    description: 'You\'ve been caught theme',
+    preview: '🎣 Phishing Detected - Dark theme',
+    html: `<div style="text-align:center;padding:40px;font-family:'Segoe UI',Arial,sans-serif;background:linear-gradient(135deg,#0D1117,#161B22);min-height:100vh;">
+<div style="background:#161B22;padding:40px;border-radius:16px;max-width:600px;margin:0 auto;border:1px solid #30363D;">
+<div style="font-size:64px;margin-bottom:20px;">🎣</div>
+<h1 style="color:#FF6B6B;margin-bottom:10px;">Phishing Detected!</h1>
+<p style="color:#8B949E;margin-bottom:30px;">You've been caught in a training exercise</p>
+<div style="background:rgba(212,168,54,0.1);border-left:4px solid #D4A836;padding:20px;border-radius:8px;text-align:left;">
+<p style="color:#E8DDB5;margin:0;"><strong>User:</strong> {{USER_NAME}}</p>
+<p style="color:#E8DDB5;margin:10px 0 0 0;"><strong>Campaign:</strong> {{CAMPAIGN_NAME}}</p>
+</div>
+<p style="color:#8B949E;margin-top:20px;font-size:14px;">Security training will help you recognize threats.</p>
+</div></div>`
+  },
+  {
+    id: 'credential_warning',
+    name: 'Credential Warning',
+    description: 'Critical credential submission alert',
+    preview: '🔴 Critical Alert - Red warning theme',
+    html: `<div style="text-align:center;padding:40px;font-family:'Segoe UI',Arial,sans-serif;background:#1a0a0a;min-height:100vh;">
+<div style="background:#2a0f0f;padding:40px;border-radius:16px;max-width:600px;margin:0 auto;border:2px solid #FF4444;">
+<div style="font-size:64px;margin-bottom:20px;">🚨</div>
+<h1 style="color:#FF4444;margin-bottom:10px;">CRITICAL: Credentials Submitted!</h1>
+<p style="color:#ffaaaa;margin-bottom:30px;">You entered login credentials on a simulated phishing page</p>
+<div style="background:rgba(255,68,68,0.1);border:1px solid #FF4444;padding:20px;border-radius:8px;text-align:left;">
+<p style="color:#ffcccc;margin:0;"><strong>{{USER_NAME}}</strong>, this was a test. In a real attack, your credentials would now be compromised.</p>
+<p style="color:#ffaaaa;margin:15px 0 0 0;">Campaign: <strong>{{CAMPAIGN_NAME}}</strong></p>
+</div>
+<p style="color:#FF4444;margin-top:20px;font-size:14px;font-weight:bold;">Mandatory training has been assigned.</p>
+</div></div>`
+  },
+  {
+    id: 'qr_scan_alert',
+    name: 'QR Code Scan Alert',
+    description: 'Alert for QR code scans',
+    preview: '📱 QR Code Alert - Modern theme',
+    html: `<div style="text-align:center;padding:40px;font-family:'Segoe UI',Arial,sans-serif;background:#0f0f1a;min-height:100vh;">
+<div style="background:#1a1a2e;padding:40px;border-radius:16px;max-width:600px;margin:0 auto;border:1px solid #4a4a6a;">
+<div style="font-size:64px;margin-bottom:20px;">📱</div>
+<h1 style="color:#9966FF;margin-bottom:10px;">QR Code Security Test</h1>
+<p style="color:#a0a0c0;margin-bottom:30px;">You scanned a simulated malicious QR code</p>
+<div style="background:rgba(153,102,255,0.1);border-left:4px solid #9966FF;padding:20px;border-radius:8px;text-align:left;">
+<p style="color:#c0c0ff;margin:0;">Hello <strong>{{USER_NAME}}</strong>,</p>
+<p style="color:#a0a0c0;margin:10px 0 0 0;">This QR code was part of the "{{CAMPAIGN_NAME}}" security awareness campaign.</p>
+</div>
+<p style="color:#a0a0c0;margin-top:20px;font-size:14px;">Always verify QR codes before scanning them.</p>
+</div></div>`
+  }
+];
 
 export default function EmailTemplates() {
   const { token } = useAuth();
