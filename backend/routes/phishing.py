@@ -184,6 +184,7 @@ async def create_campaign(data: PhishingCampaignCreate, request: Request):
         "organization_id": data.organization_id,
         "template_id": data.template_id,
         "landing_page_url": data.landing_page_url,
+        "assigned_module_id": data.assigned_module_id,
         "status": initial_status,
         "total_targets": len(target_users),
         "emails_sent": 0,
