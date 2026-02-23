@@ -288,6 +288,7 @@ class PhishingCampaignCreate(BaseModel):
     risk_level: Optional[str] = "medium"  # low, medium, high, critical
     alert_template_id: Optional[str] = None  # Alert template to show on click
     custom_email_template_id: Optional[str] = None  # Custom visual email template override
+    scenario_type: Optional[str] = "phishing_email"  # phishing_email, credential_harvest, qr_code_phishing, bec_scenario
 
 
 class PhishingCampaignResponse(BaseModel):
