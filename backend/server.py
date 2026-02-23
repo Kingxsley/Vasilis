@@ -1544,10 +1544,6 @@ async def create_training_module(
     if user.get("role") not in [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN]:
         raise HTTPException(status_code=403, detail="Admin access required")
 
-    # Ensure default modules are seeded prior to creation so we do not
-    # inadvertently overwrite the defaults with user-defined ones
-    await _ensure_training_modules_seeded()
-
     # Generate a unique module ID
     module_id = f"mod_{uuid.uuid4().hex[:12]}"
 
