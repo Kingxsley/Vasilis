@@ -222,7 +222,8 @@ class TrainingModuleResponse(BaseModel):
     description: str
     difficulty: str
     duration_minutes: int
-    scenarios_count: int
+    scenarios_count: int = 0
+    scenarios: Optional[List[str]] = None
     certificate_template_id: Optional[str] = None
     is_active: bool = True
 
