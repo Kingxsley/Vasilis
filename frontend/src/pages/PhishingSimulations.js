@@ -163,6 +163,27 @@ export default function PhishingSimulations() {
     }
   };
 
+  // Default alert templates
+  const DEFAULT_ALERT_TEMPLATES = [
+    { id: 'default', name: 'Default Alert', html: `<div style="text-align:center;padding:40px;font-family:'Segoe UI',Arial;background:#0D1117;min-height:100vh;"><div style="background:#161B22;padding:40px;border-radius:16px;max-width:600px;margin:0 auto;border:1px solid #30363D;"><div style="font-size:64px;">⚠️</div><h1 style="color:#FF6B6B;">Security Alert!</h1><p style="color:#8B949E;">This was a phishing simulation</p><div style="background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.25);padding:20px;border-radius:12px;text-align:left;"><h3 style="color:#FF6B6B;">Hello {{USER_NAME}},</h3><p style="color:#E6EDF3;">You clicked on a simulated phishing link.</p></div></div></div>` },
+    { id: 'critical', name: 'Critical Alert', html: `<div style="text-align:center;padding:40px;font-family:'Segoe UI',Arial;background:#1a0a0a;min-height:100vh;"><div style="background:#2a0f0f;padding:40px;border-radius:16px;max-width:600px;margin:0 auto;border:2px solid #FF4444;"><div style="font-size:64px;">🚨</div><h1 style="color:#FF4444;">CRITICAL!</h1><p style="color:#ffaaaa;">You entered credentials on a phishing page</p><div style="background:rgba(255,68,68,0.1);border:1px solid #FF4444;padding:20px;border-radius:8px;text-align:left;"><p style="color:#ffcccc;">{{USER_NAME}}, in a real attack your credentials would be compromised.</p></div></div></div>` },
+    { id: 'qr', name: 'QR Code Alert', html: `<div style="text-align:center;padding:40px;font-family:'Segoe UI',Arial;background:#0f0f1a;min-height:100vh;"><div style="background:#1a1a2e;padding:40px;border-radius:16px;max-width:600px;margin:0 auto;border:1px solid #4a4a6a;"><div style="font-size:64px;">📱</div><h1 style="color:#9966FF;">QR Code Security Test</h1><p style="color:#a0a0c0;">You scanned a simulated malicious QR code</p><div style="background:rgba(153,102,255,0.1);border-left:4px solid #9966FF;padding:20px;border-radius:8px;text-align:left;"><p style="color:#c0c0ff;">{{USER_NAME}}, always verify QR codes before scanning.</p></div></div></div>` }
+  ];
+
+  // Fetch alert templates
+  const fetchAlertTemplates = async () => {
+    try {
+      const res = await axios.get(`${API}/alert-templates`, { headers });
+      setAlertTemplates([...DEFAULT_ALERT_TEMPLATES, ...(res.data.templates || [])]);
+    } catch (err) {
+      setAlertTemplates(DEFAULT_ALERT_TEMPLATES);
+    }
+  };
+
+  useEffect(() => {
+    fetchAlertTemplates();
+  }, []);
+
   // Fetch media images for library
   const fetchMediaImages = async () => {
     setLoadingMedia(true);
