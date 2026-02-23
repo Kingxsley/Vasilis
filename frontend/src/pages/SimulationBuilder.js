@@ -620,7 +620,8 @@ export default function SimulationBuilder() {
         name: campaignToLaunch.name,
         organization_id: orgId,
         template_id: campaignToLaunch.template_id,
-        target_user_ids: selectedTargets
+        target_user_ids: selectedTargets,
+        assigned_module_id: assignedModuleId || null
       };
       
       const campaignRes = await axios.post(`${API}/phishing/campaigns`, campaignData, { headers });
