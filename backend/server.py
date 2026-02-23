@@ -3652,12 +3652,14 @@ if cors_origins == '*':
     # Allow all for development, but log warning
     logger.warning("CORS is set to allow all origins (*). Tighten this in production!")
     allow_origins = ["*"]
+    allow_credentials = False  # Can't use credentials with wildcard origin
 else:
     allow_origins = [origin.strip() for origin in cors_origins.split(',')]
+    allow_credentials = True
 
 app.add_middleware(
     CORSMiddleware,
-    allow_credentials=True,
+    allow_credentials=allow_credentials,
     allow_origins=allow_origins,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
