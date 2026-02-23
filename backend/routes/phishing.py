@@ -233,6 +233,7 @@ async def create_campaign(data: PhishingCampaignCreate, request: Request):
         "landing_page_url": data.landing_page_url,
         "assigned_module_id": data.assigned_module_id,
         "click_page_html": data.click_page_html,
+        "alert_template_id": getattr(data, 'alert_template_id', None),  # Alert template for click page
         "risk_level": getattr(data, 'risk_level', 'medium'),  # Default to medium if not provided
         "status": initial_status,
         "total_targets": len(target_users),
