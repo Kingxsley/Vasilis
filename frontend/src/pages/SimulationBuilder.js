@@ -679,6 +679,28 @@ export default function SimulationBuilder() {
     }
   };
 
+  // Delete saved simulation
+  const deleteSavedSimulation = async (sim) => {
+    const templateId = sim.template_id;
+    if (!templateId) {
+      toast.error('Cannot delete this simulation');
+      return;
+    }
+    
+    if (!window.confirm(`Are you sure you want to delete "${sim.name || sim.title}"?`)) {
+      return;
+    }
+    
+    try {
+      await axios.delete(`${API}/phishing/templates/${templateId}`, { headers });
+      toast.success('Simulation deleted');
+      fetchSavedSimulations();
+    } catch (err) {
+      console.error('Delete error:', err);
+      toast.error(err.response?.data?.detail || 'Failed to delete simulation');
+    }
+  };
+
   // Edit saved simulation - load it back into the builder
   const editSavedSimulation = (sim) => {
     const simType = SIMULATION_TYPES.find(t => t.id === sim.scenario_type) || SIMULATION_TYPES[0];
