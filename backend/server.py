@@ -3256,15 +3256,19 @@ api_router.include_router(navigation_router)
 api_router.include_router(activity_logs_router)
 
 # ============== PUBLIC TRACKING ROUTE (Masked URL) ==============
-# This route provides a clean, masked URL for ad tracking
+# This route provides a clean, masked URL for ad and phishing tracking
 # URL format: /api/track/{campaign_id}?u={user_tracking_code}
 
 @api_router.get("/track/{campaign_id}")
 async def public_masked_tracking(campaign_id: str, u: str = None, request: Request = None):
     """
-    Public-facing masked tracking URL for ad campaigns.
-    Renders the ad directly or shows info page if no tracking code.
+    Public-facing masked tracking URL for ad and phishing campaigns.
+    Routes to the correct handler based on campaign_id prefix.
     """
+    # Handle phishing campaigns (prefix: phish_)
+    if campaign_id.startswith("phish_"):
+        return await _handle_phishing_tracking(campaign_id, u, request)
+
     if not u:
         # For direct campaign links without user tracking, show a generic page
         return HTMLResponse(content="""
