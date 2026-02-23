@@ -286,6 +286,7 @@ class PhishingCampaignCreate(BaseModel):
     assigned_module_id: Optional[str] = None
     click_page_html: Optional[str] = None
     risk_level: Optional[str] = "medium"  # low, medium, high, critical
+    alert_template_id: Optional[str] = None  # Alert template to show on click
 
 
 class PhishingCampaignResponse(BaseModel):
