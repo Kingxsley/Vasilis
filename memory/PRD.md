@@ -100,14 +100,14 @@ JWT_SECRET=<secure-random-string>
 - [ ] Simulation Builder CTA Enhancement (tracking link naming)
 
 ## Recent Changes (Feb 23, 2026)
-- **QR Code Auto-Generation** - Real QR codes in Simulation Builder with Auto-Track/Custom URL modes
-- Fixed phishing tracking - emails now use correct API URL for tracking links
-- Optimized campaign dialog UI - collapsible custom awareness page section
+- **Fixed Stats Accuracy** - Phishing stats now correctly show click rate, submission rate
+- **Added Risk Level to Campaigns** - Configurable risk level (low/medium/high/critical) per campaign
+- **Vulnerable Users Risk Logic** - Risk level based on campaign + credential submission = critical
+- **Removed Risk Assessment Summary** - Simplified Advanced Analytics page
+- **QR Code Auto-Generation** - Real QR codes in Simulation Builder
+- Fixed phishing tracking - emails now use correct API URL
+- Optimized campaign dialog UI
 - Email Template Management UI with preview and edit
-- Added PUT endpoint for phishing templates
-- Added delete button to Saved Simulations
-- Fixed production CORS issues
-- Updated favicon
 
 ### Production Environment Variables (Vercel Backend)
 ```
