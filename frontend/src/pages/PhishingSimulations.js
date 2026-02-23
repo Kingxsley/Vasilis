@@ -77,7 +77,8 @@ export default function PhishingSimulations() {
     launch_immediately: true,
     assigned_module_id: '',
     click_page_html: '',
-    risk_level: 'medium'  // Default risk level
+    risk_level: 'medium',  // Default risk level
+    alert_template_id: ''  // Alert template to show on click
   });
   
   const [newTemplate, setNewTemplate] = useState({
