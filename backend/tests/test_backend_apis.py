@@ -117,9 +117,9 @@ class TestPhishingCampaigns:
         assert "This was a simulated security test" in content or "security awareness" in content.lower()
         print("PASS: Phishing click tracking returns awareness page HTML")
     
-    def test_phishing_campaign_has_assigned_module_field(self, auth_headers):
+    def test_phishing_campaign_has_assigned_module_field(self):
         """Test that phishing campaigns can have assigned training modules"""
-        response = requests.get(f"{API}/phishing/campaigns", headers=auth_headers)
+        response = requests.get(f"{API}/phishing/campaigns", headers=get_auth_headers())
         assert response.status_code == 200
         data = response.json()
         if len(data) > 0:
