@@ -1092,6 +1092,22 @@ export default function PhishingSimulations() {
                   </div>
                 )}
               </div>
+
+              {/* Assign Training Module */}
+              <div>
+                <Label className="text-gray-400 text-sm mb-1 block">Assign Training Module (auto-assigned on link click)</Label>
+                <Select value={newCampaign.assigned_module_id || 'none'} onValueChange={(v) => setNewCampaign(prev => ({...prev, assigned_module_id: v === 'none' ? '' : v}))}>
+                  <SelectTrigger className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]" data-testid="assigned-module-select">
+                    <SelectValue placeholder="None (assign all modules)" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#161B22] border-[#30363D]">
+                    <SelectItem value="none" className="text-gray-400">None (assign all active modules)</SelectItem>
+                    {trainingModules.filter(m => m.is_active).map(m => (
+                      <SelectItem key={m.module_id} value={m.module_id} className="text-[#E8DDB5]">{m.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => {
