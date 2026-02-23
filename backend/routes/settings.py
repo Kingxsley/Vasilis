@@ -176,7 +176,8 @@ async def get_branding():
         "social_twitter": settings.get("social_twitter"),
         "social_linkedin": settings.get("social_linkedin"),
         "social_instagram": settings.get("social_instagram"),
-        "social_youtube": settings.get("social_youtube")
+        "social_youtube": settings.get("social_youtube"),
+        "discord_webhook_url": settings.get("discord_webhook_url")
     }
 
 
