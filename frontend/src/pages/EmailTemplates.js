@@ -108,6 +108,47 @@ export default function EmailTemplates() {
     buttonUrl: '/training'
   });
 
+  // Visual Email Template Builder State
+  const [customEmailTemplates, setCustomEmailTemplates] = useState([]);
+  const [editingEmailTemplate, setEditingEmailTemplate] = useState(null);
+  const [emailPreview, setEmailPreview] = useState(null);
+  const [emailFormData, setEmailFormData] = useState({
+    name: '',
+    description: '',
+    subject: '',
+    type: 'training',  // training, notification, phishing
+    logoUrl: '',
+    logoIcon: '📚',
+    useIcon: true,  // Use icon instead of logo URL
+    primaryColor: '#D4A836',
+    backgroundColor: '#0D1117',
+    cardColor: '#161B22',
+    headerTitle: 'Security Training Required',
+    headerTitleColor: '#4CAF50',
+    greeting: 'Hello {{USER_NAME}},',
+    mainMessage: 'You recently clicked on a simulated security threat during our awareness exercise.',
+    highlightBox: {
+      show: true,
+      icon: '⚠️',
+      text: "Don't worry! This was a training simulation. No harm was done, but it's important to improve your awareness.",
+      backgroundColor: '#D4A836',
+      textColor: '#000000'
+    },
+    additionalMessage: 'Your training progress has been reset for this module. Please complete the training to strengthen your security awareness skills.',
+    showButton: true,
+    buttonText: 'Start Training Now',
+    buttonUrl: '{{TRAINING_URL}}',
+    buttonColor: '#D4A836',
+    showTips: true,
+    tips: [
+      'Always verify the sender\'s email address',
+      'Hover over links before clicking',
+      'When in doubt, contact IT directly',
+      'Report suspicious emails immediately'
+    ],
+    footerText: 'Vasilis NetShield Security Training'
+  });
+
   const headers = { Authorization: `Bearer ${token}` };
 
   useEffect(() => {
