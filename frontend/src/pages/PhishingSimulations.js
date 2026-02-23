@@ -568,7 +568,8 @@ export default function PhishingSimulations() {
       assigned_module_id: '',
       click_page_html: '',
       risk_level: 'medium',
-      alert_template_id: ''
+      alert_template_id: '',
+      custom_email_template_id: ''
     });
     setEditingCampaign(null);
     setShowCustomPageEditor(false);
