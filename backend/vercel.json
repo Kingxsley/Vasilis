@@ -11,8 +11,5 @@
       "src": "/(.*)",
       "dest": "server.py"
     }
-  ],
-  "env": {
-    "CORS_ORIGINS": "https://vasilisnetshield.com,https://www.vasilisnetshield.com"
-  }
+  ]
 }
