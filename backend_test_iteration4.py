@@ -16,7 +16,7 @@ from datetime import datetime
 import uuid
 
 class VasilisNetShieldTesterIteration4:
-    def __init__(self, base_url="https://awareness-platform-1.preview.emergentagent.com"):
+    def __init__(self, base_url="https://vasilis-app.preview.emergentagent.com"):
         self.base_url = base_url.rstrip('/')
         self.api_base = f"{self.base_url}/api"
         self.token = None
