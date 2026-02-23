@@ -2045,3 +2045,102 @@ async def delete_phishing_media(image_id: str, request: Request):
         raise HTTPException(status_code=404, detail="Image not found")
     
     return {"message": "Image deleted"}
+
+
+# ============== QR CODE ROUTES ==============
+
+@router.post("/qrcode/generate")
+async def generate_qr_code(request: Request):
+    """Generate a QR code image from a URL"""
+    await require_admin(request)
+    
+    try:
+        import qrcode
+        from io import BytesIO
+        
+        body = await request.json()
+        url = body.get("url", "")
+        size = body.get("size", 200)
+        use_tracking = body.get("use_tracking", True)
+        
+        if not url and not use_tracking:
+            raise HTTPException(status_code=400, detail="URL is required when not using tracking URL")
+        
+        # If use_tracking is True and no URL provided, we'll use a placeholder
+        # The actual tracking URL will be injected at send time
+        qr_url = url if url else "{{TRACKING_URL}}"
+        
+        # Generate QR code
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=2,
+        )
+        qr.add_data(qr_url)
+        qr.make(fit=True)
+        
+        # Create image with custom colors
+        img = qr.make_image(fill_color="black", back_color="white")
+        
+        # Convert to base64
+        buffer = BytesIO()
+        img.save(buffer, format='PNG')
+        buffer.seek(0)
+        
+        img_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+        
+        return {
+            "success": True,
+            "qr_code": f"data:image/png;base64,{img_base64}",
+            "url": qr_url,
+            "size": size
+        }
+        
+    except ImportError:
+        raise HTTPException(status_code=500, detail="QR code library not installed")
+    except Exception as e:
+        logger.error(f"QR code generation error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/qrcode/preview/{tracking_code}")
+async def preview_qr_code(tracking_code: str, request: Request):
+    """Generate a QR code image for a specific tracking code (returns PNG)"""
+    try:
+        import qrcode
+        from io import BytesIO
+        from fastapi.responses import StreamingResponse
+        
+        # Build the tracking URL
+        base_url = str(request.base_url).rstrip('/')
+        import os
+        api_url = os.environ.get('API_URL', base_url)
+        if api_url.startswith('http://') and 'localhost' not in api_url:
+            api_url = api_url.replace('http://', 'https://')
+        
+        tracking_url = f"{api_url}/api/phishing/track/click/{tracking_code}"
+        
+        # Generate QR code
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=2,
+        )
+        qr.add_data(tracking_url)
+        qr.make(fit=True)
+        
+        img = qr.make_image(fill_color="black", back_color="white")
+        
+        # Return as PNG
+        buffer = BytesIO()
+        img.save(buffer, format='PNG')
+        buffer.seek(0)
+        
+        return StreamingResponse(buffer, media_type="image/png")
+        
+    except Exception as e:
+        logger.error(f"QR code preview error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
