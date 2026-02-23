@@ -1665,7 +1665,8 @@ async def track_credential_submission(tracking_code: str, request: Request):
             user_email=target.get("user_email", "Unknown"),
             organization_name=org_name,
             campaign_name=campaign.get("name") if campaign else "Unknown",
-            org_webhook_url=org_webhook
+            org_webhook_url=org_webhook,
+            db=db
         )
     except Exception as e:
         logger.error(f"Failed to send credential submission notification: {e}")
