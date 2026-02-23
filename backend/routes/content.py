@@ -4,8 +4,18 @@ from typing import List, Optional
 from datetime import datetime, timezone
 import uuid
 import base64
+import re
 
 router = APIRouter(prefix="/content", tags=["Content"])
+
+
+def sanitize_search_query(query: Optional[str]) -> str:
+    """Sanitize search query to prevent NoSQL injection"""
+    if query is None:
+        return ""
+    # Remove special regex characters
+    sanitized = re.sub(r'[^\w\s\-@.\']', '', str(query))
+    return sanitized[:200]
 
 
 def get_db():
