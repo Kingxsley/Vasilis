@@ -3242,6 +3242,7 @@ from routes.permissions import router as permissions_router, init_permission_rou
 from routes.navigation import router as navigation_router
 from routes.activity_logs import router as activity_logs_router
 from routes.vulnerable_users import router as vulnerable_users_router
+from routes.alert_templates import router as alert_templates_router
 
 # Import RBAC manager
 from middleware.rbac import rbac_manager
