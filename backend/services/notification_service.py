@@ -142,24 +142,28 @@ async def notify_credential_submission(
     user_email: str,
     organization_name: str,
     campaign_name: str,
-    org_webhook_url: str = None
+    org_webhook_url: str = None,
+    db = None
 ):
     """Send notification when a user submits credentials to a fake login page"""
     
-    title = "🔐 Credentials Submitted!"
+    title = "CRITICAL: Credentials Submitted!"
     description = f"**CRITICAL**: A user has submitted credentials to a simulated phishing page."
     
     fields = [
-        {"name": "👤 User", "value": f"{user_name}\n{user_email}", "inline": True},
-        {"name": "🏢 Organization", "value": organization_name or "Unknown", "inline": True},
-        {"name": "📧 Campaign", "value": campaign_name or "Unknown", "inline": True},
-        {"name": "⚠️ Risk Level", "value": "HIGH - User entered credentials", "inline": False},
+        {"name": "User", "value": f"{user_name}\n{user_email}", "inline": True},
+        {"name": "Organization", "value": organization_name or "Unknown", "inline": True},
+        {"name": "Campaign", "value": campaign_name or "Unknown", "inline": True},
+        {"name": "Risk Level", "value": "HIGH - User entered credentials", "inline": False},
     ]
     
+    # Get super admin webhook from settings or env
+    super_admin_webhook = await get_super_admin_webhook(db)
+    
     # Send to super admin webhook
-    if SUPER_ADMIN_WEBHOOK_URL:
+    if super_admin_webhook:
         await send_discord_notification(
-            webhook_url=SUPER_ADMIN_WEBHOOK_URL,
+            webhook_url=super_admin_webhook,
             title=title,
             description=description,
             color=0xDC2626,  # Darker red for critical
@@ -167,7 +171,7 @@ async def notify_credential_submission(
         )
     
     # Send to organization webhook
-    if org_webhook_url and org_webhook_url != SUPER_ADMIN_WEBHOOK_URL:
+    if org_webhook_url and org_webhook_url != super_admin_webhook:
         await send_discord_notification(
             webhook_url=org_webhook_url,
             title=title,
