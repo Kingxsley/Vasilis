@@ -423,6 +423,15 @@ const AdTrackerWrapper = () => {
 const AppRouter = () => {
   const location = useLocation();
 
+  // Reload page on browser back/forward navigation (popstate)
+  useEffect(() => {
+    const handlePopState = () => {
+      window.location.reload();
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
   // Check for session_id in URL hash SYNCHRONOUSLY (before render)
   if (location.hash?.includes('session_id=')) {
