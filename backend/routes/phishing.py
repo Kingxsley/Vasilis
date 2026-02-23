@@ -232,6 +232,7 @@ async def create_campaign(data: PhishingCampaignCreate, request: Request):
         emails_sent=0,
         emails_opened=0,
         links_clicked=0,
+        assigned_module_id=data.assigned_module_id,
         created_at=datetime.fromisoformat(campaign_doc["created_at"]),
         scheduled_at=data.scheduled_at,
         started_at=None,
