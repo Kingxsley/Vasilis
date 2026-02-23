@@ -79,9 +79,15 @@ export default function Organizations() {
 
     try {
       if (editingOrg) {
-        // Prepare payload: omit empty certificate template so we don't clear
+        // Prepare payload: omit empty optional fields so we don't clear them
         const payload = { ...formData };
         if (!payload.certificate_template_id) delete payload.certificate_template_id;
+        // Keep discord_webhook_url even if empty (to allow clearing it)
+        // But only include it if it has a value or if we're explicitly clearing it
+        if (payload.discord_webhook_url === '' && !editingOrg.discord_webhook_url) {
+          delete payload.discord_webhook_url;
+        }
+        console.log('Updating organization with payload:', payload);
         await axios.patch(`${API}/organizations/${editingOrg.organization_id}`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -89,6 +95,7 @@ export default function Organizations() {
       } else {
         const payload = { ...formData };
         if (!payload.certificate_template_id) delete payload.certificate_template_id;
+        if (!payload.discord_webhook_url) delete payload.discord_webhook_url;
         await axios.post(`${API}/organizations`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -99,6 +106,7 @@ export default function Organizations() {
       setFormData({ name: '', domain: '', description: '', certificate_template_id: '', discord_webhook_url: '' });
       fetchOrganizations();
     } catch (err) {
+      console.error('Organization save error:', err);
       toast.error(err.response?.data?.detail || 'Operation failed');
     } finally {
       setSubmitting(false);
