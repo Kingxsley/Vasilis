@@ -172,6 +172,8 @@ class OrganizationUpdate(BaseModel):
     # the system will fall back to a module-level template or the global
     # default.
     certificate_template_id: Optional[str] = None
+    # Discord webhook URL for organization-specific notifications
+    discord_webhook_url: Optional[str] = None
 
 class OrganizationResponse(BaseModel):
     organization_id: str
@@ -186,6 +188,8 @@ class OrganizationResponse(BaseModel):
     # using this template.  If null, the platform will choose a module-level
     # template or use the global default.
     certificate_template_id: Optional[str] = None
+    # Discord webhook URL for organization notifications
+    discord_webhook_url: Optional[str] = None
 
 # Campaign Models
 class CampaignCreate(BaseModel):
