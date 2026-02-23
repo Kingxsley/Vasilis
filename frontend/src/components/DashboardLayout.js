@@ -29,11 +29,12 @@ const Logo = ({ collapsed = false }) => {
 
   const handleClick = (e) => {
     e.preventDefault();
-    window.location.href = '/';
+    // Navigate to dashboard when logged in (user is in DashboardLayout so they're logged in)
+    window.location.href = '/dashboard';
   };
 
   return (
-    <a href="/" onClick={handleClick} className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" data-testid="logo-home-link">
+    <a href="/dashboard" onClick={handleClick} className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" data-testid="logo-home-link">
       {branding?.logo_url ? (
         <img src={branding.logo_url} alt="Logo" className="w-8 h-8 object-contain flex-shrink-0" />
       ) : (
