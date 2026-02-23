@@ -9,54 +9,35 @@ User requested modifications to their GitHub repo (Kingxsley/Vasilis) - a securi
 - **Auth**: JWT-based authentication
 - **Deployment**: Vercel (separate frontend + backend projects)
 
-## User Personas
-- **Super Admin**: Full platform management, create campaigns/modules, view analytics
-- **Org Admin**: Organization-level management
-- **Trainee**: Takes training modules, receives phishing simulation emails
-
-## Core Requirements
-- Phishing email simulation campaigns with tracking
-- Malicious ad simulation campaigns with tracking
-- Training module management with rich question types
-- Advanced analytics with risk assessment
-- Custom branding/theming support
-- Certificate generation
-
 ## What's Been Implemented
 
-### Iteration 1 (Jan 2026) - Initial Bug Fixes
-1. Fixed scenario link tracking (phish_ prefix support in /api/track/)
-2. Fixed copy URL to embed link format
-3. Fixed risk assessment to aggregate phishing + ad data
-4. Fixed browser back button reload (popstate listener)
-5. Fixed module designer (added scenarios field to models)
-6. Replaced all placeholder SVG icons with custom favicon.svg
-7. Fixed Vercel deployment (removed emergentintegrations, CI=false build)
+### Iteration 1 - Initial Bug Fixes
+- Fixed scenario link tracking, copy URL, risk assessment, back button reload
+- Replaced placeholder SVG icons with custom favicon.svg
+- Fixed Vercel deployment (removed emergentintegrations, CI=false)
 
-### Iteration 2 (Jan 2026) - Major Enhancements
-1. **Rich Module Designer** - Fully rebuilt QuestionModuleDesigner with:
-   - Multiple Choice, True/False, Safe/Unsafe, Select Best N, Image Question types
-   - Image upload for questions
-   - Click-to-mark-correct option selection
-   - Edit legacy modules in the designer
-   - Questions stored in `questions` field on training module
-2. **Removed Module Builder** - Redirects /module-builder to /question-modules
-3. **Random Questions** - Training sessions shuffle questions for trainees
-4. **Fixed Phishing Tracking** - Fixed {{TRACKING_URL}} vs {{TRACKING_LINK}} placeholder mismatch
-5. **Fixed Ad Copy URL** - Now copies per-target embed URL (/api/ads/render/{tracking_code})
-6. **Simulation Builder Enhancements**:
-   - Email From/Subject fields for explicit control
-   - CTA/Button/Link blocks show tracking link info
-   - Saved tab loads phishing templates
-   - Launch dialog includes training module assignment
-7. **Auto-assign Training** - Phishing click handler assigns specific or all modules
-8. **Campaign Module Assignment** - Both PhishingSimulations and SimulationBuilder support assigning training modules per campaign
+### Iteration 2 - Major Enhancements (VERIFIED)
+1. **Rich Module Designer** - 5 question types: Multiple Choice, True/False, Safe/Unsafe, Select Best N, Image Question
+2. **Module Type Selection** - 9 module types (phishing, malicious_ad, social_engineering, password_security, data_handling, ransomware, usb_security, mfa_awareness, general)
+3. **Edit Legacy Modules** - All existing modules editable in the designer
+4. **Module Builder Removed** - /module-builder redirects to /question-modules
+5. **Random Questions** - Training sessions shuffle question order (verified with DB check)
+6. **Fixed Phishing Email Tracking** - Root cause: {{TRACKING_URL}} vs {{TRACKING_LINK}} placeholder mismatch. Both now replaced in phishing_service.py
+7. **Fixed Ad Copy URL** - Copies per-target embed URL (/api/ads/render/{tracking_code})
+8. **Email Headers in SimulationBuilder** - From/Subject fields for explicit control
+9. **CTA Tracking Links** - Button/Link blocks show {{TRACKING_URL}} info
+10. **Saved Simulations** - Saved tab loads phishing templates from API
+11. **Auto-assign Training** - Phishing click handler assigns the campaign's linked module
+12. **Campaign Module Assignment** - assigned_module_id field in PhishingCampaignCreate/Response
+13. **PhishingCampaignResponse** fixed in both /app/backend/models/__init__.py AND /app/backend/models/models/__init__.py
 
-## Backlog / Future Tasks
+## Key Model Changes
+- PhishingCampaignCreate: added assigned_module_id
+- PhishingCampaignResponse: added assigned_module_id
+- TrainingModuleCreate/Update/Response: added questions (List[dict]), module_type becomes changeable
+
+## Backlog
 - P0: End-to-end email sending (requires SendGrid API key)
-- P1: Credential submission tracking in phishing stats
-- P1: SMS phishing simulation support
-- P2: QR code phishing interactive tracking
-- P2: Export campaign reports to PDF
-- P2: Campaign scheduling with cron
+- P1: Credential submission tracking, SMS phishing
+- P2: QR code tracking, PDF export, campaign scheduling
 - P3: AI-powered phishing email generation
