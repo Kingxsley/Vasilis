@@ -476,8 +476,8 @@ export default function SimulationBuilder() {
     setSaving(true);
     try {
       // Build email content from blocks
-      const emailSubject = blockValues[selectedBlocks.find(b => b.type === 'subject')?.instanceId] || simulationName;
-      const senderInfo = blockValues[selectedBlocks.find(b => b.type === 'sender')?.instanceId] || 'Security Team <security@company.com>';
+      const subject = emailSubject || simulationName;
+      const senderInfo = emailFrom || 'Security Team <security@company.com>';
       
       // Build HTML body from blocks
       let bodyHtml = '';
