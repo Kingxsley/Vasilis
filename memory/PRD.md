@@ -92,13 +92,20 @@ JWT_SECRET=<secure-random-string>
 ## Pending Tasks
 
 ### P1 - Upcoming
-- [ ] Simulation Builder CTA Enhancement (naming and tracking links)
+- [ ] Email Template Management UI
 
 ### P2 - Future/Backlog
-- [ ] Email Template Management UI
+- [ ] Simulation Builder CTA Enhancement (tracking link naming)
 - [ ] Advanced analytics dashboard
 - [ ] Bulk user import (CSV)
 - [ ] Scheduled campaign automation
+
+## Recent Changes (Feb 23, 2026)
+- Added PUT endpoint for phishing templates (fixes "Method Not Allowed" error)
+- Added delete button to Saved Simulations
+- Added visual editor for Custom Awareness Page
+- Fixed production CORS issues
+- Updated favicon
 
 ## Key Files Reference
 - `/app/backend/server.py` - Main API server with CORS config
