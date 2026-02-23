@@ -3286,6 +3286,7 @@ api_router.include_router(permissions_router)
 api_router.include_router(navigation_router)
 api_router.include_router(activity_logs_router)
 api_router.include_router(vulnerable_users_router)
+api_router.include_router(alert_templates_router)
 
 
 async def _handle_phishing_tracking(campaign_id: str, u: str = None, request: Request = None):
