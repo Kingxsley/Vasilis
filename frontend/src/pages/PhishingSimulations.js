@@ -1202,6 +1202,33 @@ export default function PhishingSimulations() {
                 </Select>
               </div>
 
+              {/* Scenario Type - Determines what landing page to show */}
+              <div>
+                <Label className="text-gray-400 text-sm mb-1 block">Scenario Type</Label>
+                <Select value={newCampaign.scenario_type || 'phishing_email'} onValueChange={(v) => setNewCampaign(prev => ({...prev, scenario_type: v}))}>
+                  <SelectTrigger className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]" data-testid="scenario-type-select">
+                    <SelectValue placeholder="Select scenario type" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#161B22] border-[#30363D]">
+                    <SelectItem value="phishing_email" className="text-[#E8DDB5]">
+                      📧 Phishing Email - Shows awareness page on click
+                    </SelectItem>
+                    <SelectItem value="credential_harvest" className="text-red-400">
+                      🔐 Credential Harvest - Shows fake login form then awareness
+                    </SelectItem>
+                    <SelectItem value="qr_code_phishing" className="text-purple-400">
+                      📱 QR Code Phishing - QR code based attack
+                    </SelectItem>
+                    <SelectItem value="bec_scenario" className="text-orange-400">
+                      💼 Business Email Compromise
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500 mt-1">
+                  {newCampaign.scenario_type === 'credential_harvest' && '⚠️ Users will see a fake login form before the awareness page'}
+                </p>
+              </div>
+
               {/* Assign Training Module */}
               <div>
                 <Label className="text-gray-400 text-sm mb-1 block">Assign Training Module (auto-assigned on link click)</Label>
