@@ -655,14 +655,25 @@ export default function SimulationBuilder() {
   
   // Launch saved simulation
   const launchSavedSimulation = async (simulation) => {
-    // Check if template already exists for this simulation
+    // If this is already a phishing template (has template_id), launch directly
+    if (simulation.template_id) {
+      setCampaignToLaunch({
+        name: simulation.name || simulation.title,
+        template_id: simulation.template_id,
+        type: SIMULATION_TYPES.find(t => t.id === simulation.scenario_type) || SIMULATION_TYPES[0]
+      });
+      setShowLaunchDialog(true);
+      return;
+    }
+    
+    // Otherwise it's a scenario - need to create/find template
     try {
       const templatesRes = await axios.get(`${API}/phishing/templates`, { headers });
-      const existingTemplate = templatesRes.data.find(t => t.name === simulation.title);
+      const existingTemplate = templatesRes.data.find(t => t.name === (simulation.title || simulation.name));
       
       if (existingTemplate) {
         setCampaignToLaunch({
-          name: simulation.title,
+          name: simulation.title || simulation.name,
           template_id: existingTemplate.template_id,
           type: SIMULATION_TYPES.find(t => t.id === simulation.scenario_type) || SIMULATION_TYPES[0]
         });
