@@ -3255,6 +3255,70 @@ api_router.include_router(permissions_router)
 api_router.include_router(navigation_router)
 api_router.include_router(activity_logs_router)
 
+
+async def _handle_phishing_tracking(campaign_id: str, u: str = None, request: Request = None):
+    """Handle phishing campaign tracking via masked URL."""
+    if not u:
+        return HTMLResponse(content="""
+        <!DOCTYPE html>
+        <html>
+        <head><title>Security Training</title>
+        <style>
+            body { font-family: Arial, sans-serif; background: #0f0f15; color: #E8DDB5; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; text-align: center; }
+            .container { padding: 40px; border: 1px solid #D4A83633; border-radius: 8px; background: #161B22; }
+            h1 { color: #D4A836; margin-bottom: 16px; }
+            p { color: #9CA3AF; }
+        </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Security Awareness Training</h1>
+                <p>This tracking link requires a valid user parameter.</p>
+                <p>Please use the link provided in your campaign email.</p>
+            </div>
+        </body>
+        </html>
+        """)
+    
+    # Find phishing target by tracking code
+    target = await db.phishing_targets.find_one({"tracking_code": u}, {"_id": 0})
+    if not target:
+        return HTMLResponse(content="""
+        <!DOCTYPE html>
+        <html>
+        <head><title>Invalid Link</title>
+        <style>
+            body { font-family: Arial; background: #0f0f15; color: #E8DDB5; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+            .container { padding: 40px; background: #161B22; border-radius: 8px; text-align: center; }
+            h1 { color: #D4A836; }
+        </style>
+        </head>
+        <body><div class="container"><h1>Invalid Tracking Link</h1><p>This link is no longer valid.</p></div></body>
+        </html>
+        """, status_code=404)
+    
+    # Verify campaign matches
+    if target.get("campaign_id") != campaign_id:
+        return HTMLResponse(content="""
+        <!DOCTYPE html>
+        <html>
+        <head><title>Invalid Link</title>
+        <style>
+            body { font-family: Arial; background: #0f0f15; color: #E8DDB5; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+            .container { padding: 40px; background: #161B22; border-radius: 8px; text-align: center; }
+            h1 { color: #D4A836; }
+        </style>
+        </head>
+        <body><div class="container"><h1>Invalid Tracking Link</h1><p>This link does not match the campaign.</p></div></body>
+        </html>
+        """, status_code=404)
+    
+    # Record link click by redirecting to the phishing track/click endpoint
+    # This will handle click recording and show the awareness page
+    from starlette.responses import RedirectResponse as StarletteRedirect
+    return StarletteRedirect(url=f"/api/phishing/track/click/{u}", status_code=302)
+
+
 # ============== PUBLIC TRACKING ROUTE (Masked URL) ==============
 # This route provides a clean, masked URL for ad and phishing tracking
 # URL format: /api/track/{campaign_id}?u={user_tracking_code}
