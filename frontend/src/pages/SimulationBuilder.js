@@ -852,7 +852,7 @@ export default function SimulationBuilder() {
         );
       case 'qr_code':
         return (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex gap-2">
               <Button
                 size="sm"
@@ -887,6 +887,22 @@ export default function SimulationBuilder() {
                 <span className="text-xs text-gray-400">QR code will link to tracking URL (clicks are recorded)</span>
               </div>
             )}
+            {/* Preview URL - Shows different URL in preview for testing */}
+            <div className="space-y-1 pt-2 border-t border-[#30363D]">
+              <Label className="text-xs text-gray-400">Preview URL (optional)</Label>
+              <Input
+                value={block.previewUrl || ''}
+                onChange={(e) => {
+                  const newBlocks = canvasBlocks.map(b => 
+                    b.instanceId === block.instanceId ? {...b, previewUrl: e.target.value} : b
+                  );
+                  setCanvasBlocks(newBlocks);
+                }}
+                placeholder="URL to show in preview (e.g., https://company.com)"
+                className="bg-[#0D1117] border-[#30363D] text-white text-sm"
+              />
+              <p className="text-xs text-gray-500">This URL is shown in the preview QR code for demonstration purposes only.</p>
+            </div>
           </div>
         );
       default:
