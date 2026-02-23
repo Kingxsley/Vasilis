@@ -96,27 +96,30 @@ async def notify_phishing_click(
 ):
     """Send notification when a user clicks a phishing link"""
     
-    title = "🚨 Phishing Link Clicked!"
+    title = "Phishing Link Clicked!"
     description = f"A user has clicked on a simulated phishing link."
     
     fields = [
-        {"name": "👤 User", "value": f"{user_name}\n{user_email}", "inline": True},
-        {"name": "🏢 Organization", "value": organization_name or "Unknown", "inline": True},
-        {"name": "📧 Campaign", "value": campaign_name or "Unknown", "inline": True},
+        {"name": "User", "value": f"{user_name}\n{user_email}", "inline": True},
+        {"name": "Organization", "value": organization_name or "Unknown", "inline": True},
+        {"name": "Campaign", "value": campaign_name or "Unknown", "inline": True},
     ]
     
     if click_ip:
-        fields.append({"name": "🌐 IP Address", "value": click_ip, "inline": True})
+        fields.append({"name": "IP Address", "value": click_ip, "inline": True})
     
     if user_agent:
         # Truncate user agent if too long
         ua_display = user_agent[:100] + "..." if len(user_agent) > 100 else user_agent
-        fields.append({"name": "📱 Device", "value": ua_display, "inline": False})
+        fields.append({"name": "Device", "value": ua_display, "inline": False})
+    
+    # Get super admin webhook from settings or env
+    super_admin_webhook = await get_super_admin_webhook(db)
     
     # Send to super admin webhook
-    if SUPER_ADMIN_WEBHOOK_URL:
+    if super_admin_webhook:
         await send_discord_notification(
-            webhook_url=SUPER_ADMIN_WEBHOOK_URL,
+            webhook_url=super_admin_webhook,
             title=title,
             description=description,
             color=0xFF6B6B,  # Red
@@ -124,7 +127,7 @@ async def notify_phishing_click(
         )
     
     # Send to organization webhook if provided
-    if org_webhook_url and org_webhook_url != SUPER_ADMIN_WEBHOOK_URL:
+    if org_webhook_url and org_webhook_url != super_admin_webhook:
         await send_discord_notification(
             webhook_url=org_webhook_url,
             title=title,
