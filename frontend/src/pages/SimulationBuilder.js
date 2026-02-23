@@ -1058,8 +1058,10 @@ export default function SimulationBuilder() {
                 </label>
               );
             case 'qr_code':
-              const qrUrl = value || '{{TRACKING_URL}}';
-              const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrUrl)}`;
+              // Use previewUrl for display if set, otherwise use the actual URL
+              const actualQrUrl = value || '{{TRACKING_URL}}';
+              const displayUrl = block.previewUrl || actualQrUrl;
+              const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(displayUrl === '{{TRACKING_URL}}' ? 'https://example.com/tracking' : displayUrl)}`;
               return (
                 <div key={block.instanceId} className="mb-4 flex flex-col items-center">
                   <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
@@ -1076,7 +1078,9 @@ export default function SimulationBuilder() {
                       <QrCode className="w-16 h-16 text-gray-400" />
                     </div>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2 max-w-[150px] truncate">{qrUrl.includes('TRACKING') ? 'Tracking QR' : qrUrl}</p>
+                  <p className="text-xs text-gray-500 mt-2 max-w-[150px] truncate">
+                    {block.previewUrl ? `Preview: ${block.previewUrl}` : (actualQrUrl.includes('TRACKING') ? 'Tracking QR' : actualQrUrl)}
+                  </p>
                 </div>
               );
             case 'mfa_prompt':
