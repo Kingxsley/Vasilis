@@ -129,6 +129,18 @@ JWT_SECRET=<secure-random-string>
 - **Integrated Alert Templates with Click Tracking** - When a user clicks a phishing link, the system checks for an alert_template_id and displays the corresponding HTML
 - **Fixed alert_templates.py Route** - Added proper `Request` type import to fix FastAPI parameter validation
 
+### Session Changes (Feb 23, 2026 - E1 Fork Part 2)
+- **Visual Alert Template Builder** - Complete no-code UI for creating alert pages:
+  - Icon selector with 18 options (warning, alert, phishing, lock, shield, etc.)
+  - Color picker with 8 accent color presets
+  - Editable title and subtitle fields
+  - Customizable greeting and message body with template variables
+  - Configurable safety tips section
+  - Call-to-action button text and URL
+  - **Live preview** showing changes in real-time
+- **Fixed All Tracking URL Generation** - QR code and tracking URL endpoints now properly use `API_URL` env var
+- **Alert Template Config Storage** - Visual builder settings are saved with templates for future editing
+
 ### Production Environment Variables (Vercel Backend)
 ```
 API_URL=https://api.vasilisnetshield.com
