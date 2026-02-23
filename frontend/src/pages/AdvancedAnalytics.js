@@ -439,7 +439,7 @@ export default function AdvancedAnalytics() {
             <CardHeader>
               <CardTitle className="text-[#E8DDB5] flex items-center gap-2">
                 <BarChart3 className="w-5 h-5 text-[#D4A836]" />
-                Phishing Campaign Performance
+                Campaign Overview
               </CardTitle>
             </CardHeader>
             <CardContent>
