@@ -310,6 +310,10 @@ export default function SimulationBuilder() {
   const [loadingSimulations, setLoadingSimulations] = useState(false);
   const dropAreaRef = useRef(null);
   
+  // Email header fields
+  const [emailFrom, setEmailFrom] = useState('Security Team <security@company.com>');
+  const [emailSubject, setEmailSubject] = useState('');
+  
   // Launch campaign states
   const [showLaunchDialog, setShowLaunchDialog] = useState(false);
   const [availableUsers, setAvailableUsers] = useState([]);
