@@ -107,6 +107,7 @@ async def update_alert_template(template_id: str, data: AlertTemplateCreate, req
             "name": data.name,
             "description": data.description,
             "html": data.html,
+            "config": data.config,  # Update visual config
             "updated_at": datetime.now(timezone.utc).isoformat()
         }}
     )
