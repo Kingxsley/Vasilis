@@ -41,6 +41,7 @@ class OrganizationCreate(BaseModel):
     name: str
     domain: Optional[str] = None
     description: Optional[str] = None
+    discord_webhook_url: Optional[str] = None  # Discord webhook for organization notifications
 
 
 class OrganizationUpdate(BaseModel):
@@ -48,10 +49,8 @@ class OrganizationUpdate(BaseModel):
     domain: Optional[str] = None
     description: Optional[str] = None
     is_active: Optional[bool] = None
+    discord_webhook_url: Optional[str] = None  # Discord webhook for organization notifications
     # Allow administrators to specify a default certificate template for the organization.
-    # When set, this template will be used when generating completion certificates for
-    # users belonging to the organization. If omitted, the system will fall back to
-    # a module-level template or the global default.
     certificate_template_id: Optional[str] = None
 
 
@@ -63,10 +62,7 @@ class OrganizationResponse(BaseModel):
     is_active: bool
     created_at: datetime
     user_count: int = 0
-    # The certificate template assigned to this organization.  When present,
-    # certificates generated for users in the organization will be rendered
-    # using this template.  If null, the platform will choose a module-level
-    # template or use the global default.
+    discord_webhook_url: Optional[str] = None  # Discord webhook for organization notifications
     certificate_template_id: Optional[str] = None
 
 
