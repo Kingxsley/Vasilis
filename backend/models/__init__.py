@@ -300,6 +300,7 @@ class PhishingCampaignResponse(BaseModel):
     emails_sent: int
     emails_opened: int
     links_clicked: int
+    assigned_module_id: Optional[str] = None
     created_at: datetime
     scheduled_at: Optional[datetime] = None
     started_at: Optional[datetime] = None
