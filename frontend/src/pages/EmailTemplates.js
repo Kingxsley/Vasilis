@@ -108,16 +108,37 @@ const DEFAULT_ALERT_TEMPLATES = [
 export default function EmailTemplates() {
   const { token } = useAuth();
   const [templates, setTemplates] = useState({});
+  const [alertTemplates, setAlertTemplates] = useState(DEFAULT_ALERT_TEMPLATES);
+  const [customAlertTemplates, setCustomAlertTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingTemplate, setEditingTemplate] = useState(null);
+  const [editingAlertTemplate, setEditingAlertTemplate] = useState(null);
   const [previewData, setPreviewData] = useState(null);
+  const [alertPreview, setAlertPreview] = useState(null);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({ subject: '', body: '' });
+  const [alertFormData, setAlertFormData] = useState({ name: '', description: '', html: '' });
   const [editorMode, setEditorMode] = useState('visual'); // 'visual' or 'html'
+  const [activeTab, setActiveTab] = useState('notifications');
 
   useEffect(() => {
     fetchTemplates();
+    fetchAlertTemplates();
   }, []);
+
+  const fetchAlertTemplates = async () => {
+    try {
+      const res = await axios.get(`${API}/alert-templates`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.templates) {
+        setCustomAlertTemplates(res.data.templates);
+      }
+    } catch (err) {
+      // Alert templates endpoint may not exist yet, use defaults
+      console.log('Using default alert templates');
+    }
+  };
 
   const fetchTemplates = async () => {
     try {
