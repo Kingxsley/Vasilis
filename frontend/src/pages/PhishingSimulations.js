@@ -1101,6 +1101,30 @@ export default function PhishingSimulations() {
                 )}
               </div>
 
+              {/* Risk Level */}
+              <div>
+                <Label className="text-gray-400 text-sm mb-1 block">Risk Level (assigned to users who click)</Label>
+                <Select value={newCampaign.risk_level || 'medium'} onValueChange={(v) => setNewCampaign(prev => ({...prev, risk_level: v}))}>
+                  <SelectTrigger className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5]" data-testid="risk-level-select">
+                    <SelectValue placeholder="Select risk level" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#161B22] border-[#30363D]">
+                    <SelectItem value="low" className="text-green-400">
+                      🟢 Low - Awareness test
+                    </SelectItem>
+                    <SelectItem value="medium" className="text-yellow-400">
+                      🟡 Medium - Standard phishing
+                    </SelectItem>
+                    <SelectItem value="high" className="text-orange-400">
+                      🟠 High - Targeted attack
+                    </SelectItem>
+                    <SelectItem value="critical" className="text-red-400">
+                      🔴 Critical - Credential harvest
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Assign Training Module */}
               <div>
                 <Label className="text-gray-400 text-sm mb-1 block">Assign Training Module (auto-assigned on link click)</Label>
