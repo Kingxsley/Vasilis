@@ -22,8 +22,12 @@ def get_db():
         return server_db
     return db
 
+async def get_current_user(request: Request) -> dict:
+    from utils import get_current_user as _get_current_user, security
+    credentials = await security(request)
+    return await _get_current_user(request, credentials)
+
 async def require_admin(request: Request):
-    from server import get_current_user
     user = await get_current_user(request)
     if user.get("role") not in ["super_admin", "org_admin"]:
         raise HTTPException(status_code=403, detail="Admin access required")
