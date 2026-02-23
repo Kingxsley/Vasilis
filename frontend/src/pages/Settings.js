@@ -32,7 +32,8 @@ export default function Settings() {
     social_twitter: '',
     social_linkedin: '',
     social_instagram: '',
-    social_youtube: ''
+    social_youtube: '',
+    discord_webhook_url: ''
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
