@@ -690,7 +690,7 @@ async def list_campaign_targets(campaign_id: str, request: Request):
 
 @router.get("/stats")
 async def get_phishing_stats(request: Request, days: int = 30):
-    """Get aggregated phishing statistics for analytics dashboard"""
+    """Get aggregated simulation statistics for analytics dashboard (phishing + ad campaigns)"""
     await require_admin(request)
     db = get_db()
     
@@ -699,35 +699,55 @@ async def get_phishing_stats(request: Request, days: int = 30):
     # Calculate date filter
     cutoff_date = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
     
-    # Get all campaigns (optionally filtered by date)
-    query = {}
-    if days < 365:  # Only filter by date for shorter periods
-        query["created_at"] = {"$gte": cutoff_date}
+    # --- Phishing campaign data ---
+    phish_query = {}
+    if days < 365:
+        phish_query["created_at"] = {"$gte": cutoff_date}
     
-    campaigns = await db.phishing_campaigns.find(query, {"_id": 0}).to_list(1000)
-    
-    # Count active and completed campaigns
-    active_campaigns = sum(1 for c in campaigns if c.get("status") == "running")
-    completed_campaigns = sum(1 for c in campaigns if c.get("status") == "completed")
-    
-    # Get all targets for these campaigns
-    campaign_ids = [c["campaign_id"] for c in campaigns]
-    targets = await db.phishing_targets.find(
-        {"campaign_id": {"$in": campaign_ids}} if campaign_ids else {},
+    phish_campaigns = await db.phishing_campaigns.find(phish_query, {"_id": 0}).to_list(1000)
+    phish_campaign_ids = [c["campaign_id"] for c in phish_campaigns]
+    phish_targets = await db.phishing_targets.find(
+        {"campaign_id": {"$in": phish_campaign_ids}} if phish_campaign_ids else {},
         {"_id": 0}
     ).to_list(100000)
     
-    # Calculate totals
-    total_campaigns = len(campaigns)
-    total_sent = sum(1 for t in targets if t.get("email_sent"))
-    total_opened = sum(1 for t in targets if t.get("email_opened"))
-    total_clicked = sum(1 for t in targets if t.get("link_clicked"))
+    phish_active = sum(1 for c in phish_campaigns if c.get("status") in ("running", "active"))
+    phish_completed = sum(1 for c in phish_campaigns if c.get("status") == "completed")
+    phish_sent = sum(1 for t in phish_targets if t.get("email_sent"))
+    phish_opened = sum(1 for t in phish_targets if t.get("email_opened"))
+    phish_clicked = sum(1 for t in phish_targets if t.get("link_clicked"))
+    
+    # --- Ad campaign data ---
+    ad_query = {}
+    if days < 365:
+        ad_query["created_at"] = {"$gte": cutoff_date}
+    
+    ad_campaigns = await db.ad_campaigns.find(ad_query, {"_id": 0}).to_list(1000)
+    ad_campaign_ids = [c["campaign_id"] for c in ad_campaigns]
+    ad_targets = await db.ad_targets.find(
+        {"campaign_id": {"$in": ad_campaign_ids}} if ad_campaign_ids else {},
+        {"_id": 0}
+    ).to_list(100000)
+    
+    ad_active = sum(1 for c in ad_campaigns if c.get("status") in ("running", "active"))
+    ad_completed = sum(1 for c in ad_campaigns if c.get("status") == "completed")
+    ad_total = len(ad_targets)
+    ad_viewed = sum(1 for t in ad_targets if t.get("ad_viewed"))
+    ad_clicked = sum(1 for t in ad_targets if t.get("ad_clicked"))
+    
+    # --- Combined totals ---
+    total_campaigns = len(phish_campaigns) + len(ad_campaigns)
+    active_campaigns = phish_active + ad_active
+    completed_campaigns = phish_completed + ad_completed
+    total_sent = phish_sent + ad_total  # ad targets are "sent" by default
+    total_opened = phish_opened + ad_viewed
+    total_clicked = phish_clicked + ad_clicked
     
     # Calculate rates
     open_rate = (total_opened / total_sent * 100) if total_sent > 0 else 0
     click_rate = (total_clicked / total_sent * 100) if total_sent > 0 else 0
     click_to_open_rate = (total_clicked / total_opened * 100) if total_opened > 0 else 0
-    submission_rate = 0  # We don't track submissions yet
+    submission_rate = 0
     
     return {
         "total_campaigns": total_campaigns,
