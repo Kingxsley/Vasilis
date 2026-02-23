@@ -96,7 +96,7 @@ export default function Organizations() {
       }
       setDialogOpen(false);
       setEditingOrg(null);
-      setFormData({ name: '', domain: '', description: '' });
+      setFormData({ name: '', domain: '', description: '', certificate_template_id: '', discord_webhook_url: '' });
       fetchOrganizations();
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Operation failed');
