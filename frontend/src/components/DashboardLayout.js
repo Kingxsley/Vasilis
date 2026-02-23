@@ -105,16 +105,10 @@ const navGroups = [
     label: 'Training',
     icon: GraduationCap,
     items: [
-      // Regular trainees see their training modules.  Admins see a separate entry for
-      // creating modules.  The /training route is hidden from admins via custom filter below.
       { path: '/training', label: 'My Training', icon: BookOpen, adminOnly: false },
-      // Admin users see the module builder instead of the My Training route.  Use plural for consistency.
-      { path: '/module-builder', label: 'Create Trainings', icon: BookOpen, adminOnly: true },
+      { path: '/question-modules', label: 'Module Designer', icon: Users, adminOnly: true },
       { path: '/certificates', label: 'Certificates', icon: Award, superAdminOnly: true },
       { path: '/certificate-templates', label: 'Cert Templates', icon: Award, superAdminOnly: true },
-      // Designer page consolidates module and question creation.  Admins can build
-      // modules and questions on a single page without needing a separate scenario manager.
-      { path: '/question-modules', label: 'Module Designer', icon: Users, adminOnly: true },
     ]
   },
   {
