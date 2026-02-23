@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vasilis NetShield - Executive Pitch</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+        }
+        .page {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 60px 50px;
+            min-height: 100vh;
+        }
+        .cover {
+            text-align: center;
+            padding: 100px 0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+            color: white;
+            margin: -60px -50px 50px -50px;
+            border-radius: 0 0 20px 20px;
+        }
+        .cover h1 {
+            font-size: 3em;
+            color: #D4A836;
+            margin-bottom: 10px;
+        }
+        .cover h2 {
+            font-size: 1.5em;
+            font-weight: 300;
+            color: #E8DDB5;
+            margin-bottom: 30px;
+        }
+        .cover .tagline {
+            font-size: 1.2em;
+            color: #ccc;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h2 { 
+            color: #1a1a2e;
+            font-size: 1.8em;
+            margin-top: 50px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #D4A836;
+        }
+        h3 {
+            color: #D4A836;
+            font-size: 1.3em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        p { margin-bottom: 15px; }
+        ul { margin-left: 25px; margin-bottom: 20px; }
+        li { margin-bottom: 10px; }
+        .stat-box {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin: 30px 0;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        .stat {
+            text-align: center;
+            padding: 15px;
+        }
+        .stat .number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #D4A836;
+        }
+        .stat .label {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            margin: 30px 0;
+        }
+        .feature-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 4px solid #D4A836;
+        }
+        .feature-card h4 {
+            color: #1a1a2e;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .comparison-table th, .comparison-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        .comparison-table th {
+            background: #1a1a2e;
+            color: white;
+        }
+        .comparison-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        .check { color: #28a745; }
+        .cross { color: #dc3545; }
+        .partial { color: #ffc107; }
+        .testimonial {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin: 30px 0;
+            font-style: italic;
+        }
+        .testimonial .quote {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            line-height: 1.8;
+        }
+        .testimonial .author {
+            color: #D4A836;
+            font-style: normal;
+            font-weight: bold;
+        }
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .pricing-card {
+            border: 2px solid #eee;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+        }
+        .pricing-card.featured {
+            border-color: #D4A836;
+            background: #fffdf5;
+        }
+        .pricing-card h4 {
+            font-size: 1.3em;
+            color: #1a1a2e;
+            margin-bottom: 10px;
+        }
+        .pricing-card .desc {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+        }
+        .pricing-card ul {
+            text-align: left;
+            list-style: none;
+            margin: 0;
+        }
+        .pricing-card li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .pricing-card li:before {
+            content: "✓ ";
+            color: #D4A836;
+        }
+        .cta-box {
+            background: #D4A836;
+            color: #1a1a2e;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 50px 0;
+        }
+        .cta-box h3 {
+            color: #1a1a2e;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+        .timeline {
+            margin: 30px 0;
+        }
+        .timeline-item {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .timeline-phase {
+            min-width: 120px;
+            font-weight: bold;
+            color: #D4A836;
+        }
+        .timeline-duration {
+            min-width: 100px;
+            color: #666;
+        }
+        .contact-info {
+            background: #1a1a2e;
+            color: white;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 50px;
+        }
+        .contact-info h3 {
+            color: #D4A836;
+            margin-bottom: 20px;
+        }
+        .contact-info p {
+            margin: 10px 0;
+        }
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 0.9em;
+            text-align: center;
+        }
+        @media print {
+            .page { box-shadow: none; }
+            .cover { page-break-after: always; }
+        }
+        @media (max-width: 768px) {
+            .feature-grid, .pricing-grid { grid-template-columns: 1fr; }
+            .stat-box { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="cover">
+            <h1>🛡️ Vasilis NetShield</h1>
+            <h2>Executive Business Pitch</h2>
+            <p class="tagline">Protect Your Organization from Cyber Threats with Human + AI Powered Security Awareness Training</p>
+        </div>
+
+        <h2>The Problem</h2>
+        <p style="font-size: 1.3em; color: #dc3545; font-weight: bold;">91% of cyberattacks begin with a phishing email.</p>
+        <p>Organizations invest millions in technical security solutions, yet the weakest link remains unchanged: <strong>human error</strong>. Your employees are your first line of defense—and your greatest vulnerability.</p>
+
+        <div class="stat-box">
+            <div class="stat">
+                <div class="number">$4.45M</div>
+                <div class="label">Average cost of a data breach</div>
+            </div>
+            <div class="stat">
+                <div class="number">74%</div>
+                <div class="label">Breaches involve human element</div>
+            </div>
+            <div class="stat">
+                <div class="number">3.4B</div>
+                <div class="label">Phishing emails sent daily</div>
+            </div>
+            <div class="stat">
+                <div class="number">60%</div>
+                <div class="label">SMBs close after an attack</div>
+            </div>
+        </div>
+
+        <h2>The Solution: Vasilis NetShield</h2>
+        <p>Vasilis NetShield is a comprehensive <strong>Security Awareness Training Platform</strong> that transforms your employees from security liabilities into your strongest defense.</p>
+        <p>We combine <strong>realistic attack simulations</strong> with <strong>AI-powered adaptive training</strong> to create lasting behavioral change—not just checkbox compliance.</p>
+
+        <h2>Platform Features</h2>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h4>🎯 Realistic Phishing Simulations</h4>
+                <p>Custom-branded phishing campaigns mimicking real-world attacks. Track who clicks, who reports, and measure improvement over time.</p>
+            </div>
+            <div class="feature-card">
+                <h4>📚 Interactive Training Modules</h4>
+                <p>Bite-sized lessons that fit into busy schedules. Gamified learning with scores and certificates.</p>
+            </div>
+            <div class="feature-card">
+                <h4>🤖 AI-Powered Scenarios</h4>
+                <p>Dynamically generated training content. Difficulty adapts to employee performance. Always fresh, never repetitive.</p>
+            </div>
+            <div class="feature-card">
+                <h4>📊 Comprehensive Analytics</h4>
+                <p>Real-time dashboards for security teams. Track organizational risk score over time. Exportable compliance reports.</p>
+            </div>
+            <div class="feature-card">
+                <h4>🏆 Certificate Generation</h4>
+                <p>Custom-branded completion certificates. Automated delivery. Verifiable credentials for compliance audits.</p>
+            </div>
+            <div class="feature-card">
+                <h4>📧 Integrated Email Campaigns</h4>
+                <p>Automated training reminders. Phishing simulation delivery. Progress notifications and encouragement.</p>
+            </div>
+        </div>
+
+        <h2>Why Vasilis NetShield?</h2>
+        <table class="comparison-table">
+            <tr>
+                <th>Feature</th>
+                <th>Vasilis NetShield</th>
+                <th>Competitors</th>
+            </tr>
+            <tr>
+                <td>AI-Generated Scenarios</td>
+                <td><span class="check">✅ Yes</span></td>
+                <td><span class="cross">❌ Static content</span></td>
+            </tr>
+            <tr>
+                <td>Custom Branding</td>
+                <td><span class="check">✅ Full white-label</span></td>
+                <td><span class="partial">⚠️ Limited</span></td>
+            </tr>
+            <tr>
+                <td>Realistic Simulations</td>
+                <td><span class="check">✅ Industry-specific</span></td>
+                <td><span class="partial">⚠️ Generic</span></td>
+            </tr>
+            <tr>
+                <td>Real-time Analytics</td>
+                <td><span class="check">✅ Live dashboards</span></td>
+                <td><span class="partial">⚠️ Delayed reports</span></td>
+            </tr>
+            <tr>
+                <td>Pricing</td>
+                <td><span class="check">✅ Competitive</span></td>
+                <td><span class="cross">❌ Enterprise-only</span></td>
+            </tr>
+        </table>
+
+        <h2>ROI & Business Impact</h2>
+        <div class="stat-box">
+            <div class="stat">
+                <div class="number">70%</div>
+                <div class="label">Reduction in click rates</div>
+            </div>
+            <div class="stat">
+                <div class="number">85%</div>
+                <div class="label">Improvement in reporting</div>
+            </div>
+            <div class="stat">
+                <div class="number">50%</div>
+                <div class="label">Decrease in incidents</div>
+            </div>
+            <div class="stat">
+                <div class="number">100%</div>
+                <div class="label">Compliance documentation</div>
+            </div>
+        </div>
+
+        <h3>Cost Savings:</h3>
+        <ul>
+            <li>Reduce risk of costly data breaches</li>
+            <li>Lower cyber insurance premiums</li>
+            <li>Minimize productivity loss from security incidents</li>
+            <li>Avoid regulatory fines and penalties</li>
+        </ul>
+
+        <div class="testimonial">
+            <p class="quote">"Within 3 months, our phishing click rate dropped from 32% to under 5%. Vasilis NetShield paid for itself after preventing just one potential breach."</p>
+            <p class="author">— IT Director, Financial Services Firm</p>
+        </div>
+
+        <h2>Implementation Timeline</h2>
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-phase">Onboarding</div>
+                <div class="timeline-duration">Week 1</div>
+                <div>Platform setup, branding, user import</div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-phase">Baseline</div>
+                <div class="timeline-duration">Week 2-3</div>
+                <div>Initial phishing test to measure current risk</div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-phase">Training</div>
+                <div class="timeline-duration">Week 4-8</div>
+                <div>Roll out training modules organization-wide</div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-phase">Reinforcement</div>
+                <div class="timeline-duration">Ongoing</div>
+                <div>Monthly simulations and refresher training</div>
+            </div>
+        </div>
+
+        <h2>Pricing Tiers</h2>
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <h4>Starter</h4>
+                <p class="desc">For small teams (up to 50 users)</p>
+                <ul>
+                    <li>Core training modules</li>
+                    <li>Monthly phishing simulations</li>
+                    <li>Basic analytics</li>
+                    <li>Email support</li>
+                </ul>
+            </div>
+            <div class="pricing-card featured">
+                <h4>Professional</h4>
+                <p class="desc">For growing organizations (up to 500 users)</p>
+                <ul>
+                    <li>All Starter features</li>
+                    <li>Custom branding</li>
+                    <li>Advanced analytics</li>
+                    <li>Priority support</li>
+                    <li>API access</li>
+                </ul>
+            </div>
+            <div class="pricing-card">
+                <h4>Enterprise</h4>
+                <p class="desc">For large organizations (unlimited)</p>
+                <ul>
+                    <li>All Professional features</li>
+                    <li>Dedicated account manager</li>
+                    <li>Custom training content</li>
+                    <li>SSO integration</li>
+                    <li>SLA guarantee</li>
+                </ul>
+            </div>
+        </div>
+        <p style="text-align: center; color: #666;"><em>Contact us for custom pricing</em></p>
+
+        <div class="cta-box">
+            <h3>Ready to Protect Your Organization?</h3>
+            <p style="font-size: 1.1em;">Schedule a Demo • Free 14-Day Trial • Get Your Risk Assessment</p>
+        </div>
+
+        <div class="contact-info">
+            <h3>Contact Information</h3>
+            <p><strong>Website:</strong> www.vasilisnetshield.com</p>
+            <p><strong>Email:</strong> info@vasilisnetshield.com</p>
+        </div>
+
+        <div class="footer">
+            <p>© 2025 Vasilis NetShield. All Rights Reserved.</p>
+            <p><em>Protecting organizations through human-centered cybersecurity.</em></p>
+            <p style="margin-top: 15px;">Document Version: 1.0 | Classification: External - Client Facing</p>
+        </div>
+    </div>
+</body>
+</html>

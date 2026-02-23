@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Guide - Vasilis NetShield</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #0f0f15;
+            --bg-card: #1a1a24;
+            --text-primary: #E8DDB5;
+            --text-secondary: #9ca3af;
+            --accent: #D4A836;
+            --border: rgba(212, 168, 54, 0.2);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 40px;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+        
+        nav.toc {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+        
+        nav.toc h2 {
+            color: var(--accent);
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+        
+        nav.toc ul {
+            list-style: none;
+            columns: 2;
+            gap: 20px;
+        }
+        
+        nav.toc li {
+            margin-bottom: 10px;
+        }
+        
+        nav.toc a {
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        nav.toc a:hover {
+            color: var(--accent);
+        }
+        
+        section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        h2 {
+            color: var(--accent);
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        h3 {
+            color: var(--text-primary);
+            font-size: 1.3rem;
+            margin: 25px 0 15px;
+        }
+        
+        h4 {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin: 20px 0 10px;
+        }
+        
+        p {
+            margin-bottom: 15px;
+            color: var(--text-secondary);
+        }
+        
+        ul, ol {
+            margin: 15px 0;
+            padding-left: 25px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border: 1px solid var(--border);
+        }
+        
+        th {
+            background: var(--bg-card);
+            color: var(--accent);
+            font-weight: 600;
+        }
+        
+        td {
+            color: var(--text-secondary);
+        }
+        
+        code {
+            background: var(--bg-card);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.9em;
+            color: var(--accent);
+        }
+        
+        pre {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        
+        pre code {
+            background: none;
+            padding: 0;
+        }
+        
+        .tip {
+            background: rgba(212, 168, 54, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .tip strong {
+            color: var(--accent);
+        }
+        
+        .steps {
+            counter-reset: step;
+        }
+        
+        .steps li {
+            counter-increment: step;
+            position: relative;
+            padding-left: 35px;
+            margin-bottom: 15px;
+        }
+        
+        .steps li::before {
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 24px;
+            height: 24px;
+            background: var(--accent);
+            color: var(--bg-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--accent);
+            color: var(--bg-primary);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+        }
+        
+        .back-to-top:hover {
+            transform: translateY(-3px);
+        }
+        
+        @media (max-width: 768px) {
+            nav.toc ul {
+                columns: 1;
+            }
+            
+            header h1 {
+                font-size: 1.8rem;
+            }
+            
+            section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Vasilis NetShield</h1>
+        <p>Complete User Guide & Documentation</p>
+    </header>
+    
+    <div class="container">
+        <nav class="toc">
+            <h2>Table of Contents</h2>
+            <ul>
+                <li><a href="#getting-started">1. Getting Started</a></li>
+                <li><a href="#dashboard">2. Dashboard Overview</a></li>
+                <li><a href="#users">3. User Management</a></li>
+                <li><a href="#organizations">4. Organizations</a></li>
+                <li><a href="#campaigns">5. Phishing Campaigns</a></li>
+                <li><a href="#training">6. Training Modules</a></li>
+                <li><a href="#cms">7. Content Management</a></li>
+                <li><a href="#pages">8. Page Customization</a></li>
+                <li><a href="#media">9. Media Library</a></li>
+                <li><a href="#email">10. Email Templates</a></li>
+                <li><a href="#certificates">11. Certificates</a></li>
+                <li><a href="#analytics">12. Analytics</a></li>
+                <li><a href="#branding">13. Settings & Branding</a></li>
+                <li><a href="#seo">14. SEO Settings</a></li>
+                <li><a href="#security">15. Security Settings</a></li>
+            </ul>
+        </nav>
+        
+        <section id="getting-started">
+            <h2>1. Getting Started</h2>
+            
+            <h3>Accessing the Platform</h3>
+            <ol class="steps">
+                <li>Navigate to your site URL</li>
+                <li>Click <strong>"Login"</strong> or <strong>"Get Started"</strong></li>
+                <li>Enter your email and password</li>
+                <li>Click <strong>"Sign In"</strong></li>
+            </ol>
+            
+            <h3>User Roles</h3>
+            <table>
+                <tr>
+                    <th>Role</th>
+                    <th>Permissions</th>
+                </tr>
+                <tr>
+                    <td>Super Admin</td>
+                    <td>Full access to all features, manage organizations</td>
+                </tr>
+                <tr>
+                    <td>Org Admin</td>
+                    <td>Manage organization, users, campaigns, content</td>
+                </tr>
+                <tr>
+                    <td>Media Manager</td>
+                    <td>Create and manage content (blog, news, videos)</td>
+                </tr>
+                <tr>
+                    <td>Trainer</td>
+                    <td>View training modules and user progress</td>
+                </tr>
+                <tr>
+                    <td>User</td>
+                    <td>Complete training and view own progress</td>
+                </tr>
+            </table>
+        </section>
+        
+        <section id="dashboard">
+            <h2>2. Dashboard Overview</h2>
+            <p>After logging in, you'll see the main dashboard with quick stats, recent activity, and navigation.</p>
+            
+            <h3>Sidebar Navigation</h3>
+            <table>
+                <tr>
+                    <th>Section</th>
+                    <th>Features</th>
+                </tr>
+                <tr>
+                    <td>Main</td>
+                    <td>Dashboard, Organizations, Users</td>
+                </tr>
+                <tr>
+                    <td>Simulations</td>
+                    <td>Campaigns, Ads Tracker, Scenarios</td>
+                </tr>
+                <tr>
+                    <td>Content</td>
+                    <td>CMS, Page Editor, Landing Page, Sidebar, Media Library</td>
+                </tr>
+                <tr>
+                    <td>Training</td>
+                    <td>Modules, Certificates, Templates</td>
+                </tr>
+                <tr>
+                    <td>Settings</td>
+                    <td>Settings, SEO, Email Templates, Security</td>
+                </tr>
+            </table>
+        </section>
+        
+        <section id="users">
+            <h2>3. User Management</h2>
+            
+            <h3>Adding a New User</h3>
+            <ol class="steps">
+                <li>Go to <strong>Dashboard → Users</strong></li>
+                <li>Click <strong>"Add User"</strong> button</li>
+                <li>Fill in Email, Name, Role, Phone (optional)</li>
+                <li>Click <strong>"Create User"</strong></li>
+            </ol>
+            
+            <h3>Importing Users (Bulk)</h3>
+            <ol class="steps">
+                <li>Click <strong>"Import Users"</strong></li>
+                <li>Download the CSV template</li>
+                <li>Fill in user data</li>
+                <li>Upload the completed CSV</li>
+                <li>Review and confirm</li>
+            </ol>
+        </section>
+        
+        <section id="campaigns">
+            <h2>5. Phishing Campaigns</h2>
+            
+            <h3>Creating a Campaign</h3>
+            <ol class="steps">
+                <li>Go to <strong>Simulations → Campaigns</strong></li>
+                <li>Click <strong>"New Campaign"</strong></li>
+                <li>Configure Basic Info (name, type)</li>
+                <li>Select Target Audience</li>
+                <li>Choose or create Email Template</li>
+                <li>Select Landing Page</li>
+                <li>Schedule or launch immediately</li>
+            </ol>
+            
+            <h3>Campaign Metrics</h3>
+            <table>
+                <tr>
+                    <th>Metric</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>Sent</td>
+                    <td>Number of emails delivered</td>
+                </tr>
+                <tr>
+                    <td>Opened</td>
+                    <td>Users who opened the email</td>
+                </tr>
+                <tr>
+                    <td>Clicked</td>
+                    <td>Users who clicked the link</td>
+                </tr>
+                <tr>
+                    <td>Submitted</td>
+                    <td>Users who entered data</td>
+                </tr>
+                <tr>
+                    <td>Reported</td>
+                    <td>Users who reported as phishing</td>
+                </tr>
+            </table>
+        </section>
+        
+        <section id="cms">
+            <h2>7. Content Management (CMS)</h2>
+            
+            <h3>Creating a Blog Post</h3>
+            <ol class="steps">
+                <li>Go to <strong>Content → CMS</strong></li>
+                <li>Select <strong>"Blog"</strong> tab</li>
+                <li>Click <strong>"Add New Post"</strong></li>
+                <li>Fill in Title, Content, Featured Image, Tags</li>
+                <li>Toggle <strong>"Published"</strong> to make it live</li>
+                <li>Click <strong>"Save"</strong></li>
+            </ol>
+            
+            <h3>Rich Text Editor Features</h3>
+            <ul>
+                <li><strong>Headings:</strong> H1, H2</li>
+                <li><strong>Formatting:</strong> Bold, Italic, Underline</li>
+                <li><strong>Lists:</strong> Bulleted, Numbered</li>
+                <li><strong>Links:</strong> Insert hyperlinks</li>
+                <li><strong>Images:</strong> Upload directly or paste URL</li>
+                <li><strong>Quotes:</strong> Block quotes</li>
+                <li><strong>Code:</strong> Code blocks</li>
+            </ul>
+            
+            <div class="tip">
+                <strong>Tip:</strong> Click the Upload button in the editor to add images directly. Images are automatically optimized!
+            </div>
+        </section>
+        
+        <section id="pages">
+            <h2>8. Page Customization</h2>
+            
+            <h3>Sidebar Customizer</h3>
+            <p>Customize sidebars for public pages (News, Blog, Videos, About):</p>
+            <ol class="steps">
+                <li>Go to <strong>Content → Sidebar</strong></li>
+                <li>Select the page tab</li>
+                <li>Add sections (CTA, Links, Image, HTML)</li>
+                <li>Configure each section's content</li>
+                <li>Reorder using ▲▼ arrows</li>
+                <li>Click <strong>"Save Changes"</strong></li>
+            </ol>
+            
+            <h4>Section Types</h4>
+            <table>
+                <tr>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>Call to Action</td>
+                    <td>Title, description, and button</td>
+                </tr>
+                <tr>
+                    <td>Quick Links</td>
+                    <td>List of navigation links</td>
+                </tr>
+                <tr>
+                    <td>Image/Banner</td>
+                    <td>Display an image</td>
+                </tr>
+                <tr>
+                    <td>Custom HTML</td>
+                    <td>Any custom content</td>
+                </tr>
+            </table>
+        </section>
+        
+        <section id="media">
+            <h2>9. Media Library</h2>
+            
+            <h3>Uploading Media</h3>
+            <ol class="steps">
+                <li>Go to <strong>Content → Media Library</strong></li>
+                <li>Click <strong>"Upload Media"</strong></li>
+                <li>Select image(s) from your computer</li>
+                <li>Images are automatically optimized</li>
+            </ol>
+            
+            <h3>Using Media</h3>
+            <ol class="steps">
+                <li>Find the image you want</li>
+                <li>Hover and click the <strong>Copy</strong> icon</li>
+                <li>Paste the URL wherever needed</li>
+            </ol>
+            
+            <div class="tip">
+                <strong>Tip:</strong> All uploaded images are automatically resized and compressed while maintaining quality. You'll see the % size reduction after upload.
+            </div>
+        </section>
+        
+        <section id="branding">
+            <h2>13. Settings & Branding</h2>
+            
+            <h3>Branding Settings</h3>
+            <p>Go to <strong>Settings → Settings</strong> to configure:</p>
+            
+            <h4>Company Info</h4>
+            <ul>
+                <li><strong>Company Name:</strong> Displayed throughout the site</li>
+                <li><strong>Tagline:</strong> Shown on landing page</li>
+            </ul>
+            
+            <h4>Logo & Favicon</h4>
+            <ul>
+                <li><strong>Logo:</strong> Upload your logo (recommended: 200x200px)</li>
+                <li><strong>Favicon:</strong> Browser tab icon (recommended: 32x32px)</li>
+            </ul>
+            
+            <h4>Colors</h4>
+            <ul>
+                <li><strong>Primary Color:</strong> Main accent (buttons, links)</li>
+                <li><strong>Text Color:</strong> Body text</li>
+                <li><strong>Heading Color:</strong> Headings</li>
+                <li><strong>Accent Color:</strong> Secondary accent</li>
+            </ul>
+            
+            <h4>Footer Settings</h4>
+            <ul>
+                <li>Custom copyright text</li>
+                <li>Social media links (Facebook, Twitter, LinkedIn, Instagram, YouTube)</li>
+            </ul>
+        </section>
+        
+        <section id="seo">
+            <h2>14. SEO Settings</h2>
+            <p>Go to <strong>Settings → SEO</strong> to optimize for search engines:</p>
+            
+            <h3>General Tab</h3>
+            <ul>
+                <li><strong>Site Title:</strong> Browser tab and search results (50-60 chars)</li>
+                <li><strong>Meta Description:</strong> Search result description (150-160 chars)</li>
+                <li><strong>Keywords:</strong> Comma-separated</li>
+                <li><strong>Canonical URL:</strong> Your primary domain</li>
+            </ul>
+            
+            <h3>Social Media Tab</h3>
+            <ul>
+                <li><strong>Open Graph:</strong> How your site appears on Facebook/LinkedIn</li>
+                <li><strong>Twitter Card:</strong> How your site appears on Twitter</li>
+            </ul>
+            
+            <h3>Tracking Tab</h3>
+            <ul>
+                <li><strong>Google Analytics ID:</strong> Enter G-XXXXXXXXXX or UA-XXXXXXXX-X</li>
+                <li>Format is validated automatically</li>
+                <li>Tracking activates when saved</li>
+            </ul>
+        </section>
+        
+        <section id="troubleshooting">
+            <h2>Troubleshooting</h2>
+            
+            <h3>Can't Login</h3>
+            <ol>
+                <li>Check email spelling</li>
+                <li>Use "Forgot Password" to reset</li>
+                <li>Clear browser cache</li>
+                <li>Try incognito/private mode</li>
+            </ol>
+            
+            <h3>Images Not Displaying</h3>
+            <ol>
+                <li>Check the image URL is correct</li>
+                <li>Ensure image is publicly accessible</li>
+                <li>Try re-uploading to Media Library</li>
+            </ol>
+            
+            <h3>Changes Not Appearing</h3>
+            <ol>
+                <li>Hard refresh (Ctrl+Shift+R)</li>
+                <li>Clear browser cache</li>
+                <li>Wait 30 seconds for cache to update</li>
+            </ol>
+        </section>
+    </div>
+    
+    <a href="#" class="back-to-top">↑</a>
+</body>
+</html>

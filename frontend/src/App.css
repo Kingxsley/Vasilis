@@ -32,3 +32,30 @@
         transform: rotate(360deg);
     }
 }
+
+/* Platform image animations */
+@keyframes platform-float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-15px);
+    }
+}
+
+@keyframes platform-glow-pulse {
+    0%, 100% {
+        filter: drop-shadow(0 0 20px rgba(212, 168, 54, 0.3));
+    }
+    50% {
+        filter: drop-shadow(0 0 40px rgba(212, 168, 54, 0.6));
+    }
+}
+
+.platform-float {
+    animation: platform-float 4s ease-in-out infinite;
+}
+
+.platform-glow {
+    animation: platform-glow-pulse 3s ease-in-out infinite;
+}

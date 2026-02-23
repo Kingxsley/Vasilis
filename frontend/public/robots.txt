@@ -1,0 +1,24 @@
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://vasilisnetshield.net/sitemap.xml
+
+# Disallow admin pages
+Disallow: /dashboard
+Disallow: /users
+Disallow: /organizations
+Disallow: /settings
+Disallow: /phishing
+Disallow: /ads
+Disallow: /scenarios
+Disallow: /certificates
+Disallow: /inquiries
+Disallow: /analytics
+Disallow: /advanced-analytics
+Disallow: /security
+Disallow: /training
+Disallow: /landing-editor
+Disallow: /certificate-templates
+Disallow: /page-editor
