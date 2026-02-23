@@ -1405,6 +1405,10 @@ async def track_link_click(tracking_code: str, request: Request):
     
     msg = scenario_messages.get(scenario_type, scenario_messages["phishing_email"])
     
+    # Get frontend URL for training link
+    frontend_url = os.environ.get('FRONTEND_URL', 'https://vasilisnetshield.com')
+    training_url = f"{frontend_url}/training"
+    
     # Default landing page - phishing awareness message with auto-redirect
     html = f"""
     <!DOCTYPE html>
