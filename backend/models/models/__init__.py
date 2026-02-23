@@ -287,6 +287,7 @@ class PhishingCampaignCreate(BaseModel):
     target_user_ids: List[str]
     landing_page_url: Optional[str] = None
     scheduled_at: Optional[datetime] = None
+    assigned_module_id: Optional[str] = None
 
 
 class PhishingCampaignResponse(BaseModel):
