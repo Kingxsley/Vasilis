@@ -174,9 +174,9 @@ class TestAnalytics:
         
         print(f"PASS: Unified analytics - {summary['total_campaigns']} total ({summary['phishing_campaigns']} phishing, {summary['ad_campaigns']} ad)")
     
-    def test_analytics_overview(self, auth_headers):
+    def test_analytics_overview(self):
         """Test analytics overview endpoint"""
-        response = requests.get(f"{API}/analytics/overview?days=30", headers=auth_headers)
+        response = requests.get(f"{API}/analytics/overview?days=30", headers=get_auth_headers())
         # May not exist, so accept 404
         if response.status_code == 200:
             print("PASS: Analytics overview endpoint works")
