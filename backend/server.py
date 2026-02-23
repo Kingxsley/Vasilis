@@ -1792,9 +1792,27 @@ async def start_training_session(data: TrainingSessionCreate, user: dict = Depen
     # predefined scenarios, preload them into cached_scenarios.  Otherwise,
     # the session will generate scenarios on demand based on module type.
     cached_scenarios = []
+    questions_list = module.get("questions") or []
     scenarios_list = module.get("scenarios") or []
     total_questions = module.get("scenarios_count", 0)
-    if scenarios_list:
+    
+    if questions_list:
+        # Use the rich questions from the module designer
+        import random as _rand
+        shuffled = list(questions_list)
+        _rand.shuffle(shuffled)
+        for i, q in enumerate(shuffled):
+            cached_scenarios.append({
+                "scenario_id": q.get("id", f"q_{i}"),
+                "scenario_type": q.get("type", "multiple_choice"),
+                "title": q.get("title", f"Question {i+1}"),
+                "content": q,
+                "correct_answer": q.get("correct_answer", ""),
+                "explanation": q.get("explanation", ""),
+                "difficulty": q.get("difficulty", module.get("difficulty", "medium"))
+            })
+        total_questions = len(cached_scenarios)
+    elif scenarios_list:
         # Fetch each scenario document and transform into the training format
         for sid in scenarios_list:
             scen = await db.scenarios.find_one({"scenario_id": sid}, {"_id": 0})
