@@ -1959,6 +1959,8 @@ async def get_training_session(session_id: str, user: dict = Depends(get_current
         score=session.get("score", 0),
         total_questions=session.get("total_questions", 0),
         correct_answers=session.get("correct_answers", 0),
+        current_scenario_index=session.get("current_scenario_index", 0),
+        answers=session.get("answers", []),
         started_at=started_at,
         completed_at=completed_at
     )
