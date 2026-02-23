@@ -328,7 +328,8 @@ export default function SimulationBuilder() {
   const fetchSavedSimulations = async () => {
     setLoadingSimulations(true);
     try {
-      const res = await axios.get(`${API}/scenarios`, { headers });
+      // Fetch phishing templates created via the builder
+      const res = await axios.get(`${API}/phishing/templates`, { headers });
       setSavedSimulations(res.data || []);
     } catch (err) {
       console.error('Failed to fetch simulations:', err);
