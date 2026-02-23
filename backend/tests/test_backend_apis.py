@@ -134,19 +134,9 @@ class TestPhishingCampaigns:
 class TestAdSimulations:
     """Ad simulation campaign tests"""
     
-    @pytest.fixture
-    def auth_headers(self):
-        """Get auth headers for super admin"""
-        response = requests.post(f"{API}/auth/login", json={
-            "email": SUPER_ADMIN_EMAIL,
-            "password": SUPER_ADMIN_PASSWORD
-        })
-        token = response.json()["token"]
-        return {"Authorization": f"Bearer {token}"}
-    
-    def test_list_ad_campaigns(self, auth_headers):
+    def test_list_ad_campaigns(self):
         """Test listing ad campaigns"""
-        response = requests.get(f"{API}/ads/campaigns", headers=auth_headers)
+        response = requests.get(f"{API}/ads/campaigns", headers=get_auth_headers())
         # Accept 200 or 404 (if endpoint exists but no campaigns)
         assert response.status_code in [200, 404], f"Failed: {response.status_code} - {response.text}"
         if response.status_code == 200:
