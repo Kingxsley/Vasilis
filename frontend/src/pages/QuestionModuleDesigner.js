@@ -90,9 +90,16 @@ function QuestionCard({ q, idx, total, onChange, onRemove, onMove, token }) {
       const res = await axios.post(`${API}/media/upload`, fd, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
       });
-      set('image_url', res.data.url || res.data.media?.url);
-      toast.success('Image uploaded');
-    } catch {
+      // Response format: { media: { data_url: "..." }, ... }
+      const imageUrl = res.data.media?.data_url || res.data.url || res.data.data_url;
+      if (imageUrl) {
+        set('image_url', imageUrl);
+        toast.success('Image uploaded');
+      } else {
+        toast.error('Upload failed - no URL returned');
+      }
+    } catch (err) {
+      console.error('Upload error:', err);
       toast.error('Upload failed');
     } finally {
       setUploading(false);
