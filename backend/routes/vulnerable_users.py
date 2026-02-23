@@ -65,13 +65,14 @@ async def get_vulnerable_users(
         if not user_email:
             continue
         
-        # Get campaign info
+        # Get campaign info including risk_level
         campaign = await db.phishing_campaigns.find_one(
             {"campaign_id": target.get("campaign_id")},
-            {"_id": 0, "name": 1, "organization_id": 1}
+            {"_id": 0, "name": 1, "organization_id": 1, "risk_level": 1}
         )
         
         org_id = campaign.get("organization_id") if campaign else None
+        campaign_risk_level = campaign.get("risk_level", "medium") if campaign else "medium"
         
         # Filter by organization if specified or if org_admin
         if organization_id and org_id != organization_id:
@@ -107,17 +108,23 @@ async def get_vulnerable_users(
                 "campaigns_failed": [],
                 "first_failure": None,
                 "last_failure": None,
-                "risk_level": "low"
+                "risk_level": "low"  # Will be updated based on campaign risk levels
             }
         
         vu = vulnerable_users[user_email]
         vu["clicks"] += 1
         
-        # Track credential submissions
+        # Update risk level based on campaign's risk level (take the highest)
+        risk_priority = {"low": 1, "medium": 2, "high": 3, "critical": 4}
+        current_priority = risk_priority.get(vu["risk_level"], 1)
+        campaign_priority = risk_priority.get(campaign_risk_level, 2)
+        if campaign_priority > current_priority:
+            vu["risk_level"] = campaign_risk_level
+        
+        # Credential submission always elevates to critical
         if target.get("credentials_submitted"):
             vu["credential_submissions"] += 1
-        
-        # Track campaigns
+            vu["risk_level"] = "critical"
         campaign_name = campaign.get("name") if campaign else "Unknown"
         if campaign_name not in vu["campaigns_failed"]:
             vu["campaigns_failed"].append(campaign_name)
