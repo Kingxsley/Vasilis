@@ -168,6 +168,17 @@ export default function EmailTemplates() {
     }
   };
 
+  const fetchCustomEmailTemplates = async () => {
+    try {
+      const res = await axios.get(`${API}/custom-email-templates`, { headers });
+      if (res.data.templates) {
+        setCustomEmailTemplates(res.data.templates);
+      }
+    } catch (err) {
+      console.log('No custom email templates');
+    }
+  };
+
   const fetchPhishingEmailTemplates = async () => {
     try {
       const res = await axios.get(`${API}/phishing/templates`, { headers });
