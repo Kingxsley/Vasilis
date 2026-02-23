@@ -155,6 +155,7 @@ export default function EmailTemplates() {
     fetchTemplates();
     fetchAlertTemplates();
     fetchPhishingEmailTemplates();
+    fetchCustomEmailTemplates();
   }, []);
 
   const fetchAlertTemplates = async () => {
