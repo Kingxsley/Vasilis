@@ -1503,57 +1503,8 @@ async def delete_campaign(campaign_id: str, user: dict = Depends(require_admin))
 # required.
 PASSING_SCORE = 70
 
-# Default training modules used to seed the database on first run.  Each
-# record includes fields for certificate templates and active status so
-# administrators can manage module availability.
-DEFAULT_MODULES = [
-    {
-        "module_id": "mod_phishing_email",
-        "name": "Phishing Email Detection",
-        "module_type": "phishing",
-        "description": "Learn to identify suspicious emails, fraudulent sender addresses, and malicious links.",
-        "difficulty": "medium",
-        "duration_minutes": 30,
-        "scenarios_count": 10,
-        "certificate_template_id": None,
-        "is_active": True
-    },
-    {
-        "module_id": "mod_malicious_ads",
-        "name": "Malicious Ad Recognition",
-        "module_type": "ads",
-        "description": "Spot fake advertisements, clickbait, and potentially harmful ad content.",
-        "difficulty": "easy",
-        "duration_minutes": 20,
-        "scenarios_count": 8,
-        "certificate_template_id": None,
-        "is_active": True
-    },
-    {
-        "module_id": "mod_social_engineering",
-        "name": "Social Engineering Defense",
-        "module_type": "social_engineering",
-        "description": "Recognize manipulation tactics including pretexting, baiting, and impersonation.",
-        "difficulty": "hard",
-        "duration_minutes": 45,
-        "scenarios_count": 12,
-        "certificate_template_id": None,
-        "is_active": True
-    }
-]
-
-# Helper to seed default training modules into the database.  Called on
-# demand from `list_training_modules` to avoid race conditions at
-# import time.
-async def _ensure_training_modules_seeded():
-    try:
-        count = await db.training_modules.count_documents({})
-    except Exception:
-        # If the collection does not exist yet, seed with defaults
-        count = 0
-    if count == 0:
-        # Transform defaults into insertable documents
-        await db.training_modules.insert_many([m.copy() for m in DEFAULT_MODULES])
+# Default training modules seeding has been removed.
+# Users should create their own training modules via the Module Designer.
 
 @training_router.get("/modules", response_model=List[TrainingModuleResponse])
 async def list_training_modules(user: dict = Depends(get_current_user)):
