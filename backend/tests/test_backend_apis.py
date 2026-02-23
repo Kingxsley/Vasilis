@@ -78,16 +78,6 @@ class TestAuthentication:
 class TestPhishingCampaigns:
     """Phishing campaigns and tracking tests"""
     
-    @pytest.fixture
-    def auth_headers(self):
-        """Get auth headers for super admin"""
-        response = requests.post(f"{API}/auth/login", json={
-            "email": SUPER_ADMIN_EMAIL,
-            "password": SUPER_ADMIN_PASSWORD
-        })
-        token = response.json()["token"]
-        return {"Authorization": f"Bearer {token}"}
-    
     def test_list_phishing_campaigns(self, auth_headers):
         """Test listing phishing campaigns"""
         response = requests.get(f"{API}/phishing/campaigns", headers=auth_headers)
