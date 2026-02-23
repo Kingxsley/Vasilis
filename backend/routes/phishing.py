@@ -769,9 +769,11 @@ async def get_phishing_stats(request: Request, days: int = 30):
     
     phish_active = sum(1 for c in phish_campaigns if c.get("status") in ("running", "active"))
     phish_completed = sum(1 for c in phish_campaigns if c.get("status") == "completed")
-    phish_sent = sum(1 for t in phish_targets if t.get("email_sent"))
+    # Count total targets as "sent" - each target is a potential recipient
+    phish_sent = len(phish_targets)
     phish_opened = sum(1 for t in phish_targets if t.get("email_opened"))
     phish_clicked = sum(1 for t in phish_targets if t.get("link_clicked"))
+    phish_submitted = sum(1 for t in phish_targets if t.get("credentials_submitted"))
     
     # --- Ad campaign data ---
     ad_query = {}
@@ -795,15 +797,16 @@ async def get_phishing_stats(request: Request, days: int = 30):
     total_campaigns = len(phish_campaigns) + len(ad_campaigns)
     active_campaigns = phish_active + ad_active
     completed_campaigns = phish_completed + ad_completed
-    total_sent = phish_sent + ad_total  # ad targets are "sent" by default
+    total_sent = phish_sent + ad_total
     total_opened = phish_opened + ad_viewed
     total_clicked = phish_clicked + ad_clicked
+    total_submitted = phish_submitted
     
-    # Calculate rates
+    # Calculate rates based on total targets (not just email_sent flag)
     open_rate = (total_opened / total_sent * 100) if total_sent > 0 else 0
     click_rate = (total_clicked / total_sent * 100) if total_sent > 0 else 0
     click_to_open_rate = (total_clicked / total_opened * 100) if total_opened > 0 else 0
-    submission_rate = 0
+    submission_rate = (total_submitted / total_sent * 100) if total_sent > 0 else 0
     
     return {
         "total_campaigns": total_campaigns,
@@ -812,10 +815,10 @@ async def get_phishing_stats(request: Request, days: int = 30):
         "total_sent": total_sent,
         "total_opened": total_opened,
         "total_clicked": total_clicked,
-        "total_submitted": 0,
+        "total_submitted": total_submitted,
         "open_rate": round(open_rate, 1),
         "click_rate": round(click_rate, 1),
-        "submission_rate": submission_rate,
+        "submission_rate": round(submission_rate, 1),
         "click_to_open_rate": round(click_to_open_rate, 1),
         "period_days": days
     }
