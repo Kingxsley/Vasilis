@@ -565,10 +565,19 @@ export default function SimulationBuilder() {
         scenario_type: simulationType.id
       };
       
-      const templateRes = await axios.post(`${API}/phishing/templates`, templateData, { headers });
-      const templateId = templateRes.data.template_id;
-      
-      toast.success('Simulation template created!');
+      let templateId;
+      if (editingTemplateId) {
+        // Update existing template
+        await axios.put(`${API}/phishing/templates/${editingTemplateId}`, templateData, { headers });
+        templateId = editingTemplateId;
+        toast.success('Simulation template updated!');
+        setEditingTemplateId(null);
+      } else {
+        // Create new template
+        const templateRes = await axios.post(`${API}/phishing/templates`, templateData, { headers });
+        templateId = templateRes.data.template_id;
+        toast.success('Simulation template created!');
+      }
       
       if (andLaunch) {
         // Open launch dialog
