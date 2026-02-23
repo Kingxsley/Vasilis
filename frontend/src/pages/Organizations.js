@@ -152,7 +152,7 @@ export default function Organizations() {
             setDialogOpen(open);
             if (!open) {
               setEditingOrg(null);
-      setFormData({ name: '', domain: '', description: '', certificate_template_id: '' });
+      setFormData({ name: '', domain: '', description: '', certificate_template_id: '', discord_webhook_url: '' });
             }
           }}>
             <DialogTrigger asChild>
