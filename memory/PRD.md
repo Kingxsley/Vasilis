@@ -92,13 +92,12 @@ JWT_SECRET=<secure-random-string>
 ## Pending Tasks
 
 ### P1 - Upcoming
-- [ ] Email Template Management UI
+- [ ] Bulk user import (CSV)
 
 ### P2 - Future/Backlog
-- [ ] Simulation Builder CTA Enhancement (tracking link naming)
 - [ ] Advanced analytics dashboard
-- [ ] Bulk user import (CSV)
 - [ ] Scheduled campaign automation
+- [ ] Simulation Builder CTA Enhancement (tracking link naming)
 
 ## Recent Changes (Feb 23, 2026)
 - Fixed phishing tracking - emails now use correct API URL for tracking links
