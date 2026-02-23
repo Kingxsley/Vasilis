@@ -149,19 +149,9 @@ class TestAdSimulations:
 class TestAnalytics:
     """Analytics endpoint tests"""
     
-    @pytest.fixture
-    def auth_headers(self):
-        """Get auth headers for super admin"""
-        response = requests.post(f"{API}/auth/login", json={
-            "email": SUPER_ADMIN_EMAIL,
-            "password": SUPER_ADMIN_PASSWORD
-        })
-        token = response.json()["token"]
-        return {"Authorization": f"Bearer {token}"}
-    
-    def test_all_campaigns_unified_analytics(self, auth_headers):
+    def test_all_campaigns_unified_analytics(self):
         """Test unified analytics showing both phishing and ad campaigns"""
-        response = requests.get(f"{API}/analytics/all-campaigns?days=30", headers=auth_headers)
+        response = requests.get(f"{API}/analytics/all-campaigns?days=30", headers=get_auth_headers())
         assert response.status_code == 200, f"Failed: {response.text}"
         data = response.json()
         
