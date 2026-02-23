@@ -166,20 +166,31 @@ export default function AdSimulations() {
   };
 
   // Copy embed/tracking URL to clipboard
-  // Copies the embeddable API URL for the campaign
+  // Copies the ad render URL for the first target, or the campaign embed URL
   const copyTrackingUrl = async (campaignId) => {
-    // Build the embed tracking URL using the API endpoint
-    const embedUrl = `${API}/track/${campaignId}`;
+    // Try to find targets for this campaign to get a render URL
+    try {
+      const res = await axios.get(`${API}/ads/campaigns/${campaignId}/targets`, { headers: { Authorization: `Bearer ${token}` } });
+      const targets = res.data || [];
+      if (targets.length > 0) {
+        // Copy the first target's embed render URL
+        const embedUrl = `${API}/ads/render/${targets[0].tracking_code}`;
+        await navigator.clipboard.writeText(embedUrl);
+        setCopiedUrl(campaignId);
+        toast.success('Embed URL copied (first target)');
+        setTimeout(() => setCopiedUrl(null), 2000);
+        return;
+      }
+    } catch { /* fall through */ }
     
+    // Fallback: copy campaign-level URL with placeholder note
+    const embedUrl = `${API}/ads/render/{tracking_code}`;
     try {
       await navigator.clipboard.writeText(embedUrl);
       setCopiedUrl(campaignId);
-      toast.success('Embed URL copied to clipboard');
-      
-      // Reset copied state after 2 seconds
+      toast.success('Embed URL template copied - replace {tracking_code} with target code');
       setTimeout(() => setCopiedUrl(null), 2000);
     } catch (err) {
-      // Fallback for browsers that don't support clipboard API
       const textArea = document.createElement('textarea');
       textArea.value = embedUrl;
       document.body.appendChild(textArea);
@@ -187,7 +198,7 @@ export default function AdSimulations() {
       document.execCommand('copy');
       document.body.removeChild(textArea);
       setCopiedUrl(campaignId);
-      toast.success('Embed URL copied to clipboard');
+      toast.success('Embed URL template copied');
       setTimeout(() => setCopiedUrl(null), 2000);
     }
   };
