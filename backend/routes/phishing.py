@@ -835,7 +835,8 @@ async def get_phishing_stats(request: Request, days: int = 30):
         "click_rate": round(click_rate, 1),
         "submission_rate": round(submission_rate, 1),
         "click_to_open_rate": round(click_to_open_rate, 1),
-        "period_days": days
+        "period_days": days,
+        **debug_info  # Include debug info temporarily
     }
 
 
