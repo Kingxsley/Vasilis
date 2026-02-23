@@ -1640,162 +1640,225 @@ async def track_link_click(tracking_code: str, request: Request, cred_submitted:
     frontend_url = os.environ.get('FRONTEND_URL', 'https://vasilisnetshield.com')
     training_url = f"{frontend_url}/training"
     
-    # Default landing page - phishing awareness message with auto-redirect
+    # Default landing page - phishing awareness message with modern dark theme
     html = f"""
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Security Training Alert</title>
+        <title>Security Alert | Vasilis NetShield</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
         <style>
-            * {{ box-sizing: border-box; }}
+            * {{ box-sizing: border-box; margin: 0; padding: 0; }}
             body {{ 
-                font-family: 'Segoe UI', Arial, sans-serif; 
-                margin: 0; 
-                padding: 20px; 
-                background: linear-gradient(135deg, #0D1117 0%, #161B22 100%);
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+                background: linear-gradient(180deg, #0D1117 0%, #161B22 50%, #0D1117 100%);
                 min-height: 100vh;
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                padding: 20px;
             }}
             .container {{ 
-                background: #161B22;
-                padding: 40px; 
-                border-radius: 16px; 
-                box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-                max-width: 600px;
+                background: linear-gradient(145deg, #161B22 0%, #1C2128 100%);
+                padding: 50px 40px; 
+                border-radius: 24px; 
+                box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+                max-width: 580px;
                 width: 100%;
                 text-align: center;
-                border: 1px solid #30363D;
+                position: relative;
+                overflow: hidden;
+            }}
+            .container::before {{
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background: linear-gradient(90deg, {msg['color']}, #D4A836);
+            }}
+            .icon-wrapper {{
+                width: 100px;
+                height: 100px;
+                background: linear-gradient(135deg, {msg['color']}20, {msg['color']}10);
+                border: 2px solid {msg['color']}40;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 25px;
+                animation: pulse 2s infinite;
+            }}
+            @keyframes pulse {{
+                0%, 100% {{ box-shadow: 0 0 0 0 {msg['color']}40; }}
+                50% {{ box-shadow: 0 0 0 15px {msg['color']}00; }}
             }}
             .icon {{ 
-                font-size: 64px; 
-                margin-bottom: 20px;
+                font-size: 48px;
             }}
             h1 {{ 
                 color: {msg['color']}; 
-                margin: 0 0 10px 0;
-                font-size: 28px;
+                font-size: 32px;
+                font-weight: 700;
+                margin-bottom: 8px;
+                letter-spacing: -0.5px;
             }}
             .subtitle {{
                 color: #8B949E;
-                margin-bottom: 30px;
+                font-size: 16px;
+                margin-bottom: 35px;
             }}
-            .alert {{ 
-                background: rgba(255, 107, 107, 0.1); 
-                border: 1px solid {msg['color']}40;
-                padding: 20px; 
-                border-radius: 12px; 
-                margin: 20px 0;
+            .alert-card {{ 
+                background: linear-gradient(135deg, {msg['color']}15 0%, {msg['color']}05 100%);
+                border: 1px solid {msg['color']}30;
+                padding: 24px;
+                border-radius: 16px;
+                margin: 0 0 25px 0;
                 text-align: left;
             }}
-            .alert h3 {{
+            .alert-card h3 {{
                 color: {msg['color']};
-                margin: 0 0 10px 0;
+                font-size: 18px;
+                font-weight: 600;
+                margin-bottom: 12px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
             }}
-            .alert p {{
-                color: #E6EDF3;
-                margin: 0;
-                line-height: 1.6;
+            .alert-card p {{
+                color: #C9D1D9;
+                line-height: 1.7;
+                font-size: 15px;
             }}
-            .risk-box {{
+            .user-highlight {{
+                color: #D4A836;
+                font-weight: 600;
+            }}
+            .risk-section {{
                 background: #0D1117;
                 border: 1px solid #30363D;
-                border-radius: 8px;
-                padding: 20px;
-                margin: 20px 0;
+                border-radius: 16px;
+                padding: 24px;
+                margin-bottom: 30px;
             }}
-            .risk-box h4 {{
+            .risk-section h4 {{
                 color: #D4A836;
-                margin: 0 0 10px 0;
+                font-size: 16px;
+                font-weight: 600;
+                margin-bottom: 16px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
             }}
-            .risk-box ul {{
+            .risk-list {{
+                list-style: none;
                 text-align: left;
+            }}
+            .risk-list li {{
                 color: #8B949E;
-                margin: 0;
-                padding-left: 20px;
+                padding: 10px 0;
+                padding-left: 28px;
+                position: relative;
+                font-size: 14px;
+                border-bottom: 1px solid #21262D;
             }}
-            .risk-box li {{
-                margin: 8px 0;
+            .risk-list li:last-child {{
+                border-bottom: none;
             }}
-            .countdown {{
-                background: #D4A836;
-                color: #000;
-                padding: 15px 30px;
-                border-radius: 8px;
-                font-weight: bold;
+            .risk-list li::before {{
+                content: '⚠';
+                position: absolute;
+                left: 0;
+                color: {msg['color']};
+            }}
+            .countdown-box {{
+                background: linear-gradient(135deg, #D4A836, #C49A30);
+                color: #0D1117;
+                padding: 18px 35px;
+                border-radius: 12px;
+                font-weight: 600;
                 display: inline-block;
-                margin: 20px 0;
+                margin-bottom: 25px;
+                font-size: 15px;
+                box-shadow: 0 4px 15px rgba(212, 168, 54, 0.3);
             }}
-            .countdown span {{
-                font-size: 24px;
+            .countdown-box span {{
+                font-size: 26px;
+                font-weight: 700;
             }}
             .btn {{
-                background: #D4A836;
-                color: #000;
-                padding: 15px 40px;
+                background: linear-gradient(135deg, #D4A836, #C49A30);
+                color: #0D1117;
+                padding: 16px 45px;
                 border: none;
-                border-radius: 8px;
+                border-radius: 12px;
                 font-size: 16px;
-                font-weight: bold;
+                font-weight: 600;
                 cursor: pointer;
                 text-decoration: none;
                 display: inline-block;
-                transition: all 0.3s;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 15px rgba(212, 168, 54, 0.3);
             }}
             .btn:hover {{
-                background: #C49A30;
-                transform: translateY(-2px);
+                transform: translateY(-3px);
+                box-shadow: 0 8px 25px rgba(212, 168, 54, 0.4);
             }}
             .footer {{
-                margin-top: 30px;
-                color: #484F58;
-                font-size: 14px;
+                margin-top: 35px;
+                padding-top: 25px;
+                border-top: 1px solid #21262D;
             }}
-            .user-info {{
-                color: #D4A836;
-                font-weight: bold;
+            .footer p {{
+                color: #484F58;
+                font-size: 13px;
+            }}
+            .footer .brand {{
+                color: #6E7681;
+                font-weight: 500;
             }}
         </style>
     </head>
     <body>
         <div class="container">
-            <div class="icon">{msg['icon']}</div>
+            <div class="icon-wrapper">
+                <span class="icon">{msg['icon']}</span>
+            </div>
             <h1>{msg['title']}</h1>
             <p class="subtitle">This was a simulated security test</p>
             
-            <div class="alert">
-                <h3>&#9888; You Clicked on a Test Link</h3>
+            <div class="alert-card">
+                <h3>⚠️ You Clicked a Test Link</h3>
                 <p>
-                    Hi <span class="user-info">{user_name}</span>, this was a security awareness exercise 
-                    conducted by your organization. In a real attack scenario:
+                    Hello <span class="user-highlight">{user_name}</span>, this was a security awareness exercise 
+                    conducted by your organization. In a real attack scenario, your actions could have had serious consequences.
                 </p>
             </div>
             
-            <div class="risk-box">
-                <h4>&#128161; What Could Have Happened</h4>
-                <p style="color: #E6EDF3; margin-bottom: 15px;">{msg['risk']}</p>
-                <ul>
+            <div class="risk-section">
+                <h4>💡 What Could Have Happened</h4>
+                <ul class="risk-list">
+                    <li>{msg['risk']}</li>
                     <li>Attackers could have gained access to your account</li>
                     <li>Sensitive data could have been compromised</li>
                     <li>Malware could have been installed on your device</li>
-                    <li>Your organization's network could have been breached</li>
                 </ul>
             </div>
             
-            <div class="countdown">
-                You will be able to continue your security training in <span id="timer">10</span> seconds...
+            <div class="countdown-box">
+                Continue to training in <span id="timer">10</span>s
             </div>
             
             <br><br>
             
             <a href="{training_url}" class="btn" id="trainingBtn">Start Training Now</a>
             
-            <p class="footer">
-                Powered by Vasilis NetShield Security Training<br>
-                <small>Building cyber-aware organizations</small>
-            </p>
+            <div class="footer">
+                <p class="brand">Vasilis NetShield Security Training</p>
+                <p>Building cyber-aware organizations</p>
+            </div>
         </div>
         
         <script>
