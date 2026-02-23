@@ -331,6 +331,86 @@ export default function EmailTemplates() {
             </Card>
           ))}
         </div>
+          </TabsContent>
+
+          {/* Alert Templates Tab */}
+          <TabsContent value="alerts" className="space-y-6">
+            {/* Info Card */}
+            <Card className="bg-orange-500/10 border-orange-500/30">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <Info className="w-5 h-5 text-orange-400 mt-0.5" />
+                  <div className="text-sm text-orange-200">
+                    <p className="font-medium mb-1">Alert Templates</p>
+                    <p className="text-orange-300/80">
+                      These templates are shown when users click on phishing links. Use variables like <code className="bg-orange-500/20 px-1 rounded">{'{{USER_NAME}}'}</code> and <code className="bg-orange-500/20 px-1 rounded">{'{{CAMPAIGN_NAME}}'}</code>.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Alert Templates Grid */}
+            <div className="grid md:grid-cols-2 gap-4">
+              {[...alertTemplates, ...customAlertTemplates].map((alert) => (
+                <Card key={alert.id} className="bg-[#161B22] border-[#D4A836]/20 hover:border-[#D4A836]/40 transition-colors">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <h3 className="text-[#E8DDB5] font-medium">{alert.name}</h3>
+                        <p className="text-xs text-gray-400 mt-1">{alert.description}</p>
+                      </div>
+                      {alert.isCustom && (
+                        <Badge className="bg-[#D4A836]/20 text-[#D4A836] text-xs">Custom</Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-500 mb-3">{alert.preview}</p>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-[#D4A836]/30 text-[#E8DDB5]"
+                        onClick={() => setAlertPreview(alert)}
+                      >
+                        <Eye className="w-4 h-4 mr-1" />
+                        Preview
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-[#D4A836]/30 text-[#E8DDB5]"
+                        onClick={() => {
+                          setEditingAlertTemplate(alert);
+                          setAlertFormData({ name: alert.name, description: alert.description, html: alert.html });
+                        }}
+                      >
+                        <Edit2 className="w-4 h-4 mr-1" />
+                        Edit
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+
+              {/* Add New Alert Template Card */}
+              <Card 
+                className="bg-[#161B22] border-[#30363D] border-dashed hover:border-[#D4A836]/40 transition-colors cursor-pointer"
+                onClick={() => {
+                  setEditingAlertTemplate({ id: 'new', isCustom: true });
+                  setAlertFormData({ name: '', description: '', html: '' });
+                }}
+              >
+                <CardContent className="p-4 h-full flex flex-col items-center justify-center text-center">
+                  <div className="w-12 h-12 rounded-full bg-[#D4A836]/10 flex items-center justify-center mb-3">
+                    <FileText className="w-6 h-6 text-[#D4A836]" />
+                  </div>
+                  <p className="text-[#E8DDB5] font-medium">Create Custom Alert</p>
+                  <p className="text-xs text-gray-500 mt-1">Design your own awareness page</p>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
 
         {/* Edit Dialog */}
         <Dialog open={!!editingTemplate} onOpenChange={() => setEditingTemplate(null)}>
