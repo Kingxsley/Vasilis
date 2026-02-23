@@ -3647,15 +3647,36 @@ async def root_health_check():
     return await health_check()
 
 # CORS - Tighten origins for production
-cors_origins = os.environ.get('CORS_ORIGINS', '*')
+# Production domains - always allowed
+PRODUCTION_ORIGINS = [
+    "https://vasilisnetshield.com",
+    "https://www.vasilisnetshield.com",
+    "https://api.vasilisnetshield.com"
+]
+
+cors_origins = os.environ.get('CORS_ORIGINS', '')
+logger.info(f"CORS_ORIGINS env var: '{cors_origins}'")
+
 if cors_origins == '*':
-    # Allow all for development
+    # Allow all for development - no credentials
     logger.warning("CORS is set to allow all origins (*). Tighten this in production!")
     allow_origins = ["*"]
     allow_credentials = False
-else:
-    allow_origins = [origin.strip() for origin in cors_origins.split(',')]
+elif cors_origins:
+    # Custom origins from environment
+    allow_origins = [origin.strip() for origin in cors_origins.split(',') if origin.strip()]
+    # Add production origins to ensure they're always allowed
+    for prod_origin in PRODUCTION_ORIGINS:
+        if prod_origin not in allow_origins:
+            allow_origins.append(prod_origin)
     allow_credentials = True
+    logger.info(f"CORS configured with origins: {allow_origins}")
+else:
+    # No CORS_ORIGINS set - use production defaults
+    # This is the fallback for Vercel deployments where env vars might not be properly set
+    allow_origins = PRODUCTION_ORIGINS.copy()
+    allow_credentials = True
+    logger.info(f"CORS using production defaults: {allow_origins}")
 
 # Add Rate Limiting Middleware (added first, runs last)
 app.add_middleware(RateLimitMiddleware)
