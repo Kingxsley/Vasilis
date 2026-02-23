@@ -1095,8 +1095,14 @@ async def update_organization(org_id: str, data: OrganizationUpdate, user: dict 
     # Normalize empty certificate template ID to None so it clears the setting
     if 'certificate_template_id' in update_data and not update_data['certificate_template_id']:
         update_data['certificate_template_id'] = None
+    # Handle discord_webhook_url - allow empty string to clear it
+    if 'discord_webhook_url' in update_data:
+        if not update_data['discord_webhook_url']:
+            update_data['discord_webhook_url'] = None
     if not update_data:
         raise HTTPException(status_code=400, detail="No update data provided")
+    
+    logger.info(f"Updating organization {org_id} with data: {update_data}")
     
     result = await db.organizations.update_one(
         {"organization_id": org_id},
