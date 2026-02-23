@@ -574,7 +574,7 @@ export default function AdvancedAnalytics() {
             <CardHeader>
               <CardTitle className="text-[#E8DDB5] flex items-center gap-2">
                 <Activity className="w-5 h-5 text-[#D4A836]" />
-                {simTypeDetail.type === 'phishing' ? 'Phishing Campaigns' : 'Ad Simulations'} Summary
+                {simTypeDetail.type === 'phishing' ? 'Phishing Campaigns' : simTypeDetail.type === 'ad' ? 'Ad Simulations' : 'All Campaigns'} Summary
               </CardTitle>
               <div className="mt-2">
                 <Button
