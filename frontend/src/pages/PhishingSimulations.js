@@ -341,13 +341,15 @@ export default function PhishingSimulations() {
         target_user_ids: newCampaign.target_user_ids,
         scheduled_at: newCampaign.scheduled_at ? new Date(newCampaign.scheduled_at).toISOString() : null,
         assigned_module_id: newCampaign.assigned_module_id || null,
-        click_page_html: newCampaign.click_page_html || null
+        click_page_html: newCampaign.click_page_html || null,
+        alert_template_id: newCampaign.alert_template_id || null,
+        risk_level: newCampaign.risk_level || 'medium'
       };
       
       await axios.post(`${API}/phishing/campaigns`, payload, { headers });
       toast.success(newCampaign.scheduled_at ? 'Campaign scheduled successfully' : 'Campaign created successfully');
       setShowNewCampaign(false);
-      setNewCampaign({ name: '', organization_id: '', template_id: '', target_user_ids: [], scheduled_at: '', launch_immediately: true, assigned_module_id: '', click_page_html: '' });
+      resetCampaignForm();
       fetchData();
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Failed to create campaign');
