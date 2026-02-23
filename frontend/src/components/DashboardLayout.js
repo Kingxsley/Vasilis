@@ -58,6 +58,7 @@ const navGroups = [
       { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, adminOnly: true },
       { path: '/analytics', label: 'Analytics', icon: BarChart3, adminOnly: true },
       { path: '/advanced-analytics', label: 'Advanced Analytics', icon: TrendingUp, adminOnly: true },
+      { path: '/vulnerable-users', label: 'Vulnerable Users', icon: AlertTriangle, adminOnly: true },
     ]
   },
   {
