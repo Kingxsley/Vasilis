@@ -184,14 +184,16 @@ async def list_blog_posts(
     if published_only:
         query["published"] = True
     
-    # Add search filter
+    # Add search filter with sanitization to prevent NoSQL injection
     if search:
-        query["$or"] = [
-            {"title": {"$regex": search, "$options": "i"}},
-            {"excerpt": {"$regex": search, "$options": "i"}},
-            {"content": {"$regex": search, "$options": "i"}},
-            {"tags": {"$regex": search, "$options": "i"}}
-        ]
+        safe_search = sanitize_search_query(search)
+        if safe_search:
+            query["$or"] = [
+                {"title": {"$regex": safe_search, "$options": "i"}},
+                {"excerpt": {"$regex": safe_search, "$options": "i"}},
+                {"content": {"$regex": safe_search, "$options": "i"}},
+                {"tags": {"$regex": safe_search, "$options": "i"}}
+            ]
     
     total = await db.blog_posts.count_documents(query)
     posts = await db.blog_posts.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
