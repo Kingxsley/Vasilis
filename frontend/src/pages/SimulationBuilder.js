@@ -872,16 +872,19 @@ export default function SimulationBuilder() {
               </Button>
             </div>
             {value && value !== '{{TRACKING_URL}}' ? (
-              <Input
-                value={value}
-                onChange={(e) => updateBlockValue(block.instanceId, e.target.value)}
-                placeholder="Enter custom URL for QR code..."
-                className="bg-[#0D1117] border-[#30363D] text-white"
-              />
+              <div className="space-y-2">
+                <Input
+                  value={value}
+                  onChange={(e) => updateBlockValue(block.instanceId, e.target.value)}
+                  placeholder="Enter URL for QR code (e.g., https://example.com/page)"
+                  className="bg-[#0D1117] border-[#30363D] text-white"
+                />
+                <p className="text-xs text-gray-500">This URL will be encoded into the QR code. Users who scan it will be directed to this URL.</p>
+              </div>
             ) : (
               <div className="flex items-center gap-2 bg-[#0D1117]/50 border border-[#30363D] rounded px-3 py-2">
                 <QrCode className="w-4 h-4 text-[#D4A836] flex-shrink-0" />
-                <span className="text-xs text-gray-400">QR code will link to tracking URL</span>
+                <span className="text-xs text-gray-400">QR code will link to tracking URL (clicks are recorded)</span>
               </div>
             )}
           </div>
