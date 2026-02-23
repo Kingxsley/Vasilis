@@ -266,71 +266,68 @@ export default function EmailTemplates() {
                 </div>
               </CardContent>
             </Card>
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* Templates Grid */}
-        <div className="grid gap-4 md:grid-cols-2">
-          {Object.entries(templates).map(([id, template]) => (
-            <Card key={id} className="bg-[#0f0f15] border-[#D4A836]/20">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-[#E8DDB5] flex items-center gap-2 text-lg">
-                    <span>{TEMPLATE_LABELS[id]?.icon}</span>
-                    {TEMPLATE_LABELS[id]?.name || id}
-                  </CardTitle>
-                  {template.is_customized && (
-                    <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                      <CheckCircle className="w-3 h-3 mr-1" />
-                      Customized
-                    </Badge>
-                  )}
-                </div>
-                <CardDescription className="text-gray-500">
-                  {template.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-4">
-                  <p className="text-xs text-gray-500 mb-1">Subject:</p>
-                  <p className="text-sm text-gray-300 truncate">{template.subject}</p>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-[#D4A836]/30 text-[#E8DDB5]"
-                    onClick={() => openEditDialog(id)}
-                  >
-                    <Edit2 className="w-4 h-4 mr-1" />
-                    Edit
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-[#D4A836]/30 text-[#E8DDB5]"
-                    onClick={() => handlePreview(id)}
-                  >
-                    <Eye className="w-4 h-4 mr-1" />
-                    Preview
-                  </Button>
-                  {template.is_customized && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-red-500/30 text-red-400"
-                      onClick={() => handleReset(id)}
-                    >
-                      <RotateCcw className="w-4 h-4 mr-1" />
-                      Reset
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+            {/* Templates Grid */}
+            <div className="grid gap-4 md:grid-cols-2">
+              {Object.entries(templates).map(([id, template]) => (
+                <Card key={id} className="bg-[#0f0f15] border-[#D4A836]/20">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-[#E8DDB5] flex items-center gap-2 text-lg">
+                        <span>{TEMPLATE_LABELS[id]?.icon}</span>
+                        {TEMPLATE_LABELS[id]?.name || id}
+                      </CardTitle>
+                      {template.is_customized && (
+                        <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                          <CheckCircle className="w-3 h-3 mr-1" />
+                          Customized
+                        </Badge>
+                      )}
+                    </div>
+                    <CardDescription className="text-gray-500">
+                      {template.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="mb-4">
+                      <p className="text-xs text-gray-500 mb-1">Subject:</p>
+                      <p className="text-sm text-gray-300 truncate">{template.subject}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-[#D4A836]/30 text-[#E8DDB5]"
+                        onClick={() => openEditDialog(id)}
+                      >
+                        <Edit2 className="w-4 h-4 mr-1" />
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-[#D4A836]/30 text-[#E8DDB5]"
+                        onClick={() => handlePreview(id)}
+                      >
+                        <Eye className="w-4 h-4 mr-1" />
+                        Preview
+                      </Button>
+                      {template.is_customized && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-red-500/30 text-red-400"
+                          onClick={() => handleReset(id)}
+                        >
+                          <RotateCcw className="w-4 h-4 mr-1" />
+                          Reset
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </TabsContent>
 
           {/* Alert Templates Tab */}
