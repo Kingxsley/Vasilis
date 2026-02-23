@@ -748,7 +748,7 @@ async def list_campaign_targets(campaign_id: str, request: Request):
 async def get_phishing_stats(request: Request, days: int = 30):
     """Get aggregated simulation statistics for analytics dashboard (phishing + ad campaigns)"""
     await require_admin(request)
-    db = get_db()
+    from server import db  # Import directly like vulnerable_users.py
     
     from datetime import timedelta
     
