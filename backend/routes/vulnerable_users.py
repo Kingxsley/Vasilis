@@ -29,9 +29,19 @@ async def get_vulnerable_users(
     Get list of vulnerable users who clicked phishing links or submitted credentials.
     """
     # Import here to avoid circular imports
-    from server import db, require_admin
+    from server import db, get_current_user, security
+    from models import UserRole
     
-    user = await require_admin(request)
+    # Get current user
+    try:
+        credentials = await security(request)
+        user = await get_current_user(request, credentials)
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    
+    # Check admin permission
+    if user.get("role") not in [UserRole.SUPER_ADMIN.value, UserRole.ORG_ADMIN.value, "super_admin", "org_admin"]:
+        raise HTTPException(status_code=403, detail="Admin access required")
     
     # Build query for phishing targets who clicked
     target_query = {"link_clicked": True}
