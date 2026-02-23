@@ -30,7 +30,6 @@ async def get_vulnerable_users(
     """
     # Import here to avoid circular imports
     from server import db, get_current_user, security
-    from models import UserRole
     
     # Get current user
     try:
@@ -40,7 +39,8 @@ async def get_vulnerable_users(
         raise HTTPException(status_code=401, detail="Authentication required")
     
     # Check admin permission
-    if user.get("role") not in [UserRole.SUPER_ADMIN.value, UserRole.ORG_ADMIN.value, "super_admin", "org_admin"]:
+    user_role = user.get("role", "")
+    if user_role not in ["super_admin", "org_admin"]:
         raise HTTPException(status_code=403, detail="Admin access required")
     
     # Build query for phishing targets who clicked
