@@ -118,7 +118,8 @@ export default function Settings() {
         social_twitter: branding.social_twitter,
         social_linkedin: branding.social_linkedin,
         social_instagram: branding.social_instagram,
-        social_youtube: branding.social_youtube
+        social_youtube: branding.social_youtube,
+        discord_webhook_url: branding.discord_webhook_url
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
