@@ -678,6 +678,95 @@ export default function EmailTemplates() {
             </div>
           </TabsContent>
 
+          {/* Custom Emails Tab */}
+          <TabsContent value="custom-emails" className="space-y-6">
+            {/* Info Card */}
+            <Card className="bg-green-500/10 border-green-500/30">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <Info className="w-5 h-5 text-green-400 mt-0.5" />
+                  <div className="text-sm text-green-200">
+                    <p className="font-medium mb-1">Visual Email Builder</p>
+                    <p className="text-green-300/80">
+                      Design custom email templates with a visual editor. Customize logos, colors, content, and buttons - all without writing code.
+                      Use variables like <code className="bg-green-500/20 px-1 rounded">{'{{USER_NAME}}'}</code> for personalization.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Create New Button */}
+            <div className="flex justify-end">
+              <Button onClick={() => openEmailEditor()} className="bg-[#D4A836] hover:bg-[#C49A30] text-black">
+                <Plus className="w-4 h-4 mr-2" />
+                Create Email Template
+              </Button>
+            </div>
+
+            {/* Custom Email Templates Grid */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {customEmailTemplates.map((email) => (
+                <Card key={email.id} className="bg-[#161B22] border-[#D4A836]/20 hover:border-[#D4A836]/40 transition-colors">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">{email.config?.logoIcon || '📧'}</span>
+                        <div>
+                          <h3 className="text-[#E8DDB5] font-medium">{email.name}</h3>
+                          <p className="text-xs text-gray-400 truncate max-w-[180px]">{email.subject}</p>
+                        </div>
+                      </div>
+                      <Badge className="bg-green-500/20 text-green-400 text-xs">{email.type || 'custom'}</Badge>
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-[#D4A836]/30 text-[#E8DDB5]"
+                        onClick={() => setEmailPreview(email)}
+                      >
+                        <Eye className="w-4 h-4 mr-1" />
+                        Preview
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-[#D4A836]/30 text-[#E8DDB5]"
+                        onClick={() => openEmailEditor(email)}
+                      >
+                        <Edit2 className="w-4 h-4 mr-1" />
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-red-500/30 text-red-400"
+                        onClick={() => deleteEmailTemplate(email.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+
+              {customEmailTemplates.length === 0 && (
+                <Card className="bg-[#161B22] border-[#30363D] border-dashed col-span-full">
+                  <CardContent className="p-8 text-center">
+                    <Mail className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-[#E8DDB5] mb-2">No Custom Email Templates</h3>
+                    <p className="text-gray-400 mb-4">Create your first custom email template using the visual builder</p>
+                    <Button onClick={() => openEmailEditor()} className="bg-[#D4A836] hover:bg-[#C49A30] text-black">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Template
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </TabsContent>
+
           {/* Alert Pages Tab */}
           <TabsContent value="alerts" className="space-y-6">
             {/* Info Card */}
