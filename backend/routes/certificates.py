@@ -114,6 +114,7 @@ async def generate_user_certificate(user_id: str, request: Request):
                 {"_id": 0}
             )
     # 2. Check modules if still no template
+    template_source = "organization" if template_doc else None
     if not template_doc:
         # Unique module IDs from completed sessions
         module_ids = list({s.get("module_id") for s in sessions})
@@ -128,12 +129,17 @@ async def generate_user_certificate(user_id: str, request: Request):
                     {"_id": 0}
                 )
                 if template_doc:
+                    template_source = "module"
                     break
     # 3. Check for global default template
     if not template_doc:
         template_doc = await db.certificate_templates.find_one(
             {"is_default": True}, {"_id": 0}
         )
+        if template_doc:
+            template_source = "default"
+    
+    logger.info(f"Certificate for user {user_id}: template_source={template_source}, template_id={template_doc.get('template_id') if template_doc else None}")
 
     # Prepare placeholders for dynamic rendering
     placeholders = {
