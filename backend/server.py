@@ -1614,7 +1614,8 @@ async def update_training_module(
     if data.scenarios_count is not None and data.scenarios is None:
         update_dict["scenarios_count"] = data.scenarios_count
     if data.certificate_template_id is not None:
-        update_dict["certificate_template_id"] = data.certificate_template_id
+        # Convert empty string to None
+        update_dict["certificate_template_id"] = data.certificate_template_id if data.certificate_template_id else None
     if data.is_active is not None:
         update_dict["is_active"] = data.is_active
 
