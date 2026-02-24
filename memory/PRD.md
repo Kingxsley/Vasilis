@@ -273,12 +273,26 @@ JWT_SECRET=<secure-random-string>
 - `DB_NAME=vasilisnetshield`
 - `JWT_SECRET=<your-secret>`
 
+### Session Changes (Feb 25, 2026 - E1 Fork) - P0/P1 Bug Fixes
+- **Bulk Actions & Multi-Org Selection (P0)** - All three simulation pages now support:
+  - `AdSimulations.js` - Added `organization_ids[]` array, checkboxes for bulk selection, Delete button when selected, multi-org selection in create dialog
+  - `PhishingSimulations.js` - Fixed user selection to work with multi-org (users grouped by organization)
+  - `CredentialHarvest.js` - Already had multi-org support, verified working
+- **Image Upload in Training Questions (P1)** - Enhanced `TrainingSession.js`:
+  - `GenericQuestion` component now checks for `image_question` type
+  - Renders uploaded images with proper styling (max-h-64, rounded-lg, object-contain)
+  - Also displays question text below the image
+- **Testing Agent Verification** - All features verified with 100% pass rate
+
 ## Key Files Reference
 - `/app/backend/server.py` - Main API server with CORS config
 - `/app/backend/routes/vulnerable_users.py` - Vulnerable users API
 - `/app/backend/services/discord_service.py` - Discord webhook service
 - `/app/frontend/src/pages/VulnerableUsers.js` - Vulnerable users UI
-- `/app/frontend/src/pages/PhishingSimulations.js` - Campaign management
+- `/app/frontend/src/pages/PhishingSimulations.js` - Campaign management with multi-org support
+- `/app/frontend/src/pages/AdSimulations.js` - Ad campaigns with bulk delete and multi-org
+- `/app/frontend/src/pages/CredentialHarvest.js` - Credential harvest with bulk delete and multi-org
+- `/app/frontend/src/pages/TrainingSession.js` - Training with image_question support
 - `/app/frontend/public/favicon.svg` - Site favicon
 
 ## Database Collections
