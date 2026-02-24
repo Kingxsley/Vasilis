@@ -107,13 +107,17 @@ const SocialEngineeringSimulation = ({ content }) => (
 );
 
 // Generic Question Component (for multiple choice, true/false, etc. without email preview)
-const GenericQuestion = ({ scenario }) => (
-  <div className="p-4 bg-[#21262D] rounded-lg border border-[#30363D]">
-    {scenario?.content?.scenario_description && (
-      <p className="text-gray-400 text-sm mb-3">{scenario.content.scenario_description}</p>
-    )}
-  </div>
-);
+const GenericQuestion = ({ scenario }) => {
+  // Only render if there's actual content to show
+  if (!scenario?.content?.scenario_description) {
+    return null;
+  }
+  return (
+    <div className="p-4 bg-[#21262D] rounded-lg border border-[#30363D]">
+      <p className="text-gray-400 text-sm">{scenario.content.scenario_description}</p>
+    </div>
+  );
+};
 
 export default function TrainingSession() {
   const { sessionId } = useParams();
