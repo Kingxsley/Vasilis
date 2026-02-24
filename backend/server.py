@@ -263,6 +263,7 @@ class TrainingModuleCreate(BaseModel):
     scenarios: Optional[List[str]] = None
     questions: Optional[List[dict]] = None
     questions_per_session: Optional[int] = None  # Number of questions to show per session (random selection)
+    pass_percentage: Optional[int] = 70  # Minimum percentage required to pass (default 70%)
     certificate_template_id: Optional[str] = None
     is_active: bool = True
 
@@ -276,6 +277,7 @@ class TrainingModuleUpdate(BaseModel):
     scenarios: Optional[List[str]] = None
     questions: Optional[List[dict]] = None
     questions_per_session: Optional[int] = None
+    pass_percentage: Optional[int] = None  # Minimum percentage required to pass
     certificate_template_id: Optional[str] = None
     is_active: Optional[bool] = None
 
