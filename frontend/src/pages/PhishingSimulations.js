@@ -632,7 +632,13 @@ export default function PhishingSimulations() {
     return <Badge className={colors[status] || colors.draft}>{status}</Badge>;
   };
 
-  const orgUsers = users.filter(u => u.organization_id === newCampaign.organization_id);
+  // Get users for multiple organizations
+  const getOrgUsers = () => {
+    if (newCampaign.organization_ids.length === 0) return [];
+    return users.filter(u => newCampaign.organization_ids.includes(u.organization_id));
+  };
+
+  const getUsersForOrg = (orgId) => users.filter(u => u.organization_id === orgId);
 
   return (
     <DashboardLayout>
