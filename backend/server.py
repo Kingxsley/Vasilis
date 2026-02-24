@@ -230,6 +230,7 @@ class TrainingModuleResponse(BaseModel):
     scenarios: Optional[List[str]] = None
     questions: Optional[List[dict]] = None
     questions_per_session: Optional[int] = None
+    pass_percentage: Optional[int] = 70  # Minimum percentage required to pass
     certificate_template_id: Optional[str] = None
     is_active: bool = True
 
