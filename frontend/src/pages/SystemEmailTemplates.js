@@ -112,7 +112,7 @@ export default function SystemEmailTemplates() {
     
     try {
       const res = await axios.post(
-        `${API}/system-emails/${selectedTemplate.id}/reset`,
+        `${API}/api/system-emails/${selectedTemplate.id}/reset`,
         {},
         { headers }
       );
