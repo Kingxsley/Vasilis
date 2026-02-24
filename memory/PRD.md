@@ -159,10 +159,11 @@ JWT_SECRET=<secure-random-string>
 
 ### P1 - Important Issues  
 ~~3. **Image Upload in Training Questions** - Images not displaying (fix pending testing)~~ FIXED
-4. **Training Assignment Email Link** - May point to wrong domain
+~~4. **Certificate Text Not Rendering** - PDF certificates missing text elements~~ FIXED (Feb 2026)
+5. **Training Assignment Email Link** - May point to wrong domain
 
 ### P3 - Lower Priority
-5. **Bulk User Import** - Feature may be broken
+6. **Bulk User Import** - Feature may be broken
 
 ### Completed (Feb 25, 2026)
 - [x] **Bulk Actions & Multi-Org Selection** - All simulation pages now support:
