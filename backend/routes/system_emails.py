@@ -335,11 +335,6 @@ def generate_email_html(template: dict, data: dict) -> str:
 </div>
 </td></tr>"""
     
-    # Icon section
-    icon_html = ""
-    if icon:
-        icon_html = f'<div style="font-size:40px;margin-bottom:10px;">{icon}</div>'
-    
     html = f"""<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
