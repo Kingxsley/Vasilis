@@ -66,7 +66,17 @@ A comprehensive security awareness and training platform that helps organization
 - [x] System-wide Discord webhook
 - [x] Security settings (force 2FA)
 
-## Current Status (Dec 2025)
+## Current Status (Feb 2026)
+
+### Training Session UI Fix (Feb 24, 2026) - COMPLETED
+- **Removed Empty Email Preview Box** - Fixed `TrainingSession.js` to not show email preview UI for question types that don't need it
+- **Dynamic Question Type Rendering** - UI now correctly renders:
+  - Multiple Choice questions with A, B, C, D options
+  - True/False questions with True/False buttons  
+  - Safe/Unsafe questions with Safe/Unsafe buttons
+- **Added GenericQuestion Component** - New component for questions without email/scenario content
+- **Updated renderScenario Logic** - Only shows EmailSimulation for actual phishing email scenarios with proper email structure
+- **Tested and Verified** - All question types display correctly without unnecessary UI elements
 
 ### Training Module System Enhancements - COMPLETED
 1. **Question Counter Fix** - Added `current_scenario_index` and `answers` fields to TrainingSessionResponse model
