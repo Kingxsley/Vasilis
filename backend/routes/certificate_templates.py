@@ -147,7 +147,17 @@ async def create_certificate_template(data: CertificateTemplateCreate, request: 
     
     await db.certificate_templates.insert_one(template_doc)
     
-    return {"template_id": template_id, **template_doc}
+    # Return without _id
+    return {
+        "template_id": template_id,
+        "name": data.name,
+        "description": data.description,
+        "background_color": data.background_color,
+        "border_style": data.border_style,
+        "orientation": data.orientation,
+        "is_default": False,
+        "message": "Template created"
+    }
 
 
 @router.patch("/{template_id}")
