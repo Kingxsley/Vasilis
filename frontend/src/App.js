@@ -725,6 +725,14 @@ const AppRouter = () => {
           }
         />
         <Route
+          path="/credential-submissions"
+          element={
+            <ProtectedRoute adminOnly>
+              <CredentialSubmissions />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/certificate-templates"
           element={
             <ProtectedRoute adminOnly>
