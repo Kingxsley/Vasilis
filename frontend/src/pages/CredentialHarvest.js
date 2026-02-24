@@ -397,9 +397,52 @@ export default function CredentialHarvest() {
     try {
       await axios.delete(`${API}/phishing/campaigns/${campaignId}`, { headers });
       toast.success('Campaign deleted');
+      setSelectedCampaigns(prev => prev.filter(id => id !== campaignId));
       fetchData();
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Failed to delete campaign');
+    }
+  };
+
+  const handleBulkDeleteCampaigns = async () => {
+    if (selectedCampaigns.length === 0) {
+      toast.error('No campaigns selected');
+      return;
+    }
+    if (!window.confirm(`Are you sure you want to delete ${selectedCampaigns.length} campaign(s)?`)) return;
+    
+    try {
+      let deleted = 0;
+      let failed = 0;
+      for (const campaignId of selectedCampaigns) {
+        try {
+          await axios.delete(`${API}/phishing/campaigns/${campaignId}`, { headers });
+          deleted++;
+        } catch {
+          failed++;
+        }
+      }
+      setSelectedCampaigns([]);
+      toast.success(`Deleted ${deleted} campaign(s)${failed > 0 ? `, ${failed} failed` : ''}`);
+      fetchData();
+    } catch (err) {
+      toast.error('Failed to delete campaigns');
+    }
+  };
+
+  const toggleCampaignSelection = (campaignId) => {
+    setSelectedCampaigns(prev => 
+      prev.includes(campaignId) 
+        ? prev.filter(id => id !== campaignId)
+        : [...prev, campaignId]
+    );
+  };
+
+  const toggleAllCampaigns = () => {
+    if (selectedCampaigns.length === campaigns.length) {
+      setSelectedCampaigns([]);
+    } else {
+      setSelectedCampaigns(campaigns.map(c => c.campaign_id));
     }
   };
 
