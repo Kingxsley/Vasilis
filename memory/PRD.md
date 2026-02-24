@@ -174,6 +174,17 @@ JWT_SECRET=<secure-random-string>
   - Replaced deprecated Google Chart API (`chart.googleapis.com`) with `qrcode.react` library
   - Fixed in both `SecurityDashboard.js` and `MySecurity.js`
   - QR codes now render as SVG client-side
+- [x] **Campaign Dialog Scrolling** - Fixed "Create Campaign" dialogs being too tall:
+  - Added `max-h-[90vh]` and scrollable content area
+  - Fixed in PhishingSimulations.js and AdSimulations.js
+- [x] **System Email Template Customization** - New visual editor for system emails:
+  - New page at `/system-emails` for super admins
+  - Customize Welcome Email, Password Reset, Forgot Password, Training Assignment emails
+  - Toggle icon visibility and choose icon type (Shield, Mail, Key, Alert, Check, None)
+  - Customize subject line, headers, greeting, body, button text, footer
+  - Live preview functionality
+  - Backend: `/app/backend/routes/system_emails.py`
+  - Frontend: `/app/frontend/src/pages/SystemEmailTemplates.js`
 
 ### All Completed
 - [x] **Phishing Tracking URLs** - All tracking URL generation now uses `API_URL` env var
