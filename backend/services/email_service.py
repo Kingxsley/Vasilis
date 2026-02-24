@@ -31,10 +31,125 @@ async def get_branding_settings(db):
     }
 
 
+async def get_system_email_template(db, template_id: str) -> dict:
+    """Get system email template configuration (customized or default)"""
+    try:
+        from routes.system_emails import DEFAULT_TEMPLATES
+        default = DEFAULT_TEMPLATES.get(template_id, DEFAULT_TEMPLATES.get("welcome", {}))
+        custom = await db.system_email_templates.find_one({"template_id": template_id}, {"_id": 0})
+        if custom:
+            return {**default, **custom}
+        return default
+    except Exception as e:
+        logger.warning(f"Could not fetch email template: {e}")
+        return {}
+
+
 def get_login_url():
     """Get the login URL from environment"""
     frontend_url = os.environ.get('FRONTEND_URL', 'https://vasilisnetshield.com')
     return f"{frontend_url}/auth"
+
+
+def generate_email_html_from_template(template: dict, data: dict) -> str:
+    """Generate HTML email from template configuration"""
+    primary_color = template.get("primary_color", "#D4A836")
+    show_icon = template.get("show_icon", True)
+    icon_type = template.get("icon_type", "shield")
+    
+    # Icon mapping
+    icons = {
+        "shield": "🛡️",
+        "mail": "📧",
+        "key": "🔑",
+        "alert": "⚠️",
+        "check": "✅",
+        "none": ""
+    }
+    icon = icons.get(icon_type, "🛡️") if show_icon else ""
+    
+    # Format template strings with data
+    def fmt(s):
+        if not s:
+            return ""
+        try:
+            return s.format(**data)
+        except KeyError:
+            return s
+    
+    header_title = fmt(template.get("header_title", ""))
+    header_subtitle = fmt(template.get("header_subtitle", ""))
+    greeting = fmt(template.get("greeting_template", ""))
+    body = fmt(template.get("body_template", ""))
+    cta_text = fmt(template.get("cta_text", ""))
+    cta_url = fmt(template.get("cta_url_template", ""))
+    footer = fmt(template.get("footer_text", ""))
+    security_warning = fmt(template.get("security_warning_text", ""))
+    show_cta = template.get("show_cta", True)
+    show_security_warning = template.get("show_security_warning", False)
+    
+    # Credentials section (only for welcome/password_reset)
+    credentials_html = ""
+    if "password" in data and data.get("password"):
+        credentials_html = f"""
+<div style="background:#0f0f15;border-radius:8px;padding:20px;border-left:4px solid {primary_color};margin-bottom:20px;">
+<p style="color:{primary_color};margin:0 0 10px 0;font-weight:bold;">Your Login Credentials:</p>
+<p style="color:#888;margin:0 0 5px 0;">Email: <strong style="color:#E8DDB5;">{data.get('user_email', '')}</strong></p>
+<p style="color:#888;margin:0;">Password: <code style="background:#2a2a34;color:#E8DDB5;padding:3px 8px;border-radius:4px;">{data.get('password', '')}</code></p>
+</div>"""
+    
+    # CTA button
+    cta_html = ""
+    if show_cta and cta_text and cta_url:
+        cta_html = f"""
+<tr><td style="padding:0 30px 20px 30px;text-align:center;">
+<a href="{cta_url}" style="display:inline-block;background:{primary_color};color:#000;text-decoration:none;padding:14px 40px;border-radius:8px;font-weight:bold;font-size:16px;">{cta_text}</a>
+</td></tr>"""
+    
+    # Security warning
+    warning_html = ""
+    if show_security_warning and security_warning:
+        warning_html = f"""
+<tr><td style="padding:0 30px 20px 30px;">
+<div style="background:#2a2a34;border-radius:8px;padding:12px;">
+<p style="color:#FF6B6B;margin:0;font-size:13px;"><strong>⚠️ {security_warning}</strong></p>
+</div>
+</td></tr>"""
+    
+    # Icon section
+    icon_html = ""
+    if icon:
+        icon_html = f'<div style="font-size:40px;margin-bottom:10px;">{icon}</div>'
+    
+    html = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
+<body style="margin:0;padding:0;background:#0f0f15;font-family:Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#0f0f15;padding:20px 0;">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="background:#1a1a24;border-radius:10px;border:1px solid {primary_color};">
+<tr><td style="padding:30px;text-align:center;">
+{icon_html}
+<h1 style="color:{primary_color};margin:0 0 5px 0;font-size:24px;">{header_title}</h1>
+<p style="color:#888;margin:0 0 20px 0;font-size:14px;">{header_subtitle}</p>
+</td></tr>
+<tr><td style="padding:0 30px;">
+<p style="color:#E8DDB5;margin:0 0 15px 0;">{greeting}</p>
+<p style="color:#E8DDB5;margin:0 0 20px 0;">{body}</p>
+{credentials_html}
+</td></tr>
+{cta_html}
+{warning_html}
+<tr><td style="padding:20px 30px;border-top:1px solid #333;text-align:center;">
+<p style="color:#666;margin:0;font-size:12px;">{footer}</p>
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>"""
+    
+    return html
 
 
 async def send_welcome_email(user_email: str, user_name: str, password: str, login_url: str = None, db=None):
