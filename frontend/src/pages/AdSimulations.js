@@ -424,6 +424,18 @@ export default function AdSimulations() {
                     <SelectItem value="completed">Completed</SelectItem>
                   </SelectContent>
                 </Select>
+                {selectedCampaignIds.length > 0 && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setShowBulkDeleteConfirm(true)}
+                    className="bg-red-600 hover:bg-red-700"
+                    data-testid="bulk-delete-campaigns-btn"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete ({selectedCampaignIds.length})
+                  </Button>
+                )}
               </div>
               <Button 
                 onClick={() => setShowNewCampaign(true)}
@@ -464,38 +476,58 @@ export default function AdSimulations() {
               </Card>
             ) : (
               <div className="grid gap-4">
+                {/* Select All checkbox */}
+                <div className="flex items-center gap-2 px-2">
+                  <Checkbox
+                    checked={selectedCampaignIds.length === filteredCampaigns.length && filteredCampaigns.length > 0}
+                    onCheckedChange={selectAllCampaigns}
+                    className="border-[#30363D] data-[state=checked]:bg-[#D4A836]"
+                    data-testid="select-all-campaigns"
+                  />
+                  <span className="text-sm text-gray-400">Select All ({filteredCampaigns.length})</span>
+                </div>
                 {filteredCampaigns.map((campaign) => (
                   <Card 
                     key={campaign.campaign_id} 
-                    className="bg-[#161B22] border-[#30363D] hover:border-[#D4A836]/30 transition-colors"
+                    className={`bg-[#161B22] border-[#30363D] hover:border-[#D4A836]/30 transition-colors ${
+                      selectedCampaignIds.includes(campaign.campaign_id) ? 'border-[#D4A836]' : ''
+                    }`}
                     data-testid={`campaign-${campaign.campaign_id}`}
                   >
                     <CardContent className="p-6">
                       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-lg font-semibold text-[#E8DDB5]">{campaign.name}</h3>
-                            {getStatusBadge(campaign.status || 'active')}
-                          </div>
-                          <div className="flex flex-wrap gap-4 text-sm text-gray-400">
-                            <span className="flex items-center gap-1">
-                              <Users className="w-4 h-4" />
-                              {campaign.total_targets} targets
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Eye className="w-4 h-4" />
-                              {campaign.ads_viewed} viewed
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <MousePointer className="w-4 h-4" />
-                              {campaign.ads_clicked} clicked
-                            </span>
-                            {campaign.scheduled_at && (
-                              <span className="flex items-center gap-1 text-blue-400">
-                                <Calendar className="w-4 h-4" />
-                                {new Date(campaign.scheduled_at).toLocaleString()}
+                        <div className="flex items-start gap-3 flex-1">
+                          <Checkbox
+                            checked={selectedCampaignIds.includes(campaign.campaign_id)}
+                            onCheckedChange={() => toggleCampaignSelection(campaign.campaign_id)}
+                            className="border-[#30363D] data-[state=checked]:bg-[#D4A836] mt-1"
+                            data-testid={`select-campaign-${campaign.campaign_id}`}
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <h3 className="text-lg font-semibold text-[#E8DDB5]">{campaign.name}</h3>
+                              {getStatusBadge(campaign.status || 'active')}
+                            </div>
+                            <div className="flex flex-wrap gap-4 text-sm text-gray-400">
+                              <span className="flex items-center gap-1">
+                                <Users className="w-4 h-4" />
+                                {campaign.total_targets} targets
                               </span>
-                            )}
+                              <span className="flex items-center gap-1">
+                                <Eye className="w-4 h-4" />
+                                {campaign.ads_viewed} viewed
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <MousePointer className="w-4 h-4" />
+                                {campaign.ads_clicked} clicked
+                              </span>
+                              {campaign.scheduled_at && (
+                                <span className="flex items-center gap-1 text-blue-400">
+                                  <Calendar className="w-4 h-4" />
+                                  {new Date(campaign.scheduled_at).toLocaleString()}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
