@@ -44,7 +44,11 @@ export default function TrainingModules() {
         axios.get(`${API}/training/sessions`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       setModules(modulesRes.data);
-      setSessions(sessionsRes.data);
+      
+      // Filter sessions to only include those for modules that still exist
+      const existingModuleIds = new Set(modulesRes.data.map(m => m.module_id));
+      const validSessions = sessionsRes.data.filter(s => existingModuleIds.has(s.module_id));
+      setSessions(validSessions);
     } catch (err) {
       toast.error('Failed to fetch training data');
     } finally {
