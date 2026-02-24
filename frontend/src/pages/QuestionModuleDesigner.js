@@ -274,6 +274,7 @@ export default function QuestionModuleDesigner() {
     difficulty: 'medium',
     duration_minutes: 15,
     questions_per_session: 15,
+    pass_percentage: 70,
     certificate_template_id: '',
     is_active: true,
   });
@@ -301,7 +302,7 @@ export default function QuestionModuleDesigner() {
   // ------- CRUD -------
   const openNew = () => {
     setEditingModuleId(null);
-    setModuleData({ name: '', module_type: 'phishing', description: '', difficulty: 'medium', duration_minutes: 15, questions_per_session: 15, certificate_template_id: '', is_active: true });
+    setModuleData({ name: '', module_type: 'phishing', description: '', difficulty: 'medium', duration_minutes: 15, questions_per_session: 15, pass_percentage: 70, certificate_template_id: '', is_active: true });
     setQuestions([emptyQuestion('multiple_choice')]);
     setShowDesigner(true);
   };
