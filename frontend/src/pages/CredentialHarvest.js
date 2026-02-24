@@ -224,16 +224,19 @@ export default function CredentialHarvest() {
   const [selectedCampaign, setSelectedCampaign] = useState(null);
   const [campaignTargets, setCampaignTargets] = useState([]);
   const [modules, setModules] = useState([]);
+  
+  // Bulk selection state
+  const [selectedCampaigns, setSelectedCampaigns] = useState([]);
 
   // Dialog states
   const [showNewCampaign, setShowNewCampaign] = useState(false);
   const [showNewTemplate, setShowNewTemplate] = useState(false);
   const [showCampaignDetails, setShowCampaignDetails] = useState(false);
 
-  // Form states
+  // Form states - now supports multiple organizations
   const [newCampaign, setNewCampaign] = useState({
     name: '',
-    organization_id: '',
+    organization_ids: [], // Changed to array for multi-org
     template_id: '',
     target_user_ids: [],
     scheduled_at: '',
