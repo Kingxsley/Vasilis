@@ -316,6 +316,7 @@ export default function QuestionModuleDesigner() {
       difficulty: mod.difficulty,
       duration_minutes: mod.duration_minutes,
       questions_per_session: mod.questions_per_session || 15,
+      pass_percentage: mod.pass_percentage || 70,
       certificate_template_id: mod.certificate_template_id || '',
       is_active: mod.is_active,
     });
