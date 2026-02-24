@@ -1746,13 +1746,21 @@ async def start_training_session(data: TrainingSessionCreate, user: dict = Depen
     cached_scenarios = []
     questions_list = module.get("questions") or []
     scenarios_list = module.get("scenarios") or []
-    total_questions = module.get("scenarios_count", 0)
+    
+    # Get the number of questions to show per session (default: all questions)
+    # If questions_per_session is set, randomly select that many questions
+    questions_per_session = module.get("questions_per_session", 0)
     
     if questions_list:
         # Use the rich questions from the module designer
         import random as _rand
         shuffled = list(questions_list)
         _rand.shuffle(shuffled)
+        
+        # If questions_per_session is set, limit the questions
+        if questions_per_session > 0 and questions_per_session < len(shuffled):
+            shuffled = shuffled[:questions_per_session]
+        
         for i, q in enumerate(shuffled):
             cached_scenarios.append({
                 "scenario_id": q.get("id", f"q_{i}"),
