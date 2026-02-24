@@ -260,6 +260,7 @@ class TrainingModuleCreate(BaseModel):
     scenarios_count: int = 0
     scenarios: Optional[List[str]] = None
     questions: Optional[List[dict]] = None
+    questions_per_session: Optional[int] = None  # Number of questions to show per session (random selection)
     certificate_template_id: Optional[str] = None
     is_active: bool = True
 
@@ -272,6 +273,7 @@ class TrainingModuleUpdate(BaseModel):
     scenarios_count: Optional[int] = None
     scenarios: Optional[List[str]] = None
     questions: Optional[List[dict]] = None
+    questions_per_session: Optional[int] = None
     certificate_template_id: Optional[str] = None
     is_active: Optional[bool] = None
 
