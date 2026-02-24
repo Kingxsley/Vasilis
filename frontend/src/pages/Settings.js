@@ -783,32 +783,69 @@ export default function Settings() {
                 Super Admin Notifications
               </CardTitle>
               <CardDescription className="text-gray-400">
-                Receive instant Discord notifications when users click phishing links or submit credentials
+                Receive instant Discord notifications for ALL organizations
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="discord_webhook" className="text-gray-400">Discord Webhook URL</Label>
-                <Input
-                  id="discord_webhook"
-                  value={branding.discord_webhook_url || ''}
-                  onChange={(e) => setBranding({ ...branding, discord_webhook_url: e.target.value })}
-                  placeholder="https://discord.com/api/webhooks/..."
-                  className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5] mt-1"
-                  data-testid="discord-webhook-input"
-                />
+                <Label htmlFor="discord_webhook" className="text-gray-400">Global Discord Webhook URL</Label>
+                <div className="flex gap-2 mt-1">
+                  <Input
+                    id="discord_webhook"
+                    value={branding.discord_webhook_url || ''}
+                    onChange={(e) => setBranding({ ...branding, discord_webhook_url: e.target.value })}
+                    placeholder="https://discord.com/api/webhooks/..."
+                    className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5] flex-1"
+                    data-testid="discord-webhook-input"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={async () => {
+                      if (!branding.discord_webhook_url) {
+                        toast.error('Please enter a webhook URL first');
+                        return;
+                      }
+                      try {
+                        const res = await axios.post(`${API}/notifications/test-webhook`, {
+                          webhook_url: branding.discord_webhook_url
+                        }, { headers: { Authorization: `Bearer ${token}` } });
+                        if (res.data.success) {
+                          toast.success('Test notification sent! Check your Discord channel.');
+                        } else {
+                          toast.error(res.data.message || 'Failed to send test notification');
+                        }
+                      } catch (err) {
+                        toast.error(err.response?.data?.detail || 'Failed to test webhook');
+                      }
+                    }}
+                    className="border-[#5865F2] text-[#5865F2] hover:bg-[#5865F2]/10"
+                    data-testid="test-webhook-btn"
+                  >
+                    Test
+                  </Button>
+                </div>
                 <p className="text-xs text-gray-500 mt-2">
-                  This webhook receives all phishing click notifications across all organizations.
+                  This webhook receives notifications for <strong>ALL organizations</strong>.
                   <br />
-                  To get a webhook URL: Server Settings → Integrations → Webhooks → New Webhook → Copy URL
+                  To get a webhook: Discord → Server Settings → Integrations → Webhooks → New Webhook
                 </p>
               </div>
+              
               <div className="bg-[#5865F2]/10 p-4 rounded-lg border border-[#5865F2]/30">
-                <h4 className="text-[#5865F2] font-medium mb-2">Notification Types</h4>
+                <h4 className="text-[#5865F2] font-medium mb-2">How Notifications Work</h4>
+                <div className="text-sm text-gray-400 space-y-2">
+                  <p><strong className="text-[#5865F2]">Super Admin Webhook (this):</strong> Gets ALL notifications from every organization</p>
+                  <p><strong className="text-[#5865F2]">Organization Webhooks:</strong> Each org can have their own webhook (set in Management → Organizations) - only gets notifications for their users</p>
+                </div>
+              </div>
+
+              <div className="bg-[#21262D] p-4 rounded-lg border border-[#30363D]">
+                <h4 className="text-white font-medium mb-2">Notification Types</h4>
                 <ul className="text-sm text-gray-400 space-y-1">
-                  <li>• Phishing link clicks - When any user clicks a phishing simulation link</li>
-                  <li>• Credential submissions - Critical alerts when users enter credentials</li>
-                  <li>• Campaign launches - When new campaigns are started</li>
+                  <li>🚨 <strong>Phishing Clicks</strong> - When any user clicks a phishing link</li>
+                  <li>🔐 <strong>Credential Submissions</strong> - CRITICAL: When users enter credentials</li>
+                  <li>🚀 <strong>Campaign Launches</strong> - When new campaigns are started</li>
                 </ul>
               </div>
             </CardContent>
