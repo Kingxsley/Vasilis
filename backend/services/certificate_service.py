@@ -375,15 +375,18 @@ def generate_certificate_from_template(template: dict, placeholders: dict) -> by
                 except Exception:
                     c.setFillColor(colors.black)
                     
-                # Determine y coordinate for baseline (use top-left origin for text)
-                text_x = x + width/2 if align == "center" else x
-                text_y = y - height/2
+                # Determine y coordinate for baseline
+                # y is already converted from top-based percentage to bottom-based pixels
+                # For text, we want to draw at the vertical center of the element
+                text_y = y - height/2 + font_size/3  # Adjust for baseline
+                
                 if align == "center":
+                    text_x = x + width/2
                     c.drawCentredString(text_x, text_y, text)
                 elif align == "right":
                     c.drawRightString(x + width, text_y, text)
                 else:
-                    c.drawString(text_x, text_y, text)
+                    c.drawString(x, text_y, text)
 
             elif elem_type in ["image", "logo", "signature"]:
                 # Determine image data.  Use content or placeholder to fetch base64
