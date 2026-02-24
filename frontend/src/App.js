@@ -309,6 +309,8 @@ const MySecurity = React.lazy(() => import('./pages/MySecurity'));
 const QuestionModuleDesigner = React.lazy(() => import('./pages/QuestionModuleDesigner'));
 // VulnerableUsers page for tracking users who clicked phishing links
 const VulnerableUsers = React.lazy(() => import('./pages/VulnerableUsers'));
+// ModuleUploader for bulk upload and visual editing of training modules
+const ModuleUploader = React.lazy(() => import('./pages/ModuleUploader'));
 
 // Auth Callback Handler
 const AuthCallback = () => {
