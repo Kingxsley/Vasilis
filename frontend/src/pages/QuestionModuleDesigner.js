@@ -273,6 +273,7 @@ export default function QuestionModuleDesigner() {
     description: '',
     difficulty: 'medium',
     duration_minutes: 15,
+    questions_per_session: 15,
     certificate_template_id: '',
     is_active: true,
   });
