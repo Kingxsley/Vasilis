@@ -108,13 +108,36 @@ const SocialEngineeringSimulation = ({ content }) => (
 
 // Generic Question Component (for multiple choice, true/false, etc. without email preview)
 const GenericQuestion = ({ scenario }) => {
+  // For image_question type, render the image prominently
+  if (scenario?.content?.type === 'image_question' || scenario?.scenario_type === 'image_question') {
+    const imageUrl = scenario?.content?.image_url;
+    const questionText = scenario?.content?.question || scenario?.content?.scenario_description;
+    
+    return (
+      <div className="p-4 bg-[#21262D] rounded-lg border border-[#30363D] space-y-4">
+        {imageUrl && (
+          <div className="flex justify-center">
+            <img 
+              src={imageUrl} 
+              alt="Question illustration" 
+              className="max-h-64 rounded-lg border border-[#30363D] object-contain"
+            />
+          </div>
+        )}
+        {questionText && (
+          <p className="text-gray-200 text-base text-center">{questionText}</p>
+        )}
+      </div>
+    );
+  }
+
   // Only render if there's actual content to show
-  if (!scenario?.content?.scenario_description) {
+  if (!scenario?.content?.scenario_description && !scenario?.content?.question) {
     return null;
   }
   return (
     <div className="p-4 bg-[#21262D] rounded-lg border border-[#30363D]">
-      <p className="text-gray-400 text-sm">{scenario.content.scenario_description}</p>
+      <p className="text-gray-400 text-sm">{scenario.content.scenario_description || scenario.content.question}</p>
     </div>
   );
 };
