@@ -279,7 +279,8 @@ async def create_certifying_body(data: CertifyingBodyCreate, request: Request):
     }
     
     await db.certifying_bodies.insert_one(body_doc)
-    return {"body_id": body_id, **body_doc}
+    # Return without _id
+    return {"body_id": body_id, "name": data.name, "title": body_doc["title"], "message": "Certifying body saved"}
 
 
 @router.delete("/assets/certifying-bodies/{body_id}")
