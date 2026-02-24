@@ -3329,6 +3329,60 @@ async def root_health():
             "error": str(e)
         }
 
+@api_router.post("/notifications/test-webhook")
+async def test_discord_webhook(request: Request):
+    """Test a Discord webhook by sending a test notification"""
+    user = await get_current_user(request)
+    if not user or user.get("role") not in ["super_admin", "org_admin"]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    try:
+        body = await request.json()
+        webhook_url = body.get("webhook_url")
+        
+        if not webhook_url:
+            raise HTTPException(status_code=400, detail="webhook_url is required")
+        
+        if not webhook_url.startswith("https://discord.com/api/webhooks/"):
+            raise HTTPException(status_code=400, detail="Invalid Discord webhook URL format")
+        
+        import aiohttp
+        
+        # Send test message
+        embed = {
+            "title": "🔔 Test Notification",
+            "description": "This is a test notification from Vasilis NetShield.\n\nIf you see this message, your Discord webhook is configured correctly!",
+            "color": 5793266,  # Discord purple
+            "fields": [
+                {"name": "Tested By", "value": user.get("email", "Unknown"), "inline": True},
+                {"name": "Status", "value": "✅ Working", "inline": True}
+            ],
+            "footer": {"text": "Vasilis NetShield Security Platform"},
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+        
+        payload = {
+            "username": "Vasilis NetShield",
+            "embeds": [embed]
+        }
+        
+        async with aiohttp.ClientSession() as session:
+            async with session.post(webhook_url, json=payload) as resp:
+                if resp.status in [200, 204]:
+                    logger.info(f"Test webhook sent successfully by {user.get('email')}")
+                    return {"success": True, "message": "Test notification sent successfully"}
+                else:
+                    error_text = await resp.text()
+                    logger.error(f"Discord webhook test failed: {resp.status} - {error_text}")
+                    return {"success": False, "message": f"Discord returned error: {resp.status}"}
+    
+    except aiohttp.ClientError as e:
+        logger.error(f"Failed to send test webhook: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to connect to Discord: {str(e)}")
+    except Exception as e:
+        logger.error(f"Test webhook error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.get("/health")
 async def health_check():
     """Check if API and database are working"""
