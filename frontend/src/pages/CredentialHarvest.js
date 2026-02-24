@@ -951,43 +951,62 @@ export default function CredentialHarvest() {
                 )}
               </div>
 
-              {newCampaign.organization_id && (
+              {newCampaign.organization_ids.length > 0 && (
                 <div className="space-y-2">
                   <Label>Target Users ({newCampaign.target_user_ids.length} selected)</Label>
-                  <div className="bg-[#0D1117] border border-[#30363D] rounded-md p-3 max-h-40 overflow-y-auto">
+                  <div className="bg-[#0D1117] border border-[#30363D] rounded-md p-3 max-h-48 overflow-y-auto">
                     <Button
                       type="button"
                       variant="link"
                       size="sm"
-                      className="text-[#D4A836] mb-2"
+                      className="text-[#D4A836] mb-2 p-0"
                       onClick={() => {
-                        const orgUsers = getUsersForOrg(newCampaign.organization_id);
-                        if (newCampaign.target_user_ids.length === orgUsers.length) {
+                        const allOrgUsers = getUsersForOrgs(newCampaign.organization_ids);
+                        if (newCampaign.target_user_ids.length === allOrgUsers.length) {
                           setNewCampaign(prev => ({ ...prev, target_user_ids: [] }));
                         } else {
                           setNewCampaign(prev => ({
                             ...prev,
-                            target_user_ids: orgUsers.map(u => u.user_id)
+                            target_user_ids: allOrgUsers.map(u => u.user_id)
                           }));
                         }
                       }}
                     >
-                      {newCampaign.target_user_ids.length === getUsersForOrg(newCampaign.organization_id).length
+                      {newCampaign.target_user_ids.length === getUsersForOrgs(newCampaign.organization_ids).length
                         ? 'Deselect All'
-                        : 'Select All'}
+                        : 'Select All Users'}
                     </Button>
-                    {getUsersForOrg(newCampaign.organization_id).map(user => (
-                      <div key={user.user_id} className="flex items-center gap-2 py-1">
-                        <Checkbox
-                          checked={newCampaign.target_user_ids.includes(user.user_id)}
-                          onCheckedChange={(checked) => {
-                            setNewCampaign(prev => ({
-                              ...prev,
-                              target_user_ids: checked
-                                ? [...prev.target_user_ids, user.user_id]
-                                : prev.target_user_ids.filter(id => id !== user.user_id)
-                            }));
-                          }}
+                    {/* Group users by organization */}
+                    {newCampaign.organization_ids.map(orgId => {
+                      const org = organizations.find(o => o.organization_id === orgId);
+                      const orgUsers = getUsersForOrg(orgId);
+                      if (orgUsers.length === 0) return null;
+                      return (
+                        <div key={orgId} className="mb-3">
+                          <div className="flex items-center gap-2 mb-2 text-sm font-medium text-[#D4A836]">
+                            <Building2 className="w-4 h-4" />
+                            {org?.name || orgId}
+                          </div>
+                          {orgUsers.map(user => (
+                            <div key={user.user_id} className="flex items-center gap-2 py-1 pl-6">
+                              <Checkbox
+                                checked={newCampaign.target_user_ids.includes(user.user_id)}
+                                onCheckedChange={(checked) => {
+                                  setNewCampaign(prev => ({
+                                    ...prev,
+                                    target_user_ids: checked
+                                      ? [...prev.target_user_ids, user.user_id]
+                                      : prev.target_user_ids.filter(id => id !== user.user_id)
+                                  }));
+                                }}
+                              />
+                              <span className="text-sm text-white">{user.name}</span>
+                              <span className="text-xs text-gray-500">({user.email})</span>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })}
                         />
                         <span className="text-sm text-white">{user.name}</span>
                         <span className="text-xs text-gray-500">({user.email})</span>
