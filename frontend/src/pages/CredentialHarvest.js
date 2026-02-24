@@ -637,9 +637,17 @@ export default function CredentialHarvest() {
                     {campaigns.map(campaign => (
                       <div
                         key={campaign.campaign_id}
-                        className="flex items-center justify-between p-4 bg-[#21262D] rounded-lg border border-[#30363D]"
+                        className={`flex items-center justify-between p-4 bg-[#21262D] rounded-lg border ${
+                          selectedCampaigns.includes(campaign.campaign_id) 
+                            ? 'border-[#D4A836]' 
+                            : 'border-[#30363D]'
+                        }`}
                       >
                         <div className="flex items-center gap-4">
+                          <Checkbox
+                            checked={selectedCampaigns.includes(campaign.campaign_id)}
+                            onCheckedChange={() => toggleCampaignSelection(campaign.campaign_id)}
+                          />
                           <div className="w-10 h-10 rounded-lg bg-[#FF3B30]/10 flex items-center justify-center">
                             <Lock className="w-5 h-5 text-[#FF3B30]" />
                           </div>
