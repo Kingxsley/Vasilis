@@ -2142,8 +2142,12 @@ async def submit_answer(session_id: str, data: SubmitAnswerRequest, user: dict =
     
     # Check if session is complete
     if new_index >= total_questions:
-        # Determine pass/fail based on score threshold
-        if new_score >= PASSING_SCORE:
+        # Get the module's pass percentage (default to 70 if not set)
+        module = await db.training_modules.find_one({"module_id": session.get("module_id")}, {"_id": 0})
+        pass_percentage = module.get("pass_percentage", PASSING_SCORE) if module else PASSING_SCORE
+        
+        # Determine pass/fail based on module's pass percentage
+        if new_score >= pass_percentage:
             update_data["status"] = "completed"
         else:
             update_data["status"] = "failed"
