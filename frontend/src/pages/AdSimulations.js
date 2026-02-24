@@ -23,13 +23,14 @@ import {
   SelectValue,
 } from '../components/ui/select';
 import { 
-  Monitor, Plus, Eye, MousePointer, Users, Trash2, 
+  Monitor, Plus, Eye, MousePointer, Users, Trash2, Building2,
   BarChart3, AlertTriangle, FileText, Loader2, RefreshCw, Code,
   Play, Pause, Clock, Calendar, Copy, Check, Link as LinkIcon,
   Paintbrush, Edit, Sparkles
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
+import { Checkbox } from '../components/ui/checkbox';
 
 // Lazy load the AdTemplateEditor
 const AdTemplateEditor = lazy(() => import('../components/common/AdTemplateEditor'));
