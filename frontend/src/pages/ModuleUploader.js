@@ -327,6 +327,33 @@ export default function ModuleUploader() {
 
         {/* Module List */}
         <div className="space-y-3">
+          {/* Bulk Actions Bar */}
+          {modules.length > 0 && (
+            <div className="flex items-center justify-between p-3 bg-[#161B22] border border-[#30363D] rounded-lg">
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={selectedModules.size === modules.length && modules.length > 0}
+                  onChange={selectAllModules}
+                  className="w-4 h-4 rounded border-[#30363D] bg-[#0D1117] accent-[#D4A836]"
+                />
+                <span className="text-sm text-gray-400">
+                  {selectedModules.size > 0 ? `${selectedModules.size} selected` : 'Select all'}
+                </span>
+              </div>
+              {selectedModules.size > 0 && (
+                <Button 
+                  size="sm" 
+                  variant="destructive" 
+                  onClick={handleBulkDelete}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" /> Delete Selected ({selectedModules.size})
+                </Button>
+              )}
+            </div>
+          )}
+
           {modules.length === 0 ? (
             <Card className="bg-[#161B22] border-[#30363D]">
               <CardContent className="p-8 text-center">
@@ -336,28 +363,37 @@ export default function ModuleUploader() {
             </Card>
           ) : (
             modules.map((module) => (
-              <Card key={module.module_id} className="bg-[#161B22] border-[#30363D]">
+              <Card key={module.module_id} className={`bg-[#161B22] border-[#30363D] ${selectedModules.has(module.module_id) ? 'ring-2 ring-[#D4A836]' : ''}`}>
                 <CardContent className="p-4">
                   {/* Module Header */}
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 flex-1 cursor-pointer" onClick={() => toggleModuleExpand(module.module_id)}>
-                      {expandedModules[module.module_id] ? (
-                        <ChevronUp className="w-5 h-5 text-gray-500" />
-                      ) : (
-                        <ChevronDown className="w-5 h-5 text-gray-500" />
-                      )}
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-[#E8DDB5]">{module.name}</h3>
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full ${module.is_active ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                            {module.is_active ? 'Active' : 'Inactive'}
-                          </span>
+                    <div className="flex items-center gap-3 flex-1">
+                      <input
+                        type="checkbox"
+                        checked={selectedModules.has(module.module_id)}
+                        onChange={() => toggleModuleSelect(module.module_id)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-4 h-4 rounded border-[#30363D] bg-[#0D1117] accent-[#D4A836]"
+                      />
+                      <div className="flex items-center gap-2 flex-1 cursor-pointer" onClick={() => toggleModuleExpand(module.module_id)}>
+                        {expandedModules[module.module_id] ? (
+                          <ChevronUp className="w-5 h-5 text-gray-500" />
+                        ) : (
+                          <ChevronDown className="w-5 h-5 text-gray-500" />
+                        )}
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-[#E8DDB5]">{module.name}</h3>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full ${module.is_active ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                              {module.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-500">
+                            {module.questions?.length || module.scenarios_count || 0} questions • 
+                            {module.questions_per_session || 15} per session • 
+                            {module.difficulty} • {module.duration_minutes} min
+                          </p>
                         </div>
-                        <p className="text-xs text-gray-500">
-                          {module.questions?.length || module.scenarios_count || 0} questions • 
-                          {module.questions_per_session || 15} per session • 
-                          {module.difficulty} • {module.duration_minutes} min
-                        </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
