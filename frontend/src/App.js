@@ -712,6 +712,14 @@ const AppRouter = () => {
           }
         />
         <Route
+          path="/system-emails"
+          element={
+            <ProtectedRoute adminOnly superAdminOnly>
+              <SystemEmailTemplates />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/advanced-analytics"
           element={
             <ProtectedRoute adminOnly>
