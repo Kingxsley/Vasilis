@@ -8,6 +8,7 @@ import { Label } from '../components/ui/label';
 import { Key, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
+import { QRCodeSVG } from 'qrcode.react';
 
 // This page allows any authenticated user (including trainees) to enable
 // and verify two‑factor authentication (2FA) on their account. The
