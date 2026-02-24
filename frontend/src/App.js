@@ -282,6 +282,7 @@ const PageEditor = React.lazy(() => import('./pages/PageEditor'));
 const PageBuilder = React.lazy(() => import('./pages/PageBuilder'));
 const SecurityDashboard = React.lazy(() => import('./pages/SecurityDashboard'));
 const EmailTemplates = React.lazy(() => import('./pages/EmailTemplates'));
+const SystemEmailTemplates = React.lazy(() => import('./pages/SystemEmailTemplates'));
 const AdvancedAnalytics = React.lazy(() => import('./pages/AdvancedAnalytics'));
 const CertificateTemplates = React.lazy(() => import('./pages/CertificateTemplates'));
 const LandingPageEditor = React.lazy(() => import('./pages/LandingPageEditor'));
