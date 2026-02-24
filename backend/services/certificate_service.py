@@ -295,15 +295,36 @@ def generate_certificate_from_template(template: dict, placeholders: dict) -> by
             # Determine content and style
             content = elem.get("content")
             placeholder_key = elem.get("placeholder")
-            # If content contains placeholders, replace
+            
+            # Add placeholder aliases for compatibility
+            extended_placeholders = {
+                **placeholders,
+                "score": placeholders.get("average_score_value", placeholders.get("average_score", "")),
+                "date": placeholders.get("completion_date", ""),
+                "name": placeholders.get("user_name", ""),
+                "email": placeholders.get("user_email", ""),
+                "modules": placeholders.get("modules_completed", ""),
+                "organization": placeholders.get("organization_name", ""),
+            }
+            
+            # If placeholder specified (e.g., "{user_name}"), get from placeholders first
+            if placeholder_key:
+                key = placeholder_key.strip("{}")
+                # Check if placeholder contains format string like "Score: {score}%"
+                if "{" in placeholder_key:
+                    try:
+                        content = placeholder_key.format(**extended_placeholders)
+                    except Exception:
+                        content = extended_placeholders.get(key, placeholder_key)
+                else:
+                    content = extended_placeholders.get(key, "")
+            
+            # If content contains placeholders, replace them
             if content and isinstance(content, str) and "{" in content:
                 try:
-                    content = content.format(**placeholders)
+                    content = content.format(**extended_placeholders)
                 except Exception:
                     pass
-            # If placeholder specified and content is empty, get from placeholders
-            if (not content or content == "") and placeholder_key:
-                content = placeholders.get(placeholder_key.strip("{}"), "")
 
             style = elem.get("style", {}) or {}
 
