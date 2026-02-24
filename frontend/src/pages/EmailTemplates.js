@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { Mail, Edit2, Eye, RotateCcw, Save, Loader2, Info, CheckCircle, Code, FileText, Plus, Trash2, Image, Palette, Type, AlertTriangle } from 'lucide-react';
+import { Mail, Edit2, Eye, RotateCcw, Save, Loader2, Info, CheckCircle, Code, FileText, Plus, Trash2, Image, Palette, Type, AlertTriangle, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 
