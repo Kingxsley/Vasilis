@@ -152,6 +152,54 @@ export default function SystemEmailTemplates() {
     }
   };
 
+  const uploadIcon = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file');
+      return;
+    }
+    
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Image must be less than 2MB');
+      return;
+    }
+    
+    setUploadingIcon(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const res = await axios.post(`${API}/api/media/upload`, formData, {
+        headers: {
+          ...headers,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      const imageUrl = res.data.media?.data_url || res.data.url || res.data.data_url;
+      if (imageUrl) {
+        handleFieldChange('custom_icon_url', imageUrl);
+        handleFieldChange('icon_type', 'custom');
+        toast.success('Icon uploaded successfully');
+      }
+    } catch (err) {
+      toast.error('Failed to upload icon');
+    } finally {
+      setUploadingIcon(false);
+      // Reset file input
+      e.target.value = '';
+    }
+  };
+
+  const removeCustomIcon = () => {
+    handleFieldChange('custom_icon_url', null);
+    handleFieldChange('icon_type', 'shield'); // Reset to default
+  };
+
   const getTemplateIcon = (id) => {
     switch (id) {
       case 'welcome': return <Mail className="w-5 h-5" />;
