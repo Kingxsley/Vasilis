@@ -1654,6 +1654,88 @@ async def delete_training_module(
     return {"message": "Module deleted"}
 
 
+class BulkModuleUpload(BaseModel):
+    modules: List[dict]
+
+@training_router.post("/modules/bulk", response_model=dict)
+async def bulk_upload_modules(
+    data: BulkModuleUpload,
+    user: dict = Depends(get_current_user)
+):
+    """
+    Bulk upload training modules from JSON.
+    Each module should have: name, module_type, description, difficulty,
+    duration_minutes, questions (list), and optionally questions_per_session.
+    """
+    if user.get("role") not in [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    created = 0
+    updated = 0
+    errors = []
+    
+    for idx, module_data in enumerate(data.modules):
+        try:
+            name = module_data.get("name")
+            if not name:
+                errors.append(f"Module {idx}: Missing name")
+                continue
+            
+            # Check if module with same name exists
+            existing = await db.training_modules.find_one({"name": name})
+            
+            questions = module_data.get("questions", [])
+            questions_per_session = module_data.get("questions_per_session", 15)
+            
+            module_doc = {
+                "name": name,
+                "module_type": module_data.get("module_type", "general"),
+                "description": module_data.get("description", ""),
+                "difficulty": module_data.get("difficulty", "medium"),
+                "duration_minutes": module_data.get("duration_minutes", 30),
+                "scenarios_count": len(questions),
+                "questions": questions,
+                "questions_per_session": questions_per_session,
+                "certificate_template_id": module_data.get("certificate_template_id"),
+                "is_active": module_data.get("is_active", True)
+            }
+            
+            if existing:
+                # Update existing module
+                await db.training_modules.update_one(
+                    {"name": name},
+                    {"$set": module_doc}
+                )
+                updated += 1
+            else:
+                # Create new module
+                module_doc["module_id"] = f"mod_{uuid.uuid4().hex[:12]}"
+                await db.training_modules.insert_one(module_doc)
+                created += 1
+                
+        except Exception as e:
+            errors.append(f"Module {idx} ({module_data.get('name', 'unknown')}): {str(e)}")
+    
+    return {
+        "created": created,
+        "updated": updated,
+        "errors": errors,
+        "message": f"Bulk upload complete: {created} created, {updated} updated, {len(errors)} errors"
+    }
+
+
+@training_router.get("/modules/export", response_model=List[dict])
+async def export_modules(user: dict = Depends(get_current_user)):
+    """
+    Export all training modules as JSON for editing/backup.
+    """
+    if user.get("role") not in [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    modules = await db.training_modules.find({}, {"_id": 0}).to_list(1000)
+    return modules
+
+
 @training_router.post("/reassign", response_model=dict)
 async def reassign_training_modules(
     data: TrainingReassignRequest,
