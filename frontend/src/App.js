@@ -735,6 +735,14 @@ const AppRouter = () => {
           }
         />
         <Route
+          path="/credential-harvest"
+          element={
+            <ProtectedRoute adminOnly>
+              <CredentialHarvest />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/certificate-templates"
           element={
             <ProtectedRoute adminOnly>
