@@ -300,6 +300,17 @@ JWT_SECRET=<secure-random-string>
   - Also displays question text below the image
 - **Testing Agent Verification** - All features verified with 100% pass rate
 
+### Session Changes (Feb 2026 - E1 Fork) - Certificate Bug Fixes
+- **Certificate Text Rendering (P0)** - VERIFIED WORKING:
+  - PDF certificates now render all text elements correctly (user name, score, date, etc.)
+  - Y-coordinate calculation fixed in `certificate_service.py` for proper text positioning
+  - Empty template fallback works - templates with no elements use default certificate generator
+  - Both `/api/certificates/user/{user_id}` and `/api/certificates/user/{user_id}/module/{module_id}` endpoints working
+- **Module-Specific Certificate Templates (P1)** - VERIFIED WORKING:
+  - Templates assigned to modules are correctly applied when generating certificates
+  - Template lookup priority: Organization > Module > Global Default
+  - Added logging to track which template is being used for each certificate
+
 ## Key Files Reference
 - `/app/backend/server.py` - Main API server with CORS config
 - `/app/backend/routes/vulnerable_users.py` - Vulnerable users API
