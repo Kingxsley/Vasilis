@@ -1939,9 +1939,17 @@ async def list_training_sessions(user: dict = Depends(get_current_user)):
     if user.get("role") in [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN]:
         query = {}  # Admins can see all
     
+    # Get existing module IDs to filter out orphaned sessions
+    existing_modules = await db.training_modules.find({}, {"module_id": 1}).to_list(1000)
+    existing_module_ids = set(m["module_id"] for m in existing_modules)
+    
     sessions = await db.training_sessions.find(query, {"_id": 0}).to_list(1000)
     result = []
     for s in sessions:
+        # Skip sessions for deleted modules
+        if s["module_id"] not in existing_module_ids:
+            continue
+            
         started_at = s.get("started_at")
         if isinstance(started_at, str):
             started_at = datetime.fromisoformat(started_at)
