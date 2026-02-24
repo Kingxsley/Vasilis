@@ -1081,9 +1081,9 @@ export default function CredentialHarvest() {
               <Button
                 onClick={handleCreateCampaign}
                 className="bg-[#D4A836] hover:bg-[#B8922E] text-black"
-                disabled={!newCampaign.name || !newCampaign.organization_id || !newCampaign.template_id || newCampaign.target_user_ids.length === 0}
+                disabled={!newCampaign.name || newCampaign.organization_ids.length === 0 || !newCampaign.template_id || newCampaign.target_user_ids.length === 0}
               >
-                Create Campaign
+                Create Campaign{newCampaign.organization_ids.length > 1 ? 's' : ''}
               </Button>
             </DialogFooter>
           </DialogContent>
