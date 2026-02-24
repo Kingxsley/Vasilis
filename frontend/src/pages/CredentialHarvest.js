@@ -587,8 +587,22 @@ export default function CredentialHarvest() {
           <TabsContent value="campaigns">
             <Card className="bg-[#161B22] border-[#30363D]">
               <CardHeader>
-                <CardTitle>Credential Harvest Campaigns</CardTitle>
-                <CardDescription>Manage your credential harvesting simulations</CardDescription>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle>Credential Harvest Campaigns</CardTitle>
+                    <CardDescription>Manage your credential harvesting simulations</CardDescription>
+                  </div>
+                  {selectedCampaigns.length > 0 && (
+                    <Button
+                      variant="destructive"
+                      onClick={handleBulkDeleteCampaigns}
+                      className="flex items-center gap-2"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Delete {selectedCampaigns.length} Selected
+                    </Button>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
                 {loading ? (
@@ -608,6 +622,18 @@ export default function CredentialHarvest() {
                   </div>
                 ) : (
                   <div className="space-y-4">
+                    {/* Select All Header */}
+                    <div className="flex items-center gap-3 pb-2 border-b border-[#30363D]">
+                      <Checkbox
+                        checked={selectedCampaigns.length === campaigns.length && campaigns.length > 0}
+                        onCheckedChange={toggleAllCampaigns}
+                      />
+                      <span className="text-sm text-gray-400">
+                        {selectedCampaigns.length > 0 
+                          ? `${selectedCampaigns.length} selected`
+                          : 'Select all'}
+                      </span>
+                    </div>
                     {campaigns.map(campaign => (
                       <div
                         key={campaign.campaign_id}
