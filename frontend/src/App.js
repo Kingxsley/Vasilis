@@ -313,6 +313,8 @@ const VulnerableUsers = React.lazy(() => import('./pages/VulnerableUsers'));
 const ModuleUploader = React.lazy(() => import('./pages/ModuleUploader'));
 // CredentialSubmissions for tracking credential harvest submissions
 const CredentialSubmissions = React.lazy(() => import('./pages/CredentialSubmissions'));
+// CredentialHarvest for credential harvest campaign management
+const CredentialHarvest = React.lazy(() => import('./pages/CredentialHarvest'));
 
 // Auth Callback Handler
 const AuthCallback = () => {
