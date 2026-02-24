@@ -545,6 +545,14 @@ const AppRouter = () => {
           }
         />
         <Route
+          path="/module-uploader"
+          element={
+            <ProtectedRoute adminOnly>
+              <ModuleUploader />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/user-import"
           element={
             <ProtectedRoute adminOnly>
