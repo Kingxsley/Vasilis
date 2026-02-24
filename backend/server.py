@@ -3339,7 +3339,7 @@ async def test_discord_webhook(request: Request):
     
     token = auth_header.split(" ")[1]
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
         user_id = payload.get("user_id")
         user_role = payload.get("role")
         user_email = payload.get("email")
