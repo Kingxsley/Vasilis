@@ -3332,8 +3332,21 @@ async def root_health():
 @api_router.post("/notifications/test-webhook")
 async def test_discord_webhook(request: Request):
     """Test a Discord webhook by sending a test notification"""
-    user = await get_current_user(request)
-    if not user or user.get("role") not in ["super_admin", "org_admin"]:
+    # Get user from token
+    auth_header = request.headers.get("authorization", "")
+    if not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    token = auth_header.split(" ")[1]
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        user_id = payload.get("user_id")
+        user_role = payload.get("role")
+        user_email = payload.get("email")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    if user_role not in ["super_admin", "org_admin"]:
         raise HTTPException(status_code=403, detail="Admin access required")
     
     try:
@@ -3354,7 +3367,7 @@ async def test_discord_webhook(request: Request):
             "description": "This is a test notification from Vasilis NetShield.\n\nIf you see this message, your Discord webhook is configured correctly!",
             "color": 5793266,  # Discord purple
             "fields": [
-                {"name": "Tested By", "value": user.get("email", "Unknown"), "inline": True},
+                {"name": "Tested By", "value": user_email or "Unknown", "inline": True},
                 {"name": "Status", "value": "✅ Working", "inline": True}
             ],
             "footer": {"text": "Vasilis NetShield Security Platform"},
@@ -3369,7 +3382,7 @@ async def test_discord_webhook(request: Request):
         async with aiohttp.ClientSession() as session:
             async with session.post(webhook_url, json=payload) as resp:
                 if resp.status in [200, 204]:
-                    logger.info(f"Test webhook sent successfully by {user.get('email')}")
+                    logger.info(f"Test webhook sent successfully by {user_email}")
                     return {"success": True, "message": "Test notification sent successfully"}
                 else:
                     error_text = await resp.text()
