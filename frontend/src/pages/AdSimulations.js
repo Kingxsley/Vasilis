@@ -275,11 +275,54 @@ export default function AdSimulations() {
     try {
       await axios.delete(`${API}/ads/campaigns/${campaignId}`, { headers });
       toast.success('Campaign deleted');
+      setSelectedCampaignIds(prev => prev.filter(id => id !== campaignId));
       fetchData();
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Failed to delete campaign');
     }
   };
+
+  // Toggle selection for bulk delete
+  const toggleCampaignSelection = (campaignId) => {
+    setSelectedCampaignIds(prev => 
+      prev.includes(campaignId)
+        ? prev.filter(id => id !== campaignId)
+        : [...prev, campaignId]
+    );
+  };
+
+  // Select all visible campaigns
+  const selectAllCampaigns = () => {
+    if (selectedCampaignIds.length === filteredCampaigns.length) {
+      setSelectedCampaignIds([]);
+    } else {
+      setSelectedCampaignIds(filteredCampaigns.map(c => c.campaign_id));
+    }
+  };
+
+  // Bulk delete campaigns
+  const bulkDeleteCampaigns = async () => {
+    try {
+      for (const campaignId of selectedCampaignIds) {
+        await axios.delete(`${API}/ads/campaigns/${campaignId}`, { headers });
+      }
+      toast.success(`${selectedCampaignIds.length} campaign(s) deleted`);
+      setSelectedCampaignIds([]);
+      setShowBulkDeleteConfirm(false);
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to delete some campaigns');
+      fetchData();
+    }
+  };
+
+  // Get users for multiple organizations
+  const getOrgUsers = () => {
+    if (newCampaign.organization_ids.length === 0) return [];
+    return users.filter(u => newCampaign.organization_ids.includes(u.organization_id));
+  };
+
+  const getUsersForOrg = (orgId) => users.filter(u => u.organization_id === orgId);
 
   const deleteTemplate = async (templateId) => {
     if (!window.confirm('Are you sure you want to delete this template?')) return;
