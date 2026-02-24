@@ -199,26 +199,11 @@ def generate_training_certificate(
 
 def generate_certificate_from_template(template: dict, placeholders: dict) -> bytes:
     """
-    Render a PDF certificate using a saved certificate template.  The template
-    defines orientation, background, border and a list of elements.  Each
-    element includes position (x/y percentages), size (width/height
-    percentages), type (text, image, logo, signature) and optional
-    content or placeholder.  Placeholder strings enclosed in curly braces
-    (e.g. "{user_name}") will be replaced using the provided placeholders
-    dict.  For images, the content field should be a base64 encoded
-    string.  If a placeholder is present for an image element but no
-    content is provided, the placeholder will be looked up in
-    placeholders and expected to be a base64 encoded string.
-
-    Args:
-        template: Template document as stored in MongoDB.
-        placeholders: Mapping of placeholder keys to their replacement
-            values. Values for image placeholders should be base64
-            encoded.
-
-    Returns:
-        PDF bytes representing the rendered certificate.
+    Render a PDF certificate using a saved certificate template.
     """
+    import logging
+    logger = logging.getLogger(__name__)
+    
     # Use reportlab for drawing
     from reportlab.lib.pagesizes import landscape, portrait, A4
     from reportlab.lib.utils import ImageReader
@@ -231,6 +216,8 @@ def generate_certificate_from_template(template: dict, placeholders: dict) -> by
         page_width, page_height = portrait(A4)
     else:
         page_width, page_height = landscape(A4)
+
+    logger.info(f"Certificate render: orientation={orientation}, size={page_width:.0f}x{page_height:.0f}, elements={len(template.get('elements', []))}")
 
     # Create canvas
     c = canvas.Canvas(buffer, pagesize=(page_width, page_height))
