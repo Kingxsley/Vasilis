@@ -26,7 +26,7 @@ import {
 } from '../components/ui/dialog';
 import {
   Mail, Shield, Key, AlertTriangle, CheckCircle, Loader2, Eye,
-  RotateCcw, Save, Sparkles
+  RotateCcw, Save, Sparkles, Upload, Image, X
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
@@ -40,6 +40,7 @@ const ICON_OPTIONS = [
   { value: 'key', label: 'Key', icon: '🔑' },
   { value: 'alert', label: 'Alert', icon: '⚠️' },
   { value: 'check', label: 'Checkmark', icon: '✅' },
+  { value: 'custom', label: 'Custom Image', icon: '🖼️' },
   { value: 'none', label: 'No Icon', icon: '' },
 ];
 
