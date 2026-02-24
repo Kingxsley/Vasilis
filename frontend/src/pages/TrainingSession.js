@@ -411,20 +411,22 @@ export default function TrainingSession() {
           <Card className="bg-[#161B22] border-[#30363D]">
             <CardHeader>
               <CardTitle className="text-lg">
-                {scenario?.content?.type === 'true_false' 
+                {(scenario?.scenario_type === 'true_false' || scenario?.content?.type === 'true_false')
                   ? 'Is this statement true or false?' 
-                  : scenario?.content?.type === 'safe_unsafe'
+                  : (scenario?.scenario_type === 'safe_unsafe' || scenario?.content?.type === 'safe_unsafe')
                   ? 'Is this content safe or unsafe?'
-                  : scenario?.content?.type === 'multiple_choice' || scenario?.content?.type === 'select_best'
+                  : (scenario?.scenario_type === 'multiple_choice' || scenario?.content?.type === 'multiple_choice' || scenario?.scenario_type === 'select_best' || scenario?.content?.type === 'select_best')
                   ? 'Select the correct answer:'
                   : 'Choose your answer:'}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {/* Multiple Choice / Select Best */}
-              {(scenario?.content?.type === 'multiple_choice' || scenario?.content?.type === 'select_best' || scenario?.content?.options?.length > 2) && scenario?.content?.options ? (
+              {/* Multiple Choice / Select Best - check for 4 options */}
+              {(scenario?.scenario_type === 'multiple_choice' || scenario?.content?.type === 'multiple_choice' || 
+                scenario?.scenario_type === 'select_best' || scenario?.content?.type === 'select_best' ||
+                (scenario?.content?.options && scenario?.content?.options?.length >= 3)) ? (
                 <div className="space-y-3">
-                  {scenario.content.options.map((option, idx) => (
+                  {(scenario?.content?.options || []).map((option, idx) => (
                     <Button
                       key={idx}
                       size="lg"
@@ -453,7 +455,7 @@ export default function TrainingSession() {
                     {submitting ? 'Submitting...' : 'Submit Answer'}
                   </Button>
                 </div>
-              ) : scenario?.content?.type === 'true_false' ? (
+              ) : (scenario?.scenario_type === 'true_false' || scenario?.content?.type === 'true_false') ? (
                 /* True/False */
                 <div className="grid grid-cols-2 gap-4">
                   <Button
