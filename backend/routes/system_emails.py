@@ -263,8 +263,9 @@ def generate_email_html(template: dict, data: dict) -> str:
     primary_color = template.get("primary_color", "#D4A836")
     show_icon = template.get("show_icon", True)
     icon_type = template.get("icon_type", "shield")
+    custom_icon_url = template.get("custom_icon_url")
     
-    # Icon mapping
+    # Icon mapping for emoji icons
     icons = {
         "shield": "🛡️",
         "mail": "📧",
@@ -273,7 +274,18 @@ def generate_email_html(template: dict, data: dict) -> str:
         "check": "✅",
         "none": ""
     }
-    icon = icons.get(icon_type, "🛡️") if show_icon else ""
+    
+    # Determine icon HTML - custom image or emoji
+    icon_html = ""
+    if show_icon:
+        if icon_type == "custom" and custom_icon_url:
+            # Use custom uploaded icon
+            icon_html = f'<img src="{custom_icon_url}" alt="Icon" style="width:60px;height:60px;margin-bottom:10px;object-fit:contain;" />'
+        elif icon_type != "none":
+            # Use emoji icon
+            emoji = icons.get(icon_type, "🛡️")
+            if emoji:
+                icon_html = f'<div style="font-size:40px;margin-bottom:10px;">{emoji}</div>'
     
     # Format template strings with data
     def fmt(s):
