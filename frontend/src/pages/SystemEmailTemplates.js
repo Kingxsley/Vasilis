@@ -132,13 +132,13 @@ export default function SystemEmailTemplates() {
     try {
       // Save current changes first
       await axios.put(
-        `${API}/system-emails/${selectedTemplate.id}`,
+        `${API}/api/system-emails/${selectedTemplate.id}`,
         editedTemplate,
         { headers }
       );
       // Then get preview
       const res = await axios.post(
-        `${API}/system-emails/${selectedTemplate.id}/preview`,
+        `${API}/api/system-emails/${selectedTemplate.id}/preview`,
         {},
         { headers }
       );
