@@ -68,7 +68,7 @@ export default function AdSimulations() {
   
   const [newCampaign, setNewCampaign] = useState({
     name: '',
-    organization_id: '',
+    organization_ids: [],  // Changed to array for multi-org support
     template_id: '',
     target_user_ids: [],
     status: 'active',
