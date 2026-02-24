@@ -68,10 +68,34 @@ A comprehensive security awareness and training platform that helps organization
 
 ## Current Status (Dec 2025)
 
-### Question Counter Fix - RESOLVED
-- Added `current_scenario_index` and `answers` fields to `TrainingSessionResponse` model
-- Updated all session API endpoints to include these fields in responses
-- Frontend now correctly displays "Question X of Y" during training sessions
+### Training Module System Enhancements - COMPLETED
+1. **Question Counter Fix** - Added `current_scenario_index` and `answers` fields to TrainingSessionResponse model
+2. **Preset Modules Removal** - Removed DEFAULT_MODULES and auto-seeding code completely
+3. **Random Question Selection** - Added `questions_per_session` field to randomly select a subset of questions per attempt
+4. **Bulk Module Upload** - Created `/api/training/modules/bulk` endpoint for JSON bulk upload
+5. **Module Uploader Page** - New visual interface at `/module-uploader` for:
+   - Bulk JSON upload (paste or file upload)
+   - Export all modules as JSON
+   - Visual editing of modules and questions
+   - Toggle active/inactive status per module
+   - Preview questions in each module
+
+### 10 New Training Modules Created (200 questions total)
+1. **Phishing Email Detection** - 20 questions, medium-hard
+2. **Social Engineering Defense** - 20 questions, hard
+3. **Password Security Best Practices** - 20 questions, medium
+4. **Malicious Ads Recognition** - 20 questions, medium
+5. **Data Protection & Privacy** - 20 questions, medium-hard
+6. **Ransomware Awareness** - 20 questions, hard
+7. **USB & Physical Security** - 20 questions, medium
+8. **Multi-Factor Authentication (MFA)** - 20 questions, medium
+9. **Business Email Compromise (BEC)** - 20 questions, hard
+10. **Secure Browsing & Downloads** - 20 questions, medium
+
+All modules configured with:
+- 20 questions total
+- 15 questions shown per session (randomly selected)
+- Each attempt varies questions for each user
 
 ## Previous Status (Feb 23, 2026)
 
