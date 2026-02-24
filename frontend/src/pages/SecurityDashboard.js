@@ -233,14 +233,15 @@ export default function SecurityDashboard() {
                   Scan the QR code below with your authenticator app (e.g. Google Authenticator or Authy) or copy the secret key.
                 </p>
                 <div className="flex flex-col items-center gap-2">
-                  {/* Use Google Chart API to render QR code */}
-                  <img
-                    src={`https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${encodeURIComponent(
-                      otpAuthUrl
-                    )}`}
-                    alt="2FA QR code"
-                    className="mx-auto border border-[#D4A836]/30 rounded"
-                  />
+                  {/* QR Code rendered client-side using qrcode.react */}
+                  <div className="p-3 bg-white rounded-lg">
+                    <QRCodeSVG
+                      value={otpAuthUrl}
+                      size={200}
+                      level="M"
+                      includeMargin={false}
+                    />
+                  </div>
                   <p className="text-xs font-mono text-gray-500 break-all">
                     Secret: {twoFactorSecret}
                   </p>
