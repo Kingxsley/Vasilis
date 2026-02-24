@@ -303,6 +303,7 @@ class PhishingCampaignResponse(BaseModel):
     links_clicked: int
     assigned_module_id: Optional[str] = None
     risk_level: Optional[str] = "medium"
+    scenario_type: Optional[str] = "phishing_email"
     click_page_html: Optional[str] = None
     created_at: datetime
     scheduled_at: Optional[datetime] = None
