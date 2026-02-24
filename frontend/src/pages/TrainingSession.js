@@ -406,49 +406,130 @@ export default function TrainingSession() {
           </CardContent>
         </Card>
 
-        {/* Answer Section */}
+        {/* Answer Section - Dynamic based on question type */}
         {!feedback ? (
           <Card className="bg-[#161B22] border-[#30363D]">
             <CardHeader>
-              <CardTitle className="text-lg">Is this content safe or unsafe?</CardTitle>
+              <CardTitle className="text-lg">
+                {scenario?.content?.type === 'true_false' 
+                  ? 'Is this statement true or false?' 
+                  : scenario?.content?.type === 'safe_unsafe'
+                  ? 'Is this content safe or unsafe?'
+                  : scenario?.content?.type === 'multiple_choice' || scenario?.content?.type === 'select_best'
+                  ? 'Select the correct answer:'
+                  : 'Choose your answer:'}
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className={`h-20 border-2 ${
-                    selectedAnswer === 'safe' 
-                      ? 'border-[#00E676] bg-[#00E676]/10' 
-                      : 'border-[#30363D] hover:border-[#00E676] hover:bg-[#00E676]/5'
-                  }`}
-                  onClick={() => submitAnswer('safe')}
-                  disabled={submitting}
-                  data-testid="answer-safe-btn"
-                >
-                  <div className="flex flex-col items-center">
-                    <CheckCircle className="w-8 h-8 text-[#00E676] mb-2" />
-                    <span className="text-lg font-semibold">Safe</span>
-                  </div>
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className={`h-20 border-2 ${
-                    selectedAnswer === 'unsafe' 
-                      ? 'border-[#FF3B30] bg-[#FF3B30]/10' 
-                      : 'border-[#30363D] hover:border-[#FF3B30] hover:bg-[#FF3B30]/5'
-                  }`}
-                  onClick={() => submitAnswer('unsafe')}
-                  disabled={submitting}
-                  data-testid="answer-unsafe-btn"
-                >
-                  <div className="flex flex-col items-center">
-                    <XCircle className="w-8 h-8 text-[#FF3B30] mb-2" />
-                    <span className="text-lg font-semibold">Unsafe</span>
-                  </div>
-                </Button>
-              </div>
+              {/* Multiple Choice / Select Best */}
+              {(scenario?.content?.type === 'multiple_choice' || scenario?.content?.type === 'select_best' || scenario?.content?.options?.length > 2) && scenario?.content?.options ? (
+                <div className="space-y-3">
+                  {scenario.content.options.map((option, idx) => (
+                    <Button
+                      key={idx}
+                      size="lg"
+                      variant="outline"
+                      className={`w-full justify-start text-left h-auto py-4 px-4 border-2 ${
+                        selectedAnswer === option 
+                          ? 'border-[#2979FF] bg-[#2979FF]/10' 
+                          : 'border-[#30363D] hover:border-[#2979FF]/50 hover:bg-[#2979FF]/5'
+                      }`}
+                      onClick={() => setSelectedAnswer(option)}
+                      disabled={submitting}
+                      data-testid={`answer-option-${idx}`}
+                    >
+                      <span className="w-8 h-8 rounded-full bg-[#21262D] flex items-center justify-center mr-3 text-sm font-bold">
+                        {String.fromCharCode(65 + idx)}
+                      </span>
+                      <span className="flex-1">{option}</span>
+                    </Button>
+                  ))}
+                  <Button
+                    className="w-full mt-4 bg-[#2979FF] hover:bg-[#2962FF]"
+                    onClick={() => submitAnswer(selectedAnswer)}
+                    disabled={!selectedAnswer || submitting}
+                    data-testid="submit-answer-btn"
+                  >
+                    {submitting ? 'Submitting...' : 'Submit Answer'}
+                  </Button>
+                </div>
+              ) : scenario?.content?.type === 'true_false' ? (
+                /* True/False */
+                <div className="grid grid-cols-2 gap-4">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className={`h-20 border-2 ${
+                      selectedAnswer === 'True' 
+                        ? 'border-[#00E676] bg-[#00E676]/10' 
+                        : 'border-[#30363D] hover:border-[#00E676] hover:bg-[#00E676]/5'
+                    }`}
+                    onClick={() => submitAnswer('True')}
+                    disabled={submitting}
+                    data-testid="answer-true-btn"
+                  >
+                    <div className="flex flex-col items-center">
+                      <CheckCircle className="w-8 h-8 text-[#00E676] mb-2" />
+                      <span className="text-lg font-semibold">True</span>
+                    </div>
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className={`h-20 border-2 ${
+                      selectedAnswer === 'False' 
+                        ? 'border-[#FF3B30] bg-[#FF3B30]/10' 
+                        : 'border-[#30363D] hover:border-[#FF3B30] hover:bg-[#FF3B30]/5'
+                    }`}
+                    onClick={() => submitAnswer('False')}
+                    disabled={submitting}
+                    data-testid="answer-false-btn"
+                  >
+                    <div className="flex flex-col items-center">
+                      <XCircle className="w-8 h-8 text-[#FF3B30] mb-2" />
+                      <span className="text-lg font-semibold">False</span>
+                    </div>
+                  </Button>
+                </div>
+              ) : (
+                /* Safe/Unsafe (default) */
+                <div className="grid grid-cols-2 gap-4">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className={`h-20 border-2 ${
+                      selectedAnswer === 'safe' 
+                        ? 'border-[#00E676] bg-[#00E676]/10' 
+                        : 'border-[#30363D] hover:border-[#00E676] hover:bg-[#00E676]/5'
+                    }`}
+                    onClick={() => submitAnswer('safe')}
+                    disabled={submitting}
+                    data-testid="answer-safe-btn"
+                  >
+                    <div className="flex flex-col items-center">
+                      <CheckCircle className="w-8 h-8 text-[#00E676] mb-2" />
+                      <span className="text-lg font-semibold">Safe</span>
+                    </div>
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className={`h-20 border-2 ${
+                      selectedAnswer === 'unsafe' 
+                        ? 'border-[#FF3B30] bg-[#FF3B30]/10' 
+                        : 'border-[#30363D] hover:border-[#FF3B30] hover:bg-[#FF3B30]/5'
+                    }`}
+                    onClick={() => submitAnswer('unsafe')}
+                    disabled={submitting}
+                    data-testid="answer-unsafe-btn"
+                  >
+                    <div className="flex flex-col items-center">
+                      <XCircle className="w-8 h-8 text-[#FF3B30] mb-2" />
+                      <span className="text-lg font-semibold">Unsafe</span>
+                    </div>
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         ) : (
