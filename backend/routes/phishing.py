@@ -391,17 +391,28 @@ async def update_campaign(campaign_id: str, request: Request):
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
     
-    # Only allow editing draft or scheduled campaigns
+    data = await request.json()
+    
+    # Allow scenario_type updates for any campaign status (admin override)
+    if "scenario_type" in data and "force" in data and data["force"]:
+        await db.phishing_campaigns.update_one(
+            {"campaign_id": campaign_id},
+            {"$set": {"scenario_type": data["scenario_type"]}}
+        )
+        return {"success": True, "message": f"Scenario type updated to {data['scenario_type']}"}
+    
+    # Only allow editing draft or scheduled campaigns for other fields
     if campaign.get("status") not in ["draft", "scheduled"]:
         raise HTTPException(status_code=400, detail="Only draft or scheduled campaigns can be edited")
-    
-    data = await request.json()
     
     # Build update document
     update_doc = {}
     
     if "name" in data:
         update_doc["name"] = data["name"]
+    
+    if "scenario_type" in data:
+        update_doc["scenario_type"] = data["scenario_type"]
     
     if "template_id" in data and data["template_id"]:
         template = await db.phishing_templates.find_one({"template_id": data["template_id"]}, {"_id": 0})
