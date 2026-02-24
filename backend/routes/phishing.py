@@ -2199,6 +2199,243 @@ async def track_credential_submission(tracking_code: str, request: Request):
     """)
 
 
+# ============== CREDENTIAL SUBMISSIONS ==============
+
+@router.get("/credential-submissions")
+async def list_credential_submissions(
+    request: Request,
+    campaign_id: Optional[str] = None,
+    organization_id: Optional[str] = None,
+    limit: int = 100,
+    skip: int = 0
+):
+    """
+    List all credential submissions with campaign and user details.
+    Returns submissions where credentials_submitted is True.
+    """
+    user = await require_admin(request)
+    db = get_db()
+    
+    # Build query
+    query = {"credentials_submitted": True}
+    if campaign_id:
+        query["campaign_id"] = campaign_id
+    
+    # If org_admin, filter by their org's campaigns
+    if user.get("role") == UserRole.ORG_ADMIN and user.get("organization_id"):
+        org_campaigns = await db.phishing_campaigns.find(
+            {"organization_id": user["organization_id"]},
+            {"campaign_id": 1}
+        ).to_list(1000)
+        campaign_ids = [c["campaign_id"] for c in org_campaigns]
+        query["campaign_id"] = {"$in": campaign_ids}
+    elif organization_id:
+        org_campaigns = await db.phishing_campaigns.find(
+            {"organization_id": organization_id},
+            {"campaign_id": 1}
+        ).to_list(1000)
+        campaign_ids = [c["campaign_id"] for c in org_campaigns]
+        query["campaign_id"] = {"$in": campaign_ids}
+    
+    # Get submissions
+    submissions = await db.phishing_targets.find(
+        query,
+        {"_id": 0}
+    ).sort("credentials_submitted_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    # Get campaign names
+    campaign_ids = list(set(s.get("campaign_id") for s in submissions if s.get("campaign_id")))
+    campaigns = await db.phishing_campaigns.find(
+        {"campaign_id": {"$in": campaign_ids}},
+        {"_id": 0, "campaign_id": 1, "name": 1, "organization_id": 1, "scenario_type": 1}
+    ).to_list(100)
+    campaign_map = {c["campaign_id"]: c for c in campaigns}
+    
+    # Get organization names
+    org_ids = list(set(c.get("organization_id") for c in campaigns if c.get("organization_id")))
+    orgs = await db.organizations.find(
+        {"organization_id": {"$in": org_ids}},
+        {"_id": 0, "organization_id": 1, "name": 1}
+    ).to_list(100)
+    org_map = {o["organization_id"]: o.get("name", "Unknown") for o in orgs}
+    
+    # Enrich submissions with campaign and org info
+    result = []
+    for s in submissions:
+        campaign = campaign_map.get(s.get("campaign_id"), {})
+        result.append({
+            "target_id": s.get("target_id"),
+            "user_id": s.get("user_id"),
+            "user_email": s.get("user_email"),
+            "user_name": s.get("user_name"),
+            "entered_username": s.get("entered_username", ""),
+            "campaign_id": s.get("campaign_id"),
+            "campaign_name": campaign.get("name", "Unknown"),
+            "scenario_type": campaign.get("scenario_type", "credential_harvest"),
+            "organization_id": campaign.get("organization_id"),
+            "organization_name": org_map.get(campaign.get("organization_id"), "Unknown"),
+            "credentials_submitted_at": s.get("credentials_submitted_at"),
+            "clicked_at": s.get("clicked_at"),
+            "tracking_code": s.get("tracking_code")
+        })
+    
+    # Get total count
+    total = await db.phishing_targets.count_documents(query)
+    
+    return {
+        "submissions": result,
+        "total": total,
+        "limit": limit,
+        "skip": skip
+    }
+
+
+@router.get("/credential-submissions/stats")
+async def get_credential_submission_stats(
+    request: Request,
+    organization_id: Optional[str] = None
+):
+    """
+    Get credential submission statistics by campaign.
+    """
+    user = await require_admin(request)
+    db = get_db()
+    
+    # Build match stage for org filtering
+    match_stage = {"credentials_submitted": True}
+    
+    if user.get("role") == UserRole.ORG_ADMIN and user.get("organization_id"):
+        org_campaigns = await db.phishing_campaigns.find(
+            {"organization_id": user["organization_id"]},
+            {"campaign_id": 1}
+        ).to_list(1000)
+        campaign_ids = [c["campaign_id"] for c in org_campaigns]
+        match_stage["campaign_id"] = {"$in": campaign_ids}
+    elif organization_id:
+        org_campaigns = await db.phishing_campaigns.find(
+            {"organization_id": organization_id},
+            {"campaign_id": 1}
+        ).to_list(1000)
+        campaign_ids = [c["campaign_id"] for c in org_campaigns]
+        match_stage["campaign_id"] = {"$in": campaign_ids}
+    
+    # Aggregate by campaign
+    pipeline = [
+        {"$match": match_stage},
+        {"$group": {
+            "_id": "$campaign_id",
+            "submission_count": {"$sum": 1},
+            "unique_users": {"$addToSet": "$user_email"},
+            "latest_submission": {"$max": "$credentials_submitted_at"}
+        }},
+        {"$sort": {"submission_count": -1}}
+    ]
+    
+    by_campaign = await db.phishing_targets.aggregate(pipeline).to_list(100)
+    
+    # Get campaign names
+    campaign_ids = [b["_id"] for b in by_campaign if b["_id"]]
+    campaigns = await db.phishing_campaigns.find(
+        {"campaign_id": {"$in": campaign_ids}},
+        {"_id": 0, "campaign_id": 1, "name": 1}
+    ).to_list(100)
+    campaign_map = {c["campaign_id"]: c.get("name", "Unknown") for c in campaigns}
+    
+    # Format results
+    result = []
+    for b in by_campaign:
+        result.append({
+            "campaign_id": b["_id"],
+            "campaign_name": campaign_map.get(b["_id"], "Unknown"),
+            "submission_count": b["submission_count"],
+            "unique_user_count": len(b["unique_users"]),
+            "latest_submission": b["latest_submission"]
+        })
+    
+    # Total stats
+    total_submissions = sum(b["submission_count"] for b in result)
+    total_unique_users = await db.phishing_targets.distinct("user_email", match_stage)
+    
+    return {
+        "by_campaign": result,
+        "total_submissions": total_submissions,
+        "total_unique_users": len(total_unique_users),
+        "campaign_count": len(result)
+    }
+
+
+@router.post("/credential-submissions/test")
+async def create_test_credential_submission(request: Request):
+    """
+    Create a test credential submission for demo purposes.
+    This creates a mock submission without needing to go through the full phishing flow.
+    """
+    user = await require_admin(request)
+    db = get_db()
+    
+    try:
+        body = await request.json()
+    except:
+        body = {}
+    
+    campaign_id = body.get("campaign_id")
+    test_email = body.get("test_email", user.get("email", "test@example.com"))
+    test_username = body.get("test_username", "demo_user@company.com")
+    
+    if not campaign_id:
+        raise HTTPException(status_code=400, detail="campaign_id is required")
+    
+    # Verify campaign exists and is credential_harvest type
+    campaign = await db.phishing_campaigns.find_one(
+        {"campaign_id": campaign_id},
+        {"_id": 0}
+    )
+    
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    
+    # Create a test target entry
+    target_id = f"target_{uuid.uuid4().hex[:12]}"
+    tracking_code = secrets.token_urlsafe(16)
+    now = datetime.now(timezone.utc).isoformat()
+    
+    test_target = {
+        "target_id": target_id,
+        "campaign_id": campaign_id,
+        "user_id": user.get("user_id"),
+        "user_email": test_email,
+        "user_name": body.get("test_name", "Test User"),
+        "tracking_code": tracking_code,
+        "status": "clicked",
+        "sent_at": now,
+        "opened_at": now,
+        "clicked_at": now,
+        "credentials_submitted": True,
+        "credentials_submitted_at": now,
+        "entered_username": test_username,
+        "is_test": True
+    }
+    
+    await db.phishing_targets.insert_one(test_target)
+    
+    # Update campaign stats
+    await db.phishing_campaigns.update_one(
+        {"campaign_id": campaign_id},
+        {"$inc": {"credentials_submitted": 1, "total_clicked": 1}}
+    )
+    
+    logger.info(f"Test credential submission created by {user.get('email')} for campaign {campaign_id}")
+    
+    return {
+        "success": True,
+        "message": "Test credential submission created",
+        "target_id": target_id,
+        "campaign_id": campaign_id,
+        "test_email": test_email,
+        "entered_username": test_username
+    }
+
+
 # ============== QR CODE GENERATION ==============
 
 @router.get("/qr-code/{tracking_code}")
