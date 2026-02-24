@@ -2070,9 +2070,16 @@ async def track_credential_submission(tracking_code: str, request: Request):
     """
     Track when a user submits credentials to a fake login page.
     This is called when the simulated phishing page captures form submission.
-    Note: We don't store actual credentials, just track that submission occurred.
+    Note: We store the entered username for training purposes, but NEVER store passwords.
     """
     db = get_db()
+    
+    # Parse request body to get entered username
+    try:
+        body = await request.json()
+        entered_username = body.get("entered_username", "")
+    except:
+        entered_username = ""
     
     request_info = {
         "ip": request.client.host if request.client else None,
@@ -2094,7 +2101,8 @@ async def track_credential_submission(tracking_code: str, request: Request):
         {
             "$set": {
                 "credentials_submitted": True,
-                "credentials_submitted_at": datetime.now(timezone.utc).isoformat()
+                "credentials_submitted_at": datetime.now(timezone.utc).isoformat(),
+                "entered_username": entered_username  # Store username for training (NOT password)
             }
         }
     )
