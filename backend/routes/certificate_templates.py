@@ -243,8 +243,7 @@ async def create_signature(data: SignatureCreate, request: Request):
     }
     
     await db.certificate_signatures.insert_one(signature_doc)
-    # Return without _id
-    del signature_doc["_id"] if "_id" in signature_doc else None
+    # Return without _id (MongoDB adds it after insert)
     return {"signature_id": signature_id, "name": data.name, "title": data.title, "message": "Signature saved"}
 
 
