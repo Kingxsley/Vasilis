@@ -240,7 +240,10 @@ export default function ModuleUploader() {
             </h1>
             <p className="text-sm text-gray-500">Upload, edit, and manage training modules with questions</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button variant="outline" onClick={cleanupOrphanedSessions} className="border-red-500/30 text-red-400 hover:bg-red-500/10">
+              <Trash2 className="w-4 h-4 mr-2" /> Cleanup Old Sessions
+            </Button>
             <Button variant="outline" onClick={handleExportModules} className="border-[#D4A836]/30 text-[#D4A836]">
               <Download className="w-4 h-4 mr-2" /> Export All
             </Button>
