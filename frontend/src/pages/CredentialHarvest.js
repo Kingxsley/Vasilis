@@ -472,6 +472,12 @@ export default function CredentialHarvest() {
     return users.filter(u => u.organization_id === orgId);
   };
 
+  // Get users for multiple organizations
+  const getUsersForOrgs = (orgIds) => {
+    if (!orgIds || orgIds.length === 0) return [];
+    return users.filter(u => orgIds.includes(u.organization_id));
+  };
+
   const formatDate = (dateStr) => {
     if (!dateStr) return '-';
     return new Date(dateStr).toLocaleString();
