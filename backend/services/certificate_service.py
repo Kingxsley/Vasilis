@@ -310,12 +310,42 @@ def generate_certificate_from_template(template: dict, placeholders: dict) -> by
             if elem_type in ["text", "certifying_body"]:
                 # Draw text
                 text = str(content or "")
-                font_size = int(style.get("fontSize", 14))
-                font_name = style.get("fontName", "Helvetica")
+                
+                # Handle fontSize - can be "32px" string or integer
+                font_size_raw = style.get("fontSize", 14)
+                if isinstance(font_size_raw, str):
+                    # Extract number from "32px" or similar
+                    font_size = int(''.join(filter(str.isdigit, font_size_raw)) or 14)
+                else:
+                    font_size = int(font_size_raw)
+                
+                # Handle font name - can be fontName or fontFamily
+                font_name = style.get("fontName") or style.get("fontFamily", "Helvetica")
+                # Clean up font family (e.g., "Georgia, serif" -> "Georgia")
+                if "," in font_name:
+                    font_name = font_name.split(",")[0].strip()
+                # Map common fonts to ReportLab fonts
+                font_map = {
+                    "Georgia": "Times-Roman",
+                    "Times New Roman": "Times-Roman",
+                    "Arial": "Helvetica",
+                    "sans-serif": "Helvetica",
+                    "serif": "Times-Roman",
+                }
+                font_name = font_map.get(font_name, font_name)
+                
                 color_hex = style.get("color") or "#333333"
-                align = style.get("alignment", "center")
+                # Handle textAlign or alignment
+                align = style.get("alignment") or style.get("textAlign", "center")
+                
                 # Set font and color
                 try:
+                    # Check if font is bold
+                    if style.get("fontWeight") == "bold":
+                        if font_name == "Helvetica":
+                            font_name = "Helvetica-Bold"
+                        elif font_name == "Times-Roman":
+                            font_name = "Times-Bold"
                     c.setFont(font_name, font_size)
                 except Exception:
                     c.setFont("Helvetica", font_size)
@@ -323,6 +353,7 @@ def generate_certificate_from_template(template: dict, placeholders: dict) -> by
                     c.setFillColor(colors.HexColor(color_hex))
                 except Exception:
                     c.setFillColor(colors.black)
+                    
                 # Determine y coordinate for baseline (use top-left origin for text)
                 text_x = x + width/2 if align == "center" else x
                 text_y = y - height/2
