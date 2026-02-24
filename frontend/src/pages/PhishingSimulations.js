@@ -1022,8 +1022,8 @@ export default function PhishingSimulations() {
             resetCampaignForm();
           }
         }}>
-          <DialogContent className="bg-[#161B22] border-[#30363D] sm:max-w-lg">
-            <DialogHeader>
+          <DialogContent className="bg-[#161B22] border-[#30363D] sm:max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
+            <DialogHeader className="flex-shrink-0">
               <DialogTitle className="text-[#E8DDB5]">
                 {editingCampaign ? 'Edit Campaign' : 'Create Phishing Campaign'}
               </DialogTitle>
@@ -1034,7 +1034,7 @@ export default function PhishingSimulations() {
                 }
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4">
+            <div className="space-y-4 py-4 overflow-y-auto flex-1 pr-2">
               <div className="space-y-2">
                 <Label className="text-gray-400">Campaign Name</Label>
                 <Input
