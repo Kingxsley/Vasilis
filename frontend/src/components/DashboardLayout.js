@@ -109,6 +109,7 @@ const navGroups = [
     items: [
       { path: '/training', label: 'My Training', icon: BookOpen, adminOnly: false },
       { path: '/question-modules', label: 'Module Designer', icon: Users, adminOnly: true },
+      { path: '/module-uploader', label: 'Bulk Upload', icon: Upload, adminOnly: true },
       { path: '/certificates', label: 'Certificates', icon: Award, superAdminOnly: true },
       { path: '/certificate-templates', label: 'Cert Templates', icon: Award, superAdminOnly: true },
     ]
