@@ -320,11 +320,13 @@ async def generate_user_module_certificate(user_id: str, module_id: str, request
         "certificate_id": certificate_id
     }
 
-    # Generate certificate bytes
-    if template_doc:
+    # Generate certificate bytes - only use template if it has elements
+    if template_doc and template_doc.get("elements") and len(template_doc.get("elements", [])) > 0:
         try:
+            logger.info(f"Using template '{template_doc.get('name')}' with {len(template_doc.get('elements', []))} elements for module certificate")
             pdf_bytes = generate_certificate_from_template(template_doc, placeholders)
         except Exception as render_err:
+            logger.error(f"Template rendering failed for module certificate: {render_err}, falling back to default")
             # Fallback to default generator
             pdf_bytes = generate_training_certificate(
                 user_name=user_doc.get("name", "Unknown"),
@@ -336,6 +338,8 @@ async def generate_user_module_certificate(user_id: str, module_id: str, request
                 certificate_id=certificate_id
             )
     else:
+        if template_doc:
+            logger.warning(f"Template '{template_doc.get('name')}' has no elements, using default certificate design for module")
         pdf_bytes = generate_training_certificate(
             user_name=user_doc.get("name", "Unknown"),
             user_email=user_doc.get("email", ""),
