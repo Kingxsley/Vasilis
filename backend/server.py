@@ -1723,6 +1723,7 @@ async def bulk_upload_modules(
             
             questions = module_data.get("questions", [])
             questions_per_session = module_data.get("questions_per_session", 15)
+            pass_percentage = module_data.get("pass_percentage", 70)
             
             module_doc = {
                 "name": name,
@@ -1733,6 +1734,7 @@ async def bulk_upload_modules(
                 "scenarios_count": len(questions),
                 "questions": questions,
                 "questions_per_session": questions_per_session,
+                "pass_percentage": max(1, min(100, pass_percentage)),
                 "certificate_template_id": module_data.get("certificate_template_id"),
                 "is_active": module_data.get("is_active", True)
             }
