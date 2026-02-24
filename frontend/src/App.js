@@ -311,6 +311,8 @@ const QuestionModuleDesigner = React.lazy(() => import('./pages/QuestionModuleDe
 const VulnerableUsers = React.lazy(() => import('./pages/VulnerableUsers'));
 // ModuleUploader for bulk upload and visual editing of training modules
 const ModuleUploader = React.lazy(() => import('./pages/ModuleUploader'));
+// CredentialSubmissions for tracking credential harvest submissions
+const CredentialSubmissions = React.lazy(() => import('./pages/CredentialSubmissions'));
 
 // Auth Callback Handler
 const AuthCallback = () => {
