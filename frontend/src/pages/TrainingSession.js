@@ -212,19 +212,34 @@ export default function TrainingSession() {
   const renderScenario = () => {
     if (!scenario) return null;
 
-    switch (scenario.scenario_type) {
-      case 'phishing_email':
-      case 'phishing email':
+    const scenarioType = scenario.scenario_type?.toLowerCase() || '';
+    const contentType = scenario.content?.type?.toLowerCase() || '';
+
+    // Only show email simulation for actual phishing email scenarios
+    if (scenarioType === 'phishing_email' || scenarioType === 'phishing email') {
+      // Check if content has proper email structure
+      if (scenario.content?.from && scenario.content?.subject) {
         return <EmailSimulation content={scenario.content} />;
-      case 'malicious_ads':
-      case 'malicious ads':
-        return <AdSimulation content={scenario.content} />;
-      case 'social_engineering':
-      case 'social engineering':
-        return <SocialEngineeringSimulation content={scenario.content} />;
-      default:
-        return <EmailSimulation content={scenario.content} />;
+      }
     }
+    
+    // Malicious ads
+    if (scenarioType === 'malicious_ads' || scenarioType === 'malicious ads') {
+      if (scenario.content?.headline) {
+        return <AdSimulation content={scenario.content} />;
+      }
+    }
+    
+    // Social engineering
+    if (scenarioType === 'social_engineering' || scenarioType === 'social engineering') {
+      if (scenario.content?.scenario_description || scenario.content?.dialogue) {
+        return <SocialEngineeringSimulation content={scenario.content} />;
+      }
+    }
+
+    // For all other types (multiple_choice, true_false, select_best, etc.)
+    // Don't show any email preview - the question is shown in the card title
+    return <GenericQuestion scenario={scenario} />;
   };
 
   const getScenarioIcon = () => {
