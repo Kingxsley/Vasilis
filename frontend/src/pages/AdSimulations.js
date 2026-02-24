@@ -1074,6 +1074,36 @@ export default function AdSimulations() {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Bulk Delete Confirmation Dialog */}
+        <Dialog open={showBulkDeleteConfirm} onOpenChange={setShowBulkDeleteConfirm}>
+          <DialogContent className="bg-[#161B22] border-[#30363D] sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-red-400 flex items-center gap-2">
+                <Trash2 className="w-5 h-5" />
+                Delete {selectedCampaignIds.length} Campaign(s)?
+              </DialogTitle>
+              <DialogDescription className="text-gray-400">
+                This action cannot be undone. All campaign data and tracking information will be permanently deleted.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="mt-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowBulkDeleteConfirm(false)} 
+                className="border-[#30363D] text-[#E8DDB5]"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={bulkDeleteCampaigns} 
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                Delete {selectedCampaignIds.length} Campaign(s)
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );
