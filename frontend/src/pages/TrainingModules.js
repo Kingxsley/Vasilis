@@ -220,6 +220,18 @@ export default function TrainingModules() {
           <div className="flex items-center justify-center py-20">
             <div className="w-8 h-8 border-2 border-[#2979FF] border-t-transparent rounded-full animate-spin" />
           </div>
+        ) : modules.length === 0 ? (
+          <Card className="bg-[#161B22] border-[#30363D]">
+            <CardContent className="p-12 text-center">
+              <div className="w-16 h-16 rounded-full bg-[#2979FF]/10 flex items-center justify-center mx-auto mb-4">
+                <BookOpen className="w-8 h-8 text-[#2979FF]" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">No Training Modules Available</h3>
+              <p className="text-gray-400 max-w-md mx-auto">
+                Training modules are being prepared. Please check back later or contact your administrator for more information.
+              </p>
+            </CardContent>
+          </Card>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {modules.map((module, index) => {
