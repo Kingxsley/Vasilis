@@ -243,10 +243,15 @@ export default function TrainingSession() {
   };
 
   const getScenarioIcon = () => {
-    const type = scenario?.scenario_type || '';
-    if (type.includes('phishing')) return Mail;
+    const type = scenario?.scenario_type?.toLowerCase() || '';
+    const contentType = scenario?.content?.type?.toLowerCase() || '';
+    
+    if (type.includes('phishing') || type.includes('email')) return Mail;
     if (type.includes('ads')) return MousePointerClick;
     if (type.includes('social')) return Users;
+    if (type === 'multiple_choice' || contentType === 'multiple_choice') return BookOpen;
+    if (type === 'true_false' || contentType === 'true_false') return BookOpen;
+    if (type === 'select_best' || contentType === 'select_best') return BookOpen;
     return BookOpen;
   };
 
