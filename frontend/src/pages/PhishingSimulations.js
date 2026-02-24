@@ -543,7 +543,7 @@ export default function PhishingSimulations() {
     
     setNewCampaign({
       name: campaign.name,
-      organization_id: campaign.organization_id || '',
+      organization_ids: campaign.organization_id ? [campaign.organization_id] : [],
       template_id: campaign.template_id || '',
       target_user_ids: existingTargetIds,
       scheduled_at: campaign.scheduled_at || '',
@@ -558,7 +558,7 @@ export default function PhishingSimulations() {
     try {
       await axios.put(`${API}/phishing/campaigns/${editingCampaign.campaign_id}`, {
         name: newCampaign.name,
-        organization_id: newCampaign.organization_id,
+        organization_id: newCampaign.organization_ids[0],
         template_id: newCampaign.template_id,
         target_user_ids: newCampaign.target_user_ids,
         scheduled_at: newCampaign.scheduled_at || null
@@ -577,7 +577,7 @@ export default function PhishingSimulations() {
   const resetCampaignForm = () => {
     setNewCampaign({
       name: '',
-      organization_id: '',
+      organization_ids: [],
       template_id: '',
       target_user_ids: [],
       scheduled_at: '',
