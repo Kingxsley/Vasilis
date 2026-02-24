@@ -444,6 +444,10 @@ export default function QuestionModuleDesigner() {
                 <Input type="number" min={1} value={moduleData.questions_per_session || 15} onChange={(e) => setModuleData((p) => ({ ...p, questions_per_session: parseInt(e.target.value) || 15 }))} className="bg-[#161B22] border-[#30363D] text-[#E8DDB5]" placeholder="Random selection per user" />
               </div>
               <div>
+                <Label className="text-gray-400 text-xs">Pass Percentage (%)</Label>
+                <Input type="number" min={1} max={100} value={moduleData.pass_percentage || 70} onChange={(e) => setModuleData((p) => ({ ...p, pass_percentage: Math.max(1, Math.min(100, parseInt(e.target.value) || 70)) }))} className="bg-[#161B22] border-[#30363D] text-[#E8DDB5]" placeholder="70" />
+              </div>
+              <div>
                 <Label className="text-gray-400 text-xs">Certificate Template</Label>
                 <Select value={moduleData.certificate_template_id || 'default'} onValueChange={(v) => setModuleData((p) => ({ ...p, certificate_template_id: v === 'default' ? '' : v }))}>
                   <SelectTrigger className="bg-[#161B22] border-[#30363D] text-[#E8DDB5]"><SelectValue /></SelectTrigger>
