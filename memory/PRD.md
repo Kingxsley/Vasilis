@@ -39,6 +39,17 @@ A comprehensive security awareness and training platform that helps organization
 - [x] Credential submission tracking
 - [x] Real-time Discord notifications on events
 
+### Credential Submissions Dashboard (NEW - Feb 24, 2026)
+- [x] **Credential Submissions Page** (`/credential-submissions`) - Track all credential harvest submissions
+- [x] Stats cards showing total submissions, unique users, campaigns
+- [x] Bar chart visualization of submissions by campaign
+- [x] Detailed table with user email, entered username, campaign, organization, timestamp
+- [x] Filter by campaign
+- [x] Export to CSV functionality
+- [x] **Create Test Submission** - Manually trigger test submissions for demo purposes
+- [x] Backend stores entered username (not password) for training purposes
+- [x] Sidebar link under "Simulations" section
+
 ### Training System
 - [x] Training modules (phishing, ads, social engineering)
 - [x] Interactive scenarios with quizzes
