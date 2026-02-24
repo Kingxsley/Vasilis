@@ -122,20 +122,38 @@ export default function AdSimulations() {
   };
 
   const createCampaign = async () => {
-    if (!newCampaign.name || !newCampaign.organization_id || !newCampaign.template_id || newCampaign.target_user_ids.length === 0) {
+    if (!newCampaign.name || newCampaign.organization_ids.length === 0 || !newCampaign.template_id || newCampaign.target_user_ids.length === 0) {
       toast.error('Please fill in all required fields');
       return;
     }
     
     try {
-      const campaignData = {
-        ...newCampaign,
-        status: newCampaign.scheduled_at ? 'scheduled' : 'active'
-      };
-      await axios.post(`${API}/ads/campaigns`, campaignData, { headers });
-      toast.success('Ad campaign created successfully');
+      // Create campaigns for each selected organization
+      let createdCount = 0;
+      for (const orgId of newCampaign.organization_ids) {
+        const orgUsers = newCampaign.target_user_ids.filter(uid => 
+          users.find(u => u.user_id === uid && u.organization_id === orgId)
+        );
+        
+        if (orgUsers.length === 0) continue;
+        
+        const org = organizations.find(o => o.organization_id === orgId);
+        const campaignData = {
+          name: newCampaign.organization_ids.length > 1 
+            ? `${newCampaign.name} - ${org?.name || orgId}`
+            : newCampaign.name,
+          organization_id: orgId,
+          template_id: newCampaign.template_id,
+          target_user_ids: orgUsers,
+          status: newCampaign.scheduled_at ? 'scheduled' : 'active',
+          scheduled_at: newCampaign.scheduled_at || null
+        };
+        await axios.post(`${API}/ads/campaigns`, campaignData, { headers });
+        createdCount++;
+      }
+      toast.success(`${createdCount} ad campaign(s) created successfully`);
       setShowNewCampaign(false);
-      setNewCampaign({ name: '', organization_id: '', template_id: '', target_user_ids: [], status: 'active', scheduled_at: '' });
+      setNewCampaign({ name: '', organization_ids: [], template_id: '', target_user_ids: [], status: 'active', scheduled_at: '' });
       fetchData();
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Failed to create campaign');
