@@ -170,6 +170,10 @@ JWT_SECRET=<secure-random-string>
   - Multi-organization selection when creating campaigns
   - Applied to: Ad Simulations, Phishing Simulations, Credential Harvest
 - [x] **Image Upload in Training Questions** - GenericQuestion component now properly renders image_question types with uploaded images
+- [x] **2FA QR Code Fix** - Fixed broken QR code display for Two-Factor Authentication setup:
+  - Replaced deprecated Google Chart API (`chart.googleapis.com`) with `qrcode.react` library
+  - Fixed in both `SecurityDashboard.js` and `MySecurity.js`
+  - QR codes now render as SVG client-side
 
 ### All Completed
 - [x] **Phishing Tracking URLs** - All tracking URL generation now uses `API_URL` env var
