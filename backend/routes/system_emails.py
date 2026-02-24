@@ -37,7 +37,8 @@ async def require_super_admin(request: Request) -> dict:
 class SystemEmailTemplateUpdate(BaseModel):
     subject: Optional[str] = None
     show_icon: Optional[bool] = None
-    icon_type: Optional[str] = None  # 'shield', 'mail', 'key', 'alert', 'check', 'none'
+    icon_type: Optional[str] = None  # 'shield', 'mail', 'key', 'alert', 'check', 'none', 'custom'
+    custom_icon_url: Optional[str] = None  # URL to custom uploaded icon
     header_title: Optional[str] = None
     header_subtitle: Optional[str] = None
     greeting_template: Optional[str] = None  # e.g., "Hello {user_name},"
