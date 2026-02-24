@@ -1046,22 +1046,52 @@ export default function PhishingSimulations() {
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-gray-400">Organization</Label>
-                <Select
-                  value={newCampaign.organization_id}
-                  onValueChange={(value) => setNewCampaign({...newCampaign, organization_id: value, target_user_ids: []})}
-                >
-                  <SelectTrigger className="bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5]" data-testid="campaign-org-select">
-                    <SelectValue placeholder="Select organization" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#161B22] border-[#30363D]">
-                    {organizations.map((org) => (
-                      <SelectItem key={org.organization_id} value={org.organization_id}>
-                        {org.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label className="text-gray-400">Organizations ({newCampaign.organization_ids.length} selected)</Label>
+                <div className="bg-[#0f0f15] border border-[#D4A836]/30 rounded-md p-3 max-h-32 overflow-y-auto">
+                  <Button
+                    type="button"
+                    variant="link"
+                    size="sm"
+                    className="text-[#D4A836] mb-2 p-0"
+                    onClick={() => {
+                      if (newCampaign.organization_ids.length === organizations.length) {
+                        setNewCampaign(prev => ({ ...prev, organization_ids: [], target_user_ids: [] }));
+                      } else {
+                        setNewCampaign(prev => ({
+                          ...prev,
+                          organization_ids: organizations.map(o => o.organization_id),
+                          target_user_ids: []
+                        }));
+                      }
+                    }}
+                  >
+                    {newCampaign.organization_ids.length === organizations.length ? 'Deselect All' : 'Select All'}
+                  </Button>
+                  {organizations.map((org) => (
+                    <div key={org.organization_id} className="flex items-center gap-2 py-1">
+                      <Checkbox
+                        checked={newCampaign.organization_ids.includes(org.organization_id)}
+                        onCheckedChange={(checked) => {
+                          setNewCampaign(prev => ({
+                            ...prev,
+                            organization_ids: checked
+                              ? [...prev.organization_ids, org.organization_id]
+                              : prev.organization_ids.filter(id => id !== org.organization_id),
+                            target_user_ids: checked
+                              ? prev.target_user_ids
+                              : prev.target_user_ids.filter(uid => {
+                                  const user = users.find(u => u.user_id === uid);
+                                  return user && user.organization_id !== org.organization_id;
+                                })
+                          }));
+                        }}
+                      />
+                      <Building2 className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm text-[#E8DDB5]">{org.name}</span>
+                      <span className="text-xs text-gray-500">({getUsersForOrg(org.organization_id).length} users)</span>
+                    </div>
+                  ))}
+                </div>
               </div>
               <div className="space-y-2">
                 <Label className="text-gray-400">Email Template</Label>
