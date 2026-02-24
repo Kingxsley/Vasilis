@@ -54,6 +54,10 @@ export default function AdSimulations() {
   // Campaign filter state
   const [campaignFilter, setCampaignFilter] = useState('all');
   
+  // Bulk selection states
+  const [selectedCampaignIds, setSelectedCampaignIds] = useState([]);
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+  
   const [showNewCampaign, setShowNewCampaign] = useState(false);
   const [showNewTemplate, setShowNewTemplate] = useState(false);
   const [showCampaignDetails, setShowCampaignDetails] = useState(false);
