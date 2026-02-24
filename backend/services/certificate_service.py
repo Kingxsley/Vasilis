@@ -278,6 +278,8 @@ def generate_certificate_from_template(template: dict, placeholders: dict) -> by
             y = (1 - y_pct) * page_height  # Convert from top-based percent to bottom-based
             width = w_pct * page_width
             height = h_pct * page_height
+            
+            logger.debug(f"Element: type={elem_type}, x_pct={x_pct:.2f}, y_pct={y_pct:.2f}, x={x:.0f}, y={y:.0f}")
 
             # Determine content and style
             content = elem.get("content")
