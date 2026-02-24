@@ -54,6 +54,7 @@ export default function ModuleUploader() {
   const [jsonInput, setJsonInput] = useState('');
   const [showJsonDialog, setShowJsonDialog] = useState(false);
   const [expandedModules, setExpandedModules] = useState({});
+  const [selectedModules, setSelectedModules] = useState(new Set());
 
   useEffect(() => {
     fetchModules();
@@ -64,10 +65,45 @@ export default function ModuleUploader() {
     try {
       const res = await axios.get(`${API}/training/modules`, { headers });
       setModules(res.data);
+      setSelectedModules(new Set()); // Clear selections on refresh
     } catch (err) {
       toast.error('Failed to load modules');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toggleModuleSelect = (moduleId) => {
+    setSelectedModules(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(moduleId)) {
+        newSet.delete(moduleId);
+      } else {
+        newSet.add(moduleId);
+      }
+      return newSet;
+    });
+  };
+
+  const selectAllModules = () => {
+    if (selectedModules.size === modules.length) {
+      setSelectedModules(new Set());
+    } else {
+      setSelectedModules(new Set(modules.map(m => m.module_id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedModules.size === 0) return;
+    if (!window.confirm(`Are you sure you want to delete ${selectedModules.size} module(s)?`)) return;
+    
+    try {
+      const moduleIds = Array.from(selectedModules);
+      await axios.post(`${API}/training/modules/bulk-delete`, { module_ids: moduleIds }, { headers });
+      toast.success(`Deleted ${moduleIds.length} module(s)`);
+      fetchModules();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to delete modules');
     }
   };
 
