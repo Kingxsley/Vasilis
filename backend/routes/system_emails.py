@@ -61,6 +61,7 @@ DEFAULT_TEMPLATES = {
         "subject": "Welcome to {company_name} - Your Login Credentials",
         "show_icon": True,
         "icon_type": "shield",
+        "custom_icon_url": None,
         "header_title": "Welcome to {company_name}!",
         "header_subtitle": "Your account has been created",
         "greeting_template": "Hello {user_name},",
