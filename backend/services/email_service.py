@@ -173,8 +173,31 @@ async def send_welcome_email(user_email: str, user_name: str, password: str, log
     if not login_url:
         login_url = get_login_url()
     
-    # Compact HTML email template (under 102KB to avoid Gmail clipping)
-    html_content = f"""<!DOCTYPE html>
+    # Get customizable template
+    template = {}
+    if db is not None:
+        template = await get_system_email_template(db, "welcome")
+    
+    # Data for template
+    data = {
+        "user_name": user_name,
+        "user_email": user_email,
+        "password": password,
+        "login_url": login_url,
+        "company_name": company_name
+    }
+    
+    # Use customizable template if available
+    if template:
+        template["primary_color"] = template.get("primary_color") or primary_color
+        html_content = generate_email_html_from_template(template, data)
+        try:
+            subject = template.get("subject", "Welcome to {company_name} - Your Login Credentials").format(**data)
+        except KeyError:
+            subject = f"Welcome to {company_name} - Your Login Credentials"
+    else:
+        # Fallback to hardcoded template
+        html_content = f"""<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
 <body style="margin:0;padding:0;background:#0f0f15;font-family:Arial,sans-serif;">
@@ -211,6 +234,7 @@ async def send_welcome_email(user_email: str, user_name: str, password: str, log
 </table>
 </body>
 </html>"""
+        subject = f"Welcome to {company_name} - Your Login Credentials"
     
     plain_text = f"""Welcome to {company_name}!
 
