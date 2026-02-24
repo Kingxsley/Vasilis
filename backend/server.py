@@ -1607,6 +1607,8 @@ async def update_training_module(
         update_dict["difficulty"] = data.difficulty
     if data.duration_minutes is not None:
         update_dict["duration_minutes"] = data.duration_minutes
+    if data.questions_per_session is not None:
+        update_dict["questions_per_session"] = data.questions_per_session
     # Allow direct updates to scenarios_count when scenarios list is not provided
     if data.scenarios_count is not None and data.scenarios is None:
         update_dict["scenarios_count"] = data.scenarios_count
