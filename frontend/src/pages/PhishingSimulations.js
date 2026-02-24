@@ -1141,16 +1141,16 @@ export default function PhishingSimulations() {
 
               <div className="space-y-2">
                 <Label className="text-gray-400">Target Users ({newCampaign.target_user_ids.length} selected)</Label>
-                {!newCampaign.organization_id ? (
+                {newCampaign.organization_ids.length === 0 ? (
                   <p className="text-sm text-gray-500">Select an organization first</p>
-                ) : orgUsers.length === 0 ? (
-                  <p className="text-sm text-yellow-500">No users in this organization</p>
+                ) : getOrgUsers().length === 0 ? (
+                  <p className="text-sm text-yellow-500">No users in selected organizations</p>
                 ) : (
                   <div className="max-h-40 overflow-y-auto space-y-2 p-2 bg-[#0f0f15] rounded-lg border border-[#D4A836]/30">
                     <button
                       type="button"
                       onClick={() => {
-                        const allIds = orgUsers.map(u => u.user_id);
+                        const allIds = getOrgUsers().map(u => u.user_id);
                         setNewCampaign({
                           ...newCampaign,
                           target_user_ids: newCampaign.target_user_ids.length === allIds.length ? [] : allIds
@@ -1158,25 +1158,39 @@ export default function PhishingSimulations() {
                       }}
                       className="text-sm text-[#D4A836] hover:underline mb-2"
                     >
-                      {newCampaign.target_user_ids.length === orgUsers.length ? 'Deselect All' : 'Select All'}
+                      {newCampaign.target_user_ids.length === getOrgUsers().length ? 'Deselect All' : 'Select All'}
                     </button>
-                    {orgUsers.map((user) => (
-                      <label key={user.user_id} className="flex items-center gap-2 cursor-pointer hover:bg-white/5 p-1 rounded">
-                        <input
-                          type="checkbox"
-                          checked={newCampaign.target_user_ids.includes(user.user_id)}
-                          onChange={(e) => {
-                            const ids = e.target.checked
-                              ? [...newCampaign.target_user_ids, user.user_id]
-                              : newCampaign.target_user_ids.filter(id => id !== user.user_id);
-                            setNewCampaign({...newCampaign, target_user_ids: ids});
-                          }}
-                          className="rounded border-[#D4A836]/30"
-                        />
-                        <span className="text-sm text-[#E8DDB5]">{user.name}</span>
-                        <span className="text-xs text-gray-500">({user.email})</span>
-                      </label>
-                    ))}
+                    {/* Group users by organization */}
+                    {newCampaign.organization_ids.map(orgId => {
+                      const org = organizations.find(o => o.organization_id === orgId);
+                      const usersInOrg = getUsersForOrg(orgId);
+                      if (usersInOrg.length === 0) return null;
+                      return (
+                        <div key={orgId} className="mb-2">
+                          <div className="flex items-center gap-2 mb-1 text-sm font-medium text-[#D4A836]">
+                            <Building2 className="w-4 h-4" />
+                            {org?.name || orgId}
+                          </div>
+                          {usersInOrg.map((user) => (
+                            <label key={user.user_id} className="flex items-center gap-2 cursor-pointer hover:bg-white/5 p-1 rounded pl-6">
+                              <input
+                                type="checkbox"
+                                checked={newCampaign.target_user_ids.includes(user.user_id)}
+                                onChange={(e) => {
+                                  const ids = e.target.checked
+                                    ? [...newCampaign.target_user_ids, user.user_id]
+                                    : newCampaign.target_user_ids.filter(id => id !== user.user_id);
+                                  setNewCampaign({...newCampaign, target_user_ids: ids});
+                                }}
+                                className="rounded border-[#D4A836]/30"
+                              />
+                              <span className="text-sm text-[#E8DDB5]">{user.name}</span>
+                              <span className="text-xs text-gray-500">({user.email})</span>
+                            </label>
+                          ))}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
