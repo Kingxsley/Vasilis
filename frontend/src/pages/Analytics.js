@@ -52,7 +52,7 @@ export default function Analytics() {
   };
 
   const moduleData = analytics?.by_module?.map(m => ({
-    name: m._id?.replace('mod_', '').replace(/_/g, ' ') || 'Unknown',
+    name: m.module_name || m._id?.replace('mod_', '').replace(/_/g, ' ') || 'Unknown',
     sessions: m.total_sessions,
     completed: m.completed,
     avgScore: Math.round(m.avg_score || 0)
