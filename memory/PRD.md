@@ -158,11 +158,18 @@ JWT_SECRET=<secure-random-string>
    - Debug: After email sending is fixed, test full end-to-end in production
 
 ### P1 - Important Issues  
-3. **Image Upload in Training Questions** - Images not displaying (fix pending testing)
+~~3. **Image Upload in Training Questions** - Images not displaying (fix pending testing)~~ FIXED
 4. **Training Assignment Email Link** - May point to wrong domain
 
 ### P3 - Lower Priority
 5. **Bulk User Import** - Feature may be broken
+
+### Completed (Feb 25, 2026)
+- [x] **Bulk Actions & Multi-Org Selection** - All simulation pages now support:
+  - Bulk campaign deletion via checkboxes
+  - Multi-organization selection when creating campaigns
+  - Applied to: Ad Simulations, Phishing Simulations, Credential Harvest
+- [x] **Image Upload in Training Questions** - GenericQuestion component now properly renders image_question types with uploaded images
 
 ### All Completed
 - [x] **Phishing Tracking URLs** - All tracking URL generation now uses `API_URL` env var
