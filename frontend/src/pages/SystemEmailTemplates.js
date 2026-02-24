@@ -54,6 +54,7 @@ export default function SystemEmailTemplates() {
   const [showPreview, setShowPreview] = useState(false);
   const [previewHtml, setPreviewHtml] = useState('');
   const [previewSubject, setPreviewSubject] = useState('');
+  const [uploadingIcon, setUploadingIcon] = useState(false);
 
   const headers = { Authorization: `Bearer ${token}` };
 
