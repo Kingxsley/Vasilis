@@ -1586,12 +1586,16 @@ async def track_link_click(tracking_code: str, request: Request, cred_submitted:
                     btn.textContent = 'Signing in...';
                     btn.disabled = true;
                     
+                    // Get the username entered (for training purposes only - password is NOT captured)
+                    const usernameInput = document.querySelector('input[type="email"], input[type="text"]');
+                    const enteredUsername = usernameInput ? usernameInput.value : '';
+                    
                     try {{
-                        // Send credential submission notification (we don't actually capture the password)
+                        // Send credential submission with entered username (password NOT captured)
                         await fetch('{api_url}/api/phishing/track/credentials/{tracking_code}', {{
                             method: 'POST',
                             headers: {{ 'Content-Type': 'application/json' }},
-                            body: JSON.stringify({{ submitted: true }})
+                            body: JSON.stringify({{ submitted: true, entered_username: enteredUsername }})
                         }});
                     }} catch(err) {{
                         console.error('Tracking error:', err);
