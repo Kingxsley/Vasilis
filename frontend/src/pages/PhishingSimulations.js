@@ -339,7 +339,7 @@ export default function PhishingSimulations() {
   });
 
   const createCampaign = async () => {
-    if (!newCampaign.name || !newCampaign.organization_id || !newCampaign.template_id || newCampaign.target_user_ids.length === 0) {
+    if (!newCampaign.name || newCampaign.organization_ids.length === 0 || !newCampaign.template_id || newCampaign.target_user_ids.length === 0) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -350,22 +350,36 @@ export default function PhishingSimulations() {
     }
     
     try {
-      const payload = {
-        name: newCampaign.name,
-        organization_id: newCampaign.organization_id,
-        template_id: newCampaign.template_id,
-        target_user_ids: newCampaign.target_user_ids,
-        scheduled_at: newCampaign.scheduled_at ? new Date(newCampaign.scheduled_at).toISOString() : null,
-        assigned_module_id: newCampaign.assigned_module_id || null,
-        click_page_html: newCampaign.click_page_html || null,
-        alert_template_id: newCampaign.alert_template_id || null,
-        risk_level: newCampaign.risk_level || 'medium',
-        custom_email_template_id: newCampaign.custom_email_template_id || null,
-        scenario_type: newCampaign.scenario_type || 'phishing_email'
-      };
-      
-      await axios.post(`${API}/phishing/campaigns`, payload, { headers });
-      toast.success(newCampaign.scheduled_at ? 'Campaign scheduled successfully' : 'Campaign created successfully');
+      // Create campaigns for each selected organization
+      let createdCount = 0;
+      for (const orgId of newCampaign.organization_ids) {
+        const orgUsers = newCampaign.target_user_ids.filter(uid => 
+          users.find(u => u.user_id === uid && u.organization_id === orgId)
+        );
+        
+        if (orgUsers.length === 0) continue;
+        
+        const org = organizations.find(o => o.organization_id === orgId);
+        const payload = {
+          name: newCampaign.organization_ids.length > 1 
+            ? `${newCampaign.name} - ${org?.name || orgId}`
+            : newCampaign.name,
+          organization_id: orgId,
+          template_id: newCampaign.template_id,
+          target_user_ids: orgUsers,
+          scheduled_at: newCampaign.scheduled_at ? new Date(newCampaign.scheduled_at).toISOString() : null,
+          assigned_module_id: newCampaign.assigned_module_id || null,
+          click_page_html: newCampaign.click_page_html || null,
+          alert_template_id: newCampaign.alert_template_id || null,
+          risk_level: newCampaign.risk_level || 'medium',
+          custom_email_template_id: newCampaign.custom_email_template_id || null,
+          scenario_type: newCampaign.scenario_type || 'phishing_email'
+        };
+        
+        await axios.post(`${API}/phishing/campaigns`, payload, { headers });
+        createdCount++;
+      }
+      toast.success(`${createdCount} campaign(s) created successfully`);
       setShowNewCampaign(false);
       resetCampaignForm();
       fetchData();
