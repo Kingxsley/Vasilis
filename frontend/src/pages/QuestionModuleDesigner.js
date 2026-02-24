@@ -438,6 +438,10 @@ export default function QuestionModuleDesigner() {
                 <Input type="number" min={1} value={moduleData.duration_minutes} onChange={(e) => setModuleData((p) => ({ ...p, duration_minutes: parseInt(e.target.value) || 1 }))} className="bg-[#161B22] border-[#30363D] text-[#E8DDB5]" />
               </div>
               <div>
+                <Label className="text-gray-400 text-xs">Questions Per Session</Label>
+                <Input type="number" min={1} value={moduleData.questions_per_session || 15} onChange={(e) => setModuleData((p) => ({ ...p, questions_per_session: parseInt(e.target.value) || 15 }))} className="bg-[#161B22] border-[#30363D] text-[#E8DDB5]" placeholder="Random selection per user" />
+              </div>
+              <div>
                 <Label className="text-gray-400 text-xs">Certificate Template</Label>
                 <Select value={moduleData.certificate_template_id || 'default'} onValueChange={(v) => setModuleData((p) => ({ ...p, certificate_template_id: v === 'default' ? '' : v }))}>
                   <SelectTrigger className="bg-[#161B22] border-[#30363D] text-[#E8DDB5]"><SelectValue /></SelectTrigger>
@@ -457,7 +461,7 @@ export default function QuestionModuleDesigner() {
           {/* Questions */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-[#E8DDB5]">Questions ({questions.length})</h2>
+              <h2 className="text-lg font-semibold text-[#E8DDB5]">Questions ({questions.length}) - Users will answer {moduleData.questions_per_session || 15} randomly</h2>
             </div>
             {questions.map((q, i) => (
               <QuestionCard key={q.id} q={q} idx={i} total={questions.length} onChange={updateQuestion} onRemove={removeQuestion} onMove={moveQuestion} token={token} />
