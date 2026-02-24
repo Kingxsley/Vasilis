@@ -600,6 +600,30 @@ export default function EmailTemplates() {
 
           {/* Notification Emails Tab */}
           <TabsContent value="notifications" className="space-y-6">
+            {/* Link to Visual Editor */}
+            {isSuperAdmin && (
+              <Card className="bg-gradient-to-r from-[#D4A836]/10 to-[#D4A836]/5 border-[#D4A836]/30">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-start gap-3">
+                      <Sparkles className="w-5 h-5 text-[#D4A836] mt-0.5" />
+                      <div>
+                        <p className="font-medium text-[#E8DDB5] mb-1">Visual Email Editor</p>
+                        <p className="text-sm text-gray-400">
+                          Customize system emails with a visual editor - change icons, colors, subjects, and content.
+                        </p>
+                      </div>
+                    </div>
+                    <a href="/system-emails">
+                      <Button className="bg-[#D4A836] hover:bg-[#C49A30] text-black">
+                        Open Editor
+                      </Button>
+                    </a>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Info Card */}
             <Card className="bg-blue-500/10 border-blue-500/30">
               <CardContent className="p-4">
