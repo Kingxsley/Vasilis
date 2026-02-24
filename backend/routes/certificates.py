@@ -7,9 +7,12 @@ from datetime import datetime, timezone
 from typing import Optional
 import io
 import uuid
+import logging
 
 from services.certificate_service import generate_training_certificate, generate_certificate_from_template
 from models import UserRole
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/certificates", tags=["Certificates"])
 
