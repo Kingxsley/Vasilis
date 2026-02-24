@@ -83,7 +83,7 @@ const navGroups = [
       { path: '/simulation-builder', label: 'Create Sim', icon: Wand2, superAdminOnly: true },
       { path: '/phishing', label: 'Phishing Sim', icon: Mail, superAdminOnly: true },
       { path: '/ads', label: 'Ad Simulation', icon: Monitor, superAdminOnly: true },
-      { path: '/credential-submissions', label: 'Credentials', icon: KeyRound, superAdminOnly: true },
+      { path: '/credential-harvest', label: 'Credential Harvest', icon: KeyRound, superAdminOnly: true },
       // Remove the Scenario Manager from the navigation.  Scenario
       // management functionality has been consolidated into the Module
       // Builder and is no longer exposed as a separate menu.
