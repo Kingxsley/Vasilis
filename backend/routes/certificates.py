@@ -155,11 +155,13 @@ async def generate_user_certificate(user_id: str, request: Request):
     # Additional placeholders for backwards compatibility
     placeholders["modules_completed_list"] = placeholders["modules_completed"]
 
-    # Render certificate using template if available
-    if template_doc:
+    # Render certificate using template if available and has elements
+    if template_doc and template_doc.get("elements") and len(template_doc.get("elements", [])) > 0:
         try:
+            logger.info(f"Using template '{template_doc.get('name')}' with {len(template_doc.get('elements', []))} elements")
             pdf_bytes = generate_certificate_from_template(template_doc, placeholders)
         except Exception as render_err:
+            logger.error(f"Template rendering failed: {render_err}, falling back to default")
             # Fallback to default generator if rendering fails
             pdf_bytes = generate_training_certificate(
                 user_name=user.get("name", "Unknown"),
@@ -171,6 +173,8 @@ async def generate_user_certificate(user_id: str, request: Request):
                 certificate_id=certificate_id
             )
     else:
+        if template_doc:
+            logger.warning(f"Template '{template_doc.get('name')}' has no elements, using default certificate design")
         # Use original certificate design
         pdf_bytes = generate_training_certificate(
             user_name=user.get("name", "Unknown"),
