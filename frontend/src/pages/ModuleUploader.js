@@ -210,6 +210,15 @@ export default function ModuleUploader() {
     toast.success('Module JSON copied to clipboard');
   };
 
+  const cleanupOrphanedSessions = async () => {
+    try {
+      const res = await axios.delete(`${API}/training/sessions/cleanup-orphaned`, { headers });
+      toast.success(res.data.message);
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to cleanup sessions');
+    }
+  };
+
   if (loading) {
     return (
       <DashboardLayout>
