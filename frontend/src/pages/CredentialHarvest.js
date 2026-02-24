@@ -300,7 +300,7 @@ export default function CredentialHarvest() {
   };
 
   const handleCreateCampaign = async () => {
-    if (!newCampaign.name || !newCampaign.organization_id || !newCampaign.template_id || newCampaign.target_user_ids.length === 0) {
+    if (!newCampaign.name || newCampaign.organization_ids.length === 0 || !newCampaign.template_id || newCampaign.target_user_ids.length === 0) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -325,24 +325,38 @@ export default function CredentialHarvest() {
 
       const backendTemplateId = templateRes.data.template_id;
 
-      // Create the campaign with credential_harvest scenario type
-      const campaignData = {
-        name: newCampaign.name,
-        organization_id: newCampaign.organization_id,
-        template_id: backendTemplateId,
-        target_user_ids: newCampaign.target_user_ids,
-        scenario_type: 'credential_harvest',
-        risk_level: 'critical',
-        assigned_module_id: newCampaign.assigned_module_id || null,
-        scheduled_at: newCampaign.launch_immediately ? null : newCampaign.scheduled_at || null
-      };
+      // Create campaigns for each selected organization
+      const createdCampaigns = [];
+      for (const orgId of newCampaign.organization_ids) {
+        const orgUsers = newCampaign.target_user_ids.filter(uid => 
+          users.find(u => u.user_id === uid && u.organization_id === orgId)
+        );
+        
+        if (orgUsers.length === 0) continue;
+        
+        const org = organizations.find(o => o.organization_id === orgId);
+        const campaignData = {
+          name: newCampaign.organization_ids.length > 1 
+            ? `${newCampaign.name} - ${org?.name || orgId}`
+            : newCampaign.name,
+          organization_id: orgId,
+          template_id: backendTemplateId,
+          target_user_ids: orgUsers,
+          scenario_type: 'credential_harvest',
+          risk_level: 'critical',
+          assigned_module_id: newCampaign.assigned_module_id || null,
+          scheduled_at: newCampaign.launch_immediately ? null : newCampaign.scheduled_at || null
+        };
 
-      await axios.post(`${API}/phishing/campaigns`, campaignData, { headers });
-      toast.success('Credential harvest campaign created');
+        await axios.post(`${API}/phishing/campaigns`, campaignData, { headers });
+        createdCampaigns.push(org?.name || orgId);
+      }
+      
+      toast.success(`Created ${createdCampaigns.length} credential harvest campaign(s)`);
       setShowNewCampaign(false);
       setNewCampaign({
         name: '',
-        organization_id: '',
+        organization_ids: [],
         template_id: '',
         target_user_ids: [],
         scheduled_at: '',
