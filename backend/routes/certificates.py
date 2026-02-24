@@ -248,7 +248,9 @@ async def generate_user_module_certificate(user_id: str, module_id: str, request
 
     # Determine which certificate template to use
     template_doc = None
-    # 1. Organization-level template
+    template_source = "none"
+    
+    # 1. Organization-level template (highest priority)
     if user_doc.get("organization_id"):
         org = await db.organizations.find_one(
             {"organization_id": user_doc["organization_id"]},
@@ -259,17 +261,27 @@ async def generate_user_module_certificate(user_id: str, module_id: str, request
                 {"template_id": org["certificate_template_id"]},
                 {"_id": 0}
             )
+            if template_doc:
+                template_source = "organization"
+    
     # 2. Module-level template
     if not template_doc and module.get("certificate_template_id"):
         template_doc = await db.certificate_templates.find_one(
             {"template_id": module.get("certificate_template_id")},
             {"_id": 0}
         )
+        if template_doc:
+            template_source = "module"
+    
     # 3. Global default template
     if not template_doc:
         template_doc = await db.certificate_templates.find_one(
             {"is_default": True}, {"_id": 0}
         )
+        if template_doc:
+            template_source = "default"
+    
+    logger.info(f"Certificate for user {user_id}, module {module_id}: template_source={template_source}, template_id={template_doc.get('template_id') if template_doc else None}")
 
     # Unique certificate ID
     certificate_id = f"CERT-{uuid.uuid4().hex[:8].upper()}"
