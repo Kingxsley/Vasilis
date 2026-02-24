@@ -75,7 +75,8 @@ const TEMPLATE_LABELS = {
 };
 
 export default function EmailTemplates() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  const isSuperAdmin = user?.role === 'super_admin';
   const [templates, setTemplates] = useState({});
   const [customAlertTemplates, setCustomAlertTemplates] = useState([]);
   const [phishingEmailTemplates, setPhishingEmailTemplates] = useState([]);
