@@ -1007,13 +1007,8 @@ export default function CredentialHarvest() {
                         </div>
                       );
                     })}
-                        />
-                        <span className="text-sm text-white">{user.name}</span>
-                        <span className="text-xs text-gray-500">({user.email})</span>
-                      </div>
-                    ))}
-                    {getUsersForOrg(newCampaign.organization_id).length === 0 && (
-                      <p className="text-sm text-gray-500">No users in this organization</p>
+                    {getUsersForOrgs(newCampaign.organization_ids).length === 0 && (
+                      <p className="text-sm text-gray-500">No users in selected organizations</p>
                     )}
                   </div>
                 </div>
