@@ -1,0 +1,1912 @@
+[
+  {
+    "name": "Phishing Email Detection",
+    "module_type": "phishing",
+    "description": "Learn to identify phishing emails, suspicious links, and fraudulent sender addresses. This module covers common phishing tactics used by cybercriminals.",
+    "difficulty": "medium",
+    "duration_minutes": 25,
+    "questions_per_session": 15,
+    "is_active": true,
+    "questions": [
+      {
+        "id": "phish_01",
+        "type": "multiple_choice",
+        "title": "You receive an email from 'security@amaz0n-support.com' asking you to verify your account. What should you do?",
+        "options": ["Click the link and verify your account", "Forward it to your IT department and delete it", "Reply asking for more information", "Ignore it but keep it in your inbox"],
+        "correct_answer": "Forward it to your IT department and delete it",
+        "explanation": "The domain 'amaz0n-support.com' uses a zero instead of 'o' - a common phishing tactic. Always report suspicious emails to IT.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "phish_02",
+        "type": "multiple_choice",
+        "title": "Which of the following is a red flag in a phishing email?",
+        "options": ["Company logo in the email", "Urgent language demanding immediate action", "A signature with contact information", "Professional formatting"],
+        "correct_answer": "Urgent language demanding immediate action",
+        "explanation": "Phishing emails often create urgency to make you act without thinking. Legitimate companies rarely demand immediate action.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "phish_03",
+        "type": "multiple_choice",
+        "title": "An email claims your Netflix account will be suspended in 24 hours unless you update payment info. The link goes to 'netfliix-billing.com'. What's wrong?",
+        "options": ["Nothing, Netflix often sends these emails", "The domain has an extra 'i' - it's a fake site", "24 hours is too long of a timeframe", "Netflix doesn't have billing issues"],
+        "correct_answer": "The domain has an extra 'i' - it's a fake site",
+        "explanation": "Typosquatting uses misspelled domains like 'netfliix' instead of 'netflix' to trick users.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "phish_04",
+        "type": "multiple_choice",
+        "title": "What is the safest way to verify if an email from your bank is legitimate?",
+        "options": ["Click the link in the email to check", "Call the number provided in the email", "Log into your bank account directly through their official website", "Reply to the email asking for confirmation"],
+        "correct_answer": "Log into your bank account directly through their official website",
+        "explanation": "Never use links or phone numbers from suspicious emails. Always navigate directly to the official website.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "phish_05",
+        "type": "multiple_choice",
+        "title": "You receive an email with an attachment named 'Invoice_12345.pdf.exe'. What should you do?",
+        "options": ["Open it to see the invoice details", "Rename it to remove .exe and open it", "Delete it immediately - .exe files are executable programs", "Forward it to accounting"],
+        "correct_answer": "Delete it immediately - .exe files are executable programs",
+        "explanation": "Double extensions like '.pdf.exe' hide malicious executables. Real PDFs never end in .exe.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "phish_06",
+        "type": "multiple_choice",
+        "title": "Which email header information can help identify a phishing attempt?",
+        "options": ["Subject line only", "The 'Reply-To' address differs from the 'From' address", "The date the email was sent", "The number of recipients"],
+        "correct_answer": "The 'Reply-To' address differs from the 'From' address",
+        "explanation": "When Reply-To differs from From, responses go to a different address - often an attacker's inbox.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "phish_07",
+        "type": "multiple_choice",
+        "title": "A colleague's email asks you to wire $5,000 urgently for a business deal. The email looks legitimate. What should you do?",
+        "options": ["Process the wire transfer immediately", "Call your colleague directly using a known phone number to verify", "Reply to the email asking for more details", "Check if the amount matches your budget"],
+        "correct_answer": "Call your colleague directly using a known phone number to verify",
+        "explanation": "Business Email Compromise (BEC) attacks spoof or compromise colleague accounts. Always verify financial requests via a separate channel.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "phish_08",
+        "type": "multiple_choice",
+        "title": "What is 'spear phishing'?",
+        "options": ["Phishing that targets random users", "Phishing targeted at specific individuals using personal information", "Phishing through phone calls", "Phishing through text messages"],
+        "correct_answer": "Phishing targeted at specific individuals using personal information",
+        "explanation": "Spear phishing uses personalized information to make attacks more convincing and targeted.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "phish_09",
+        "type": "multiple_choice",
+        "title": "An email from 'IT Support' asks for your password to fix a system issue. How should you respond?",
+        "options": ["Provide your password - IT needs it to help", "Ask them to call you first", "Never share your password - legitimate IT never asks for it", "Send it in a separate email for security"],
+        "correct_answer": "Never share your password - legitimate IT never asks for it",
+        "explanation": "Legitimate IT departments never ask for passwords via email. This is always a phishing attempt.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "phish_10",
+        "type": "multiple_choice",
+        "title": "What does 'HTTPS' in a URL indicate?",
+        "options": ["The website is 100% safe and legitimate", "The connection is encrypted, but the site could still be malicious", "The website is owned by the government", "The website has no security"],
+        "correct_answer": "The connection is encrypted, but the site could still be malicious",
+        "explanation": "HTTPS means encrypted connection, not a legitimate website. Phishing sites can also use HTTPS.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "phish_11",
+        "type": "multiple_choice",
+        "title": "You hover over a link in an email and see it goes to 'bit.ly/abc123'. What should you do?",
+        "options": ["Click it - shortened URLs are safe", "Avoid clicking - URL shorteners can hide malicious destinations", "Copy and paste it into your browser", "Click it only if the email looks professional"],
+        "correct_answer": "Avoid clicking - URL shorteners can hide malicious destinations",
+        "explanation": "URL shorteners hide the true destination. Legitimate businesses rarely use them in official communications.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "phish_12",
+        "type": "multiple_choice",
+        "title": "What is 'whaling' in cybersecurity?",
+        "options": ["Phishing attacks targeting executives and high-level employees", "Sending bulk spam emails", "Attacking whale-watching websites", "A type of malware"],
+        "correct_answer": "Phishing attacks targeting executives and high-level employees",
+        "explanation": "Whaling targets 'big fish' - executives who have access to sensitive data and financial authority.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "phish_13",
+        "type": "multiple_choice",
+        "title": "An email contains perfect grammar, company branding, and your full name. Can it still be phishing?",
+        "options": ["No, phishing emails always have errors", "Yes, sophisticated phishing can look completely legitimate", "No, scammers don't have access to personal information", "Only if it asks for money"],
+        "correct_answer": "Yes, sophisticated phishing can look completely legitimate",
+        "explanation": "Advanced phishing attacks use stolen data and professional design. Don't rely on appearance alone.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "phish_14",
+        "type": "multiple_choice",
+        "title": "What should you check when you receive an unexpected email attachment?",
+        "options": ["File size only", "Sender's email address, file type, and whether you expected it", "Just the file name", "The time it was sent"],
+        "correct_answer": "Sender's email address, file type, and whether you expected it",
+        "explanation": "Always verify the sender, check file extensions, and confirm you were expecting the attachment.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "phish_15",
+        "type": "multiple_choice",
+        "title": "What is a 'homograph attack'?",
+        "options": ["Using similar-looking characters from different alphabets to fake URLs", "Attacking home networks", "Sending identical emails to multiple people", "A grammar-based attack"],
+        "correct_answer": "Using similar-looking characters from different alphabets to fake URLs",
+        "explanation": "Homograph attacks use characters like Cyrillic 'а' that look identical to Latin 'a' to create fake URLs.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "phish_16",
+        "type": "multiple_choice",
+        "title": "You receive a job offer email with an amazing salary for a position you didn't apply for. What's the likely scenario?",
+        "options": ["A recruiter found your resume online", "It's probably a scam to collect personal information", "You should respond to learn more", "Forward it to HR to verify"],
+        "correct_answer": "It's probably a scam to collect personal information",
+        "explanation": "Unsolicited job offers with unrealistic salaries are commonly used to harvest personal data or install malware.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "phish_17",
+        "type": "multiple_choice",
+        "title": "What technique do attackers use when they register domains like 'g00gle.com'?",
+        "options": ["Domain parking", "Typosquatting", "DNS hijacking", "Domain fronting"],
+        "correct_answer": "Typosquatting",
+        "explanation": "Typosquatting involves registering misspelled versions of popular domains to catch typing errors or trick users.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "phish_18",
+        "type": "multiple_choice",
+        "title": "An email claims to be from Microsoft and includes a link to 'microsoft.com.malicious-site.com'. Is this legitimate?",
+        "options": ["Yes, it contains microsoft.com", "No, the actual domain is malicious-site.com", "Yes, Microsoft uses subdomains", "Only if it has HTTPS"],
+        "correct_answer": "No, the actual domain is malicious-site.com",
+        "explanation": "The actual domain is always before the first single slash. 'microsoft.com' here is a subdomain of 'malicious-site.com'.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "phish_19",
+        "type": "multiple_choice",
+        "title": "What is 'clone phishing'?",
+        "options": ["Creating fake social media profiles", "Copying a legitimate email and replacing links with malicious ones", "Sending the same email multiple times", "Cloning a victim's email account"],
+        "correct_answer": "Copying a legitimate email and replacing links with malicious ones",
+        "explanation": "Clone phishing duplicates real emails but replaces links or attachments with malicious versions.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "phish_20",
+        "type": "multiple_choice",
+        "title": "Why do phishing emails often have spelling errors?",
+        "options": ["Attackers are uneducated", "To filter out cautious users who would report the attack", "They're translated from other languages", "Email filters require errors"],
+        "correct_answer": "To filter out cautious users who would report the attack",
+        "explanation": "Intentional errors filter out vigilant users, leaving targets more likely to fall for the full scam.",
+        "difficulty": "hard"
+      }
+    ]
+  },
+  {
+    "name": "Social Engineering Defense",
+    "module_type": "social_engineering",
+    "description": "Understand manipulation tactics including pretexting, baiting, tailgating, and psychological manipulation used by attackers to gain unauthorized access.",
+    "difficulty": "hard",
+    "duration_minutes": 30,
+    "questions_per_session": 15,
+    "is_active": true,
+    "questions": [
+      {
+        "id": "se_01",
+        "type": "multiple_choice",
+        "title": "Someone calls claiming to be from IT and asks for your password to 'verify your account'. What should you do?",
+        "options": ["Provide it - IT needs access", "Ask for their employee ID and provide the password", "Refuse and report the call to your actual IT department", "Provide a fake password"],
+        "correct_answer": "Refuse and report the call to your actual IT department",
+        "explanation": "Legitimate IT staff never ask for passwords. This is a classic pretexting attack.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "se_02",
+        "type": "multiple_choice",
+        "title": "What is 'pretexting' in social engineering?",
+        "options": ["Sending text messages to victims", "Creating a fabricated scenario to extract information", "Pre-testing security systems", "Writing preview text for emails"],
+        "correct_answer": "Creating a fabricated scenario to extract information",
+        "explanation": "Pretexting involves creating a fictional scenario (pretext) to manipulate victims into revealing information.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "se_03",
+        "type": "multiple_choice",
+        "title": "A person in a delivery uniform asks you to hold the secure door open. What should you do?",
+        "options": ["Hold the door - they're clearly a delivery person", "Ask them to badge in themselves or contact reception", "Let them in but follow them", "Ignore them completely"],
+        "correct_answer": "Ask them to badge in themselves or contact reception",
+        "explanation": "This is 'tailgating'. Uniforms can be faked. Everyone should use their own credentials.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "se_04",
+        "type": "multiple_choice",
+        "title": "What is 'baiting' in social engineering?",
+        "options": ["Fishing for information online", "Leaving infected USB drives in public places", "Insulting someone to provoke a response", "Using bait-and-switch pricing"],
+        "correct_answer": "Leaving infected USB drives in public places",
+        "explanation": "Baiting exploits curiosity by leaving malware-infected devices where victims will find and use them.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "se_05",
+        "type": "multiple_choice",
+        "title": "Someone claiming to be a vendor requests sensitive company information via phone. How should you verify?",
+        "options": ["Ask them security questions", "Call them back using the official vendor contact number you have on file", "Request their company email", "Trust them if they know your name"],
+        "correct_answer": "Call them back using the official vendor contact number you have on file",
+        "explanation": "Always verify using contact information you already have, not information provided by the caller.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "se_06",
+        "type": "multiple_choice",
+        "title": "What psychological principle do attackers exploit when they create urgency?",
+        "options": ["Reciprocity", "Scarcity and fear", "Social proof", "Liking"],
+        "correct_answer": "Scarcity and fear",
+        "explanation": "Creating urgency exploits scarcity (limited time) and fear (consequences) to bypass rational thinking.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "se_07",
+        "type": "multiple_choice",
+        "title": "A well-dressed person with a visitor badge asks to use your computer 'for just a minute'. What should you do?",
+        "options": ["Let them - they have a badge", "Offer to help them find reception or IT", "Log out and let them use it", "Watch them while they use it"],
+        "correct_answer": "Offer to help them find reception or IT",
+        "explanation": "Visitor badges don't authorize computer access. Redirect them to proper channels.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "se_08",
+        "type": "multiple_choice",
+        "title": "What is 'quid pro quo' in social engineering?",
+        "options": ["A legal agreement", "Offering something in exchange for information or access", "A type of malware", "Questioning someone's credentials"],
+        "correct_answer": "Offering something in exchange for information or access",
+        "explanation": "Quid pro quo attacks offer help or rewards in exchange for credentials or sensitive information.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "se_09",
+        "type": "multiple_choice",
+        "title": "Why do social engineers research their targets on social media?",
+        "options": ["To make friends", "To gather personal details for more convincing attacks", "To sell advertising", "Social media is required for attacks"],
+        "correct_answer": "To gather personal details for more convincing attacks",
+        "explanation": "Social media provides personal details that make pretexts more believable and personalized.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "se_10",
+        "type": "multiple_choice",
+        "title": "What is 'shoulder surfing'?",
+        "options": ["Surfing websites at work", "Observing someone's screen or keyboard to steal information", "A type of phishing", "Social media stalking"],
+        "correct_answer": "Observing someone's screen or keyboard to steal information",
+        "explanation": "Shoulder surfing is watching someone enter passwords or view sensitive information.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "se_11",
+        "type": "multiple_choice",
+        "title": "An attacker poses as a new employee and asks for help accessing the network. What principle are they exploiting?",
+        "options": ["Authority", "Helpfulness and social obligation", "Scarcity", "Consistency"],
+        "correct_answer": "Helpfulness and social obligation",
+        "explanation": "Attackers exploit our natural desire to help others, especially those who appear vulnerable or new.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "se_12",
+        "type": "multiple_choice",
+        "title": "What is 'vishing'?",
+        "options": ["Video phishing", "Voice phishing via phone calls", "Virtual phishing", "Visible phishing"],
+        "correct_answer": "Voice phishing via phone calls",
+        "explanation": "Vishing uses phone calls to trick victims into revealing sensitive information.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "se_13",
+        "type": "multiple_choice",
+        "title": "How can you protect against dumpster diving attacks?",
+        "options": ["Lock your dumpster", "Shred all sensitive documents before disposal", "Use only digital documents", "Burn all trash"],
+        "correct_answer": "Shred all sensitive documents before disposal",
+        "explanation": "Dumpster diving retrieves discarded documents. Cross-cut shredding prevents reconstruction.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "se_14",
+        "type": "multiple_choice",
+        "title": "What makes authority-based social engineering effective?",
+        "options": ["People naturally comply with perceived authority figures", "Authorities always know best", "It's illegal to question authority", "Authority figures are always legitimate"],
+        "correct_answer": "People naturally comply with perceived authority figures",
+        "explanation": "The authority principle means people tend to obey perceived authority without questioning.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "se_15",
+        "type": "multiple_choice",
+        "title": "Someone sends you a LinkedIn connection request claiming to work at your company. You don't recognize them. What should you do?",
+        "options": ["Accept - they might be new", "Verify their identity through internal channels before accepting", "Accept but don't share any information", "Block them immediately"],
+        "correct_answer": "Verify their identity through internal channels before accepting",
+        "explanation": "Fake profiles are used for reconnaissance. Verify through HR or internal directory before connecting.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "se_16",
+        "type": "multiple_choice",
+        "title": "What is 'smishing'?",
+        "options": ["Smoking and phishing", "Social media phishing", "SMS/text message phishing", "Smart phishing"],
+        "correct_answer": "SMS/text message phishing",
+        "explanation": "Smishing uses SMS text messages to deliver phishing attacks.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "se_17",
+        "type": "multiple_choice",
+        "title": "A caller claims your computer has a virus and offers to fix it remotely. This is likely:",
+        "options": ["A helpful tech support call", "A tech support scam", "Your IT department", "A virus warning system"],
+        "correct_answer": "A tech support scam",
+        "explanation": "Unsolicited tech support calls are scams. Legitimate companies don't cold-call about viruses.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "se_18",
+        "type": "multiple_choice",
+        "title": "Why do attackers often target receptionists and help desk staff?",
+        "options": ["They're easier to manipulate", "They have access to information and can provide entry points", "They work at the front", "They're more trusting"],
+        "correct_answer": "They have access to information and can provide entry points",
+        "explanation": "Front-line staff often have access to directories, can transfer calls, and control physical access.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "se_19",
+        "type": "multiple_choice",
+        "title": "What is the best defense against social engineering?",
+        "options": ["Antivirus software", "Strong passwords", "Security awareness training and verification procedures", "Firewalls"],
+        "correct_answer": "Security awareness training and verification procedures",
+        "explanation": "Technical controls can't stop social engineering. Training and verification procedures are essential.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "se_20",
+        "type": "multiple_choice",
+        "title": "An attacker uses the 'foot-in-the-door' technique. What does this mean?",
+        "options": ["Physically forcing entry", "Starting with a small request before making a larger one", "Standing in doorways", "Using door-to-door sales tactics"],
+        "correct_answer": "Starting with a small request before making a larger one",
+        "explanation": "Small initial requests (name, department) make victims more likely to comply with larger requests later.",
+        "difficulty": "hard"
+      }
+    ]
+  },
+  {
+    "name": "Password Security Best Practices",
+    "module_type": "password_security",
+    "description": "Learn how to create strong passwords, use password managers effectively, and protect your credentials from various attack methods.",
+    "difficulty": "medium",
+    "duration_minutes": 20,
+    "questions_per_session": 15,
+    "is_active": true,
+    "questions": [
+      {
+        "id": "pw_01",
+        "type": "multiple_choice",
+        "title": "Which password is the strongest?",
+        "options": ["Password123!", "MyDog'sName2024", "correct-horse-battery-staple", "P@$$w0rd"],
+        "correct_answer": "correct-horse-battery-staple",
+        "explanation": "Long passphrases with random words are stronger than short complex passwords. Length beats complexity.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "pw_02",
+        "type": "multiple_choice",
+        "title": "How often should you change your password according to modern security guidelines?",
+        "options": ["Every 30 days", "Every 90 days", "Only when there's evidence of compromise", "Every week"],
+        "correct_answer": "Only when there's evidence of compromise",
+        "explanation": "NIST guidelines now recommend changing passwords only when compromised, as frequent changes lead to weaker passwords.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "pw_03",
+        "type": "multiple_choice",
+        "title": "What is a 'credential stuffing' attack?",
+        "options": ["Guessing passwords repeatedly", "Using leaked credentials from one site to access others", "Stuffing papers with passwords", "Overloading login systems"],
+        "correct_answer": "Using leaked credentials from one site to access others",
+        "explanation": "Credential stuffing uses username/password pairs from data breaches to access other accounts where users reused credentials.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "pw_04",
+        "type": "multiple_choice",
+        "title": "Why is password reuse dangerous?",
+        "options": ["It makes passwords easier to remember", "If one account is breached, all accounts using that password are vulnerable", "It's against company policy", "Passwords wear out over time"],
+        "correct_answer": "If one account is breached, all accounts using that password are vulnerable",
+        "explanation": "When one service is breached, attackers try those credentials on other services. Unique passwords limit damage.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "pw_05",
+        "type": "multiple_choice",
+        "title": "What is the main benefit of using a password manager?",
+        "options": ["They make your passwords shorter", "They allow you to use unique, complex passwords for every account", "They automatically change your passwords", "They make logging in faster"],
+        "correct_answer": "They allow you to use unique, complex passwords for every account",
+        "explanation": "Password managers generate and store unique complex passwords, eliminating the need to remember or reuse them.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "pw_06",
+        "type": "multiple_choice",
+        "title": "What is a 'brute force' attack?",
+        "options": ["Physical force to access systems", "Trying every possible password combination", "Using social engineering", "Breaking encryption keys"],
+        "correct_answer": "Trying every possible password combination",
+        "explanation": "Brute force systematically tries all possible passwords. Longer passwords exponentially increase the time required.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "pw_07",
+        "type": "multiple_choice",
+        "title": "What is a 'dictionary attack'?",
+        "options": ["Attacking dictionary websites", "Using common words and variations as password guesses", "Looking up passwords in a dictionary", "Encrypting dictionary files"],
+        "correct_answer": "Using common words and variations as password guesses",
+        "explanation": "Dictionary attacks try common words, phrases, and predictable patterns (like Password1!) before brute force.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "pw_08",
+        "type": "multiple_choice",
+        "title": "Which is the safest way to store passwords?",
+        "options": ["Written on a sticky note under your keyboard", "In a text file on your desktop", "In a reputable password manager with a strong master password", "In your browser's built-in password saver"],
+        "correct_answer": "In a reputable password manager with a strong master password",
+        "explanation": "Dedicated password managers offer better security features than browser storage or physical notes.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "pw_09",
+        "type": "multiple_choice",
+        "title": "What minimum password length is recommended for strong security?",
+        "options": ["6 characters", "8 characters", "12-16 characters or more", "4 characters with symbols"],
+        "correct_answer": "12-16 characters or more",
+        "explanation": "Modern recommendations suggest at least 12-16 characters. Longer passphrases are even better.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "pw_10",
+        "type": "multiple_choice",
+        "title": "What is 'password spraying'?",
+        "options": ["Sharing passwords with many people", "Trying a few common passwords against many accounts", "Spraying passwords on screen", "Using spray paint to hide passwords"],
+        "correct_answer": "Trying a few common passwords against many accounts",
+        "explanation": "Password spraying tries common passwords across many accounts to avoid lockouts while finding weak passwords.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "pw_11",
+        "type": "multiple_choice",
+        "title": "What makes 'Summer2024!' a weak password?",
+        "options": ["It's too long", "It follows a predictable seasonal pattern that attackers know to try", "It has too many special characters", "It doesn't have numbers"],
+        "correct_answer": "It follows a predictable seasonal pattern that attackers know to try",
+        "explanation": "Attackers know people use seasonal words and years. These patterns are in attack dictionaries.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "pw_12",
+        "type": "multiple_choice",
+        "title": "What is 'salting' in password security?",
+        "options": ["Adding seasoning to passwords", "Adding random data to passwords before hashing", "Making passwords taste better", "A type of encryption"],
+        "correct_answer": "Adding random data to passwords before hashing",
+        "explanation": "Salting adds unique random data to each password before hashing, preventing rainbow table attacks.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "pw_13",
+        "type": "multiple_choice",
+        "title": "Why shouldn't you use personal information in passwords?",
+        "options": ["It's hard to remember", "Attackers can find this information on social media and use it in targeted attacks", "Personal information is too long", "It's against the law"],
+        "correct_answer": "Attackers can find this information on social media and use it in targeted attacks",
+        "explanation": "Birthdates, pet names, and addresses are easily discoverable and commonly used in targeted attacks.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "pw_14",
+        "type": "multiple_choice",
+        "title": "What should you do if you learn a service you use has been breached?",
+        "options": ["Wait for them to contact you", "Change your password immediately and any other accounts using the same password", "Delete your account", "Nothing - they'll fix it"],
+        "correct_answer": "Change your password immediately and any other accounts using the same password",
+        "explanation": "Act immediately to change compromised credentials and anywhere you've reused them.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "pw_15",
+        "type": "multiple_choice",
+        "title": "What is a 'rainbow table' attack?",
+        "options": ["An attack using colorful interfaces", "Using precomputed hash values to crack passwords", "Attacking LGBTQ+ websites", "A visual password display"],
+        "correct_answer": "Using precomputed hash values to crack passwords",
+        "explanation": "Rainbow tables contain precomputed password hashes to quickly reverse unsalted password hashes.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "pw_16",
+        "type": "multiple_choice",
+        "title": "What is a security question's main weakness?",
+        "options": ["They're too hard to remember", "Answers are often publicly available or easily guessed", "They expire too quickly", "They're too long"],
+        "correct_answer": "Answers are often publicly available or easily guessed",
+        "explanation": "Security question answers (mother's maiden name, first pet) are often on social media or public records.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "pw_17",
+        "type": "multiple_choice",
+        "title": "How should you answer security questions for maximum security?",
+        "options": ["Honestly", "With false answers stored in your password manager", "With your birthday", "Leave them blank"],
+        "correct_answer": "With false answers stored in your password manager",
+        "explanation": "Using fictional answers prevents attackers from guessing based on research. Store these in your password manager.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "pw_18",
+        "type": "multiple_choice",
+        "title": "What is 'keylogging'?",
+        "options": ["Keeping a log of keys", "Malware that records keystrokes to capture passwords", "Logging into key systems", "A type of encryption"],
+        "correct_answer": "Malware that records keystrokes to capture passwords",
+        "explanation": "Keyloggers record everything typed, capturing passwords even if they're long and complex.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "pw_19",
+        "type": "multiple_choice",
+        "title": "What is the purpose of password hashing?",
+        "options": ["To make passwords shorter", "To store passwords securely without keeping the actual password", "To encrypt passwords for transmission", "To make passwords stronger"],
+        "correct_answer": "To store passwords securely without keeping the actual password",
+        "explanation": "Hashing creates a one-way fingerprint. Services verify passwords without storing the actual password.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "pw_20",
+        "type": "multiple_choice",
+        "title": "Why should your password manager's master password be memorized, not written down?",
+        "options": ["Writing is slow", "It provides access to all your passwords - if compromised, everything is at risk", "Password managers don't allow written passwords", "It's company policy"],
+        "correct_answer": "It provides access to all your passwords - if compromised, everything is at risk",
+        "explanation": "The master password unlocks all credentials. It must be strong, unique, and memorized.",
+        "difficulty": "medium"
+      }
+    ]
+  },
+  {
+    "name": "Malicious Ads Recognition",
+    "module_type": "malicious_ad",
+    "description": "Learn to identify malvertising, fake advertisements, and deceptive ad content that can lead to malware or scams.",
+    "difficulty": "medium",
+    "duration_minutes": 20,
+    "questions_per_session": 15,
+    "is_active": true,
+    "questions": [
+      {
+        "id": "ad_01",
+        "type": "multiple_choice",
+        "title": "What is 'malvertising'?",
+        "options": ["Advertising malware products", "Malicious code delivered through online advertisements", "Badly designed advertisements", "Male-targeted advertising"],
+        "correct_answer": "Malicious code delivered through online advertisements",
+        "explanation": "Malvertising uses ad networks to distribute malware, sometimes without requiring user clicks.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "ad_02",
+        "type": "multiple_choice",
+        "title": "An ad claims 'You've won an iPhone! Click here to claim!' What should you do?",
+        "options": ["Click to claim your prize", "Ignore it - unexpected prize notifications are almost always scams", "Share it with friends", "Provide your address to receive it"],
+        "correct_answer": "Ignore it - unexpected prize notifications are almost always scams",
+        "explanation": "Prize scams are extremely common. Legitimate contests don't announce winners through random ads.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "ad_03",
+        "type": "multiple_choice",
+        "title": "What is a 'drive-by download'?",
+        "options": ["Downloading while driving", "Malware that downloads automatically without user consent", "Downloading from a car website", "Fast download speeds"],
+        "correct_answer": "Malware that downloads automatically without user consent",
+        "explanation": "Drive-by downloads exploit browser vulnerabilities to install malware just by visiting a page.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "ad_04",
+        "type": "multiple_choice",
+        "title": "An ad says 'Your computer is infected! Download our free antivirus now!' This is likely:",
+        "options": ["A helpful security tool", "A scareware scam", "Your actual antivirus", "A Windows notification"],
+        "correct_answer": "A scareware scam",
+        "explanation": "Scareware creates fake security alerts to trick users into downloading malware or paying for fake software.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "ad_05",
+        "type": "multiple_choice",
+        "title": "How can legitimate websites serve malicious ads?",
+        "options": ["They can't - only sketchy sites have bad ads", "Ad networks can be compromised to serve malicious ads on any site", "Website owners approve each ad", "Malicious ads only appear on pirate sites"],
+        "correct_answer": "Ad networks can be compromised to serve malicious ads on any site",
+        "explanation": "Even reputable sites can serve malicious ads because they use third-party ad networks that can be compromised.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "ad_06",
+        "type": "multiple_choice",
+        "title": "What is the safest action when you see a pop-up ad?",
+        "options": ["Click the X button inside the pop-up", "Click anywhere on the ad to dismiss it", "Close the browser tab or use Task Manager", "Click 'No Thanks'"],
+        "correct_answer": "Close the browser tab or use Task Manager",
+        "explanation": "Fake X buttons and 'Close' options can trigger downloads. Safely close the tab or use Task Manager.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "ad_07",
+        "type": "multiple_choice",
+        "title": "An ad offers a 'free' premium software that normally costs $500. What's the risk?",
+        "options": ["No risk - free software is great", "It's likely pirated software bundled with malware", "The company is being generous", "It's a limited time offer"],
+        "correct_answer": "It's likely pirated software bundled with malware",
+        "explanation": "Free premium software often contains malware, is pirated, or doesn't include promised features.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "ad_08",
+        "type": "multiple_choice",
+        "title": "What is 'clickjacking'?",
+        "options": ["Stealing mouse clicks", "Hiding malicious content behind legitimate-looking buttons", "Jacking up click prices", "Clicking on car jacks"],
+        "correct_answer": "Hiding malicious content behind legitimate-looking buttons",
+        "explanation": "Clickjacking overlays invisible malicious elements over legitimate buttons to capture unintended clicks.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "ad_09",
+        "type": "multiple_choice",
+        "title": "How do ad blockers help with security?",
+        "options": ["They don't help with security", "They reduce exposure to malvertising and tracking", "They block all website content", "They replace ads with security messages"],
+        "correct_answer": "They reduce exposure to malvertising and tracking",
+        "explanation": "Ad blockers reduce attack surface by blocking ad networks that could serve malicious content.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "ad_10",
+        "type": "multiple_choice",
+        "title": "An ad uses your company's logo and claims to be an official IT update. What should you do?",
+        "options": ["Click it - it must be legitimate", "Verify with IT through official channels before taking any action", "Install the update immediately", "Forward it to colleagues"],
+        "correct_answer": "Verify with IT through official channels before taking any action",
+        "explanation": "Attackers copy company branding. Always verify updates through official IT channels, not ads.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "ad_11",
+        "type": "multiple_choice",
+        "title": "What is 'search ad poisoning'?",
+        "options": ["Contaminated search results", "Malicious ads appearing in search engine results", "Poisoning search databases", "SEO optimization"],
+        "correct_answer": "Malicious ads appearing in search engine results",
+        "explanation": "Attackers buy search ads for popular software names, leading users to malicious download sites.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "ad_12",
+        "type": "multiple_choice",
+        "title": "You search for 'Adobe Reader download' and the first result is an ad. What should you do?",
+        "options": ["Click the ad - it's at the top", "Skip ads and go directly to adobe.com", "Click any result on the first page", "Download from the ad for faster access"],
+        "correct_answer": "Skip ads and go directly to adobe.com",
+        "explanation": "Search ads can be malicious. Always navigate directly to official websites for software downloads.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "ad_13",
+        "type": "multiple_choice",
+        "title": "What makes 'too good to be true' offers dangerous?",
+        "options": ["They waste time", "They typically lead to scams, malware, or data theft", "They're illegal", "They cause inflation"],
+        "correct_answer": "They typically lead to scams, malware, or data theft",
+        "explanation": "Unrealistic offers exploit greed to lure victims to malicious sites or extract personal information.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "ad_14",
+        "type": "multiple_choice",
+        "title": "What is a 'fake download button'?",
+        "options": ["A button that doesn't work", "A deceptive ad designed to look like a download button for the content you want", "A download that fails", "A button for fake files"],
+        "correct_answer": "A deceptive ad designed to look like a download button for the content you want",
+        "explanation": "Fake download buttons trick users into clicking ads that install malware instead of desired content.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "ad_15",
+        "type": "multiple_choice",
+        "title": "How can you identify a legitimate download button vs. a fake ad?",
+        "options": ["Legitimate ones are always green", "Hover to check the URL and look for the actual page's download section", "The biggest button is always real", "Ads say 'advertisement'"],
+        "correct_answer": "Hover to check the URL and look for the actual page's download section",
+        "explanation": "Hovering reveals the true destination URL. Real download buttons are part of the page, not served from ad networks.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "ad_16",
+        "type": "multiple_choice",
+        "title": "An ad claims your Flash Player is outdated and needs updating. What's wrong with this?",
+        "options": ["Flash Player doesn't need updates", "Adobe discontinued Flash Player in 2020 - this is definitely a scam", "You should always update Flash", "Only update from the ad"],
+        "correct_answer": "Adobe discontinued Flash Player in 2020 - this is definitely a scam",
+        "explanation": "Flash Player was discontinued in 2020. Any 'Flash update' ad is a malware delivery attempt.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "ad_17",
+        "type": "multiple_choice",
+        "title": "What is 'adware'?",
+        "options": ["Software that blocks ads", "Unwanted software that displays excessive advertisements", "Hardware for displaying ads", "A type of firewall"],
+        "correct_answer": "Unwanted software that displays excessive advertisements",
+        "explanation": "Adware forces ads onto your system, often arriving bundled with free software downloads.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "ad_18",
+        "type": "multiple_choice",
+        "title": "Why might a free VPN service actually be dangerous?",
+        "options": ["VPNs are always safe", "Free services may collect and sell your data or inject ads", "Free means higher quality", "All VPNs are dangerous"],
+        "correct_answer": "Free services may collect and sell your data or inject ads",
+        "explanation": "Free VPNs often profit by collecting user data, injecting ads, or even containing malware.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "ad_19",
+        "type": "multiple_choice",
+        "title": "What should you do before downloading free software advertised online?",
+        "options": ["Download immediately", "Research the software and download only from official sources", "Check if it's free", "Ask a friend"],
+        "correct_answer": "Research the software and download only from official sources",
+        "explanation": "Research software reputation and always download from official websites, not from ads.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "ad_20",
+        "type": "multiple_choice",
+        "title": "What is the purpose of deceptive 'system cleaner' ads?",
+        "options": ["To clean your system", "To trick users into paying for fake or unnecessary software", "To improve performance", "To update drivers"],
+        "correct_answer": "To trick users into paying for fake or unnecessary software",
+        "explanation": "Fake system cleaners exaggerate or fabricate problems to sell unnecessary software or install malware.",
+        "difficulty": "medium"
+      }
+    ]
+  },
+  {
+    "name": "Data Protection & Privacy",
+    "module_type": "data_protection",
+    "description": "Understand data classification, handling sensitive information, privacy regulations, and protecting personal and corporate data.",
+    "difficulty": "medium",
+    "duration_minutes": 25,
+    "questions_per_session": 15,
+    "is_active": true,
+    "questions": [
+      {
+        "id": "dp_01",
+        "type": "multiple_choice",
+        "title": "What type of data requires the highest level of protection?",
+        "options": ["Public information", "Internal memos", "Personally Identifiable Information (PII) and financial data", "Marketing materials"],
+        "correct_answer": "Personally Identifiable Information (PII) and financial data",
+        "explanation": "PII and financial data have legal protections and severe consequences if breached.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "dp_02",
+        "type": "multiple_choice",
+        "title": "What is PII (Personally Identifiable Information)?",
+        "options": ["Public Industry Information", "Data that can identify a specific individual", "Password Identification Index", "Private Internet Interface"],
+        "correct_answer": "Data that can identify a specific individual",
+        "explanation": "PII includes names, SSNs, addresses, and any data that can identify or be traced to an individual.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "dp_03",
+        "type": "multiple_choice",
+        "title": "What should you do before emailing sensitive documents externally?",
+        "options": ["Send immediately for efficiency", "Verify recipient, use encryption, and follow data handling policies", "CC your manager", "Use your personal email"],
+        "correct_answer": "Verify recipient, use encryption, and follow data handling policies",
+        "explanation": "Sensitive data requires verification, encryption, and policy compliance before external sharing.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "dp_04",
+        "type": "multiple_choice",
+        "title": "What is the purpose of data classification?",
+        "options": ["To organize files alphabetically", "To determine appropriate handling and protection levels for different data", "To delete old data", "To make data searchable"],
+        "correct_answer": "To determine appropriate handling and protection levels for different data",
+        "explanation": "Classification ensures data receives protection appropriate to its sensitivity level.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "dp_05",
+        "type": "multiple_choice",
+        "title": "What is GDPR?",
+        "options": ["General Data Protection Regulation - EU privacy law", "Global Data Processing Rules", "Government Data Privacy Requirements", "General Document Processing Regulation"],
+        "correct_answer": "General Data Protection Regulation - EU privacy law",
+        "explanation": "GDPR is the European Union's comprehensive data protection and privacy regulation.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "dp_06",
+        "type": "multiple_choice",
+        "title": "What is data minimization?",
+        "options": ["Compressing data files", "Collecting only data necessary for a specific purpose", "Minimizing storage costs", "Using smaller fonts"],
+        "correct_answer": "Collecting only data necessary for a specific purpose",
+        "explanation": "Data minimization means collecting only what's needed, reducing risk if a breach occurs.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "dp_07",
+        "type": "multiple_choice",
+        "title": "How should you dispose of documents containing sensitive information?",
+        "options": ["Regular trash bin", "Cross-cut shredding or secure disposal service", "Recycling bin", "Leave them at your desk"],
+        "correct_answer": "Cross-cut shredding or secure disposal service",
+        "explanation": "Sensitive documents require secure destruction to prevent dumpster diving attacks.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "dp_08",
+        "type": "multiple_choice",
+        "title": "What is encryption's role in data protection?",
+        "options": ["It deletes sensitive data", "It makes data unreadable without the proper decryption key", "It compresses files", "It backs up data"],
+        "correct_answer": "It makes data unreadable without the proper decryption key",
+        "explanation": "Encryption protects data by making it unreadable to unauthorized parties.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "dp_09",
+        "type": "multiple_choice",
+        "title": "What should you do if you accidentally send sensitive data to the wrong person?",
+        "options": ["Ignore it and hope they delete it", "Report it immediately to your security team and follow incident procedures", "Send a follow-up asking them to delete it", "Delete the email from your sent folder"],
+        "correct_answer": "Report it immediately to your security team and follow incident procedures",
+        "explanation": "Data breaches require immediate reporting to enable proper response and compliance with regulations.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "dp_10",
+        "type": "multiple_choice",
+        "title": "What is 'data at rest' vs 'data in transit'?",
+        "options": ["Old data vs new data", "Stored data vs data being transmitted over networks", "Archived data vs active data", "Encrypted data vs unencrypted data"],
+        "correct_answer": "Stored data vs data being transmitted over networks",
+        "explanation": "Data at rest is stored; data in transit is being transmitted. Both need protection but with different methods.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "dp_11",
+        "type": "multiple_choice",
+        "title": "What is a 'data breach'?",
+        "options": ["Breaking a database", "Unauthorized access, disclosure, or loss of protected data", "Deleting old data", "Fixing data errors"],
+        "correct_answer": "Unauthorized access, disclosure, or loss of protected data",
+        "explanation": "A data breach occurs when sensitive data is accessed, disclosed, or lost without authorization.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "dp_12",
+        "type": "multiple_choice",
+        "title": "Why is it important to lock your computer when stepping away?",
+        "options": ["To save power", "To prevent unauthorized access to sensitive information", "Company policy only", "To improve performance"],
+        "correct_answer": "To prevent unauthorized access to sensitive information",
+        "explanation": "An unlocked computer allows anyone to access your files, email, and applications.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "dp_13",
+        "type": "multiple_choice",
+        "title": "What is the principle of 'least privilege'?",
+        "options": ["Giving everyone admin access", "Users should only have access to data and systems necessary for their job", "Limiting privileges to executives", "Removing all user access"],
+        "correct_answer": "Users should only have access to data and systems necessary for their job",
+        "explanation": "Least privilege limits access to reduce the damage potential if an account is compromised.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "dp_14",
+        "type": "multiple_choice",
+        "title": "How should you handle a USB drive found in the parking lot?",
+        "options": ["Plug it in to find the owner", "Turn it in to security - never plug in unknown devices", "Keep it if no one claims it", "Check the contents on a public computer"],
+        "correct_answer": "Turn it in to security - never plug in unknown devices",
+        "explanation": "Found USB drives may be deliberately planted with malware. Never connect unknown devices.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "dp_15",
+        "type": "multiple_choice",
+        "title": "What is 'data retention'?",
+        "options": ["Remembering data", "Policies defining how long data is kept before secure deletion", "Retaining employees who handle data", "Data backup procedures"],
+        "correct_answer": "Policies defining how long data is kept before secure deletion",
+        "explanation": "Data retention policies specify how long data is stored and when it must be securely deleted.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "dp_16",
+        "type": "multiple_choice",
+        "title": "What is a privacy impact assessment?",
+        "options": ["Testing website privacy settings", "An evaluation of how a project affects individual privacy", "Measuring website traffic", "Assessing employee privacy"],
+        "correct_answer": "An evaluation of how a project affects individual privacy",
+        "explanation": "Privacy impact assessments identify and mitigate privacy risks in new projects or systems.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "dp_17",
+        "type": "multiple_choice",
+        "title": "What should you do if a customer asks for all data your company has about them?",
+        "options": ["Ignore the request", "Forward to your privacy/compliance team - this may be a legal data subject request", "Send everything immediately", "Delete all their data"],
+        "correct_answer": "Forward to your privacy/compliance team - this may be a legal data subject request",
+        "explanation": "Under GDPR and similar laws, individuals have rights to access their data. Proper procedures must be followed.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "dp_18",
+        "type": "multiple_choice",
+        "title": "What is 'pseudonymization'?",
+        "options": ["Using fake names", "Replacing identifying data with artificial identifiers while maintaining data utility", "Anonymous browsing", "Creating false data"],
+        "correct_answer": "Replacing identifying data with artificial identifiers while maintaining data utility",
+        "explanation": "Pseudonymization protects identity while allowing data analysis, unlike full anonymization.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "dp_19",
+        "type": "multiple_choice",
+        "title": "Why shouldn't you discuss sensitive work information in public places?",
+        "options": ["It's unprofessional", "Eavesdroppers could be competitors, attackers, or journalists", "Public places are too noisy", "It violates copyright"],
+        "correct_answer": "Eavesdroppers could be competitors, attackers, or journalists",
+        "explanation": "Sensitive conversations in public can be overheard, leading to data leaks or competitive intelligence theft.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "dp_20",
+        "type": "multiple_choice",
+        "title": "What is a DPA (Data Processing Agreement)?",
+        "options": ["A Department of Public Affairs", "A contract governing how third parties handle your data", "A Drug Policy Agreement", "A Data Protection Agency"],
+        "correct_answer": "A contract governing how third parties handle your data",
+        "explanation": "DPAs establish legal requirements for how vendors and partners must protect shared data.",
+        "difficulty": "hard"
+      }
+    ]
+  },
+  {
+    "name": "Ransomware Awareness",
+    "module_type": "ransomware",
+    "description": "Learn how ransomware works, how to prevent infection, and what to do if your systems are compromised by ransomware attacks.",
+    "difficulty": "hard",
+    "duration_minutes": 25,
+    "questions_per_session": 15,
+    "is_active": true,
+    "questions": [
+      {
+        "id": "rw_01",
+        "type": "multiple_choice",
+        "title": "What is ransomware?",
+        "options": ["Software that improves performance", "Malware that encrypts files and demands payment for decryption", "A type of firewall", "Backup software"],
+        "correct_answer": "Malware that encrypts files and demands payment for decryption",
+        "explanation": "Ransomware encrypts victim files and demands payment (usually cryptocurrency) for the decryption key.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "rw_02",
+        "type": "multiple_choice",
+        "title": "What is the most common delivery method for ransomware?",
+        "options": ["USB drives", "Phishing emails with malicious attachments or links", "Software updates", "Bluetooth connections"],
+        "correct_answer": "Phishing emails with malicious attachments or links",
+        "explanation": "Phishing emails are the primary vector, often containing malicious attachments or links to infected sites.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "rw_03",
+        "type": "multiple_choice",
+        "title": "Should you pay the ransom if infected with ransomware?",
+        "options": ["Yes, to get files back quickly", "No, payment doesn't guarantee file recovery and funds criminal operations", "Only if the amount is small", "Yes, if you have cyber insurance"],
+        "correct_answer": "No, payment doesn't guarantee file recovery and funds criminal operations",
+        "explanation": "Payment doesn't guarantee decryption and encourages more attacks. Report to authorities and restore from backups.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "rw_04",
+        "type": "multiple_choice",
+        "title": "What is the best protection against ransomware?",
+        "options": ["Antivirus only", "Regular, tested, offline backups combined with security awareness", "Paying for ransomware insurance", "Using strong passwords"],
+        "correct_answer": "Regular, tested, offline backups combined with security awareness",
+        "explanation": "Tested offline backups allow recovery without paying. Security awareness prevents initial infection.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "rw_05",
+        "type": "multiple_choice",
+        "title": "What should you do immediately if you suspect ransomware infection?",
+        "options": ["Restart your computer", "Disconnect from the network and report to IT immediately", "Pay the ransom quickly", "Try to decrypt files yourself"],
+        "correct_answer": "Disconnect from the network and report to IT immediately",
+        "explanation": "Disconnecting prevents spread to other systems. IT can begin incident response procedures.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "rw_06",
+        "type": "multiple_choice",
+        "title": "What is 'double extortion' ransomware?",
+        "options": ["Paying twice for decryption", "Attackers steal data AND encrypt it, threatening to leak if not paid", "Two types of encryption", "Attacking two companies"],
+        "correct_answer": "Attackers steal data AND encrypt it, threatening to leak if not paid",
+        "explanation": "Double extortion combines encryption with data theft, pressuring victims to pay even if they have backups.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "rw_07",
+        "type": "multiple_choice",
+        "title": "Why are offline backups important for ransomware protection?",
+        "options": ["They're faster to restore", "Ransomware can encrypt connected backups - offline backups remain safe", "They're cheaper", "They don't require software"],
+        "correct_answer": "Ransomware can encrypt connected backups - offline backups remain safe",
+        "explanation": "Ransomware actively targets backup systems. Air-gapped/offline backups can't be encrypted remotely.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "rw_08",
+        "type": "multiple_choice",
+        "title": "What file types commonly spread ransomware?",
+        "options": [".txt and .jpg files", ".exe, .js, .docm (macro-enabled), and .zip files", ".mp3 and .mp4 files", ".html files only"],
+        "correct_answer": ".exe, .js, .docm (macro-enabled), and .zip files",
+        "explanation": "Executable files, scripts, macro-enabled documents, and archives containing these are common vectors.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "rw_09",
+        "type": "multiple_choice",
+        "title": "What is 'Ransomware-as-a-Service' (RaaS)?",
+        "options": ["Ransomware subscription protection", "Criminal business model where developers sell/rent ransomware to affiliates", "A cloud backup service", "Ransomware removal service"],
+        "correct_answer": "Criminal business model where developers sell/rent ransomware to affiliates",
+        "explanation": "RaaS allows criminals without technical skills to launch ransomware attacks using tools from developers.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "rw_10",
+        "type": "multiple_choice",
+        "title": "How does ransomware typically spread within a network?",
+        "options": ["It can't spread to other computers", "Using stolen credentials, network vulnerabilities, and lateral movement techniques", "Only through email", "Through Bluetooth"],
+        "correct_answer": "Using stolen credentials, network vulnerabilities, and lateral movement techniques",
+        "explanation": "Once inside, ransomware uses various techniques to spread across the network before encrypting everything.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "rw_11",
+        "type": "multiple_choice",
+        "title": "What is a 'kill switch' in ransomware?",
+        "options": ["A way to destroy the encryption key", "A built-in mechanism that stops the ransomware under certain conditions", "The shutdown button", "The ransom payment system"],
+        "correct_answer": "A built-in mechanism that stops the ransomware under certain conditions",
+        "explanation": "Some ransomware has kill switches (like WannaCry's domain check) that can halt the attack when triggered.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "rw_12",
+        "type": "multiple_choice",
+        "title": "Why is enabling macros in Microsoft Office documents risky?",
+        "options": ["It slows down your computer", "Malicious macros can execute ransomware without additional user interaction", "It changes document formatting", "Macros are always safe"],
+        "correct_answer": "Malicious macros can execute ransomware without additional user interaction",
+        "explanation": "Macro-enabled documents can contain code that downloads and executes ransomware automatically.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "rw_13",
+        "type": "multiple_choice",
+        "title": "What is the 3-2-1 backup rule?",
+        "options": ["Backup every 3, 2, then 1 days", "3 copies of data, 2 different storage types, 1 copy offsite/offline", "3 backups per week", "Backup at 3:21 PM daily"],
+        "correct_answer": "3 copies of data, 2 different storage types, 1 copy offsite/offline",
+        "explanation": "3-2-1 ensures redundancy: 3 copies, 2 media types, 1 offsite protects against various disaster scenarios.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "rw_14",
+        "type": "multiple_choice",
+        "title": "What is Remote Desktop Protocol (RDP) exploitation in ransomware attacks?",
+        "options": ["Using remote desktops safely", "Attackers exploit weak RDP credentials to gain access and deploy ransomware", "Remotely diagnosing problems", "Desktop sharing for meetings"],
+        "correct_answer": "Attackers exploit weak RDP credentials to gain access and deploy ransomware",
+        "explanation": "Exposed RDP with weak credentials is a major ransomware entry point. Use strong passwords, MFA, and VPNs.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "rw_15",
+        "type": "multiple_choice",
+        "title": "What role does software patching play in ransomware prevention?",
+        "options": ["No role", "Critical - many ransomware attacks exploit known vulnerabilities with available patches", "Minor role", "Only helps with performance"],
+        "correct_answer": "Critical - many ransomware attacks exploit known vulnerabilities with available patches",
+        "explanation": "WannaCry and many others exploited unpatched systems. Regular patching closes known vulnerability gaps.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "rw_16",
+        "type": "multiple_choice",
+        "title": "What is 'dwell time' in ransomware attacks?",
+        "options": ["How long encryption takes", "The time attackers spend in your network before deploying ransomware", "Time to pay the ransom", "Backup restoration time"],
+        "correct_answer": "The time attackers spend in your network before deploying ransomware",
+        "explanation": "Modern attackers spend days or weeks inside networks, mapping systems and stealing data before encryption.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "rw_17",
+        "type": "multiple_choice",
+        "title": "Why might free ransomware decryption tools be available?",
+        "options": ["Attackers feel guilty", "Security researchers find flaws in ransomware encryption or obtain keys", "They contain more malware", "Attackers provide them for marketing"],
+        "correct_answer": "Security researchers find flaws in ransomware encryption or obtain keys",
+        "explanation": "Sites like NoMoreRansom.org provide free decryptors when researchers crack ransomware or obtain keys.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "rw_18",
+        "type": "multiple_choice",
+        "title": "What is network segmentation's role in limiting ransomware damage?",
+        "options": ["It prevents all ransomware", "It limits spread by isolating network sections so infected areas can't reach others", "It speeds up encryption", "It has no effect on ransomware"],
+        "correct_answer": "It limits spread by isolating network sections so infected areas can't reach others",
+        "explanation": "Segmentation contains outbreaks by preventing ransomware from spreading across the entire network.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "rw_19",
+        "type": "multiple_choice",
+        "title": "What should be included in a ransomware incident response plan?",
+        "options": ["Just contact information", "Isolation procedures, communication plans, backup restoration steps, and reporting requirements", "Only payment procedures", "Nothing - just pay and move on"],
+        "correct_answer": "Isolation procedures, communication plans, backup restoration steps, and reporting requirements",
+        "explanation": "Comprehensive plans ensure quick, coordinated responses that minimize damage and enable recovery.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "rw_20",
+        "type": "multiple_choice",
+        "title": "Why do ransomware attackers often demand cryptocurrency payments?",
+        "options": ["It's faster", "Cryptocurrency is harder to trace and doesn't require traditional banking", "It's cheaper to transfer", "Banks require it"],
+        "correct_answer": "Cryptocurrency is harder to trace and doesn't require traditional banking",
+        "explanation": "Cryptocurrency provides anonymity and doesn't require traceable banking systems.",
+        "difficulty": "medium"
+      }
+    ]
+  },
+  {
+    "name": "USB & Physical Security",
+    "module_type": "physical_security",
+    "description": "Learn about USB security risks, physical access threats, clean desk policies, and protecting against physical security breaches.",
+    "difficulty": "medium",
+    "duration_minutes": 20,
+    "questions_per_session": 15,
+    "is_active": true,
+    "questions": [
+      {
+        "id": "usb_01",
+        "type": "multiple_choice",
+        "title": "You find a USB drive in the parking lot with a label 'Salary Info 2024'. What should you do?",
+        "options": ["Plug it into your computer to find the owner", "Turn it in to security without connecting it to any device", "Give it to HR", "Plug it into a public computer to check"],
+        "correct_answer": "Turn it in to security without connecting it to any device",
+        "explanation": "USB baiting drops labeled drives hoping curiosity leads someone to connect an infected device.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "usb_02",
+        "type": "multiple_choice",
+        "title": "What is a 'USB Rubber Ducky'?",
+        "options": ["A toy duck USB drive", "A device that poses as a keyboard to execute malicious commands rapidly", "A waterproof USB drive", "A USB debugging tool"],
+        "correct_answer": "A device that poses as a keyboard to execute malicious commands rapidly",
+        "explanation": "Rubber Ducky devices appear as USB drives but act as keyboards, typing malicious commands instantly.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "usb_03",
+        "type": "multiple_choice",
+        "title": "What is a 'clean desk policy'?",
+        "options": ["Keeping desks dust-free", "Ensuring sensitive materials are secured when not in use", "Having minimalist decorations", "Cleaning desks weekly"],
+        "correct_answer": "Ensuring sensitive materials are secured when not in use",
+        "explanation": "Clean desk policies prevent data exposure from visible documents, unlocked screens, or accessible devices.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "usb_04",
+        "type": "multiple_choice",
+        "title": "Why should you never charge your phone using unknown USB ports?",
+        "options": ["They charge too slowly", "Malicious charging stations can install malware or steal data (juice jacking)", "They might overcharge", "They use wrong voltage"],
+        "correct_answer": "Malicious charging stations can install malware or steal data (juice jacking)",
+        "explanation": "Juice jacking uses USB data connections in public chargers to infect phones or extract data.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "usb_05",
+        "type": "multiple_choice",
+        "title": "What is tailgating in physical security?",
+        "options": ["Following closely while driving", "Following an authorized person through a secured entrance", "Attending tailgate parties", "Leaving a door open"],
+        "correct_answer": "Following an authorized person through a secured entrance",
+        "explanation": "Tailgating bypasses access controls by following authorized personnel through secured doors.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "usb_06",
+        "type": "multiple_choice",
+        "title": "What is a 'USB Killer' device?",
+        "options": ["Antivirus for USB drives", "A device that delivers electrical surges to destroy computer hardware", "USB malware remover", "A secure USB drive"],
+        "correct_answer": "A device that delivers electrical surges to destroy computer hardware",
+        "explanation": "USB Killers look like flash drives but deliver voltage surges that physically destroy connected equipment.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "usb_07",
+        "type": "multiple_choice",
+        "title": "How should visitors be handled in a secure facility?",
+        "options": ["Let them walk around freely", "Escort them at all times and ensure they sign in/out and wear visible badges", "Give them employee badges", "Leave them in the lobby"],
+        "correct_answer": "Escort them at all times and ensure they sign in/out and wear visible badges",
+        "explanation": "Visitor management prevents unauthorized access and maintains accountability for non-employees.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "usb_08",
+        "type": "multiple_choice",
+        "title": "Why are screen privacy filters important?",
+        "options": ["They reduce eye strain", "They prevent shoulder surfing by limiting screen visibility to direct viewing angles", "They improve screen colors", "They save battery"],
+        "correct_answer": "They prevent shoulder surfing by limiting screen visibility to direct viewing angles",
+        "explanation": "Privacy filters prevent people beside or behind you from reading your screen.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "usb_09",
+        "type": "multiple_choice",
+        "title": "What should you do if you see someone without a badge in a restricted area?",
+        "options": ["Ignore them", "Politely ask if they need assistance and alert security if they can't verify authorization", "Follow them", "Take their photo"],
+        "correct_answer": "Politely ask if they need assistance and alert security if they can't verify authorization",
+        "explanation": "Challenge unknown individuals politely but firmly. Social engineers rely on people not questioning them.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "usb_10",
+        "type": "multiple_choice",
+        "title": "What is piggybacking vs. tailgating?",
+        "options": ["They're identical", "Piggybacking is with permission, tailgating is unauthorized following", "Piggybacking uses technology", "Tailgating is always violent"],
+        "correct_answer": "Piggybacking is with permission, tailgating is unauthorized following",
+        "explanation": "Piggybacking involves tricking someone into holding the door; tailgating is following without consent.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "usb_11",
+        "type": "multiple_choice",
+        "title": "How can you safely charge devices when traveling?",
+        "options": ["Use any available USB port", "Use your own charger with an electrical outlet, or a USB data blocker", "Borrow chargers from strangers", "Use hotel USB ports"],
+        "correct_answer": "Use your own charger with an electrical outlet, or a USB data blocker",
+        "explanation": "Your own charger or a data-blocking USB adapter prevents juice jacking attacks.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "usb_12",
+        "type": "multiple_choice",
+        "title": "Why should laptops be encrypted?",
+        "options": ["For faster performance", "If stolen, encrypted data remains protected without the decryption key", "For better battery life", "Encryption is just for desktops"],
+        "correct_answer": "If stolen, encrypted data remains protected without the decryption key",
+        "explanation": "Full disk encryption protects data even if the physical device is stolen.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "usb_13",
+        "type": "multiple_choice",
+        "title": "What is a 'mantrap' in physical security?",
+        "options": ["A trap for maintenance workers", "A small room with two interlocking doors where only one opens at a time", "A hidden camera", "A security alarm"],
+        "correct_answer": "A small room with two interlocking doors where only one opens at a time",
+        "explanation": "Mantraps prevent tailgating by requiring individual authentication between two doors.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "usb_14",
+        "type": "multiple_choice",
+        "title": "What information can be exposed by an unlocked, unattended computer?",
+        "options": ["Nothing important", "Email, files, network access, credentials saved in browsers, and more", "Only the desktop wallpaper", "Just the username"],
+        "correct_answer": "Email, files, network access, credentials saved in browsers, and more",
+        "explanation": "An unlocked computer gives access to everything the user can access - email, files, applications, network resources.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "usb_15",
+        "type": "multiple_choice",
+        "title": "What is the purpose of security cameras in offices?",
+        "options": ["Employee surveillance only", "Deterrence, evidence collection, and monitoring of access points", "Decoration", "To watch TV"],
+        "correct_answer": "Deterrence, evidence collection, and monitoring of access points",
+        "explanation": "Cameras deter bad actors, provide evidence of incidents, and help monitor sensitive areas.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "usb_16",
+        "type": "multiple_choice",
+        "title": "Why should you report lost or stolen devices immediately?",
+        "options": ["To get a replacement faster", "To enable remote wipe and prevent unauthorized access to company data", "For insurance purposes only", "It's not important for small devices"],
+        "correct_answer": "To enable remote wipe and prevent unauthorized access to company data",
+        "explanation": "Quick reporting allows IT to remotely wipe or lock devices before attackers can access data.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "usb_17",
+        "type": "multiple_choice",
+        "title": "What is a 'BadUSB' attack?",
+        "options": ["A broken USB drive", "Malware that reprograms USB firmware to perform malicious actions", "A USB virus", "A faulty USB port"],
+        "correct_answer": "Malware that reprograms USB firmware to perform malicious actions",
+        "explanation": "BadUSB reprograms the USB controller itself, making the device malicious at the hardware level.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "usb_18",
+        "type": "multiple_choice",
+        "title": "How should sensitive printed documents be handled?",
+        "options": ["Stack them neatly on your desk", "Print only when needed, pick up immediately, and shred when done", "Leave them in the printer for others to see", "Recycle without shredding"],
+        "correct_answer": "Print only when needed, pick up immediately, and shred when done",
+        "explanation": "Print minimization, immediate retrieval, and proper disposal prevent document exposure.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "usb_19",
+        "type": "multiple_choice",
+        "title": "What is an 'air gap' in security?",
+        "options": ["Space between desks", "Physical isolation of a system from unsecured networks", "Ventilation for computers", "Gap in security coverage"],
+        "correct_answer": "Physical isolation of a system from unsecured networks",
+        "explanation": "Air-gapped systems have no network connection, protecting highly sensitive data from remote attacks.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "usb_20",
+        "type": "multiple_choice",
+        "title": "Why should you avoid using promotional USB drives from conferences?",
+        "options": ["They're low quality", "They could be pre-infected with malware", "They're too small", "They're all the same"],
+        "correct_answer": "They could be pre-infected with malware",
+        "explanation": "Promotional drives can be compromised. Only use USB devices from trusted sources.",
+        "difficulty": "medium"
+      }
+    ]
+  },
+  {
+    "name": "Multi-Factor Authentication (MFA)",
+    "module_type": "mfa",
+    "description": "Understand different types of authentication factors, MFA implementation, and why it's crucial for account security.",
+    "difficulty": "medium",
+    "duration_minutes": 20,
+    "questions_per_session": 15,
+    "is_active": true,
+    "questions": [
+      {
+        "id": "mfa_01",
+        "type": "multiple_choice",
+        "title": "What are the three main categories of authentication factors?",
+        "options": ["Username, password, PIN", "Something you know, something you have, something you are", "Easy, medium, hard", "Primary, secondary, tertiary"],
+        "correct_answer": "Something you know, something you have, something you are",
+        "explanation": "Knowledge (passwords), possession (phone/token), and inherence (biometrics) are the three factor categories.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "mfa_02",
+        "type": "multiple_choice",
+        "title": "Why is MFA more secure than password-only authentication?",
+        "options": ["It's faster", "Attackers need to compromise multiple independent factors, not just steal a password", "It uses more characters", "It's newer technology"],
+        "correct_answer": "Attackers need to compromise multiple independent factors, not just steal a password",
+        "explanation": "MFA requires multiple independent proofs of identity, making compromise much harder.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "mfa_03",
+        "type": "multiple_choice",
+        "title": "Which MFA method is considered most secure?",
+        "options": ["SMS codes", "Email codes", "Hardware security keys (like YubiKey)", "Security questions"],
+        "correct_answer": "Hardware security keys (like YubiKey)",
+        "explanation": "Hardware keys are phishing-resistant and can't be intercepted like SMS or email codes.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "mfa_04",
+        "type": "multiple_choice",
+        "title": "Why is SMS-based MFA considered less secure than authenticator apps?",
+        "options": ["SMS is slower", "SMS can be intercepted through SIM swapping, SS7 attacks, or phone theft", "SMS codes are shorter", "Apps cost more"],
+        "correct_answer": "SMS can be intercepted through SIM swapping, SS7 attacks, or phone theft",
+        "explanation": "SMS messages can be intercepted through various attacks. Authenticator apps generate codes locally.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "mfa_05",
+        "type": "multiple_choice",
+        "title": "What is a 'SIM swap' attack?",
+        "options": ["Swapping SIM cards between phones", "Attackers convince carriers to transfer your phone number to their SIM", "Upgrading your SIM card", "Changing phone carriers"],
+        "correct_answer": "Attackers convince carriers to transfer your phone number to their SIM",
+        "explanation": "SIM swapping hijacks your phone number, allowing attackers to receive your SMS codes.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "mfa_06",
+        "type": "multiple_choice",
+        "title": "How do authenticator apps (like Google Authenticator) generate codes?",
+        "options": ["They receive codes from the internet", "They use time-based algorithms with a shared secret (TOTP)", "They read your password", "They connect to the company's server"],
+        "correct_answer": "They use time-based algorithms with a shared secret (TOTP)",
+        "explanation": "TOTP (Time-based One-Time Password) uses a shared secret and current time to generate codes offline.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "mfa_07",
+        "type": "multiple_choice",
+        "title": "What should you do with MFA backup codes?",
+        "options": ["Ignore them", "Store them securely offline in case you lose access to your MFA device", "Share them with IT", "Save them on your phone"],
+        "correct_answer": "Store them securely offline in case you lose access to your MFA device",
+        "explanation": "Backup codes are recovery options if you lose your MFA device. Store them securely but separately.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "mfa_08",
+        "type": "multiple_choice",
+        "title": "What is biometric authentication?",
+        "options": ["Using biology textbooks for passwords", "Using unique physical characteristics like fingerprints or face recognition", "Analyzing biological data", "Medical authentication"],
+        "correct_answer": "Using unique physical characteristics like fingerprints or face recognition",
+        "explanation": "Biometrics use unique physical traits (fingerprints, face, iris) as authentication factors.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "mfa_09",
+        "type": "multiple_choice",
+        "title": "You receive an MFA code you didn't request. What should you do?",
+        "options": ["Enter it quickly", "Ignore it - someone may be trying to access your account, consider changing your password", "Share it with IT", "It's normal, use it next time"],
+        "correct_answer": "Ignore it - someone may be trying to access your account, consider changing your password",
+        "explanation": "Unrequested codes indicate someone has your password and is trying to log in. Change your password.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "mfa_10",
+        "type": "multiple_choice",
+        "title": "What is a 'push notification' MFA method?",
+        "options": ["Pushing a physical button", "An app sends a prompt to approve or deny a login attempt", "Emailing a notification", "Voice call verification"],
+        "correct_answer": "An app sends a prompt to approve or deny a login attempt",
+        "explanation": "Push notifications show login details and let you approve or deny with one tap.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "mfa_11",
+        "type": "multiple_choice",
+        "title": "What is 'MFA fatigue' and why is it dangerous?",
+        "options": ["Getting tired of using MFA", "Attackers spam push notifications until the user approves one out of frustration", "MFA slowing down", "Too many MFA options"],
+        "correct_answer": "Attackers spam push notifications until the user approves one out of frustration",
+        "explanation": "MFA bombing sends repeated prompts hoping users approve one to stop the notifications.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "mfa_12",
+        "type": "multiple_choice",
+        "title": "What makes FIDO2/WebAuthn security keys phishing-resistant?",
+        "options": ["They're expensive", "They cryptographically verify the website's identity and won't work on fake sites", "They use longer codes", "They require biometrics"],
+        "correct_answer": "They cryptographically verify the website's identity and won't work on fake sites",
+        "explanation": "FIDO2 keys verify the actual website domain, refusing to authenticate on phishing sites.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "mfa_13",
+        "type": "multiple_choice",
+        "title": "Why shouldn't you share MFA codes with anyone, including IT support?",
+        "options": ["They expire too quickly", "Legitimate IT never needs your codes - this is a social engineering attack", "Codes are personalized", "It violates copyright"],
+        "correct_answer": "Legitimate IT never needs your codes - this is a social engineering attack",
+        "explanation": "No legitimate support personnel need your MFA codes. Anyone asking is likely an attacker.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "mfa_14",
+        "type": "multiple_choice",
+        "title": "What is adaptive or risk-based authentication?",
+        "options": ["Changing passwords regularly", "Systems that adjust authentication requirements based on risk signals", "Using different passwords for different sites", "Authentication that adapts to user preferences"],
+        "correct_answer": "Systems that adjust authentication requirements based on risk signals",
+        "explanation": "Adaptive auth requires additional verification for unusual activity (new device, location, behavior).",
+        "difficulty": "hard"
+      },
+      {
+        "id": "mfa_15",
+        "type": "multiple_choice",
+        "title": "What should you do if you lose your phone with an authenticator app?",
+        "options": ["Create a new account", "Use backup codes and set up MFA on a new device immediately", "Wait until you find it", "Disable MFA permanently"],
+        "correct_answer": "Use backup codes and set up MFA on a new device immediately",
+        "explanation": "Use backup codes to regain access, then immediately set up MFA on a new device and revoke the old one.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "mfa_16",
+        "type": "multiple_choice",
+        "title": "What is 'step-up authentication'?",
+        "options": ["Using stairs to authenticate", "Requiring additional verification for sensitive actions after initial login", "Authenticating while standing", "Gradual password complexity"],
+        "correct_answer": "Requiring additional verification for sensitive actions after initial login",
+        "explanation": "Step-up auth requires extra verification (re-entering password, MFA) for high-risk actions like transfers.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "mfa_17",
+        "type": "multiple_choice",
+        "title": "Which accounts should have MFA enabled as a priority?",
+        "options": ["Only banking accounts", "Email, banking, social media, and any account with sensitive data", "Only work accounts", "None - passwords are enough"],
+        "correct_answer": "Email, banking, social media, and any account with sensitive data",
+        "explanation": "Email is especially critical as it's used for password resets. All sensitive accounts need MFA.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "mfa_18",
+        "type": "multiple_choice",
+        "title": "What is a 'passkey'?",
+        "options": ["A master key for all accounts", "A passwordless authentication method using cryptographic keys stored on your device", "A password hint", "A physical key for your computer"],
+        "correct_answer": "A passwordless authentication method using cryptographic keys stored on your device",
+        "explanation": "Passkeys use device-stored cryptographic credentials, eliminating passwords while being phishing-resistant.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "mfa_19",
+        "type": "multiple_choice",
+        "title": "Why is using the same phone for banking and SMS MFA codes potentially risky?",
+        "options": ["Phones can't do both", "If your phone is compromised, attackers have access to both your banking app AND your MFA codes", "It drains battery faster", "Banks don't allow this"],
+        "correct_answer": "If your phone is compromised, attackers have access to both your banking app AND your MFA codes",
+        "explanation": "Phone compromise gives attackers access to both the app and the second factor, defeating MFA's purpose.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "mfa_20",
+        "type": "multiple_choice",
+        "title": "What is the benefit of number-matching in push notification MFA?",
+        "options": ["It's faster", "Users must enter a displayed number, preventing accidental or fatigue-based approvals", "Numbers are easier to remember", "It uses less battery"],
+        "correct_answer": "Users must enter a displayed number, preventing accidental or fatigue-based approvals",
+        "explanation": "Number matching requires entering a specific code, preventing MFA fatigue attacks and accidental approvals.",
+        "difficulty": "medium"
+      }
+    ]
+  },
+  {
+    "name": "Business Email Compromise (BEC)",
+    "module_type": "bec",
+    "description": "Recognize and prevent Business Email Compromise attacks, including CEO fraud, invoice manipulation, and account compromise.",
+    "difficulty": "hard",
+    "duration_minutes": 25,
+    "questions_per_session": 15,
+    "is_active": true,
+    "questions": [
+      {
+        "id": "bec_01",
+        "type": "multiple_choice",
+        "title": "What is Business Email Compromise (BEC)?",
+        "options": ["Hacking business email servers", "Sophisticated scams where attackers pose as trusted parties to steal money or data", "Compromising email security settings", "Business communication standards"],
+        "correct_answer": "Sophisticated scams where attackers pose as trusted parties to steal money or data",
+        "explanation": "BEC uses social engineering to impersonate executives, vendors, or partners for financial fraud.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "bec_02",
+        "type": "multiple_choice",
+        "title": "What is 'CEO fraud' in BEC attacks?",
+        "options": ["CEOs committing fraud", "Attackers impersonating executives to request urgent wire transfers", "Fraud against CEOs", "CEO authentication bypass"],
+        "correct_answer": "Attackers impersonating executives to request urgent wire transfers",
+        "explanation": "CEO fraud impersonates senior executives to pressure finance staff into urgent wire transfers.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "bec_03",
+        "type": "multiple_choice",
+        "title": "You receive an email from your CEO asking for an urgent wire transfer. What should you do first?",
+        "options": ["Complete the transfer immediately", "Verify the request through a different channel (phone call to known number)", "Reply asking for confirmation", "Forward to your manager"],
+        "correct_answer": "Verify the request through a different channel (phone call to known number)",
+        "explanation": "Always verify unusual requests via a separate channel. Attackers may have compromised email.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "bec_04",
+        "type": "multiple_choice",
+        "title": "What is a 'vendor email compromise' attack?",
+        "options": ["Vendors sending too many emails", "Attackers compromise or impersonate vendor accounts to redirect payments", "Vendors complaining via email", "Email service provider issues"],
+        "correct_answer": "Attackers compromise or impersonate vendor accounts to redirect payments",
+        "explanation": "Attackers impersonate or hack vendor accounts to change payment details on legitimate invoices.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "bec_05",
+        "type": "multiple_choice",
+        "title": "Why do BEC attacks often succeed despite not containing malware?",
+        "options": ["They use better malware", "They exploit human trust and bypass technical security controls", "Email filters don't work", "They're government-sponsored"],
+        "correct_answer": "They exploit human trust and bypass technical security controls",
+        "explanation": "BEC relies on social engineering rather than malware, so technical controls can't detect them.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "bec_06",
+        "type": "multiple_choice",
+        "title": "What red flag indicates a potential BEC email from an executive?",
+        "options": ["Company logo in signature", "Request for secrecy or urgency about a financial transaction", "Sent during business hours", "Professional formatting"],
+        "correct_answer": "Request for secrecy or urgency about a financial transaction",
+        "explanation": "Requests for secrecy, urgency, or unusual financial actions are major BEC indicators.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "bec_07",
+        "type": "multiple_choice",
+        "title": "What is 'account takeover' in BEC?",
+        "options": ["Creating new accounts", "Attackers gain control of legitimate email accounts to send fraudulent messages", "Taking over bank accounts", "Account migration"],
+        "correct_answer": "Attackers gain control of legitimate email accounts to send fraudulent messages",
+        "explanation": "Account takeover is when attackers compromise real accounts, making detection much harder.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "bec_08",
+        "type": "multiple_choice",
+        "title": "How do attackers typically prepare for BEC attacks?",
+        "options": ["Random targeting", "Research via LinkedIn, company websites, and social engineering to understand targets", "Automated scanning", "Phone book listings"],
+        "correct_answer": "Research via LinkedIn, company websites, and social engineering to understand targets",
+        "explanation": "BEC attackers research organizations thoroughly to craft convincing, targeted requests.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "bec_09",
+        "type": "multiple_choice",
+        "title": "What is the 'man-in-the-email' attack?",
+        "options": ["A person reading your emails", "Attackers insert themselves into email conversations to redirect payments", "Email interception by ISPs", "Email server compromise"],
+        "correct_answer": "Attackers insert themselves into email conversations to redirect payments",
+        "explanation": "Attackers monitor or compromise email to insert themselves into ongoing transactions.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "bec_10",
+        "type": "multiple_choice",
+        "title": "A vendor emails that their bank account has changed. What should you do?",
+        "options": ["Update the records immediately", "Verify through a known phone number BEFORE making any changes", "Reply asking to confirm", "Ignore the request"],
+        "correct_answer": "Verify through a known phone number BEFORE making any changes",
+        "explanation": "Payment change requests are common BEC tactics. Always verify via previously known contact information.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "bec_11",
+        "type": "multiple_choice",
+        "title": "What technical control helps prevent BEC?",
+        "options": ["Antivirus software", "Email authentication (SPF, DKIM, DMARC) and external email warnings", "Stronger passwords", "More storage space"],
+        "correct_answer": "Email authentication (SPF, DKIM, DMARC) and external email warnings",
+        "explanation": "Email authentication prevents spoofing; external sender warnings alert users to potential impersonation.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "bec_12",
+        "type": "multiple_choice",
+        "title": "Why might BEC emails come from look-alike domains?",
+        "options": ["Domain unavailability", "Attackers register similar domains (company-inc.com vs company.com) to appear legitimate", "Email system errors", "Marketing purposes"],
+        "correct_answer": "Attackers register similar domains (company-inc.com vs company.com) to appear legitimate",
+        "explanation": "Look-alike domains add legitimacy. Users often don't notice small domain differences.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "bec_13",
+        "type": "multiple_choice",
+        "title": "What process helps prevent unauthorized wire transfers?",
+        "options": ["Faster approval processes", "Dual approval requirements and out-of-band verification for large transfers", "Single-person authorization", "No approval needed for small amounts"],
+        "correct_answer": "Dual approval requirements and out-of-band verification for large transfers",
+        "explanation": "Multiple approvals and verification via different channels prevent single-point-of-failure fraud.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "bec_14",
+        "type": "multiple_choice",
+        "title": "What is 'gift card fraud' in BEC?",
+        "options": ["Stealing gift cards", "Attackers impersonate executives asking employees to buy and send gift card codes", "Gift card counterfeiting", "Gift card expiration"],
+        "correct_answer": "Attackers impersonate executives asking employees to buy and send gift card codes",
+        "explanation": "Gift card scams are BEC variants requesting untraceable gift card purchases.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "bec_15",
+        "type": "multiple_choice",
+        "title": "An email from your 'boss' asks you to buy gift cards for client gifts. They're traveling and can't call. What should you do?",
+        "options": ["Buy the gift cards immediately", "This is likely a scam - verify through official channels regardless of excuses", "Email back asking which cards", "Ask a coworker for advice"],
+        "correct_answer": "This is likely a scam - verify through official channels regardless of excuses",
+        "explanation": "Excuses preventing verification (traveling, in meetings, phone broken) are classic BEC tactics.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "bec_16",
+        "type": "multiple_choice",
+        "title": "What role does timing play in BEC attacks?",
+        "options": ["No role", "Attackers strike when targets are distracted, rushed, or executives are traveling", "Attacks only happen at night", "Time zones don't matter"],
+        "correct_answer": "Attackers strike when targets are distracted, rushed, or executives are traveling",
+        "explanation": "BEC attacks often coincide with executive travel, quarter-end rushes, or other high-pressure periods.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "bec_17",
+        "type": "multiple_choice",
+        "title": "What is 'attorney impersonation' in BEC?",
+        "options": ["Hiring fake lawyers", "Attackers pose as lawyers handling confidential matters requiring urgent payment", "Legal email encryption", "Attorney email lists"],
+        "correct_answer": "Attackers pose as lawyers handling confidential matters requiring urgent payment",
+        "explanation": "Attorney impersonation adds authority and secrecy pressure to urgent payment requests.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "bec_18",
+        "type": "multiple_choice",
+        "title": "Why is BEC particularly dangerous for finance and HR departments?",
+        "options": ["They have more computers", "They handle sensitive data and financial transactions that attackers target", "They work longer hours", "They use older software"],
+        "correct_answer": "They handle sensitive data and financial transactions that attackers target",
+        "explanation": "Finance processes payments; HR handles sensitive employee data - both are prime BEC targets.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "bec_19",
+        "type": "multiple_choice",
+        "title": "What should companies do after falling victim to BEC?",
+        "options": ["Keep it secret", "Immediately contact banks to recall transfers and report to law enforcement", "Blame the employee", "Increase the employee's workload"],
+        "correct_answer": "Immediately contact banks to recall transfers and report to law enforcement",
+        "explanation": "Quick action can sometimes recover funds. Report to FBI's IC3 and implement lessons learned.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "bec_20",
+        "type": "multiple_choice",
+        "title": "What employee training is most effective against BEC?",
+        "options": ["Technical security training only", "Verification procedures, recognizing social engineering, and a culture where questioning unusual requests is encouraged", "Password training only", "No training needed"],
+        "correct_answer": "Verification procedures, recognizing social engineering, and a culture where questioning unusual requests is encouraged",
+        "explanation": "BEC prevention requires training on verification processes and empowering employees to question unusual requests.",
+        "difficulty": "medium"
+      }
+    ]
+  },
+  {
+    "name": "Secure Browsing & Downloads",
+    "module_type": "secure_browsing",
+    "description": "Learn safe web browsing practices, how to identify safe vs malicious websites, and secure download habits.",
+    "difficulty": "medium",
+    "duration_minutes": 20,
+    "questions_per_session": 15,
+    "is_active": true,
+    "questions": [
+      {
+        "id": "sb_01",
+        "type": "multiple_choice",
+        "title": "What does a padlock icon in your browser's address bar indicate?",
+        "options": ["The website is completely safe and trustworthy", "The connection is encrypted (HTTPS), but the site could still be malicious", "The website is government-approved", "The site won't track you"],
+        "correct_answer": "The connection is encrypted (HTTPS), but the site could still be malicious",
+        "explanation": "HTTPS means encrypted connection, not that the site is safe. Phishing sites can have HTTPS too.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "sb_02",
+        "type": "multiple_choice",
+        "title": "You want to download a popular software. Where should you get it?",
+        "options": ["The first Google result", "The software's official website or official app store", "A download aggregator site", "Any site offering it free"],
+        "correct_answer": "The software's official website or official app store",
+        "explanation": "Official sources are verified. Third-party sites may bundle malware with legitimate software.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "sb_03",
+        "type": "multiple_choice",
+        "title": "What is 'typosquatting' in web security?",
+        "options": ["Typing too fast", "Registering domains with common typos to catch users who mistype URLs", "A secure typing method", "Domain name auctions"],
+        "correct_answer": "Registering domains with common typos to catch users who mistype URLs",
+        "explanation": "Typosquatting catches typing errors (googel.com instead of google.com) to deliver malware or phishing.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "sb_04",
+        "type": "multiple_choice",
+        "title": "Your browser warns that a website's certificate is invalid. What should you do?",
+        "options": ["Click 'proceed anyway'", "Don't visit the site - certificate errors can indicate attacks or compromised sites", "Refresh the page", "Try a different browser"],
+        "correct_answer": "Don't visit the site - certificate errors can indicate attacks or compromised sites",
+        "explanation": "Certificate errors may indicate man-in-the-middle attacks or compromised servers. Don't proceed.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "sb_05",
+        "type": "multiple_choice",
+        "title": "Why should you keep your browser updated?",
+        "options": ["For new features only", "Updates patch security vulnerabilities that attackers exploit", "To get new themes", "Browsers don't need updates"],
+        "correct_answer": "Updates patch security vulnerabilities that attackers exploit",
+        "explanation": "Browser updates fix security vulnerabilities. Outdated browsers are major attack targets.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "sb_06",
+        "type": "multiple_choice",
+        "title": "What are browser extensions' security risks?",
+        "options": ["No risks", "Malicious extensions can access all your browsing data and credentials", "They only affect browser speed", "Extensions are always safe"],
+        "correct_answer": "Malicious extensions can access all your browsing data and credentials",
+        "explanation": "Extensions have broad permissions. Malicious ones can steal data, inject ads, or hijack sessions.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "sb_07",
+        "type": "multiple_choice",
+        "title": "What is a 'drive-by download'?",
+        "options": ["Downloading while driving", "Malware that downloads without user knowledge just by visiting a webpage", "Fast download speeds", "Downloading from a car website"],
+        "correct_answer": "Malware that downloads without user knowledge just by visiting a webpage",
+        "explanation": "Drive-by downloads exploit browser or plugin vulnerabilities to install malware without clicks.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "sb_08",
+        "type": "multiple_choice",
+        "title": "Before downloading software, what should you check?",
+        "options": ["Download speed only", "Publisher reputation, reviews, official source, and file type", "File size only", "Color of the download button"],
+        "correct_answer": "Publisher reputation, reviews, official source, and file type",
+        "explanation": "Verify the source is legitimate, read reviews, and ensure file types match expectations.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "sb_09",
+        "type": "multiple_choice",
+        "title": "What is the purpose of browser sandboxing?",
+        "options": ["Playing games", "Isolating web content to prevent malware from affecting the operating system", "Storing cookies", "Making pages load faster"],
+        "correct_answer": "Isolating web content to prevent malware from affecting the operating system",
+        "explanation": "Sandboxing contains potential threats, preventing web-based attacks from escaping the browser.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "sb_10",
+        "type": "multiple_choice",
+        "title": "A website asks to enable Flash Player. What should you do?",
+        "options": ["Enable it immediately", "Refuse - Flash Player was discontinued in 2020 and is often used for malware delivery", "Download Flash from the site", "Only enable it temporarily"],
+        "correct_answer": "Refuse - Flash Player was discontinued in 2020 and is often used for malware delivery",
+        "explanation": "Flash Player is discontinued. Any prompt to install/enable it is attempting to install malware.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "sb_11",
+        "type": "multiple_choice",
+        "title": "What should you do if a website says your computer is infected?",
+        "options": ["Call the number provided", "Ignore it - legitimate security warnings come from your installed antivirus, not websites", "Download their recommended software", "Provide your credit card to fix it"],
+        "correct_answer": "Ignore it - legitimate security warnings come from your installed antivirus, not websites",
+        "explanation": "Websites cannot scan your computer. These are scareware tactics to install malware.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "sb_12",
+        "type": "multiple_choice",
+        "title": "What is 'DNS over HTTPS' (DoH)?",
+        "options": ["A new website protocol", "Encrypting DNS queries to prevent eavesdropping on your browsing", "A domain naming system", "Downloading over HTTPS"],
+        "correct_answer": "Encrypting DNS queries to prevent eavesdropping on your browsing",
+        "explanation": "DoH encrypts DNS lookups, preventing ISPs and attackers from seeing which sites you visit.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "sb_13",
+        "type": "multiple_choice",
+        "title": "Why should you be cautious with public Wi-Fi?",
+        "options": ["It's slow", "Attackers can intercept unencrypted traffic and create fake hotspots", "It costs money", "Public Wi-Fi is always safe"],
+        "correct_answer": "Attackers can intercept unencrypted traffic and create fake hotspots",
+        "explanation": "Public Wi-Fi enables traffic interception and evil twin attacks. Use VPN for sensitive activities.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "sb_14",
+        "type": "multiple_choice",
+        "title": "What is a 'watering hole attack'?",
+        "options": ["Attacking water companies", "Compromising websites frequently visited by target groups", "Pooling resources for attacks", "Drinking water contamination"],
+        "correct_answer": "Compromising websites frequently visited by target groups",
+        "explanation": "Watering hole attacks infect websites that specific target groups frequent, like industry forums.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "sb_15",
+        "type": "multiple_choice",
+        "title": "What should you check before entering credentials on a website?",
+        "options": ["Page loading speed", "URL is correct, connection is HTTPS, and you navigated there directly", "Website color scheme", "Number of images"],
+        "correct_answer": "URL is correct, connection is HTTPS, and you navigated there directly",
+        "explanation": "Verify the exact URL, ensure HTTPS, and access sensitive sites by typing URLs directly.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "sb_16",
+        "type": "multiple_choice",
+        "title": "A pop-up claims you've won a prize. To claim it, you need to enter personal information. What should you do?",
+        "options": ["Enter information to claim", "Close the pop-up immediately - this is a scam", "Share it with friends", "Provide fake information"],
+        "correct_answer": "Close the pop-up immediately - this is a scam",
+        "explanation": "Pop-up prize claims are always scams designed to harvest personal information.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "sb_17",
+        "type": "multiple_choice",
+        "title": "What is browser fingerprinting?",
+        "options": ["Using fingerprints to log in", "Tracking users by collecting unique browser and system characteristics", "Cleaning browser history", "Browser security scanning"],
+        "correct_answer": "Tracking users by collecting unique browser and system characteristics",
+        "explanation": "Fingerprinting identifies users by combining browser settings, plugins, fonts, and other attributes.",
+        "difficulty": "hard"
+      },
+      {
+        "id": "sb_18",
+        "type": "multiple_choice",
+        "title": "Why should you avoid saving passwords in your browser for sensitive accounts?",
+        "options": ["Browsers forget passwords", "Browser password storage is less secure than dedicated password managers", "It slows down the browser", "Passwords don't work in browsers"],
+        "correct_answer": "Browser password storage is less secure than dedicated password managers",
+        "explanation": "Dedicated password managers offer better security features than browser-based storage.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "sb_19",
+        "type": "multiple_choice",
+        "title": "What is the safest practice when downloading email attachments?",
+        "options": ["Open everything immediately", "Verify the sender, scan with antivirus, and be suspicious of unexpected files", "Download but don't open", "Only download from strangers"],
+        "correct_answer": "Verify the sender, scan with antivirus, and be suspicious of unexpected files",
+        "explanation": "Email attachments are common malware vectors. Verify before opening any attachments.",
+        "difficulty": "medium"
+      },
+      {
+        "id": "sb_20",
+        "type": "multiple_choice",
+        "title": "What does 'incognito mode' or 'private browsing' actually protect?",
+        "options": ["Everything - you're completely anonymous", "Local history only - websites, ISPs, and employers can still track you", "Against all malware", "Your identity from hackers"],
+        "correct_answer": "Local history only - websites, ISPs, and employers can still track you",
+        "explanation": "Private browsing only prevents local history storage. You're not anonymous to websites, networks, or ISPs.",
+        "difficulty": "medium"
+      }
+    ]
+  }
+]
