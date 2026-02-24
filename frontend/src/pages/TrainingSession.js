@@ -276,6 +276,7 @@ export default function TrainingSession() {
     if (type.includes('phishing') || type.includes('email')) return Mail;
     if (type.includes('ads')) return MousePointerClick;
     if (type.includes('social')) return Users;
+    if (type === 'image_question' || contentType === 'image_question') return BookOpen;
     if (type === 'multiple_choice' || contentType === 'multiple_choice') return BookOpen;
     if (type === 'true_false' || contentType === 'true_false') return BookOpen;
     if (type === 'select_best' || contentType === 'select_best') return BookOpen;
