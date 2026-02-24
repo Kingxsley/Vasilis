@@ -1657,6 +1657,34 @@ async def delete_training_module(
     return {"message": "Module deleted"}
 
 
+class BulkModuleDelete(BaseModel):
+    module_ids: List[str]
+
+@training_router.post("/modules/bulk-delete")
+async def bulk_delete_modules(
+    data: BulkModuleDelete,
+    user: dict = Depends(get_current_user)
+):
+    """
+    Delete multiple training modules at once.
+    """
+    if user.get("role") not in [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    if not data.module_ids:
+        raise HTTPException(status_code=400, detail="No module IDs provided")
+    
+    result = await db.training_modules.delete_many({"module_id": {"$in": data.module_ids}})
+    
+    # Also delete associated sessions
+    await db.training_sessions.delete_many({"module_id": {"$in": data.module_ids}})
+    
+    return {
+        "deleted": result.deleted_count,
+        "message": f"Deleted {result.deleted_count} module(s)"
+    }
+
+
 class BulkModuleUpload(BaseModel):
     modules: List[dict]
 
