@@ -362,7 +362,7 @@ export default function AdSimulations() {
     return <Badge className={colors[type] || colors.banner}>{type}</Badge>;
   };
 
-  const orgUsers = users.filter(u => u.organization_id === newCampaign.organization_id);
+  const orgUsers = getOrgUsers();
 
   return (
     <DashboardLayout>
