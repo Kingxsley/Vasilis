@@ -1727,6 +1727,33 @@ async def bulk_upload_modules(
     }
 
 
+@training_router.delete("/sessions/cleanup-orphaned")
+async def cleanup_orphaned_sessions(user: dict = Depends(get_current_user)):
+    """
+    Delete all training sessions that reference modules that no longer exist.
+    This cleans up stats from deleted modules.
+    """
+    if user.get("role") not in [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Get all existing module IDs
+    modules = await db.training_modules.find({}, {"module_id": 1}).to_list(1000)
+    existing_module_ids = set(m["module_id"] for m in modules)
+    
+    # Find and delete sessions for non-existent modules
+    all_sessions = await db.training_sessions.find({}, {"session_id": 1, "module_id": 1}).to_list(10000)
+    orphaned_session_ids = [s["session_id"] for s in all_sessions if s["module_id"] not in existing_module_ids]
+    
+    if orphaned_session_ids:
+        result = await db.training_sessions.delete_many({"session_id": {"$in": orphaned_session_ids}})
+        return {
+            "deleted": result.deleted_count,
+            "message": f"Deleted {result.deleted_count} orphaned sessions from deleted modules"
+        }
+    
+    return {"deleted": 0, "message": "No orphaned sessions found"}
+
+
 @training_router.get("/modules/export", response_model=List[dict])
 async def export_modules(user: dict = Depends(get_current_user)):
     """
