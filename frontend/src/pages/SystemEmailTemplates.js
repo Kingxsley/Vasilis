@@ -62,7 +62,7 @@ export default function SystemEmailTemplates() {
 
   const fetchTemplates = async () => {
     try {
-      const res = await axios.get(`${API}/system-emails`, { headers });
+      const res = await axios.get(`${API}/api/system-emails`, { headers });
       setTemplates(res.data.templates);
       if (res.data.templates.length > 0 && !selectedTemplate) {
         selectTemplate(res.data.templates[0]);
