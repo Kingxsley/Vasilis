@@ -124,6 +124,7 @@ DEFAULT_TEMPLATES = {
         "subject": "{company_name} - New Security Training Assigned",
         "show_icon": True,
         "icon_type": "alert",
+        "custom_icon_url": None,
         "header_title": "Training Required",
         "header_subtitle": "You have been assigned security training",
         "greeting_template": "Hello {user_name},",
