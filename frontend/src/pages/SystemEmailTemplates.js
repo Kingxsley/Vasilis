@@ -88,7 +88,7 @@ export default function SystemEmailTemplates() {
     setSaving(true);
     try {
       const res = await axios.put(
-        `${API}/system-emails/${selectedTemplate.id}`,
+        `${API}/api/system-emails/${selectedTemplate.id}`,
         editedTemplate,
         { headers }
       );
