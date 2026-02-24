@@ -356,10 +356,6 @@ export default function TrainingModules() {
                         </Button>
                       )}
                     </div>
-
-                    <p className="text-xs text-gray-500 mt-3 text-center">
-                      {module.scenarios_count} scenarios
-                    </p>
                   </CardContent>
                 </Card>
               );
