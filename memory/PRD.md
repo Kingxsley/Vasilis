@@ -130,7 +130,21 @@ DB_NAME=vasilisnetshield
 JWT_SECRET=<secure-random-string>
 ```
 
-## Pending Tasks
+## Pending Issues (Feb 2026)
+
+### P0 - Critical Blockers
+1. **Email Sending Failure** - Campaigns created but no emails sent (SendGrid configuration issue in production)
+   - Debug: Check `SENDGRID_API_KEY` and `SENDER_EMAIL` env vars in production
+   - Use `/api/phishing/email-config-check` diagnostic endpoint
+2. **Phishing Click Tracking** - Links not tracked correctly in production
+   - Debug: After email sending is fixed, test full end-to-end in production
+
+### P1 - Important Issues  
+3. **Image Upload in Training Questions** - Images not displaying (fix pending testing)
+4. **Training Assignment Email Link** - May point to wrong domain
+
+### P3 - Lower Priority
+5. **Bulk User Import** - Feature may be broken
 
 ### All Completed
 - [x] **Phishing Tracking URLs** - All tracking URL generation now uses `API_URL` env var
