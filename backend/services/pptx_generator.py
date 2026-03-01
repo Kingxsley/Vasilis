@@ -706,6 +706,13 @@ MODULE_CONTENT = {
     "privacy": DATA_PROTECTION_CONTENT,
 }
 
+# Import additional modules
+try:
+    from services.pptx_content import ADDITIONAL_MODULES
+    MODULE_CONTENT.update(ADDITIONAL_MODULES)
+except ImportError:
+    pass
+
 
 def generate_module_presentation(module_name: str, module_content: Optional[Dict] = None) -> bytes:
     """
