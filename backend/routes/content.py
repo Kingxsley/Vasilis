@@ -317,17 +317,18 @@ async def list_news(
     combined_news = list(local_news)
     rss_count = 0
 
-    # Fetch RSS feeds if requested and we have room
-    if include_rss and len(combined_news) < limit and not search:
-        rss_feeds = await db.rss_feeds.find({"enabled": True}, {"_id": 0}).to_list(20)
+    # Fetch ALL RSS feeds regardless of local news count
+    if include_rss and not search:
+        rss_feeds = await db.rss_feeds.find({"enabled": True}, {"_id": 0}).to_list(50)
         for feed in rss_feeds:
             try:
-                async with httpx.AsyncClient(timeout=5.0) as client:
+                async with httpx.AsyncClient(timeout=10.0) as client:
                     response = await client.get(feed["url"])
                     if response.status_code == 200:
                         root = ET.fromstring(response.content)
                         items = root.findall(".//item") or root.findall(".//{http://www.w3.org/2005/Atom}entry")
-                        for item in items[:3]:
+                        # Get more items per feed (up to 10)
+                        for item in items[:10]:
                             title = item.findtext("title") or item.findtext("{http://www.w3.org/2005/Atom}title")
                             description = item.findtext("description") or item.findtext("{http://www.w3.org/2005/Atom}summary")
                             link = item.findtext("link")
@@ -353,18 +354,21 @@ async def list_news(
                 print(f"Failed to fetch RSS feed {feed.get('name')}: {e}")
                 continue
 
-    # Sort by date
+    # Sort all items by date
     try:
         combined_news.sort(key=lambda x: x.get("created_at", ""), reverse=True)
     except Exception:
         pass
 
-    # Limit the results
-    combined_news = combined_news[:limit]
+    # Calculate total before pagination
+    total_items = len(combined_news)
+    
+    # Apply pagination to combined results
+    paginated_news = combined_news[skip:skip + limit]
 
     return {
-        "news": combined_news,
-        "total": local_total + rss_count,
+        "news": paginated_news,
+        "total": total_items,
         "skip": skip,
         "limit": limit
     }
