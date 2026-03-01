@@ -614,7 +614,14 @@ async def assign_to_admin(inquiry_id: str, data: AssignToAdmin, request: Request
             """
         )
     except Exception as e:
-        logger.warning(f"Failed to send assignment notification: {e}")
+        logger.warning(f"Failed to send assignment notification email: {e}")
+    
+    # Send Discord notification to assigned admin
+    await notify_super_admins_discord(db, "access_request_assigned", {
+        "requester_name": inquiry.get("name", inquiry["email"]),
+        "requester_email": inquiry.get("email"),
+        "assigned_by": user.get("name", user.get("email"))
+    })
     
     return {
         "message": f"Request assigned to {target_admin.get('name', target_admin.get('email'))}",
