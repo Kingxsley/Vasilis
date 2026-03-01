@@ -62,6 +62,8 @@ export default function FormSubmissions() {
 
   useEffect(() => {
     fetchData();
+    fetchOrganizations();
+    fetchAdmins();
   }, []);
 
   const fetchData = async () => {
@@ -78,6 +80,24 @@ export default function FormSubmissions() {
       toast.error('Failed to load submissions');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchOrganizations = async () => {
+    try {
+      const res = await axios.get(`${API}/organizations`, { headers });
+      setOrganizations(res.data?.organizations || res.data || []);
+    } catch (err) {
+      console.error('Failed to fetch organizations:', err);
+    }
+  };
+
+  const fetchAdmins = async () => {
+    try {
+      const res = await axios.get(`${API}/inquiries/admins/list`, { headers });
+      setAdmins(res.data?.admins || []);
+    } catch (err) {
+      console.error('Failed to fetch admins:', err);
     }
   };
 
