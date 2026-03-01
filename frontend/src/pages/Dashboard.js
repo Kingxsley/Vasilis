@@ -44,6 +44,7 @@ export default function Dashboard() {
   const [recentSessions, setRecentSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userStats, setUserStats] = useState(null);
+  const [onlineUsers, setOnlineUsers] = useState(null);
 
   useEffect(() => {
     fetchDashboardData();
@@ -51,7 +52,7 @@ export default function Dashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      const [statsRes, analyticsRes, userAnalyticsRes] = await Promise.all([
+      const [statsRes, analyticsRes, userAnalyticsRes, onlineUsersRes] = await Promise.all([
         axios.get(`${API}/dashboard/stats`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
@@ -67,11 +68,22 @@ export default function Dashboard() {
           {
             headers: { Authorization: `Bearer ${token}` }
           }
-        )
+        ),
+        axios.get(
+          `${API}/analytics/online-users${
+            user?.role !== 'super_admin' && user?.organization_id
+              ? `?organization_id=${user.organization_id}`
+              : ''
+          }`,
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        ).catch(() => ({ data: { online_count: 0, online_users: [] } }))
       ]);
       setStats(statsRes.data);
       setRecentSessions(analyticsRes.data.recent_sessions || []);
       setUserStats(userAnalyticsRes.data || null);
+      setOnlineUsers(onlineUsersRes.data || null);
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err);
     } finally {
