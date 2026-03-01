@@ -62,7 +62,7 @@ async def notify_super_admins_discord(db, notification_type: str, details: dict)
     if notification_type == "access_request_new":
         embed = {
             "title": "🔔 New Access Request",
-            "description": f"A new access request has been submitted.",
+            "description": "A new access request has been submitted.",
             "color": 5793266,  # Purple
             "fields": [
                 {"name": "Name", "value": details.get("name", "N/A"), "inline": True},
@@ -79,7 +79,7 @@ async def notify_super_admins_discord(db, notification_type: str, details: dict)
     elif notification_type == "access_request_assigned":
         embed = {
             "title": "📋 Access Request Assigned",
-            "description": f"An access request has been assigned to you for review.",
+            "description": "An access request has been assigned to you for review.",
             "color": 10181046,  # Blue
             "fields": [
                 {"name": "Requester", "value": details.get("requester_name", "N/A"), "inline": True},
@@ -93,7 +93,7 @@ async def notify_super_admins_discord(db, notification_type: str, details: dict)
     elif notification_type == "contact_form_new":
         embed = {
             "title": "📧 New Contact Form Submission",
-            "description": f"Someone has contacted you via the website.",
+            "description": "Someone has contacted you via the website.",
             "color": 3447003,  # Green
             "fields": [
                 {"name": "Name", "value": details.get("name", "N/A"), "inline": True},
