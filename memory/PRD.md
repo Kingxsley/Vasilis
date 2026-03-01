@@ -86,6 +86,50 @@ A comprehensive security awareness and training platform that helps organization
 
 ## Current Status (March 2026)
 
+### Session 10 Updates (March 1, 2026) - COMPLETED
+
+#### Phase 1 - Critical Fixes
+1. **2FA Enforcement** - Users with 2FA enabled must now provide code to complete login (returns `requires_2fa: true` if code not provided)
+2. **Certificate Fix** - Certificates now show only the completed module name prominently 
+3. **Vulnerable Users** - Links now open in new tab with external link indicator
+
+#### Phase 2 - CMS Overhaul
+4. **Dynamic CMS Tiles System** - New `/api/cms-tiles` API:
+   - 4 default system tiles: Blog, News, Videos, About
+   - Add unlimited custom tiles
+   - Publish/unpublish toggle for each tile
+   - System tiles protected from deletion
+   - Auto-updates navigation based on published status
+
+5. **News Pagination** - Changed default to 15 items per page
+
+#### Phase 3 - Credential Harvest Visual Builder
+6. **Visual Email Builder** - Added drag-drop visual builder for credential harvest emails:
+   - Logo, Header, Text, Button, Alert, Divider, Footer blocks
+   - Live preview of email content
+   - Toggle between Visual and HTML modes
+   - Template edit dialog with visual builder
+
+#### Phase 4 - Executive Training Overhaul
+7. **9 Pre-built Training Modules**:
+   - Email Phishing Awareness (19 slides)
+   - Social Engineering Defense (17 slides)
+   - Password Security (16 slides)
+   - Data Protection & Privacy (15 slides)
+   - Ransomware Awareness (19 slides) - NEW
+   - Insider Threat Awareness (16 slides) - NEW
+   - Mobile Device Security (16 slides) - NEW
+   - Remote Work Security (16 slides) - NEW
+   - Business Email Compromise (14 slides) - NEW
+
+8. **Presentation Upload** (Super Admin only):
+   - Upload custom PPTX presentations
+   - Download uploaded presentations
+   - Delete uploaded presentations
+
+### Test Credentials
+- Admin: `test@admin.com` / `TestAdmin123!`
+
 ### Session 9 Updates (March 1, 2026) - COMPLETED
 
 #### P0 Bug Fixes
