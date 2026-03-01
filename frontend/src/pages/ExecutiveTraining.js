@@ -145,6 +145,60 @@ export default function ExecutiveTraining() {
     }
   };
 
+  const handleBulkDelete = async () => {
+    if (selectedPresentations.length === 0) return;
+    if (!window.confirm(`Are you sure you want to delete ${selectedPresentations.length} presentations?`)) return;
+    
+    try {
+      await axios.delete(`${API}/executive-training/uploaded/bulk`, {
+        headers,
+        data: { presentation_ids: selectedPresentations }
+      });
+      toast.success(`Deleted ${selectedPresentations.length} presentations`);
+      setSelectedPresentations([]);
+      fetchData();
+    } catch (err) {
+      toast.error('Failed to delete presentations');
+    }
+  };
+
+  const handleEditPresentation = async () => {
+    if (!editingPresentation) return;
+    
+    try {
+      await axios.patch(
+        `${API}/executive-training/uploaded/${editingPresentation.presentation_id}`,
+        {
+          name: editingPresentation.name,
+          description: editingPresentation.description
+        },
+        { headers }
+      );
+      toast.success('Presentation updated');
+      setShowEdit(false);
+      setEditingPresentation(null);
+      fetchData();
+    } catch (err) {
+      toast.error('Failed to update presentation');
+    }
+  };
+
+  const togglePresentationSelection = (presentationId) => {
+    setSelectedPresentations(prev => 
+      prev.includes(presentationId)
+        ? prev.filter(id => id !== presentationId)
+        : [...prev, presentationId]
+    );
+  };
+
+  const toggleAllPresentations = () => {
+    if (selectedPresentations.length === uploadedPresentations.length) {
+      setSelectedPresentations([]);
+    } else {
+      setSelectedPresentations(uploadedPresentations.map(p => p.presentation_id));
+    }
+  };
+
   const downloadUploaded = async (presentationId, filename) => {
     setDownloading(presentationId);
     try {
