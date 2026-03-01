@@ -203,6 +203,7 @@ async def upload_presentation(request: Request):
     from fastapi import Form, UploadFile, File
     from datetime import datetime, timezone
     import uuid
+    import re
     
     user = await require_super_admin(request)
     db = get_db()
@@ -221,6 +222,11 @@ async def upload_presentation(request: Request):
     if not file.filename.endswith('.pptx'):
         raise HTTPException(status_code=400, detail="Only PPTX files are allowed")
     
+    # Sanitize filename to prevent path traversal
+    safe_filename = re.sub(r'[^\w\-\.]', '_', file.filename)
+    if not safe_filename.endswith('.pptx'):
+        safe_filename = f"{safe_filename}.pptx"
+    
     # Read file content
     file_content = await file.read()
     
@@ -235,7 +241,7 @@ async def upload_presentation(request: Request):
         "name": name,
         "description": description,
         "module_key": module_key,
-        "filename": file.filename,
+        "filename": safe_filename,
         "file_size": len(file_content),
         "file_data": file_content,
         "uploaded_by": user["user_id"],
