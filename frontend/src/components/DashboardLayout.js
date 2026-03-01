@@ -70,7 +70,7 @@ const navGroups = [
       { path: '/organizations', label: 'Organizations', icon: Building2, superAdminOnly: true },
       { path: '/users', label: 'Users', icon: Users, adminOnly: true },
       { path: '/user-import', label: 'Import Users', icon: Upload, adminOnly: true },
-      { path: '/inquiries', label: 'Access Requests', icon: MessageSquare, superAdminOnly: true },
+      { path: '/form-submissions', label: 'Forms', icon: MessageSquare, superAdminOnly: true },
     ]
   },
   {
