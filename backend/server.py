@@ -630,7 +630,12 @@ async def login(data: UserLogin, request: Request):
         created_at=created_at
     )
 
-    return TokenResponse(token=token, user=user_response)
+    return TokenResponse(
+        token=token, 
+        user=user_response,
+        requires_2fa_verification=requires_2fa_verification,
+        two_factor_enabled=user.get("two_factor_enabled", False)
+    )
 
 
 class RefreshTokenRequest(BaseModel):
