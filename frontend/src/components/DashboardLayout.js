@@ -216,10 +216,10 @@ export const DashboardLayout = ({ children }) => {
     );
   };
 
-  // Get custom items for a section
+  // Get custom items for a section (excluding CMS tiles - they go in Content Manager)
   const getCustomItemsForSection = (sectionId) => {
     return customNavItems
-      .filter(item => item.section_id === sectionId && item.is_active)
+      .filter(item => item.section_id === sectionId && item.is_active && !item.is_cms_tile)
       .sort((a, b) => a.sort_order - b.sort_order);
   };
 
