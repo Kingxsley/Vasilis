@@ -86,6 +86,26 @@ A comprehensive security awareness and training platform that helps organization
 
 ## Current Status (March 2026)
 
+### Session 17 Updates (March 1, 2026) - NAVIGATION & NOTIFICATIONS
+
+#### Navigation Fixes
+1. **CMS Tiles on Homepage** - Custom CMS tiles now appear in landing page navigation
+2. **Public API Endpoint** - Added `/api/cms-tiles/public` for unauthenticated navigation access
+3. **Select Item Fix** - Fixed empty string value error in organization select (changed to "none")
+
+#### Discord Notifications
+4. **Access Request Notifications** - Super admins receive Discord alerts for new access requests
+5. **Assignment Notifications** - Assigned admins get Discord + email notifications
+6. **Contact Form Notifications** - Discord alerts for new contact form submissions
+7. **Uses Global Webhook** - Reads from branding settings `discord_webhook_url`
+
+#### Credential Harvest Enhancement
+8. **Password Hint Display** - Shows 2 random password characters with positions (e.g., "Position 3: 'a', Position 7: 'x'")
+
+#### Backend Improvements
+9. **Organization ID Handling** - Backend properly handles "none" value for no organization
+10. **aiohttp Integration** - Added async HTTP client for Discord webhook calls
+
 ### Session 16 Updates (March 1, 2026) - SETTINGS & CUSTOMIZATION
 
 #### CMS Tiles in Navigation Settings
