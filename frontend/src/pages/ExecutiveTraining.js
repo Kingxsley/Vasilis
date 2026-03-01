@@ -1,12 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { useAuth } from '../App';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '../components/ui/dialog';
 import {
   Presentation, Download, FileText, Shield, Mail, Lock, Users, 
-  Database, Loader2, CheckCircle, BookOpen
+  Database, Loader2, CheckCircle, BookOpen, Upload, Trash2, 
+  AlertTriangle, Smartphone, Home, Briefcase
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
@@ -24,16 +36,34 @@ const MODULE_ICONS = {
   'data_protection': Database,
   'data_handling': Database,
   'privacy': Shield,
+  'ransomware': AlertTriangle,
+  'ransomware_awareness': AlertTriangle,
+  'insider_threat': Users,
+  'insider_threats': Users,
+  'mobile_security': Smartphone,
+  'mobile': Smartphone,
+  'remote_work': Home,
+  'remote_work_security': Home,
+  'work_from_home': Home,
+  'bec': Briefcase,
+  'business_email_compromise': Briefcase,
+  'ceo_fraud': Briefcase,
 };
 
 export default function ExecutiveTraining() {
-  const { token } = useAuth();
+  const { user, token } = useAuth();
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(null);
   const [trainingModules, setTrainingModules] = useState([]);
+  const [uploadedPresentations, setUploadedPresentations] = useState([]);
+  const [showUpload, setShowUpload] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
+  const [uploadForm, setUploadForm] = useState({ name: '', description: '', file: null });
 
   const headers = { Authorization: `Bearer ${token}` };
+  const isSuperAdmin = user?.role === 'super_admin';
 
   useEffect(() => {
     fetchData();
@@ -41,17 +71,98 @@ export default function ExecutiveTraining() {
 
   const fetchData = async () => {
     try {
-      const [modulesRes, trainingRes] = await Promise.all([
+      const requests = [
         axios.get(`${API}/executive-training/available-modules`, { headers }),
         axios.get(`${API}/training/modules`, { headers }).catch(() => ({ data: [] }))
-      ]);
-      setModules(modulesRes.data.modules || []);
-      setTrainingModules(trainingRes.data || []);
+      ];
+      
+      if (isSuperAdmin) {
+        requests.push(
+          axios.get(`${API}/executive-training/uploaded`, { headers }).catch(() => ({ data: { presentations: [] } }))
+        );
+      }
+      
+      const responses = await Promise.all(requests);
+      setModules(responses[0].data.modules || []);
+      setTrainingModules(responses[1].data || []);
+      if (isSuperAdmin && responses[2]) {
+        setUploadedPresentations(responses[2].data.presentations || []);
+      }
     } catch (err) {
       console.error('Failed to fetch modules:', err);
       toast.error('Failed to load modules');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!uploadForm.file) {
+      toast.error('Please select a file');
+      return;
+    }
+    if (!uploadForm.name) {
+      toast.error('Please enter a name');
+      return;
+    }
+    
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', uploadForm.file);
+      formData.append('name', uploadForm.name);
+      formData.append('description', uploadForm.description);
+      
+      await axios.post(`${API}/executive-training/upload`, formData, {
+        headers: { ...headers, 'Content-Type': 'multipart/form-data' }
+      });
+      
+      toast.success('Presentation uploaded successfully');
+      setShowUpload(false);
+      setUploadForm({ name: '', description: '', file: null });
+      fetchData();
+    } catch (err) {
+      console.error('Upload failed:', err);
+      toast.error(err.response?.data?.detail || 'Failed to upload presentation');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const deleteUploaded = async (presentationId) => {
+    if (!window.confirm('Are you sure you want to delete this presentation?')) return;
+    
+    try {
+      await axios.delete(`${API}/executive-training/uploaded/${presentationId}`, { headers });
+      toast.success('Presentation deleted');
+      fetchData();
+    } catch (err) {
+      toast.error('Failed to delete presentation');
+    }
+  };
+
+  const downloadUploaded = async (presentationId, filename) => {
+    setDownloading(presentationId);
+    try {
+      const response = await axios.get(
+        `${API}/executive-training/download-uploaded/${presentationId}`,
+        { headers, responseType: 'blob' }
+      );
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('Downloaded presentation');
+    } catch (err) {
+      toast.error('Failed to download presentation');
+    } finally {
+      setDownloading(null);
     }
   };
 
