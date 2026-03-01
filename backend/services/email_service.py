@@ -1,4 +1,5 @@
 import os
+import re
 import logging
 from pathlib import Path
 from dotenv import load_dotenv
@@ -9,6 +10,62 @@ from sendgrid.helpers.mail import Mail, Email, To, Content, TrackingSettings, Cl
 load_dotenv(Path(__file__).parent.parent / '.env')
 
 logger = logging.getLogger(__name__)
+
+# Email validation regex
+EMAIL_REGEX = re.compile(
+    r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+)
+
+def is_valid_email(email: str) -> bool:
+    """Validate email format"""
+    if not email or not isinstance(email, str):
+        return False
+    return bool(EMAIL_REGEX.match(email.strip()))
+
+
+def validate_email_list(emails: list) -> tuple:
+    """Validate a list of emails and return (valid_emails, invalid_emails)"""
+    valid = []
+    invalid = []
+    for email in emails:
+        if is_valid_email(email):
+            valid.append(email.strip().lower())
+        else:
+            invalid.append(email)
+    return valid, invalid
+
+
+async def send_test_email(to_email: str, subject: str, html_content: str, from_name: str = None) -> dict:
+    """Send a test email and return status"""
+    sg_api_key = os.environ.get("SENDGRID_API_KEY")
+    sender_email = os.environ.get("SENDER_EMAIL", "noreply@vasilisnetshield.com")
+    
+    if not sg_api_key:
+        return {"success": False, "error": "SendGrid API key not configured"}
+    
+    if not is_valid_email(to_email):
+        return {"success": False, "error": f"Invalid email format: {to_email}"}
+    
+    try:
+        sg = SendGridAPIClient(api_key=sg_api_key)
+        
+        from_email = Email(sender_email, from_name or "Vasilis NetShield")
+        message = Mail(
+            from_email=from_email,
+            to_emails=To(to_email),
+            subject=subject,
+            html_content=Content("text/html", html_content)
+        )
+        
+        response = sg.send(message)
+        
+        if response.status_code in [200, 201, 202]:
+            return {"success": True, "status_code": response.status_code}
+        else:
+            return {"success": False, "error": f"SendGrid returned status {response.status_code}"}
+    except Exception as e:
+        logger.error(f"Failed to send test email: {e}")
+        return {"success": False, "error": str(e)}
 
 
 async def get_branding_settings(db):
