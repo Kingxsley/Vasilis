@@ -1307,7 +1307,7 @@ export default function ContentManager() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => toggleRssFeedEnabled(feed)}
+                            onClick={() => toggleRssFeed(feed)}
                             className="text-gray-400 hover:text-[#E8DDB5]"
                           >
                             {feed.enabled ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
