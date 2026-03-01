@@ -831,28 +831,64 @@ export default function CredentialHarvest() {
                       >
                         <Lock className="w-5 h-5" style={{ color: template.preview_color }} />
                       </div>
-                      <div>
+                      <div className="flex-1">
                         <CardTitle className="text-base">{template.name}</CardTitle>
                         <p className="text-xs text-gray-500">{template.brand}</p>
                       </div>
+                      {template.id.startsWith('custom_') || template.id.startsWith('modified_') ? (
+                        <Badge className="bg-purple-500/20 text-purple-400 text-xs">Custom</Badge>
+                      ) : (
+                        <Badge className="bg-blue-500/20 text-blue-400 text-xs">Default</Badge>
+                      )}
                     </div>
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm text-gray-400 mb-3 line-clamp-2">{template.description}</p>
-                    <div className="space-y-1 text-xs text-gray-500">
+                    <div className="space-y-1 text-xs text-gray-500 mb-3">
                       <p><Mail className="w-3 h-3 inline mr-1" /> {template.subject}</p>
                       <p><User className="w-3 h-3 inline mr-1" /> {template.sender_name}</p>
+                      {template.credential_fields && (
+                        <p><KeyRound className="w-3 h-3 inline mr-1" /> Fields: {template.credential_fields.join(', ')}</p>
+                      )}
                     </div>
-                    <Button
-                      size="sm"
-                      className="w-full mt-4 bg-[#D4A836] hover:bg-[#B8922E] text-black"
-                      onClick={() => {
-                        setNewCampaign(prev => ({ ...prev, template_id: template.id }));
-                        setShowNewCampaign(true);
-                      }}
-                    >
-                      Use Template
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        className="flex-1 bg-[#D4A836] hover:bg-[#B8922E] text-black"
+                        onClick={() => {
+                          setNewCampaign(prev => ({ ...prev, template_id: template.id }));
+                          setShowNewCampaign(true);
+                        }}
+                      >
+                        Use
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-[#30363D]"
+                        onClick={() => handleEditTemplate(template)}
+                      >
+                        <Edit className="w-3 h-3" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-[#30363D]"
+                        onClick={() => handleCopyTemplate(template)}
+                      >
+                        <Copy className="w-3 h-3" />
+                      </Button>
+                      {(template.id.startsWith('custom_') || template.id.startsWith('modified_')) && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                          onClick={() => handleDeleteTemplate(template.id)}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               ))}
