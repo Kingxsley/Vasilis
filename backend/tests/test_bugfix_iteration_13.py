@@ -13,7 +13,7 @@ import os
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://vasilis-bugfix.preview.emergentagent.com')
 API = f"{BASE_URL}/api"
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def auth_token():
     """Get authentication token"""
     response = requests.post(f"{API}/auth/login", json={
@@ -24,7 +24,7 @@ def auth_token():
         return response.json().get("token")
     pytest.skip("Authentication failed")
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def headers(auth_token):
     """Authenticated headers"""
     return {"Authorization": f"Bearer {auth_token}", "Content-Type": "application/json"}
