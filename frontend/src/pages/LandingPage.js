@@ -189,6 +189,12 @@ export default function LandingPage() {
     ...customPages.map(page => ({
       to: `/page/${page.slug}`,
       label: page.title
+    })),
+    // Add CMS tiles
+    ...cmsTiles.map(tile => ({
+      to: tile.route_type === 'external' ? tile.external_url : `/page/${tile.slug}`,
+      label: tile.name,
+      external: tile.route_type === 'external'
     }))
   ].filter(Boolean) : [];
 
