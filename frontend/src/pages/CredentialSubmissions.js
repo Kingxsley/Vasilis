@@ -301,19 +301,35 @@ export default function CredentialSubmissions() {
           <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <CardTitle className="text-lg">Submission Details</CardTitle>
-              <Select value={selectedCampaign} onValueChange={setSelectedCampaign}>
-                <SelectTrigger className="w-[250px] bg-[#0D1117] border-[#30363D]">
-                  <SelectValue placeholder="Filter by campaign" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#161B22] border-[#30363D]">
-                  <SelectItem value="all">All Campaigns</SelectItem>
-                  {campaigns.map(c => (
-                    <SelectItem key={c.campaign_id} value={c.campaign_id}>
-                      {c.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex gap-3">
+                <Select value={selectedOrg} onValueChange={setSelectedOrg}>
+                  <SelectTrigger className="w-[200px] bg-[#0D1117] border-[#30363D]" data-testid="org-filter">
+                    <Building2 className="w-4 h-4 mr-2 text-gray-400" />
+                    <SelectValue placeholder="Filter by organization" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#161B22] border-[#30363D]">
+                    <SelectItem value="all">All Organizations</SelectItem>
+                    {organizations.map(org => (
+                      <SelectItem key={org.organization_id} value={org.organization_id}>
+                        {org.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={selectedCampaign} onValueChange={setSelectedCampaign}>
+                  <SelectTrigger className="w-[250px] bg-[#0D1117] border-[#30363D]" data-testid="campaign-filter">
+                    <SelectValue placeholder="Filter by campaign" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#161B22] border-[#30363D]">
+                    <SelectItem value="all">All Campaigns</SelectItem>
+                    {campaigns.map(c => (
+                      <SelectItem key={c.campaign_id} value={c.campaign_id}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
