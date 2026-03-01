@@ -51,7 +51,7 @@ export default function RSSFeedManager() {
 
   const fetchFeeds = async () => {
     try {
-      const res = await axios.get(`${API}/content/rss-feeds`, { headers });
+      const res = await axios.get(`${API}/content/news/rss-feeds`, { headers });
       setFeeds(res.data.feeds || []);
     } catch (err) {
       console.error('Failed to fetch feeds:', err);
@@ -69,7 +69,7 @@ export default function RSSFeedManager() {
     
     setSaving(true);
     try {
-      await axios.post(`${API}/content/rss-feeds`, newFeed, { headers });
+      await axios.post(`${API}/content/news/rss-feeds`, newFeed, { headers });
       toast.success('RSS feed added successfully');
       setShowCreate(false);
       setNewFeed({
@@ -92,7 +92,7 @@ export default function RSSFeedManager() {
     
     setSaving(true);
     try {
-      await axios.patch(`${API}/content/rss-feeds/${editingFeed.feed_id}`, editingFeed, { headers });
+      await axios.patch(`${API}/content/news/rss-feeds/${editingFeed.feed_id}`, editingFeed, { headers });
       toast.success('RSS feed updated');
       setShowEdit(false);
       setEditingFeed(null);
@@ -108,7 +108,7 @@ export default function RSSFeedManager() {
     if (!window.confirm('Are you sure you want to delete this RSS feed?')) return;
     
     try {
-      await axios.delete(`${API}/content/rss-feeds/${feedId}`, { headers });
+      await axios.delete(`${API}/content/news/rss-feeds/${feedId}`, { headers });
       toast.success('RSS feed deleted');
       fetchFeeds();
     } catch (err) {
@@ -119,7 +119,7 @@ export default function RSSFeedManager() {
   const refreshFeed = async (feedId) => {
     setRefreshing(feedId);
     try {
-      await axios.post(`${API}/content/rss-feeds/${feedId}/refresh`, {}, { headers });
+      await axios.post(`${API}/content/news/rss-feeds/${feedId}/refresh`, {}, { headers });
       toast.success('Feed refreshed successfully');
       fetchFeeds();
     } catch (err) {
