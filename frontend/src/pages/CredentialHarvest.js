@@ -869,6 +869,7 @@ export default function CredentialHarvest() {
                         variant="outline"
                         className="border-[#30363D]"
                         onClick={() => handleEditTemplate(template)}
+                        data-testid={`edit-template-${template.id}`}
                       >
                         <Edit className="w-3 h-3" />
                       </Button>
