@@ -95,9 +95,9 @@ class TestOnlineUsersEndpoint:
         data = response.json()
         assert data["minutes_threshold"] == 10
     
-    def test_online_users_requires_auth(self, api_client):
+    def test_online_users_requires_auth(self, unauthenticated_client):
         """Test that online users endpoint requires authentication"""
-        response = api_client.get(f"{BASE_URL}/api/analytics/online-users")
+        response = unauthenticated_client.get(f"{BASE_URL}/api/analytics/online-users")
         assert response.status_code == 401, "Endpoint should require authentication"
 
 
@@ -155,14 +155,14 @@ class TestExecutiveTrainingModulesAPI:
         assert 'attachment' in content_disp.lower(), "Should have attachment disposition"
         assert '.pptx' in content_disp.lower(), "Filename should have .pptx extension"
     
-    def test_generate_presentation_requires_auth(self, api_client):
+    def test_generate_presentation_requires_auth(self, unauthenticated_client):
         """Test that generate endpoint requires authentication"""
-        response = api_client.get(f"{BASE_URL}/api/executive-training/generate/phishing")
+        response = unauthenticated_client.get(f"{BASE_URL}/api/executive-training/generate/phishing")
         assert response.status_code == 401, "Endpoint should require authentication"
     
-    def test_available_modules_requires_auth(self, api_client):
+    def test_available_modules_requires_auth(self, unauthenticated_client):
         """Test that available modules endpoint requires authentication"""
-        response = api_client.get(f"{BASE_URL}/api/executive-training/available-modules")
+        response = unauthenticated_client.get(f"{BASE_URL}/api/executive-training/available-modules")
         assert response.status_code == 401, "Endpoint should require authentication"
 
 
