@@ -118,27 +118,39 @@ def generate_training_certificate(
     c.line(page_width/2 - line_width/2, y_position, page_width/2 + line_width/2, y_position)
     y_position -= 40
     
-    # Completion text
+    # Completion text - show module name prominently
     c.setFont("Helvetica", 12)
     c.setFillColor(text_color)
-    c.drawCentredString(page_width / 2, y_position, "for successfully completing the following security training modules:")
-    y_position -= 30
     
-    # Modules list
-    c.setFont("Helvetica-Bold", 11)
-    modules_text = " • ".join(modules_completed) if modules_completed else "Security Awareness Training"
-    
-    # Word wrap if too long
-    if len(modules_text) > 80:
-        mid = len(modules_text) // 2
-        split_point = modules_text.rfind(' • ', 0, mid)
-        if split_point > 0:
-            c.drawCentredString(page_width / 2, y_position, modules_text[:split_point])
-            y_position -= 18
-            c.drawCentredString(page_width / 2, y_position, modules_text[split_point+3:])
+    # Check if single module or multiple
+    if len(modules_completed) == 1:
+        c.drawCentredString(page_width / 2, y_position, "for successfully completing the security training module:")
+        y_position -= 35
+        
+        # Single module name - display prominently
+        c.setFont("Helvetica-Bold", 16)
+        c.setFillColor(primary_color)
+        c.drawCentredString(page_width / 2, y_position, modules_completed[0])
+        y_position -= 35
     else:
-        c.drawCentredString(page_width / 2, y_position, modules_text)
-    y_position -= 35
+        c.drawCentredString(page_width / 2, y_position, "for successfully completing the following security training modules:")
+        y_position -= 30
+        
+        # Modules list
+        c.setFont("Helvetica-Bold", 11)
+        modules_text = " • ".join(modules_completed) if modules_completed else "Security Awareness Training"
+        
+        # Word wrap if too long
+        if len(modules_text) > 80:
+            mid = len(modules_text) // 2
+            split_point = modules_text.rfind(' • ', 0, mid)
+            if split_point > 0:
+                c.drawCentredString(page_width / 2, y_position, modules_text[:split_point])
+                y_position -= 18
+                c.drawCentredString(page_width / 2, y_position, modules_text[split_point+3:])
+        else:
+            c.drawCentredString(page_width / 2, y_position, modules_text)
+        y_position -= 35
     
     # Score
     c.setFont("Helvetica", 12)
