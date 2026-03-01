@@ -107,11 +107,12 @@ export default function Dashboard() {
       bgColor: 'bg-[#00E676]/10'
     },
     {
-      title: 'Active Users',
-      value: userStats?.active_users || 0,
+      title: 'Online Now',
+      value: onlineUsers?.online_count || 0,
       icon: Activity,
       color: '#00E676',
-      bgColor: 'bg-[#00E676]/10'
+      bgColor: 'bg-[#00E676]/10',
+      subtitle: 'Last 5 min'
     },
     {
       title: 'Inactive Users',
