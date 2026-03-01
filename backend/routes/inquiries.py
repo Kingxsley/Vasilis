@@ -53,8 +53,18 @@ class InquiryCreate(BaseModel):
 
 
 class InquiryUpdate(BaseModel):
-    status: str  # pending, contacted, approved, rejected
+    status: str  # pending, contacted, approved, rejected, resolved
     admin_notes: Optional[str] = None
+
+
+class ApproveAndCreateUser(BaseModel):
+    role: str = "trainee"  # trainee, org_admin, super_admin
+    organization_id: Optional[str] = None
+    send_welcome_email: bool = True
+
+
+class AssignToAdmin(BaseModel):
+    admin_id: str
 
 
 # ============== HELPER FUNCTIONS ==============
