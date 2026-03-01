@@ -132,6 +132,16 @@ View this submission in the admin dashboard.
         email_body
     )
     
+    # Send Discord notification to super admins
+    background_tasks.add_task(
+        send_discord_contact_notification,
+        db,
+        data.name,
+        data.email,
+        data.subject,
+        data.message
+    )
+    
     return {"message": "Contact form submitted successfully", "submission_id": submission_id}
 
 
