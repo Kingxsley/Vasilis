@@ -382,9 +382,163 @@ export default function ExecutiveTraining() {
                 </div>
               </div>
             )}
+
+            {/* Uploaded Presentations (Super Admin only) */}
+            {isSuperAdmin && uploadedPresentations.length > 0 && (
+              <div className="mt-8">
+                <h2 className="text-xl font-semibold text-[#E8DDB5] mb-4">Uploaded Presentations</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {uploadedPresentations.map((pres) => (
+                    <Card 
+                      key={pres.presentation_id} 
+                      className="bg-[#161B22] border-[#30363D] hover:border-[#D4A836]/50 transition-colors"
+                    >
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+                            <Upload className="w-5 h-5 text-green-400" />
+                          </div>
+                          <div className="flex-1">
+                            <CardTitle className="text-base text-[#E8DDB5]">{pres.name}</CardTitle>
+                            <p className="text-xs text-gray-500 line-clamp-1">
+                              {pres.description || pres.filename}
+                            </p>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center justify-between mb-3">
+                          <Badge className="bg-green-500/20 text-green-400">
+                            Uploaded
+                          </Badge>
+                          <span className="text-xs text-gray-500">
+                            {(pres.file_size / 1024).toFixed(0)} KB
+                          </span>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            className="flex-1 border-[#30363D] text-[#E8DDB5]"
+                            onClick={() => downloadUploaded(pres.presentation_id, pres.filename)}
+                            disabled={downloading === pres.presentation_id}
+                          >
+                            {downloading === pres.presentation_id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Download className="w-4 h-4" />
+                            )}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                            onClick={() => deleteUploaded(pres.presentation_id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
+
+      {/* Upload Dialog */}
+      <Dialog open={showUpload} onOpenChange={setShowUpload}>
+        <DialogContent className="bg-[#161B22] border-[#30363D]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Upload className="w-5 h-5 text-[#D4A836]" />
+              Upload Presentation
+            </DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Upload a custom PowerPoint presentation for your training library
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Presentation Name *</Label>
+              <Input
+                value={uploadForm.name}
+                onChange={(e) => setUploadForm(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="e.g., Advanced Phishing Detection"
+                className="bg-[#0D1117] border-[#30363D]"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Description</Label>
+              <Input
+                value={uploadForm.description}
+                onChange={(e) => setUploadForm(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Brief description of the training content"
+                className="bg-[#0D1117] border-[#30363D]"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>PowerPoint File *</Label>
+              <div 
+                className="border-2 border-dashed border-[#30363D] rounded-lg p-6 text-center cursor-pointer hover:border-[#D4A836]/50 transition-colors"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pptx"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setUploadForm(prev => ({ ...prev, file }));
+                    }
+                  }}
+                />
+                {uploadForm.file ? (
+                  <div className="text-[#E8DDB5]">
+                    <FileText className="w-8 h-8 mx-auto mb-2 text-[#D4A836]" />
+                    <p>{uploadForm.file.name}</p>
+                    <p className="text-xs text-gray-500">{(uploadForm.file.size / 1024).toFixed(0)} KB</p>
+                  </div>
+                ) : (
+                  <div className="text-gray-400">
+                    <Upload className="w-8 h-8 mx-auto mb-2" />
+                    <p>Click to select a .pptx file</p>
+                    <p className="text-xs">Max 50MB</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowUpload(false)} className="border-[#30363D]">
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleUpload} 
+              className="bg-[#D4A836] hover:bg-[#B8922E] text-black"
+              disabled={uploading}
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
