@@ -11,7 +11,7 @@ export default defineConfig({
     ['json', { outputFile: '/root/.emergent/automation_output/20260301_092623/results.json' }],
   ],
   use: {
-    baseURL: 'https://vasilis-cert-fix.preview.emergentagent.com',
+    baseURL: 'https://vasilis-bugfix.preview.emergentagent.com',
     screenshot: 'only-on-failure',
     trace: 'off',
     headless: true,
