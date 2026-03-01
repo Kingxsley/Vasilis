@@ -167,3 +167,121 @@ async def generate_custom_presentation(data: PresentationRequest, request: Reque
     except Exception as e:
         logger.error(f"Failed to generate custom presentation: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to generate presentation: {str(e)}")
+
+
+async def require_super_admin(request: Request) -> dict:
+    """Require super admin access"""
+    user = await get_current_user(request)
+    if user.get("role") != "super_admin":
+        raise HTTPException(status_code=403, detail="Super admin access required")
+    return user
+
+
+class UploadedPresentation(BaseModel):
+    name: str
+    description: Optional[str] = ""
+    module_key: str
+
+
+@router.get("/uploaded")
+async def get_uploaded_presentations(request: Request):
+    """Get all uploaded custom presentations (super admin only)"""
+    await require_super_admin(request)
+    db = get_db()
+    
+    presentations = await db.uploaded_presentations.find(
+        {}, 
+        {"_id": 0, "file_data": 0}  # Exclude file data from listing
+    ).sort("created_at", -1).to_list(100)
+    
+    return {"presentations": presentations}
+
+
+@router.post("/upload")
+async def upload_presentation(request: Request):
+    """Upload a custom PPTX presentation (super admin only)"""
+    from fastapi import Form, UploadFile, File
+    from datetime import datetime, timezone
+    import uuid
+    
+    user = await require_super_admin(request)
+    db = get_db()
+    
+    # Parse form data
+    form = await request.form()
+    file = form.get("file")
+    name = form.get("name", "Custom Presentation")
+    description = form.get("description", "")
+    module_key = form.get("module_key", f"custom_{uuid.uuid4().hex[:8]}")
+    
+    if not file:
+        raise HTTPException(status_code=400, detail="No file uploaded")
+    
+    # Validate file type
+    if not file.filename.endswith('.pptx'):
+        raise HTTPException(status_code=400, detail="Only PPTX files are allowed")
+    
+    # Read file content
+    file_content = await file.read()
+    
+    # Check file size (max 50MB)
+    if len(file_content) > 50 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File size exceeds 50MB limit")
+    
+    presentation_id = f"pres_{uuid.uuid4().hex[:12]}"
+    
+    presentation = {
+        "presentation_id": presentation_id,
+        "name": name,
+        "description": description,
+        "module_key": module_key,
+        "filename": file.filename,
+        "file_size": len(file_content),
+        "file_data": file_content,
+        "uploaded_by": user["user_id"],
+        "uploaded_by_email": user.get("email"),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.uploaded_presentations.insert_one(presentation)
+    
+    return {
+        "presentation_id": presentation_id,
+        "name": name,
+        "module_key": module_key,
+        "message": "Presentation uploaded successfully"
+    }
+
+
+@router.get("/download-uploaded/{presentation_id}")
+async def download_uploaded_presentation(presentation_id: str, request: Request):
+    """Download an uploaded presentation"""
+    await require_admin(request)
+    db = get_db()
+    
+    presentation = await db.uploaded_presentations.find_one(
+        {"presentation_id": presentation_id}
+    )
+    
+    if not presentation:
+        raise HTTPException(status_code=404, detail="Presentation not found")
+    
+    return StreamingResponse(
+        io.BytesIO(presentation["file_data"]),
+        media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        headers={"Content-Disposition": f"attachment; filename={presentation['filename']}"}
+    )
+
+
+@router.delete("/uploaded/{presentation_id}")
+async def delete_uploaded_presentation(presentation_id: str, request: Request):
+    """Delete an uploaded presentation (super admin only)"""
+    await require_super_admin(request)
+    db = get_db()
+    
+    result = await db.uploaded_presentations.delete_one({"presentation_id": presentation_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Presentation not found")
+    
+    return {"message": "Presentation deleted successfully"}
