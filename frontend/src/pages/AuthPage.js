@@ -71,10 +71,37 @@ export default function AuthPage() {
 
     try {
       if (mode === 'login') {
-        // Login without 2FA code - 2FA is handled post-login if user has it enabled
-        const user = await login(formData.email, formData.password);
-        toast.success(`Welcome back, ${user.name}!`);
-        if (user.role === 'super_admin' || user.role === 'org_admin') {
+        // First attempt login - may require 2FA
+        const result = await login(formData.email, formData.password, twoFactorCode || null);
+        
+        // Check if 2FA is required
+        if (result.requires_2fa) {
+          setRequires2FA(true);
+          setPendingToken({ email: formData.email, password: formData.password });
+          toast.info('Please enter your two-factor authentication code');
+          setLoading(false);
+          return;
+        }
+        
+        toast.success(`Welcome back, ${result.name}!`);
+        if (result.role === 'super_admin' || result.role === 'org_admin') {
+          navigate('/dashboard', { replace: true });
+        } else {
+          navigate('/training', { replace: true });
+        }
+      } else if (mode === '2fa') {
+        // Handle 2FA verification
+        if (!twoFactorCode || twoFactorCode.length !== 6) {
+          toast.error('Please enter a valid 6-digit code');
+          setLoading(false);
+          return;
+        }
+        const result = await login(pendingToken.email, pendingToken.password, twoFactorCode);
+        toast.success(`Welcome back, ${result.name}!`);
+        setRequires2FA(false);
+        setPendingToken(null);
+        setTwoFactorCode('');
+        if (result.role === 'super_admin' || result.role === 'org_admin') {
           navigate('/dashboard', { replace: true });
         } else {
           navigate('/training', { replace: true });
