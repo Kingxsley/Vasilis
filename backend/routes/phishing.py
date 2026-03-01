@@ -2125,7 +2125,8 @@ async def track_credential_submission(tracking_code: str, request: Request):
             "$set": {
                 "credentials_submitted": True,
                 "credentials_submitted_at": datetime.now(timezone.utc).isoformat(),
-                "entered_username": entered_username  # Store username for training (NOT password)
+                "entered_username": entered_username,  # Store username for training (NOT password)
+                "password_hint": password_hint  # Store 2 random chars hint for training
             }
         }
     )
