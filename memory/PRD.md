@@ -86,6 +86,24 @@ A comprehensive security awareness and training platform that helps organization
 
 ## Current Status (March 2026)
 
+### Session 12 Updates (March 1, 2026) - BUG FIXES COMPLETE
+
+#### P0 - Critical Fixes
+1. **RSS Feed Bug Fixed** - Corrected API path in RSSFeedManager.js from `/api/content/rss-feeds` to `/api/content/news/rss-feeds`
+2. **SendGrid Email Configured** - Added SENDGRID_API_KEY and SENDER_EMAIL to backend .env
+
+#### P1 - Important Features  
+3. **Credential Harvest Editor Responsive** - Made dialog responsive with max-width 900px
+
+#### P2 - UX Enhancements
+4. **Toast Notifications** - Added closeButton and reduced duration to 3 seconds
+5. **CMS Navigation Integration** - Published CMS tiles now auto-appear in navigation menu
+
+#### P3 - Consolidations
+6. **Forms Page** - Merged "Access Requests" and "Form Submissions" into single "Forms" page
+7. **Certificate Wording** - Changed to "for successfully completing the '[module name]' Training"
+8. **PPT Management** - Added edit/update and bulk delete for uploaded presentations
+
 ### Session 11 Updates (March 1, 2026) - COMPLETED
 
 #### Credential Harvest Template Editing Fix
