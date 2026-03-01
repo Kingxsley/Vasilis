@@ -564,35 +564,34 @@ async def login(data: UserLogin, request: Request):
         )
         raise HTTPException(status_code=403, detail="Two-factor authentication is required. Please enable 2FA to continue.")
 
-    # If user has two-factor authentication enabled, verify code
+    # NEW 2FA FLOW: If user has 2FA enabled but no code provided, 
+    # we allow login but set a flag indicating 2FA verification is needed
+    requires_2fa_verification = False
     if user.get("two_factor_enabled"):
-        # A two-factor code must be provided
-        if not data.two_factor_code:
-            await audit_logger.log(
-                action="login_failed_missing_2fa",
-                user_email=data.email,
-                ip_address=client_ip,
-                severity="warning"
-            )
-            raise HTTPException(status_code=403, detail="Two-factor authentication code required")
-        secret = user.get("two_factor_secret")
-        if not secret:
-            logger.error(f"User {user['user_id']} has 2FA enabled but no secret stored")
-            raise HTTPException(status_code=500, detail="Two-factor authentication misconfigured")
-        try:
-            totp = pyotp.TOTP(secret)
-            # verify returns True if the code is valid for current window (30s)
-            if not totp.verify(data.two_factor_code, valid_window=1):
-                await audit_logger.log(
-                    action="login_failed_invalid_2fa",
-                    user_email=data.email,
-                    ip_address=client_ip,
-                    severity="warning"
-                )
-                raise HTTPException(status_code=401, detail="Invalid two-factor authentication code")
-        except Exception as e:
-            logger.error(f"2FA verification error for {user['user_id']}: {e}")
-            raise HTTPException(status_code=500, detail="Two-factor verification failed")
+        if data.two_factor_code:
+            # User provided 2FA code - verify it
+            secret = user.get("two_factor_secret")
+            if not secret:
+                logger.error(f"User {user['user_id']} has 2FA enabled but no secret stored")
+                raise HTTPException(status_code=500, detail="Two-factor authentication misconfigured")
+            try:
+                totp = pyotp.TOTP(secret)
+                if not totp.verify(data.two_factor_code, valid_window=1):
+                    await audit_logger.log(
+                        action="login_failed_invalid_2fa",
+                        user_email=data.email,
+                        ip_address=client_ip,
+                        severity="warning"
+                    )
+                    raise HTTPException(status_code=401, detail="Invalid two-factor authentication code")
+            except HTTPException:
+                raise
+            except Exception as e:
+                logger.error(f"2FA verification error for {user['user_id']}: {e}")
+                raise HTTPException(status_code=500, detail="Two-factor verification failed")
+        else:
+            # No 2FA code provided - allow login but flag that verification is needed
+            requires_2fa_verification = True
     
     token = create_jwt_token(user["user_id"], user["email"], user["role"])
     
