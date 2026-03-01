@@ -86,6 +86,60 @@ A comprehensive security awareness and training platform that helps organization
 
 ## Current Status (March 2026)
 
+### Session 11 Updates (March 1, 2026) - COMPLETED
+
+#### Credential Harvest Template Editing Fix
+- Added data-testid for debugging
+- Ensured all template fields are properly initialized when editing
+- Visual email builder with drag-drop blocks working
+
+#### CMS Tiles Management (New Feature)
+- **Page:** `/cms-tiles` - Full CMS management page
+- **Features:**
+  - 4 default system tiles: Blog, News, Videos, About
+  - Add unlimited custom tiles
+  - Publish/unpublish toggle
+  - Edit tile name, slug, icon, description
+  - Route types: Internal, External, Custom content
+  - System tiles protected from deletion
+
+#### RSS Feed Manager (New Feature)
+- **Page:** `/rss-feeds` - Multiple RSS feed management
+- **Features:**
+  - Add multiple RSS feeds from different sources
+  - Edit feed settings (name, URL, category, refresh interval)
+  - Toggle active/inactive
+  - Popular cybersecurity feeds suggestions
+  - News page pagination (15 items per page)
+
+#### Form Submissions (New Feature)
+- **Page:** `/form-submissions` - View all contact inquiries
+- **Features:**
+  - View contact form submissions
+  - View access requests
+  - Stats dashboard (total, pending, resolved)
+  - Update status, send replies, delete
+  - **Emails sent to:** info@vasilisnetshield.com
+
+#### Executive Training PPT Expansion
+- **Phishing module:** Expanded to 33 slides (from 15)
+- **New slides added:**
+  - Gift Card Scam example
+  - Mobile Phishing threats
+  - Voice Phishing (Vishing)
+  - AI-Powered Phishing
+  - URL Analysis Techniques
+  - Email Header Analysis
+  - Attachment Safety
+  - Building Defense
+  - Phishing Response Playbook
+  - Resources and Tools
+  - Quiz: Spot the Phishing
+  - Action Items
+
+### Test Credentials
+- Admin: `test@admin.com` / `TestAdmin123!`
+
 ### Session 10 Updates (March 1, 2026) - COMPLETED
 
 #### Phase 1 - Critical Fixes
