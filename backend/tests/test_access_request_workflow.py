@@ -39,9 +39,9 @@ def authenticated_client():
     pytest.skip("Authentication failed - skipping authenticated tests")
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def test_inquiry(authenticated_client):
-    """Create a test inquiry for testing workflows"""
+    """Create a test inquiry for testing workflows - fresh for each test"""
     unique_id = uuid.uuid4().hex[:8]
     
     # Create inquiry via public endpoint
