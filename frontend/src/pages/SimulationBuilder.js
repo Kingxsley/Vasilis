@@ -1139,10 +1139,24 @@ export default function SimulationBuilder() {
             case 'image':
               return (
                 <div key={block.instanceId} className="mb-4 text-center">
-                  <div className="w-32 h-32 bg-gray-100 rounded flex items-center justify-center mx-auto">
+                  {value && (value.startsWith('http') || value.startsWith('data:')) ? (
+                    <img 
+                      src={value} 
+                      alt="Content" 
+                      className="max-w-[200px] max-h-[150px] rounded mx-auto object-contain border border-gray-200"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div 
+                    className="w-32 h-32 bg-gray-100 rounded flex items-center justify-center mx-auto"
+                    style={{ display: value && (value.startsWith('http') || value.startsWith('data:')) ? 'none' : 'flex' }}
+                  >
                     <Image className="w-12 h-12 text-gray-400" />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">{value || 'Image'}</p>
+                  <p className="text-xs text-gray-500 mt-1">{value && !value.startsWith('http') && !value.startsWith('data:') ? value : 'Image'}</p>
                 </div>
               );
             case 'divider':
