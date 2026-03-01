@@ -1,82 +1,84 @@
 import { test, expect } from '@playwright/test';
 import { waitForAppReady, dismissToasts, loginAsAdmin, ADMIN_EMAIL, ADMIN_PASSWORD } from '../fixtures/helpers';
 
-test.describe('Bug Fixes and New Features - Iteration 12', () => {
+test.describe('Bug Fixes - Iteration 13', () => {
   // Single comprehensive test to avoid rate limiting from multiple logins
-  test('Verify all bug fixes and new features', async ({ page }) => {
+  test('Verify bug fixes: sidebar simplified, CMS tiles in Content Manager, RSS status', async ({ page }) => {
     await dismissToasts(page);
     await loginAsAdmin(page);
     
-    // ===== TEST 1: Forms page title is "Forms" (not "Form Submissions") =====
-    await page.goto('/form-submissions');
-    await waitForAppReady(page);
-    
-    await expect(page.getByTestId('form-submissions-page')).toBeVisible({ timeout: 15000 });
-    
-    // The page title should now be "Forms" instead of "Form Submissions"
-    await expect(page.getByRole('heading', { name: 'Forms', exact: true })).toBeVisible();
-    
-    // Check for both tabs (consolidated Forms page)
-    const contactTab = page.getByRole('tab', { name: /Contact Forms/i });
-    const accessTab = page.getByRole('tab', { name: /Access Requests/i });
-    
-    await expect(contactTab).toBeVisible();
-    await expect(accessTab).toBeVisible();
-    
-    // Stats should show Contact Forms and Access Requests counts
-    await expect(page.locator('[data-testid="form-submissions-page"]').getByText('Contact Forms').first()).toBeVisible();
-    await expect(page.locator('[data-testid="form-submissions-page"]').getByText('Access Requests').first()).toBeVisible();
-    await expect(page.locator('[data-testid="form-submissions-page"]').getByText('Pending').first()).toBeVisible();
-    await expect(page.locator('[data-testid="form-submissions-page"]').getByText('Resolved').first()).toBeVisible();
-    
-    // ===== TEST 2: Navigation shows "Forms" link =====
+    // ===== TEST 1: Sidebar is simplified - NO Blog/News/Videos/About in sidebar =====
     await page.goto('/dashboard');
     await waitForAppReady(page);
     
-    // Look for "Forms" in the sidebar navigation
-    const formsLink = page.locator('nav, aside').getByText('Forms', { exact: true }).first();
-    await expect(formsLink).toBeVisible({ timeout: 10000 });
+    // Verify sidebar has Content section but NOT individual content items like Blog, News, Videos, About
+    // These should now only appear in Content Manager tabs
+    await expect(page.locator('nav, aside').getByText('Content Manager').first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('nav, aside').getByText('CMS Pages').first()).toBeVisible();
+    await expect(page.locator('nav, aside').getByText('Media Library').first()).toBeVisible();
     
-    // ===== TEST 3: Navigation includes CMS tiles =====
-    // Look for Content section items that are CMS tiles (Blog, News, Videos, About)
-    const blogLink = page.locator('nav, aside').getByText('Blog').first();
-    const newsLink = page.locator('nav, aside').getByText('News').first();
-    const videosLink = page.locator('nav, aside').getByText('Videos').first();
-    const aboutLink = page.locator('nav, aside').getByText('About').first();
+    // Blog, News, Videos, About should NOT be in sidebar (simplified sidebar fix)
+    const sidebarBlog = page.locator('nav, aside').getByRole('link').filter({ hasText: 'Blog' });
+    const sidebarNews = page.locator('nav, aside').getByRole('link').filter({ hasText: 'News' });
+    const sidebarVideos = page.locator('nav, aside').getByRole('link').filter({ hasText: 'Videos' });
+    const sidebarAbout = page.locator('nav, aside').getByRole('link').filter({ hasText: 'About' });
     
-    await expect(blogLink).toBeVisible({ timeout: 10000 });
-    await expect(newsLink).toBeVisible();
-    await expect(videosLink).toBeVisible();
-    await expect(aboutLink).toBeVisible();
+    // These should NOT be visible in sidebar
+    await expect(sidebarBlog).toHaveCount(0);
+    await expect(sidebarNews).toHaveCount(0);
+    await expect(sidebarVideos).toHaveCount(0);
+    await expect(sidebarAbout).toHaveCount(0);
     
-    // ===== TEST 4: RSS Feed Manager page loads =====
-    await page.goto('/rss-feeds');
+    // ===== TEST 2: Content Manager shows CMS tiles as tabs =====
+    await page.goto('/content');
     await waitForAppReady(page);
     
-    await expect(page.getByTestId('rss-feed-manager-page')).toBeVisible({ timeout: 15000 });
+    // Verify Content Manager loads
+    await expect(page.getByRole('heading', { name: 'Content Manager' })).toBeVisible({ timeout: 15000 });
     
-    // Click Add RSS Feed button
-    await page.getByRole('button', { name: /Add RSS Feed/i }).first().click();
+    // Verify system tabs are present: Blog, News, Videos, About
+    const blogTab = page.getByRole('tab', { name: /Blog/i });
+    const newsTab = page.getByRole('tab', { name: /News/i });
+    const videosTab = page.getByRole('tab', { name: /Videos/i });
+    const aboutTab = page.getByRole('tab', { name: /About/i });
+    const rssFeedsTab = page.getByRole('tab', { name: /RSS Feeds/i });
     
-    // Verify dialog opens with form fields
-    await expect(page.locator('[role="dialog"]')).toBeVisible({ timeout: 5000 });
-    await expect(page.locator('[role="dialog"]').getByText('Feed Name *')).toBeVisible();
-    await expect(page.locator('[role="dialog"]').getByText('RSS Feed URL *')).toBeVisible();
+    await expect(blogTab).toBeVisible();
+    await expect(newsTab).toBeVisible();
+    await expect(videosTab).toBeVisible();
+    await expect(aboutTab).toBeVisible();
+    await expect(rssFeedsTab).toBeVisible();
     
-    // Close dialog
-    await page.keyboard.press('Escape');
+    // ===== TEST 3: RSS Feeds show correct status (Active/Inactive instead of broken) =====
+    await rssFeedsTab.click();
+    await page.waitForLoadState('networkidle');
     
-    // ===== TEST 5: Executive Training page shows upload features =====
+    // Check that RSS feeds table is visible
+    await expect(page.getByText('RSS Feed Sources')).toBeVisible({ timeout: 10000 });
+    
+    // If there are feeds, check that status shows "Active" or "Inactive" (not broken)
+    // The fix changed is_active to enabled field
+    const activeStatus = page.locator('td').filter({ hasText: 'Active' });
+    const tableRows = page.locator('table tbody tr');
+    
+    const rowCount = await tableRows.count();
+    if (rowCount > 0) {
+      // At least one feed should have Active/Inactive status
+      const hasValidStatus = await page.locator('table').getByText(/^(Active|Inactive)$/).count();
+      expect(hasValidStatus).toBeGreaterThan(0);
+    }
+    
+    // ===== TEST 4: Executive Training has upload feature for super admin =====
     await page.goto('/executive-training');
     await waitForAppReady(page);
     
     await expect(page.getByTestId('executive-training-page')).toBeVisible({ timeout: 15000 });
     
-    // Super admin should see Upload button
-    await expect(page.getByRole('button', { name: /Upload/i })).toBeVisible({ timeout: 10000 });
+    // Super admin should see Upload Presentation button
+    await expect(page.getByRole('button', { name: /Upload Presentation/i })).toBeVisible({ timeout: 10000 });
     
-    // Click Upload button
-    await page.getByRole('button', { name: /Upload/i }).click();
+    // Click Upload button to verify dialog opens
+    await page.getByRole('button', { name: /Upload Presentation/i }).click();
     
     // Verify dialog opens with form fields
     await expect(page.locator('[role="dialog"]')).toBeVisible({ timeout: 5000 });
@@ -85,8 +87,39 @@ test.describe('Bug Fixes and New Features - Iteration 12', () => {
     // Close dialog
     await page.keyboard.press('Escape');
   });
+  
+  test('Credential Harvest template builder has 2-column layout', async ({ page }) => {
+    await dismissToasts(page);
+    await loginAsAdmin(page);
+    
+    // Navigate to Credential Harvest
+    await page.goto('/credential-harvest');
+    await waitForAppReady(page);
+    
+    await expect(page.getByTestId('credential-harvest-page')).toBeVisible({ timeout: 15000 });
+    
+    // Click Templates tab
+    const templatesTab = page.getByTestId('credential-harvest-page').getByRole('tab', { name: 'Templates' });
+    await templatesTab.click();
+    await page.waitForTimeout(1000);
+    
+    // Click Create Template button
+    await page.getByRole('button', { name: /Create Template/i }).click();
+    await page.waitForTimeout(1000);
+    
+    // Verify dialog with 2-column layout is visible
+    await expect(page.locator('[role="dialog"]')).toBeVisible({ timeout: 5000 });
+    
+    // Check for 2-column layout elements
+    await expect(page.locator('[role="dialog"]').getByText('Add Elements')).toBeVisible();
+    await expect(page.locator('[role="dialog"]').getByText('Live Preview')).toBeVisible();
+    
+    // Verify builder buttons are available
+    await expect(page.locator('[role="dialog"]').getByRole('button', { name: /Logo/i })).toBeVisible();
+    await expect(page.locator('[role="dialog"]').getByRole('button', { name: /Header/i })).toBeVisible();
+    await expect(page.locator('[role="dialog"]').getByRole('button', { name: /CTA Button/i })).toBeVisible();
+    
+    // Close dialog
+    await page.keyboard.press('Escape');
+  });
 });
-
-// Note: Toast notification fix (closeButton and 3 second duration) is verified by code inspection
-// <Toaster position="top-right" richColors closeButton duration={3000} />
-// UI testing is unreliable due to quick auto-dismiss
