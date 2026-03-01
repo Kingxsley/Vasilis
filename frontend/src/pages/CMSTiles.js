@@ -50,35 +50,33 @@ const ICON_OPTIONS = {
   'Settings': Settings,
 };
 
-// TileForm component - uses local state to prevent focus loss on parent re-renders
-const TileForm = ({ data, setData, isEdit = false }) => {
-  // Local state for form fields - completely isolated from parent
-  const [localName, setLocalName] = useState(data.name || '');
-  const [localSlug, setLocalSlug] = useState(data.slug || '');
-  const [localIcon, setLocalIcon] = useState(data.icon || 'FileText');
-  const [localDescription, setLocalDescription] = useState(data.description || '');
-  const [localRouteType, setLocalRouteType] = useState(data.route_type || 'custom');
-  const [localExternalUrl, setLocalExternalUrl] = useState(data.external_url || '');
-  const [localCustomContent, setLocalCustomContent] = useState(data.custom_content || '');
-  const [localPublished, setLocalPublished] = useState(data.published !== false);
+// TileForm component - uses refs to prevent any re-renders during typing
+const TileForm = React.forwardRef(({ initialData = {} }, ref) => {
+  const formRef = useRef({
+    name: initialData.name || '',
+    slug: initialData.slug || '',
+    icon: initialData.icon || 'FileText',
+    description: initialData.description || '',
+    route_type: initialData.route_type || 'custom',
+    external_url: initialData.external_url || '',
+    custom_content: initialData.custom_content || '',
+    published: initialData.published !== false
+  });
   
-  // Sync all local changes to parent using useEffect (debounced)
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      setData({
-        ...data,
-        name: localName,
-        slug: localSlug,
-        icon: localIcon,
-        description: localDescription,
-        route_type: localRouteType,
-        external_url: localExternalUrl,
-        custom_content: localCustomContent,
-        published: localPublished
-      });
-    }, 100);
-    return () => clearTimeout(timeoutId);
-  }, [localName, localSlug, localIcon, localDescription, localRouteType, localExternalUrl, localCustomContent, localPublished]);
+  // For controlled Select and Switch components, we need state
+  const [icon, setIcon] = useState(formRef.current.icon);
+  const [routeType, setRouteType] = useState(formRef.current.route_type);
+  const [published, setPublished] = useState(formRef.current.published);
+  
+  // Expose getData method to parent via ref
+  React.useImperativeHandle(ref, () => ({
+    getData: () => ({
+      ...formRef.current,
+      icon,
+      route_type: routeType,
+      published
+    })
+  }));
   
   return (
     <div className="space-y-4 py-4">
@@ -86,8 +84,8 @@ const TileForm = ({ data, setData, isEdit = false }) => {
         <div className="space-y-2">
           <Label>Tile Name *</Label>
           <Input
-            value={localName}
-            onChange={(e) => setLocalName(e.target.value)}
+            defaultValue={formRef.current.name}
+            onChange={(e) => { formRef.current.name = e.target.value; }}
             placeholder="e.g., Contact Us"
             className="bg-[#0D1117] border-[#30363D]"
             autoComplete="off"
@@ -97,8 +95,8 @@ const TileForm = ({ data, setData, isEdit = false }) => {
         <div className="space-y-2">
           <Label>URL Slug</Label>
           <Input
-            value={localSlug}
-            onChange={(e) => setLocalSlug(e.target.value.toLowerCase().replace(/\s+/g, '-'))}
+            defaultValue={formRef.current.slug}
+            onChange={(e) => { formRef.current.slug = e.target.value.toLowerCase().replace(/\s+/g, '-'); }}
             placeholder="e.g., contact-us (auto-generated if empty)"
             className="bg-[#0D1117] border-[#30363D]"
             autoComplete="off"
@@ -109,18 +107,18 @@ const TileForm = ({ data, setData, isEdit = false }) => {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>Icon</Label>
-          <Select value={localIcon} onValueChange={setLocalIcon}>
+          <Select value={icon} onValueChange={(v) => { setIcon(v); formRef.current.icon = v; }}>
             <SelectTrigger className="bg-[#0D1117] border-[#30363D]">
               <SelectValue placeholder="Select icon" />
             </SelectTrigger>
             <SelectContent className="bg-[#161B22] border-[#30363D]">
-              {Object.keys(ICON_OPTIONS).map(icon => {
-                const IconComp = ICON_OPTIONS[icon];
+              {Object.keys(ICON_OPTIONS).map(iconKey => {
+                const IconComp = ICON_OPTIONS[iconKey];
                 return (
-                  <SelectItem key={icon} value={icon}>
+                  <SelectItem key={iconKey} value={iconKey}>
                     <div className="flex items-center gap-2">
                       <IconComp className="w-4 h-4" />
-                      {icon}
+                      {iconKey}
                     </div>
                   </SelectItem>
                 );
@@ -130,7 +128,7 @@ const TileForm = ({ data, setData, isEdit = false }) => {
         </div>
         <div className="space-y-2">
           <Label>Route Type</Label>
-          <Select value={localRouteType} onValueChange={setLocalRouteType}>
+          <Select value={routeType} onValueChange={(v) => { setRouteType(v); formRef.current.route_type = v; }}>
             <SelectTrigger className="bg-[#0D1117] border-[#30363D]">
               <SelectValue placeholder="Select type" />
             </SelectTrigger>
@@ -146,20 +144,20 @@ const TileForm = ({ data, setData, isEdit = false }) => {
       <div className="space-y-2">
         <Label>Description</Label>
         <Input
-          value={localDescription}
-          onChange={(e) => setLocalDescription(e.target.value)}
+          defaultValue={formRef.current.description}
+          onChange={(e) => { formRef.current.description = e.target.value; }}
           placeholder="Brief description of the page"
           className="bg-[#0D1117] border-[#30363D]"
           autoComplete="off"
         />
       </div>
 
-      {localRouteType === 'external' && (
+      {routeType === 'external' && (
         <div className="space-y-2">
           <Label>External URL</Label>
           <Input
-            value={localExternalUrl}
-            onChange={(e) => setLocalExternalUrl(e.target.value)}
+            defaultValue={formRef.current.external_url}
+            onChange={(e) => { formRef.current.external_url = e.target.value; }}
             placeholder="https://example.com"
             className="bg-[#0D1117] border-[#30363D]"
             autoComplete="off"
@@ -167,12 +165,12 @@ const TileForm = ({ data, setData, isEdit = false }) => {
         </div>
       )}
 
-      {localRouteType === 'custom' && (
+      {routeType === 'custom' && (
         <div className="space-y-2">
           <Label>Custom Page Content (HTML)</Label>
           <Textarea
-            value={localCustomContent}
-            onChange={(e) => setLocalCustomContent(e.target.value)}
+            defaultValue={formRef.current.custom_content}
+            onChange={(e) => { formRef.current.custom_content = e.target.value; }}
             placeholder="<div>Your custom page content...</div>"
             className="bg-[#0D1117] border-[#30363D] min-h-[150px] font-mono text-sm"
           />
@@ -185,13 +183,13 @@ const TileForm = ({ data, setData, isEdit = false }) => {
           <p className="text-xs text-gray-500">Show this tile in navigation</p>
         </div>
         <Switch
-          checked={localPublished}
-          onCheckedChange={setLocalPublished}
+          checked={published}
+          onCheckedChange={(checked) => { setPublished(checked); formRef.current.published = checked; }}
         />
       </div>
     </div>
   );
-};
+});
 
 export default function CMSTiles() {
   const { token } = useAuth();
