@@ -152,10 +152,10 @@ async def get_public_tiles():
             tile["created_at"] = datetime.now(timezone.utc).isoformat()
             await db.cms_tiles.insert_one(tile.copy())
     
-    # Only return published tiles
+    # Only return published tiles with necessary fields
     tiles = await db.cms_tiles.find(
         {"published": True}, 
-        {"_id": 0, "tile_id": 1, "name": 1, "slug": 1, "icon": 1, "route_type": 1, "external_url": 1, "is_system": 1}
+        {"_id": 0, "tile_id": 1, "name": 1, "slug": 1, "icon": 1, "route_type": 1, "external_url": 1, "is_system": 1, "published": 1}
     ).sort("sort_order", 1).to_list(100)
     
     return {"tiles": tiles}
