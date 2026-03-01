@@ -47,8 +47,10 @@ export default function CredentialSubmissions() {
   const [submissions, setSubmissions] = useState([]);
   const [stats, setStats] = useState(null);
   const [campaigns, setCampaigns] = useState([]);
+  const [organizations, setOrganizations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCampaign, setSelectedCampaign] = useState('all');
+  const [selectedOrg, setSelectedOrg] = useState('all');
   const [showTestDialog, setShowTestDialog] = useState(false);
   const [testData, setTestData] = useState({
     campaign_id: '',
@@ -61,17 +63,32 @@ export default function CredentialSubmissions() {
   const headers = { Authorization: `Bearer ${token}` };
 
   useEffect(() => {
+    fetchOrganizations();
+  }, []);
+
+  useEffect(() => {
     fetchData();
-  }, [selectedCampaign]);
+  }, [selectedCampaign, selectedOrg]);
+
+  const fetchOrganizations = async () => {
+    try {
+      const res = await axios.get(`${API}/organizations`, { headers });
+      setOrganizations(res.data?.organizations || res.data || []);
+    } catch (err) {
+      console.error('Failed to fetch organizations:', err);
+    }
+  };
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const params = selectedCampaign !== 'all' ? { campaign_id: selectedCampaign } : {};
+      const params = {};
+      if (selectedCampaign !== 'all') params.campaign_id = selectedCampaign;
+      if (selectedOrg !== 'all') params.organization_id = selectedOrg;
       
       const [submissionsRes, statsRes, campaignsRes] = await Promise.all([
         axios.get(`${API}/phishing/credential-submissions`, { headers, params }),
-        axios.get(`${API}/phishing/credential-submissions/stats`, { headers }),
+        axios.get(`${API}/phishing/credential-submissions/stats`, { headers, params: selectedOrg !== 'all' ? { organization_id: selectedOrg } : {} }),
         axios.get(`${API}/phishing/campaigns`, { headers })
       ]);
       
