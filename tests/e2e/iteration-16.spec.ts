@@ -77,12 +77,11 @@ test.describe('Iteration 16 - Frontend Features', () => {
       await page.goto('/credential-submissions');
       await page.waitForLoadState('domcontentloaded');
       
-      // Wait for page to load
-      await expect(page.getByTestId('credential-submissions-page')).toBeVisible({ timeout: 15000 });
+      // Wait for page to load - check for the heading instead of testid
+      await expect(page.locator('h1:has-text("Credential Submissions")')).toBeVisible({ timeout: 15000 });
       
-      // Verify stats cards are present
-      const statsCards = page.locator('[class*="CardContent"]');
-      await expect(statsCards.first()).toBeVisible();
+      // Verify stats cards are present (check for text content)
+      await expect(page.locator('text=Total Submissions')).toBeVisible();
       
       // Verify org filter exists
       const orgFilter = page.getByTestId('org-filter');
@@ -98,7 +97,7 @@ test.describe('Iteration 16 - Frontend Features', () => {
       
       await page.goto('/credential-submissions');
       await page.waitForLoadState('domcontentloaded');
-      await expect(page.getByTestId('credential-submissions-page')).toBeVisible({ timeout: 15000 });
+      await expect(page.locator('h1:has-text("Credential Submissions")')).toBeVisible({ timeout: 15000 });
       
       // Click org filter dropdown
       const orgFilter = page.getByTestId('org-filter');
