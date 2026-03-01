@@ -204,6 +204,16 @@ const AuthProvider = ({ children }) => {
       payload.two_factor_code = twoFactorCode;
     }
     const response = await axios.post(`${API}/auth/login`, payload);
+    
+    // Check if 2FA is required (no token returned yet)
+    if (response.data.requires_2fa) {
+      return {
+        requires_2fa: true,
+        email: response.data.email,
+        user_id: response.data.user_id
+      };
+    }
+    
     const { token: newToken, user: userData, requires_2fa_verification, two_factor_enabled } = response.data;
     localStorage.setItem('token', newToken);
     setToken(newToken);
