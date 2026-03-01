@@ -173,7 +173,9 @@ async def get_tile_by_slug(slug: str, request: Request):
             user = await get_current_user(request)
             if user.get("role") != "super_admin":
                 raise HTTPException(status_code=404, detail="Page not found")
-        except:
+        except HTTPException:
+            raise
+        except Exception:
             raise HTTPException(status_code=404, detail="Page not found")
     
     return tile
