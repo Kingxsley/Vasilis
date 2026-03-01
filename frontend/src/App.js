@@ -324,6 +324,8 @@ const ModuleUploader = React.lazy(() => import('./pages/ModuleUploader'));
 const CredentialSubmissions = React.lazy(() => import('./pages/CredentialSubmissions'));
 // CredentialHarvest for credential harvest campaign management
 const CredentialHarvest = React.lazy(() => import('./pages/CredentialHarvest'));
+// ExecutiveTraining for PowerPoint generation
+const ExecutiveTraining = React.lazy(() => import('./pages/ExecutiveTraining'));
 
 // Auth Callback Handler
 const AuthCallback = () => {
