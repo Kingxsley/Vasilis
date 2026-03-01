@@ -313,10 +313,7 @@ export default function RSSFeedManager() {
                   </p>
                   <div className="flex items-center text-xs text-gray-500 mb-4">
                     <Clock className="w-3 h-3 mr-1" />
-                    Refresh every {Math.floor(feed.refresh_interval / 60)} min
-                    {feed.last_fetched && (
-                      <span className="ml-2">• Last: {new Date(feed.last_fetched).toLocaleDateString()}</span>
-                    )}
+                    Added: {feed.created_at ? new Date(feed.created_at).toLocaleDateString() : 'Unknown'}
                   </div>
                   <div className="flex items-center gap-2">
                     <Button
