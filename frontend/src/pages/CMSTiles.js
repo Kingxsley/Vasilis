@@ -173,14 +173,12 @@ const TileForm = ({ data, setData, isEdit = false }) => {
         </div>
         <Switch
           checked={localData.published}
-          onCheckedChange={(checked) => handleChange('published', checked)}
+          onCheckedChange={(checked) => handleLocalChange('published', checked)}
         />
       </div>
     </div>
   );
-});
-
-TileForm.displayName = 'TileForm';
+};
 
 export default function CMSTiles() {
   const { token } = useAuth();
