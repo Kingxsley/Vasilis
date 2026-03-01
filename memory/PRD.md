@@ -86,6 +86,25 @@ A comprehensive security awareness and training platform that helps organization
 
 ## Current Status (March 2026)
 
+### Session 13 Updates (March 1, 2026) - UI/UX IMPROVEMENTS
+
+#### Bug Fixes
+1. **RSS Feeds Status Bug Fixed** - Changed field name from `is_active` to `enabled` in RSSFeedManager.js - feeds now show correct Active/Inactive status
+2. **Content Manager Enhanced** - Added dynamic CMS tile tabs (non-system only) and RSS Feeds management tab
+
+#### Sidebar Simplification
+3. **Removed duplicate content items** - CMS tiles (Blog, News, Videos, About) no longer appear in sidebar navigation
+4. **CMS tiles shown in Content Manager** - All content types (built-in + custom CMS) now managed via Content Manager tabs
+
+#### Credential Harvest Email Builder
+5. **Improved 2-column layout** - Side-by-side "Add Elements" controls and "Live Preview" panel
+6. **Clear All button** - Easy way to reset email content
+7. **Better responsive design** - Works on all screen sizes
+
+#### Executive Training
+8. **Bulk delete confirmed working** - Checkboxes for selecting multiple presentations
+9. **Edit/Update functionality** - Update presentation name and description
+
 ### Session 12 Updates (March 1, 2026) - BUG FIXES COMPLETE
 
 #### P0 - Critical Fixes
