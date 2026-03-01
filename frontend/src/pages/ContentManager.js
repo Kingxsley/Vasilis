@@ -152,10 +152,21 @@ export default function ContentManager() {
   useEffect(() => {
     fetchAllContent();
     fetchRssFeeds();
+    fetchCmsTiles();
     if (user?.role === 'super_admin') {
       fetchNavItems();
     }
   }, []);
+
+  // Fetch CMS tiles
+  const fetchCmsTiles = async () => {
+    try {
+      const res = await axios.get(`${API}/cms-tiles`, { headers: { Authorization: `Bearer ${token}` } });
+      setCmsTiles(res.data.tiles || []);
+    } catch (error) {
+      console.error('Failed to load CMS tiles:', error);
+    }
+  };
 
   // Fetch blog with pagination
   useEffect(() => {
