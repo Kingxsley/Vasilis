@@ -850,7 +850,7 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <AppRouter />
-        <Toaster position="top-right" richColors />
+        <Toaster position="top-right" richColors closeButton duration={3000} />
       </AuthProvider>
     </BrowserRouter>
   );

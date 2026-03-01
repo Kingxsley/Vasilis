@@ -124,16 +124,11 @@ def generate_training_certificate(
     
     # Check if single module or multiple
     if len(modules_completed) == 1:
-        c.drawCentredString(page_width / 2, y_position, "for successfully completing the security training module:")
-        y_position -= 35
-        
-        # Single module name - display prominently
-        c.setFont("Helvetica-Bold", 16)
-        c.setFillColor(primary_color)
-        c.drawCentredString(page_width / 2, y_position, modules_completed[0])
+        module_name = modules_completed[0]
+        c.drawCentredString(page_width / 2, y_position, f"for successfully completing the '{module_name}' Training")
         y_position -= 35
     else:
-        c.drawCentredString(page_width / 2, y_position, "for successfully completing the following security training modules:")
+        c.drawCentredString(page_width / 2, y_position, "for successfully completing the following training modules:")
         y_position -= 30
         
         # Modules list
