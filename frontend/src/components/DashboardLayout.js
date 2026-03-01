@@ -354,6 +354,28 @@ export const DashboardLayout = ({ children }) => {
                       const isItemActive = location.pathname === item.path;
                       const ItemIcon = item.icon;
                       
+                      // Handle openInNewTab items
+                      if (item.openInNewTab) {
+                        return (
+                          <a
+                            key={item.path}
+                            href={item.path}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                              isItemActive 
+                                ? 'bg-[#D4A836]/10 text-[#D4A836] border-l-2 border-[#D4A836]' 
+                                : 'text-gray-400 hover:text-[#E8DDB5] hover:bg-white/5 border-l-2 border-transparent'
+                            }`}
+                            data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
+                          >
+                            <ItemIcon className="w-4 h-4" />
+                            <span className="text-sm">{item.label}</span>
+                            <ExternalLink className="w-3 h-3 ml-auto opacity-50" />
+                          </a>
+                        );
+                      }
+                      
                       return (
                         <Link
                           key={item.path}
