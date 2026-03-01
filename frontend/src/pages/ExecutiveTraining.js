@@ -6,6 +6,7 @@ import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
+import { Checkbox } from '../components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import {
   Dialog,
@@ -18,7 +19,7 @@ import {
 import {
   Presentation, Download, FileText, Shield, Mail, Lock, Users, 
   Database, Loader2, CheckCircle, BookOpen, Upload, Trash2, 
-  AlertTriangle, Smartphone, Home, Briefcase
+  AlertTriangle, Smartphone, Home, Briefcase, Edit
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
