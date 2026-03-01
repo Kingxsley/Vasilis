@@ -118,11 +118,6 @@ async def notify_super_admins_discord(db, notification_type: str, details: dict)
         await send_discord_notification(webhook, embed)
 
 
-def get_db():
-    from server import db
-    return db
-
-
 async def get_current_user(request: Request) -> dict:
     from utils import get_current_user as _get_current_user, security
     credentials = await security(request)
