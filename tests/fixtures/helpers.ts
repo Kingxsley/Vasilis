@@ -24,12 +24,24 @@ export async function checkForErrors(page: Page): Promise<string[]> {
   });
 }
 
-export async function loginAsAdmin(page: Page, email: string, password: string) {
+// Updated admin credentials
+export const ADMIN_EMAIL = 'test@admin.com';
+export const ADMIN_PASSWORD = 'TestAdmin123!';
+
+// Viewer credentials
+export const VIEWER_EMAIL = 'admin@test.com';
+export const VIEWER_PASSWORD = 'Admin123!';
+
+export async function loginAsAdmin(page: Page, email?: string, password?: string) {
   await page.goto('/auth');
   await page.waitForLoadState('domcontentloaded');
-  await page.getByTestId('email-input').fill(email);
-  await page.getByTestId('password-input').fill(password);
+  await page.getByTestId('email-input').fill(email || ADMIN_EMAIL);
+  await page.getByTestId('password-input').fill(password || ADMIN_PASSWORD);
   await page.getByTestId('auth-submit-btn').click();
   // Wait for navigation to dashboard or training page
   await page.waitForURL(/\/(dashboard|training)/);
+}
+
+export async function loginAsViewer(page: Page) {
+  return loginAsAdmin(page, VIEWER_EMAIL, VIEWER_PASSWORD);
 }
