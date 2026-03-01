@@ -59,6 +59,9 @@ export default function ExecutiveTraining() {
   const [trainingModules, setTrainingModules] = useState([]);
   const [uploadedPresentations, setUploadedPresentations] = useState([]);
   const [showUpload, setShowUpload] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
+  const [editingPresentation, setEditingPresentation] = useState(null);
+  const [selectedPresentations, setSelectedPresentations] = useState([]);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
   const [uploadForm, setUploadForm] = useState({ name: '', description: '', file: null });
