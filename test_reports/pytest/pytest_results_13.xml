@@ -1,0 +1,1140 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="37" failures="48" skipped="15" tests="105" time="32.562" timestamp="2026-03-01T10:40:57.239075+00:00" hostname="agent-env-bb163578-bfa5-43ef-9987-19fb2fa92f42"><testcase classname="tests.test_backend_apis.TestAuthentication" name="test_login_super_admin_success" time="0.356" /><testcase classname="tests.test_backend_apis.TestAuthentication" name="test_login_invalid_credentials" time="0.130"><failure message="AssertionError: Expected 401/400, got 429&#10;assert 429 in [401, 400]&#10; +  where 429 = &lt;Response [429]&gt;.status_code">tests/test_backend_apis.py:66: in test_login_invalid_credentials
+    assert response.status_code in [401, 400], f"Expected 401/400, got {response.status_code}"
+E   AssertionError: Expected 401/400, got 429
+E   assert 429 in [401, 400]
+E    +  where 429 = &lt;Response [429]&gt;.status_code</failure></testcase><testcase classname="tests.test_backend_apis.TestAuthentication" name="test_health_check" time="0.104" /><testcase classname="tests.test_backend_apis.TestPhishingCampaigns" name="test_list_phishing_campaigns" time="0.312"><failure message="Exception: Failed to get token: 429 - {&quot;detail&quot;:&quot;Too many requests. Please try again later.&quot;,&quot;retry_after&quot;:60}">tests/test_backend_apis.py:83: in test_list_phishing_campaigns
+    response = requests.get(f"{API}/phishing/campaigns", headers=get_auth_headers())
+                                                                 ^^^^^^^^^^^^^^^^^^
+tests/test_backend_apis.py:40: in get_auth_headers
+    return {"Authorization": f"Bearer {get_auth_token()}"}
+                                       ^^^^^^^^^^^^^^^^
+tests/test_backend_apis.py:36: in get_auth_token
+    raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
+E   Exception: Failed to get token: 429 - {"detail":"Too many requests. Please try again later.","retry_after":60}</failure></testcase><testcase classname="tests.test_backend_apis.TestPhishingCampaigns" name="test_list_phishing_templates" time="0.312"><failure message="Exception: Failed to get token: 429 - {&quot;detail&quot;:&quot;Too many requests. Please try again later.&quot;,&quot;retry_after&quot;:60}">tests/test_backend_apis.py:91: in test_list_phishing_templates
+    response = requests.get(f"{API}/phishing/templates", headers=get_auth_headers())
+                                                                 ^^^^^^^^^^^^^^^^^^
+tests/test_backend_apis.py:40: in get_auth_headers
+    return {"Authorization": f"Bearer {get_auth_token()}"}
+                                       ^^^^^^^^^^^^^^^^
+tests/test_backend_apis.py:36: in get_auth_token
+    raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
+E   Exception: Failed to get token: 429 - {"detail":"Too many requests. Please try again later.","retry_after":60}</failure></testcase><testcase classname="tests.test_backend_apis.TestPhishingCampaigns" name="test_phishing_stats_unified" time="0.303"><failure message="Exception: Failed to get token: 429 - {&quot;detail&quot;:&quot;Too many requests. Please try again later.&quot;,&quot;retry_after&quot;:60}">tests/test_backend_apis.py:99: in test_phishing_stats_unified
+    response = requests.get(f"{API}/phishing/stats?days=30", headers=get_auth_headers())
+                                                                     ^^^^^^^^^^^^^^^^^^
+tests/test_backend_apis.py:40: in get_auth_headers
+    return {"Authorization": f"Bearer {get_auth_token()}"}
+                                       ^^^^^^^^^^^^^^^^
+tests/test_backend_apis.py:36: in get_auth_token
+    raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
+E   Exception: Failed to get token: 429 - {"detail":"Too many requests. Please try again later.","retry_after":60}</failure></testcase><testcase classname="tests.test_backend_apis.TestPhishingCampaigns" name="test_phishing_click_tracking_shows_awareness_page" time="1.772" /><testcase classname="tests.test_backend_apis.TestPhishingCampaigns" name="test_phishing_campaign_has_assigned_module_field" time="0.338"><failure message="Exception: Failed to get token: 429 - {&quot;detail&quot;:&quot;Too many requests. Please try again later.&quot;,&quot;retry_after&quot;:60}">tests/test_backend_apis.py:122: in test_phishing_campaign_has_assigned_module_field
+    response = requests.get(f"{API}/phishing/campaigns", headers=get_auth_headers())
+                                                                 ^^^^^^^^^^^^^^^^^^
+tests/test_backend_apis.py:40: in get_auth_headers
+    return {"Authorization": f"Bearer {get_auth_token()}"}
+                                       ^^^^^^^^^^^^^^^^
+tests/test_backend_apis.py:36: in get_auth_token
+    raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
+E   Exception: Failed to get token: 429 - {"detail":"Too many requests. Please try again later.","retry_after":60}</failure></testcase><testcase classname="tests.test_backend_apis.TestAdSimulations" name="test_list_ad_campaigns" time="0.317"><failure message="Exception: Failed to get token: 429 - {&quot;detail&quot;:&quot;Too many requests. Please try again later.&quot;,&quot;retry_after&quot;:60}">tests/test_backend_apis.py:139: in test_list_ad_campaigns
+    response = requests.get(f"{API}/ads/campaigns", headers=get_auth_headers())
+                                                            ^^^^^^^^^^^^^^^^^^
+tests/test_backend_apis.py:40: in get_auth_headers
+    return {"Authorization": f"Bearer {get_auth_token()}"}
+                                       ^^^^^^^^^^^^^^^^
+tests/test_backend_apis.py:36: in get_auth_token
+    raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
+E   Exception: Failed to get token: 429 - {"detail":"Too many requests. Please try again later.","retry_after":60}</failure></testcase><testcase classname="tests.test_backend_apis.TestAnalytics" name="test_all_campaigns_unified_analytics" time="0.299"><failure message="Exception: Failed to get token: 429 - {&quot;detail&quot;:&quot;Too many requests. Please try again later.&quot;,&quot;retry_after&quot;:60}">tests/test_backend_apis.py:154: in test_all_campaigns_unified_analytics
+    response = requests.get(f"{API}/analytics/all-campaigns?days=30", headers=get_auth_headers())
+                                                                              ^^^^^^^^^^^^^^^^^^
+tests/test_backend_apis.py:40: in get_auth_headers
+    return {"Authorization": f"Bearer {get_auth_token()}"}
+                                       ^^^^^^^^^^^^^^^^
+tests/test_backend_apis.py:36: in get_auth_token
+    raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
+E   Exception: Failed to get token: 429 - {"detail":"Too many requests. Please try again later.","retry_after":60}</failure></testcase><testcase classname="tests.test_backend_apis.TestAnalytics" name="test_analytics_overview" time="0.318"><failure message="Exception: Failed to get token: 429 - {&quot;detail&quot;:&quot;Too many requests. Please try again later.&quot;,&quot;retry_after&quot;:60}">tests/test_backend_apis.py:179: in test_analytics_overview
+    response = requests.get(f"{API}/analytics/overview?days=30", headers=get_auth_headers())
+                                                                         ^^^^^^^^^^^^^^^^^^
+tests/test_backend_apis.py:40: in get_auth_headers
+    return {"Authorization": f"Bearer {get_auth_token()}"}
+                                       ^^^^^^^^^^^^^^^^
+tests/test_backend_apis.py:36: in get_auth_token
+    raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
+E   Exception: Failed to get token: 429 - {"detail":"Too many requests. Please try again later.","retry_after":60}</failure></testcase><testcase classname="tests.test_backend_apis.TestTrainingModules" name="test_list_training_modules" time="0.313"><failure message="Exception: Failed to get token: 429 - {&quot;detail&quot;:&quot;Too many requests. Please try again later.&quot;,&quot;retry_after&quot;:60}">tests/test_backend_apis.py:194: in test_list_training_modules
+    response = requests.get(f"{API}/training/modules", headers=get_auth_headers())
+                                                               ^^^^^^^^^^^^^^^^^^
+tests/test_backend_apis.py:40: in get_auth_headers
+    return {"Authorization": f"Bearer {get_auth_token()}"}
+                                       ^^^^^^^^^^^^^^^^
+tests/test_backend_apis.py:36: in get_auth_token
+    raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
+E   Exception: Failed to get token: 429 - {"detail":"Too many requests. Please try again later.","retry_after":60}</failure></testcase><testcase classname="tests.test_backend_apis.TestSimulationBuilder" name="test_get_phishing_template_for_edit" time="0.316"><failure message="Exception: Failed to get token: 429 - {&quot;detail&quot;:&quot;Too many requests. Please try again later.&quot;,&quot;retry_after&quot;:60}">tests/test_backend_apis.py:207: in test_get_phishing_template_for_edit
+    response = requests.get(f"{API}/phishing/templates", headers=get_auth_headers())
+                                                                 ^^^^^^^^^^^^^^^^^^
+tests/test_backend_apis.py:40: in get_auth_headers
+    return {"Authorization": f"Bearer {get_auth_token()}"}
+                                       ^^^^^^^^^^^^^^^^
+tests/test_backend_apis.py:36: in get_auth_token
+    raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
+E   Exception: Failed to get token: 429 - {"detail":"Too many requests. Please try again later.","retry_after":60}</failure></testcase><testcase classname="tests.test_custom_email_templates.TestCustomEmailTemplatesCRUD" name="test_list_custom_email_templates" time="0.305"><failure message="Exception: Failed to get token: 429 - {&quot;detail&quot;:&quot;Too many requests. Please try again later.&quot;,&quot;retry_after&quot;:60}">tests/test_custom_email_templates.py:48: in test_list_custom_email_templates
+    response = requests.get(f"{API}/custom-email-templates", headers=get_auth_headers())
+                                                                     ^^^^^^^^^^^^^^^^^^
+tests/test_custom_email_templates.py:40: in get_auth_headers
+    return {"Authorization": f"Bearer {get_auth_token()}"}
+                                       ^^^^^^^^^^^^^^^^
+tests/test_custom_email_templates.py:35: in get_auth_token
+    raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
+E   Exception: Failed to get token: 429 - {"detail":"Too many requests. Please try again later.","retry_after":60}</failure></testcase><testcase classname="tests.test_custom_email_templates.TestCustomEmailTemplatesCRUD" name="test_get_specific_custom_email_template" time="0.296"><failure message="Exception: Failed to get token: 429 - {&quot;detail&quot;:&quot;Too many requests. Please try again later.&quot;,&quot;retry_after&quot;:60}">tests/test_custom_email_templates.py:58: in test_get_specific_custom_email_template
+    list_response = requests.get(f"{API}/custom-email-templates", headers=get_auth_headers())
+                                                                          ^^^^^^^^^^^^^^^^^^
+tests/test_custom_email_templates.py:40: in get_auth_headers
+    return {"Authorization": f"Bearer {get_auth_token()}"}
+                                       ^^^^^^^^^^^^^^^^
+tests/test_custom_email_templates.py:35: in get_auth_token
+    raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
+E   Exception: Failed to get token: 429 - {"detail":"Too many requests. Please try again later.","retry_after":60}</failure></testcase><testcase classname="tests.test_custom_email_templates.TestCustomEmailTemplatesCRUD" name="test_create_custom_email_template" time="0.298"><failure message="Exception: Failed to get token: 429 - {&quot;detail&quot;:&quot;Too many requests. Please try again later.&quot;,&quot;retry_after&quot;:60}">tests/test_custom_email_templates.py:86: in test_create_custom_email_template
+    response = requests.post(f"{API}/custom-email-templates", json=test_template, headers=get_auth_headers())
+                                                                                          ^^^^^^^^^^^^^^^^^^
+tests/test_custom_email_templates.py:40: in get_auth_headers
+    return {"Authorization": f"Bearer {get_auth_token()}"}
+                                       ^^^^^^^^^^^^^^^^
+tests/test_custom_email_templates.py:35: in get_auth_token
+    raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
+E   Exception: Failed to get token: 429 - {"detail":"Too many requests. Please try again later.","retry_after":60}</failure></testcase><testcase classname="tests.test_custom_email_templates.TestCustomEmailTemplatesCRUD" name="test_update_custom_email_template" time="0.311"><failure message="Exception: Failed to get token: 429 - {&quot;detail&quot;:&quot;Too many requests. Please try again later.&quot;,&quot;retry_after&quot;:60}">tests/test_custom_email_templates.py:107: in test_update_custom_email_template
+    create_response = requests.post(f"{API}/custom-email-templates", json=create_data, headers=get_auth_headers())
+                                                                                               ^^^^^^^^^^^^^^^^^^
+tests/test_custom_email_templates.py:40: in get_auth_headers
+    return {"Authorization": f"Bearer {get_auth_token()}"}
+                                       ^^^^^^^^^^^^^^^^
+tests/test_custom_email_templates.py:35: in get_auth_token
+    raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
+E   Exception: Failed to get token: 429 - {"detail":"Too many requests. Please try again later.","retry_after":60}</failure></testcase><testcase classname="tests.test_custom_email_templates.TestCustomEmailTemplatesCRUD" name="test_delete_custom_email_template" time="0.305"><failure message="Exception: Failed to get token: 429 - {&quot;detail&quot;:&quot;Too many requests. Please try again later.&quot;,&quot;retry_after&quot;:60}">tests/test_custom_email_templates.py:142: in test_delete_custom_email_template
+    create_response = requests.post(f"{API}/custom-email-templates", json=create_data, headers=get_auth_headers())
+                                                                                               ^^^^^^^^^^^^^^^^^^
+tests/test_custom_email_templates.py:40: in get_auth_headers
+    return {"Authorization": f"Bearer {get_auth_token()}"}
+                                       ^^^^^^^^^^^^^^^^
+tests/test_custom_email_templates.py:35: in get_auth_token
+    raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
+E   Exception: Failed to get token: 429 - {"detail":"Too many requests. Please try again later.","retry_after":60}</failure></testcase><testcase classname="tests.test_custom_email_templates.TestCustomEmailTemplateIntegration" name="test_campaign_accepts_custom_email_template_id" time="0.307"><failure message="Exception: Failed to get token: 429 - {&quot;detail&quot;:&quot;Too many requests. Please try again later.&quot;,&quot;retry_after&quot;:60}">tests/test_custom_email_templates.py:164: in test_campaign_accepts_custom_email_template_id
+    templates_response = requests.get(f"{API}/custom-email-templates", headers=get_auth_headers())
+                                                                               ^^^^^^^^^^^^^^^^^^
+tests/test_custom_email_templates.py:40: in get_auth_headers
+    return {"Authorization": f"Bearer {get_auth_token()}"}
+                                       ^^^^^^^^^^^^^^^^
+tests/test_custom_email_templates.py:35: in get_auth_token
+    raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
+E   Exception: Failed to get token: 429 - {"detail":"Too many requests. Please try again later.","retry_after":60}</failure></testcase><testcase classname="tests.test_custom_email_templates.TestCustomEmailTemplateIntegration" name="test_campaign_without_custom_email_template" time="0.299"><failure message="Exception: Failed to get token: 429 - {&quot;detail&quot;:&quot;Too many requests. Please try again later.&quot;,&quot;retry_after&quot;:60}">tests/test_custom_email_templates.py:207: in test_campaign_without_custom_email_template
+    phishing_templates = requests.get(f"{API}/phishing/templates", headers=get_auth_headers()).json()
+                                                                           ^^^^^^^^^^^^^^^^^^
+tests/test_custom_email_templates.py:40: in get_auth_headers
+    return {"Authorization": f"Bearer {get_auth_token()}"}
+                                       ^^^^^^^^^^^^^^^^
+tests/test_custom_email_templates.py:35: in get_auth_token
+    raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
+E   Exception: Failed to get token: 429 - {"detail":"Too many requests. Please try again later.","retry_after":60}</failure></testcase><testcase classname="tests.test_custom_email_templates.TestCleanup" name="test_cleanup_test_templates" time="0.308"><failure message="Exception: Failed to get token: 429 - {&quot;detail&quot;:&quot;Too many requests. Please try again later.&quot;,&quot;retry_after&quot;:60}">tests/test_custom_email_templates.py:243: in test_cleanup_test_templates
+    response = requests.get(f"{API}/custom-email-templates", headers=get_auth_headers())
+                                                                     ^^^^^^^^^^^^^^^^^^
+tests/test_custom_email_templates.py:40: in get_auth_headers
+    return {"Authorization": f"Bearer {get_auth_token()}"}
+                                       ^^^^^^^^^^^^^^^^
+tests/test_custom_email_templates.py:35: in get_auth_token
+    raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
+E   Exception: Failed to get token: 429 - {"detail":"Too many requests. Please try again later.","retry_after":60}</failure></testcase><testcase classname="tests.test_features.TestAuthLoginWithout2FA" name="test_login_endpoint_exists" time="0.001"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?">tests/test_features.py:17: in test_login_endpoint_exists
+    response = api_client.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</failure></testcase><testcase classname="tests.test_features.TestAuthLoginWithout2FA" name="test_login_without_2fa_field_succeeds" time="0.000"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?">tests/test_features.py:26: in test_login_without_2fa_field_succeeds
+    response = api_client.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</failure></testcase><testcase classname="tests.test_features.TestAuthLoginWithout2FA" name="test_login_response_structure" time="0.000"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?">tests/test_features.py:44: in test_login_response_structure
+    response = api_client.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</failure></testcase><testcase classname="tests.test_features.TestOnlineUsersEndpoint" name="test_online_users_endpoint_exists" time="0.001"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_features.TestOnlineUsersEndpoint" name="test_online_users_returns_correct_structure" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_features.TestOnlineUsersEndpoint" name="test_online_users_default_minutes_is_5" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_features.TestOnlineUsersEndpoint" name="test_online_users_custom_minutes" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_features.TestOnlineUsersEndpoint" name="test_online_users_requires_auth" time="0.001"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/analytics/online-users': No scheme supplied. Perhaps you meant https:///api/analytics/online-users?">tests/test_features.py:100: in test_online_users_requires_auth
+    response = unauthenticated_client.get(f"{BASE_URL}/api/analytics/online-users")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:602: in get
+    return self.request("GET", url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/analytics/online-users': No scheme supplied. Perhaps you meant https:///api/analytics/online-users?</failure></testcase><testcase classname="tests.test_features.TestExecutiveTrainingModulesAPI" name="test_available_modules_endpoint" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_features.TestExecutiveTrainingModulesAPI" name="test_available_modules_contains_data" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_features.TestExecutiveTrainingModulesAPI" name="test_generate_presentation_endpoint" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_features.TestExecutiveTrainingModulesAPI" name="test_generate_presentation_requires_auth" time="0.001"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/executive-training/generate/phishing': No scheme supplied. Perhaps you meant https:///api/executive-training/generate/phishing?">tests/test_features.py:160: in test_generate_presentation_requires_auth
+    response = unauthenticated_client.get(f"{BASE_URL}/api/executive-training/generate/phishing")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:602: in get
+    return self.request("GET", url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/executive-training/generate/phishing': No scheme supplied. Perhaps you meant https:///api/executive-training/generate/phishing?</failure></testcase><testcase classname="tests.test_features.TestExecutiveTrainingModulesAPI" name="test_available_modules_requires_auth" time="0.001"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/executive-training/available-modules': No scheme supplied. Perhaps you meant https:///api/executive-training/available-modules?">tests/test_features.py:165: in test_available_modules_requires_auth
+    response = unauthenticated_client.get(f"{BASE_URL}/api/executive-training/available-modules")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:602: in get
+    return self.request("GET", url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/executive-training/available-modules': No scheme supplied. Perhaps you meant https:///api/executive-training/available-modules?</failure></testcase><testcase classname="tests.test_features.TestHealthEndpoint" name="test_health_check" time="0.000"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/health': No scheme supplied. Perhaps you meant https:///api/health?">tests/test_features.py:174: in test_health_check
+    response = api_client.get(f"{BASE_URL}/api/health")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:602: in get
+    return self.request("GET", url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/health': No scheme supplied. Perhaps you meant https:///api/health?</failure></testcase><testcase classname="tests.test_iteration_10.TestLoginFlowWithout2FA" name="test_login_endpoint_exists" time="0.000"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?">tests/test_iteration_10.py:19: in test_login_endpoint_exists
+    response = api_client.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</failure></testcase><testcase classname="tests.test_iteration_10.TestLoginFlowWithout2FA" name="test_login_returns_token_without_2fa_code" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_10.TestLoginFlowWithout2FA" name="test_login_response_contains_2fa_flags" time="0.000"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?">tests/test_iteration_10.py:34: in test_login_response_contains_2fa_flags
+    response = api_client.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</failure></testcase><testcase classname="tests.test_iteration_10.TestCMSTilesAPI" name="test_get_tiles_returns_default_tiles" time="0.000"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/cms-tiles': No scheme supplied. Perhaps you meant https:///api/cms-tiles?">tests/test_iteration_10.py:58: in test_get_tiles_returns_default_tiles
+    response = api_client.get(f"{BASE_URL}/api/cms-tiles")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:602: in get
+    return self.request("GET", url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/cms-tiles': No scheme supplied. Perhaps you meant https:///api/cms-tiles?</failure></testcase><testcase classname="tests.test_iteration_10.TestCMSTilesAPI" name="test_get_tiles_admin_endpoint" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_10.TestCMSTilesAPI" name="test_create_tile" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_10.TestCMSTilesAPI" name="test_update_tile" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_10.TestCMSTilesAPI" name="test_toggle_publish_tile" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_10.TestCMSTilesAPI" name="test_delete_custom_tile" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_10.TestCMSTilesAPI" name="test_cannot_delete_system_tile" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_10.TestCMSTilesAPI" name="test_create_tile_requires_admin" time="0.001"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/cms-tiles': No scheme supplied. Perhaps you meant https:///api/cms-tiles?">tests/test_iteration_10.py:178: in test_create_tile_requires_admin
+    response = unauthenticated_client.post(f"{BASE_URL}/api/cms-tiles", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/cms-tiles': No scheme supplied. Perhaps you meant https:///api/cms-tiles?</failure></testcase><testcase classname="tests.test_iteration_10.TestExecutiveTrainingModules" name="test_available_modules_returns_9_modules" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_10.TestExecutiveTrainingModules" name="test_all_expected_modules_present" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_10.TestExecutiveTrainingModules" name="test_module_structure" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_10.TestExecutiveTrainingModules" name="test_generate_each_module" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_10.TestExecutiveTrainingUpload" name="test_get_uploaded_presentations" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_10.TestExecutiveTrainingUpload" name="test_upload_requires_super_admin" time="0.001"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:53: in viewer_token
+    response = login_with_retry(api_client, VIEWER_EMAIL, VIEWER_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_10.TestExecutiveTrainingUpload" name="test_upload_requires_file" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_10.TestHealthEndpoint" name="test_health_check" time="0.000"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/health': No scheme supplied. Perhaps you meant https:///api/health?">tests/test_iteration_10.py:293: in test_health_check
+    response = api_client.get(f"{BASE_URL}/api/health")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:602: in get
+    return self.request("GET", url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/health': No scheme supplied. Perhaps you meant https:///api/health?</failure></testcase><testcase classname="tests.test_iteration_11.TestCMSTilesAPI" name="test_get_tiles_public" time="0.000"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/cms-tiles': No scheme supplied. Perhaps you meant https:///api/cms-tiles?">tests/test_iteration_11.py:19: in test_get_tiles_public
+    response = api_client.get(f"{BASE_URL}/api/cms-tiles")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:602: in get
+    return self.request("GET", url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/cms-tiles': No scheme supplied. Perhaps you meant https:///api/cms-tiles?</failure></testcase><testcase classname="tests.test_iteration_11.TestCMSTilesAPI" name="test_get_tiles_returns_default_system_tiles" time="0.000"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/cms-tiles': No scheme supplied. Perhaps you meant https:///api/cms-tiles?">tests/test_iteration_11.py:28: in test_get_tiles_returns_default_system_tiles
+    response = api_client.get(f"{BASE_URL}/api/cms-tiles")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:602: in get
+    return self.request("GET", url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/cms-tiles': No scheme supplied. Perhaps you meant https:///api/cms-tiles?</failure></testcase><testcase classname="tests.test_iteration_11.TestCMSTilesAPI" name="test_get_tiles_admin_requires_auth" time="0.001"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/cms-tiles/admin': No scheme supplied. Perhaps you meant https:///api/cms-tiles/admin?">tests/test_iteration_11.py:41: in test_get_tiles_admin_requires_auth
+    response = unauthenticated_client.get(f"{BASE_URL}/api/cms-tiles/admin")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:602: in get
+    return self.request("GET", url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/cms-tiles/admin': No scheme supplied. Perhaps you meant https:///api/cms-tiles/admin?</failure></testcase><testcase classname="tests.test_iteration_11.TestCMSTilesAPI" name="test_get_tiles_admin" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_11.TestCMSTilesAPI" name="test_create_tile" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_11.TestCMSTilesAPI" name="test_create_tile_requires_auth" time="0.001"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/cms-tiles': No scheme supplied. Perhaps you meant https:///api/cms-tiles?">tests/test_iteration_11.py:78: in test_create_tile_requires_auth
+    response = unauthenticated_client.post(f"{BASE_URL}/api/cms-tiles", json=tile_data)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/cms-tiles': No scheme supplied. Perhaps you meant https:///api/cms-tiles?</failure></testcase><testcase classname="tests.test_iteration_11.TestCMSTilesAPI" name="test_update_tile" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_11.TestCMSTilesAPI" name="test_toggle_publish_tile" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_11.TestCMSTilesAPI" name="test_delete_custom_tile" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_11.TestCMSTilesAPI" name="test_cannot_delete_system_tile" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_11.TestContactFormAPI" name="test_submit_contact_form" time="0.000"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/contact': No scheme supplied. Perhaps you meant https:///api/contact?">tests/test_iteration_11.py:178: in test_submit_contact_form
+    response = api_client.post(f"{BASE_URL}/api/contact", json=form_data)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/contact': No scheme supplied. Perhaps you meant https:///api/contact?</failure></testcase><testcase classname="tests.test_iteration_11.TestContactFormAPI" name="test_get_submissions_requires_auth" time="0.001"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/contact/submissions': No scheme supplied. Perhaps you meant https:///api/contact/submissions?">tests/test_iteration_11.py:186: in test_get_submissions_requires_auth
+    response = unauthenticated_client.get(f"{BASE_URL}/api/contact/submissions")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:602: in get
+    return self.request("GET", url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/contact/submissions': No scheme supplied. Perhaps you meant https:///api/contact/submissions?</failure></testcase><testcase classname="tests.test_iteration_11.TestContactFormAPI" name="test_get_contact_submissions" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_11.TestContactFormAPI" name="test_update_submission_status" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_11.TestContactFormAPI" name="test_delete_submission" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_11.TestRSSFeedAPI" name="test_get_rss_feeds_requires_auth" time="0.001"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/content/news/rss-feeds': No scheme supplied. Perhaps you meant https:///api/content/news/rss-feeds?">tests/test_iteration_11.py:242: in test_get_rss_feeds_requires_auth
+    response = unauthenticated_client.get(f"{BASE_URL}/api/content/news/rss-feeds")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:602: in get
+    return self.request("GET", url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/content/news/rss-feeds': No scheme supplied. Perhaps you meant https:///api/content/news/rss-feeds?</failure></testcase><testcase classname="tests.test_iteration_11.TestRSSFeedAPI" name="test_get_rss_feeds" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_11.TestRSSFeedAPI" name="test_create_rss_feed" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_11.TestRSSFeedAPI" name="test_update_rss_feed" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_11.TestRSSFeedAPI" name="test_delete_rss_feed" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_11.TestExecutiveTrainingExpanded" name="test_available_modules_count" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_11.TestExecutiveTrainingExpanded" name="test_phishing_module_has_30plus_slides" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_11.TestExecutiveTrainingExpanded" name="test_generate_phishing_pptx" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">tests/conftest.py:44: in admin_token
+    response = login_with_retry(api_client, ADMIN_EMAIL, ADMIN_PASSWORD)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:20: in login_with_retry
+    response = session.post(f"{BASE_URL}/api/auth/login", json={
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:637: in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="tests.test_iteration_11.TestHealthCheck" name="test_health_endpoint" time="0.000"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/health': No scheme supplied. Perhaps you meant https:///api/health?">tests/test_iteration_11.py:358: in test_health_endpoint
+    response = api_client.get(f"{BASE_URL}/api/health")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:602: in get
+    return self.request("GET", url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/health': No scheme supplied. Perhaps you meant https:///api/health?</failure></testcase><testcase classname="tests.test_iteration_12.TestRSSFeedsEndpoint" name="test_get_rss_feeds_endpoint_exists" time="20.223"><skipped type="pytest.skip" message="Admin login failed: 429">/app/backend/tests/test_iteration_12.py:60: Admin login failed: 429</skipped></testcase><testcase classname="tests.test_iteration_12.TestRSSFeedsEndpoint" name="test_create_rss_feed" time="0.000"><skipped type="pytest.skip" message="Admin login failed: 429">/app/backend/tests/test_iteration_12.py:67: Admin login failed: 429</skipped></testcase><testcase classname="tests.test_iteration_12.TestRSSFeedsEndpoint" name="test_update_rss_feed" time="0.000"><skipped type="pytest.skip" message="Admin login failed: 429">/app/backend/tests/test_iteration_12.py:88: Admin login failed: 429</skipped></testcase><testcase classname="tests.test_iteration_12.TestRSSFeedsEndpoint" name="test_delete_rss_feed" time="0.000"><skipped type="pytest.skip" message="Admin login failed: 429">/app/backend/tests/test_iteration_12.py:113: Admin login failed: 429</skipped></testcase><testcase classname="tests.test_iteration_12.TestNavigationWithCMSTiles" name="test_navigation_public_returns_items" time="0.000"><skipped type="pytest.skip" message="Admin login failed: 429">/app/backend/tests/test_iteration_12.py:143: Admin login failed: 429</skipped></testcase><testcase classname="tests.test_iteration_12.TestNavigationWithCMSTiles" name="test_navigation_includes_cms_tiles" time="0.000"><skipped type="pytest.skip" message="Admin login failed: 429">/app/backend/tests/test_iteration_12.py:152: Admin login failed: 429</skipped></testcase><testcase classname="tests.test_iteration_12.TestNavigationWithCMSTiles" name="test_navigation_cms_tiles_have_correct_paths" time="0.000"><skipped type="pytest.skip" message="Admin login failed: 429">/app/backend/tests/test_iteration_12.py:171: Admin login failed: 429</skipped></testcase><testcase classname="tests.test_iteration_12.TestExecutiveTrainingPPTManagement" name="test_get_uploaded_presentations_endpoint" time="0.000"><skipped type="pytest.skip" message="Admin login failed: 429">/app/backend/tests/test_iteration_12.py:189: Admin login failed: 429</skipped></testcase><testcase classname="tests.test_iteration_12.TestExecutiveTrainingPPTManagement" name="test_update_presentation_endpoint_exists" time="0.000"><skipped type="pytest.skip" message="Admin login failed: 429">/app/backend/tests/test_iteration_12.py:196: Admin login failed: 429</skipped></testcase><testcase classname="tests.test_iteration_12.TestExecutiveTrainingPPTManagement" name="test_bulk_delete_endpoint_exists" time="0.000"><skipped type="pytest.skip" message="Admin login failed: 429">/app/backend/tests/test_iteration_12.py:222: Admin login failed: 429</skipped></testcase><testcase classname="tests.test_iteration_12.TestFormsPage" name="test_contact_submissions_endpoint" time="0.000"><skipped type="pytest.skip" message="Admin login failed: 429">/app/backend/tests/test_iteration_12.py:247: Admin login failed: 429</skipped></testcase><testcase classname="tests.test_iteration_12.TestFormsPage" name="test_inquiries_endpoint_for_access_requests" time="0.000"><skipped type="pytest.skip" message="Admin login failed: 429">/app/backend/tests/test_iteration_12.py:256: Admin login failed: 429</skipped></testcase><testcase classname="tests.test_iteration_12.TestFormsPage" name="test_submit_contact_form" time="0.000"><skipped type="pytest.skip" message="Admin login failed: 429">/app/backend/tests/test_iteration_12.py:264: Admin login failed: 429</skipped></testcase><testcase classname="tests.test_iteration_12.TestFormsPage" name="test_update_contact_submission_status" time="0.000"><skipped type="pytest.skip" message="Admin login failed: 429">/app/backend/tests/test_iteration_12.py:287: Admin login failed: 429</skipped></testcase><testcase classname="tests.test_iteration_12.TestCertificateService" name="test_certificate_endpoint_exists" time="0.000"><skipped type="pytest.skip" message="Admin login failed: 429">/app/backend/tests/test_iteration_12.py:329: Admin login failed: 429</skipped></testcase><testcase classname="tests.test_new_features.TestVulnerableUsers" name="test_get_vulnerable_users" time="0.338"><failure message="Exception: Failed to get token: 429 - {&quot;detail&quot;:&quot;Too many requests. Please try again later.&quot;,&quot;retry_after&quot;:60}">tests/test_new_features.py:46: in test_get_vulnerable_users
+    response = requests.get(f"{API}/vulnerable-users?days=30", headers=get_auth_headers())
+                                                                       ^^^^^^^^^^^^^^^^^^
+tests/test_new_features.py:38: in get_auth_headers
+    return {"Authorization": f"Bearer {get_auth_token()}"}
+                                       ^^^^^^^^^^^^^^^^
+tests/test_new_features.py:34: in get_auth_token
+    raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
+E   Exception: Failed to get token: 429 - {"detail":"Too many requests. Please try again later.","retry_after":60}</failure></testcase><testcase classname="tests.test_new_features.TestVulnerableUsers" name="test_vulnerable_users_export_csv" time="0.304"><failure message="Exception: Failed to get token: 429 - {&quot;detail&quot;:&quot;Too many requests. Please try again later.&quot;,&quot;retry_after&quot;:60}">tests/test_new_features.py:68: in test_vulnerable_users_export_csv
+    response = requests.get(f"{API}/vulnerable-users/export/csv?days=30", headers=get_auth_headers())
+                                                                                  ^^^^^^^^^^^^^^^^^^
+tests/test_new_features.py:38: in get_auth_headers
+    return {"Authorization": f"Bearer {get_auth_token()}"}
+                                       ^^^^^^^^^^^^^^^^
+tests/test_new_features.py:34: in get_auth_token
+    raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
+E   Exception: Failed to get token: 429 - {"detail":"Too many requests. Please try again later.","retry_after":60}</failure></testcase><testcase classname="tests.test_new_features.TestVulnerableUsers" name="test_vulnerable_users_export_json" time="0.304"><failure message="Exception: Failed to get token: 429 - {&quot;detail&quot;:&quot;Too many requests. Please try again later.&quot;,&quot;retry_after&quot;:60}">tests/test_new_features.py:88: in test_vulnerable_users_export_json
+    response = requests.get(f"{API}/vulnerable-users/export/json?days=30", headers=get_auth_headers())
+                                                                                   ^^^^^^^^^^^^^^^^^^
+tests/test_new_features.py:38: in get_auth_headers
+    return {"Authorization": f"Bearer {get_auth_token()}"}
+                                       ^^^^^^^^^^^^^^^^
+tests/test_new_features.py:34: in get_auth_token
+    raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
+E   Exception: Failed to get token: 429 - {"detail":"Too many requests. Please try again later.","retry_after":60}</failure></testcase><testcase classname="tests.test_new_features.TestVulnerableUsers" name="test_vulnerable_users_stats" time="0.303"><failure message="Exception: Failed to get token: 429 - {&quot;detail&quot;:&quot;Too many requests. Please try again later.&quot;,&quot;retry_after&quot;:60}">tests/test_new_features.py:104: in test_vulnerable_users_stats
+    response = requests.get(f"{API}/vulnerable-users/stats?days=30", headers=get_auth_headers())
+                                                                             ^^^^^^^^^^^^^^^^^^
+tests/test_new_features.py:38: in get_auth_headers
+    return {"Authorization": f"Bearer {get_auth_token()}"}
+                                       ^^^^^^^^^^^^^^^^
+tests/test_new_features.py:34: in get_auth_token
+    raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
+E   Exception: Failed to get token: 429 - {"detail":"Too many requests. Please try again later.","retry_after":60}</failure></testcase><testcase classname="tests.test_new_features.TestQRCodeGeneration" name="test_qr_code_generation_with_valid_tracking_code" time="0.306"><failure message="Exception: Failed to get token: 429 - {&quot;detail&quot;:&quot;Too many requests. Please try again later.&quot;,&quot;retry_after&quot;:60}">tests/test_new_features.py:124: in test_qr_code_generation_with_valid_tracking_code
+    campaigns_response = requests.get(f"{API}/phishing/campaigns", headers=get_auth_headers())
+                                                                           ^^^^^^^^^^^^^^^^^^
+tests/test_new_features.py:38: in get_auth_headers
+    return {"Authorization": f"Bearer {get_auth_token()}"}
+                                       ^^^^^^^^^^^^^^^^
+tests/test_new_features.py:34: in get_auth_token
+    raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
+E   Exception: Failed to get token: 429 - {"detail":"Too many requests. Please try again later.","retry_after":60}</failure></testcase><testcase classname="tests.test_new_features.TestQRCodeGeneration" name="test_qr_code_invalid_tracking_code" time="0.301"><failure message="Exception: Failed to get token: 429 - {&quot;detail&quot;:&quot;Too many requests. Please try again later.&quot;,&quot;retry_after&quot;:60}">tests/test_new_features.py:172: in test_qr_code_invalid_tracking_code
+    headers=get_auth_headers()
+            ^^^^^^^^^^^^^^^^^^
+tests/test_new_features.py:38: in get_auth_headers
+    return {"Authorization": f"Bearer {get_auth_token()}"}
+                                       ^^^^^^^^^^^^^^^^
+tests/test_new_features.py:34: in get_auth_token
+    raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
+E   Exception: Failed to get token: 429 - {"detail":"Too many requests. Please try again later.","retry_after":60}</failure></testcase><testcase classname="tests.test_new_features.TestCredentialSubmissionTracking" name="test_credential_submission_tracking_endpoint_exists" time="0.107" /><testcase classname="tests.test_new_features.TestCredentialSubmissionTracking" name="test_credential_submission_with_valid_tracking_code" time="0.302"><failure message="Exception: Failed to get token: 429 - {&quot;detail&quot;:&quot;Too many requests. Please try again later.&quot;,&quot;retry_after&quot;:60}">tests/test_new_features.py:194: in test_credential_submission_with_valid_tracking_code
+    campaigns_response = requests.get(f"{API}/phishing/campaigns", headers=get_auth_headers())
+                                                                           ^^^^^^^^^^^^^^^^^^
+tests/test_new_features.py:38: in get_auth_headers
+    return {"Authorization": f"Bearer {get_auth_token()}"}
+                                       ^^^^^^^^^^^^^^^^
+tests/test_new_features.py:34: in get_auth_token
+    raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
+E   Exception: Failed to get token: 429 - {"detail":"Too many requests. Please try again later.","retry_after":60}</failure></testcase><testcase classname="tests.test_new_features.TestDiscordWebhookInOrganizations" name="test_organizations_have_discord_webhook_field" time="0.307"><failure message="Exception: Failed to get token: 429 - {&quot;detail&quot;:&quot;Too many requests. Please try again later.&quot;,&quot;retry_after&quot;:60}">tests/test_new_features.py:248: in test_organizations_have_discord_webhook_field
+    response = requests.get(f"{API}/organizations", headers=get_auth_headers())
+                                                            ^^^^^^^^^^^^^^^^^^
+tests/test_new_features.py:38: in get_auth_headers
+    return {"Authorization": f"Bearer {get_auth_token()}"}
+                                       ^^^^^^^^^^^^^^^^
+tests/test_new_features.py:34: in get_auth_token
+    raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
+E   Exception: Failed to get token: 429 - {"detail":"Too many requests. Please try again later.","retry_after":60}</failure></testcase><testcase classname="tests.test_new_features.TestDiscordWebhookInOrganizations" name="test_create_organization_with_discord_webhook" time="0.298"><failure message="Exception: Failed to get token: 429 - {&quot;detail&quot;:&quot;Too many requests. Please try again later.&quot;,&quot;retry_after&quot;:60}">tests/test_new_features.py:270: in test_create_organization_with_discord_webhook
+    headers=get_auth_headers(),
+            ^^^^^^^^^^^^^^^^^^
+tests/test_new_features.py:38: in get_auth_headers
+    return {"Authorization": f"Bearer {get_auth_token()}"}
+                                       ^^^^^^^^^^^^^^^^
+tests/test_new_features.py:34: in get_auth_token
+    raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
+E   Exception: Failed to get token: 429 - {"detail":"Too many requests. Please try again later.","retry_after":60}</failure></testcase><testcase classname="tests.test_new_features.TestHealthAndAuth" name="test_health_check" time="0.109" /><testcase classname="tests.test_new_features.TestHealthAndAuth" name="test_super_admin_login" time="0.098"><failure message="AssertionError: Login failed: {&quot;detail&quot;:&quot;Too many requests. Please try again later.&quot;,&quot;retry_after&quot;:60}&#10;assert 429 == 200&#10; +  where 429 = &lt;Response [429]&gt;.status_code">tests/test_new_features.py:326: in test_super_admin_login
+    assert response.status_code == 200, f"Login failed: {response.text}"
+E   AssertionError: Login failed: {"detail":"Too many requests. Please try again later.","retry_after":60}
+E   assert 429 == 200
+E    +  where 429 = &lt;Response [429]&gt;.status_code</failure></testcase></testsuite></testsuites>
