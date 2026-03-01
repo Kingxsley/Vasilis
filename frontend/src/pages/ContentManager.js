@@ -1219,8 +1219,8 @@ export default function ContentManager() {
             </Dialog>
           </TabsContent>
 
-          {/* Dynamic CMS Tile Content */}
-          {cmsTiles.filter(t => t.published).map(tile => (
+          {/* Dynamic CMS Tile Content (non-system only) */}
+          {cmsTiles.filter(t => t.published && !t.is_system).map(tile => (
             <TabsContent key={tile.tile_id} value={`cms_${tile.tile_id}`}>
               <Card className="bg-[#161B22] border-[#30363D]">
                 <CardHeader>
