@@ -82,6 +82,9 @@ export default function ContentManager() {
   const [activeTab, setActiveTab] = useState('blog');
   const [loading, setLoading] = useState(true);
   
+  // CMS Tiles state
+  const [cmsTiles, setCmsTiles] = useState([]);
+  
   // Blog state with pagination
   const [blogPosts, setBlogPosts] = useState([]);
   const [blogDialogOpen, setBlogDialogOpen] = useState(false);
@@ -101,7 +104,7 @@ export default function ContentManager() {
   const [newsPage, setNewsPage] = useState(1);
   const [newsTotal, setNewsTotal] = useState(0);
   const [newsSearch, setNewsSearch] = useState('');
-  const NEWS_LIMIT = 10;
+  const NEWS_LIMIT = 15;
   
   // RSS Feeds state
   const [rssFeeds, setRssFeeds] = useState([]);
