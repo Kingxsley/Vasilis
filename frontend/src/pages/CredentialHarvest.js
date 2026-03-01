@@ -1235,7 +1235,7 @@ export default function CredentialHarvest() {
 
         {/* New Template Dialog */}
         <Dialog open={showNewTemplate} onOpenChange={setShowNewTemplate}>
-          <DialogContent className="bg-[#161B22] border-[#30363D] sm:max-w-[600px]">
+          <DialogContent className="bg-[#161B22] border-[#30363D] w-[95vw] max-w-[900px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create Credential Template</DialogTitle>
               <DialogDescription className="text-gray-400">
