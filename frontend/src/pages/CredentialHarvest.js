@@ -1313,6 +1313,29 @@ export default function CredentialHarvest() {
                 />
                 <p className="text-xs text-gray-500">Use {"{{TRACKING_LINK}}"} where you want the phishing link</p>
               </div>
+
+              <div className="space-y-2">
+                <Label>Credential Fields to Collect</Label>
+                <div className="flex flex-wrap gap-3 p-3 bg-[#0D1117] rounded-lg border border-[#30363D]">
+                  {['username', 'password', 'email', 'phone', 'authenticator_code'].map(field => (
+                    <label key={field} className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox
+                        checked={newTemplate.credential_fields?.includes(field)}
+                        onCheckedChange={(checked) => {
+                          const fields = newTemplate.credential_fields || [];
+                          if (checked) {
+                            setNewTemplate(prev => ({ ...prev, credential_fields: [...fields, field] }));
+                          } else {
+                            setNewTemplate(prev => ({ ...prev, credential_fields: fields.filter(f => f !== field) }));
+                          }
+                        }}
+                      />
+                      <span className="text-sm text-gray-300 capitalize">{field.replace('_', ' ')}</span>
+                    </label>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500">Select which credential fields to show on the fake login page</p>
+              </div>
             </div>
 
             <DialogFooter>
@@ -1321,6 +1344,153 @@ export default function CredentialHarvest() {
               </Button>
               <Button onClick={handleSaveTemplate} className="bg-[#D4A836] hover:bg-[#B8922E] text-black">
                 Save Template
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Template Dialog */}
+        <Dialog open={showEditTemplate} onOpenChange={setShowEditTemplate}>
+          <DialogContent className="bg-[#161B22] border-[#30363D] sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Edit className="w-5 h-5 text-[#D4A836]" />
+                Edit Template
+              </DialogTitle>
+              <DialogDescription className="text-gray-400">
+                Modify the credential harvest template settings
+              </DialogDescription>
+            </DialogHeader>
+
+            {editingTemplate && (
+              <div className="space-y-4 py-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Template Name *</Label>
+                    <Input
+                      value={editingTemplate.name}
+                      onChange={(e) => setEditingTemplate(prev => ({ ...prev, name: e.target.value }))}
+                      className="bg-[#0D1117] border-[#30363D]"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Brand Name</Label>
+                    <Input
+                      value={editingTemplate.brand}
+                      onChange={(e) => setEditingTemplate(prev => ({ ...prev, brand: e.target.value }))}
+                      className="bg-[#0D1117] border-[#30363D]"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Email Subject *</Label>
+                  <Input
+                    value={editingTemplate.subject}
+                    onChange={(e) => setEditingTemplate(prev => ({ ...prev, subject: e.target.value }))}
+                    className="bg-[#0D1117] border-[#30363D]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Sender Name *</Label>
+                    <Input
+                      value={editingTemplate.sender_name}
+                      onChange={(e) => setEditingTemplate(prev => ({ ...prev, sender_name: e.target.value }))}
+                      className="bg-[#0D1117] border-[#30363D]"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Sender Email *</Label>
+                    <Input
+                      value={editingTemplate.sender_email}
+                      onChange={(e) => setEditingTemplate(prev => ({ ...prev, sender_email: e.target.value }))}
+                      className="bg-[#0D1117] border-[#30363D]"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Description</Label>
+                  <Input
+                    value={editingTemplate.description}
+                    onChange={(e) => setEditingTemplate(prev => ({ ...prev, description: e.target.value }))}
+                    className="bg-[#0D1117] border-[#30363D]"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Preview Color</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="color"
+                      value={editingTemplate.preview_color || '#D4A836'}
+                      onChange={(e) => setEditingTemplate(prev => ({ ...prev, preview_color: e.target.value }))}
+                      className="w-16 h-10 p-1 bg-[#0D1117] border-[#30363D]"
+                    />
+                    <Input
+                      value={editingTemplate.preview_color || '#D4A836'}
+                      onChange={(e) => setEditingTemplate(prev => ({ ...prev, preview_color: e.target.value }))}
+                      className="bg-[#0D1117] border-[#30363D]"
+                      placeholder="#D4A836"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Credential Fields to Collect</Label>
+                  <div className="flex flex-wrap gap-3 p-3 bg-[#0D1117] rounded-lg border border-[#30363D]">
+                    {['username', 'password', 'email', 'phone', 'authenticator_code'].map(field => (
+                      <label key={field} className="flex items-center gap-2 cursor-pointer">
+                        <Checkbox
+                          checked={editingTemplate.credential_fields?.includes(field)}
+                          onCheckedChange={(checked) => {
+                            const fields = editingTemplate.credential_fields || [];
+                            if (checked) {
+                              setEditingTemplate(prev => ({ ...prev, credential_fields: [...fields, field] }));
+                            } else {
+                              setEditingTemplate(prev => ({ ...prev, credential_fields: fields.filter(f => f !== field) }));
+                            }
+                          }}
+                        />
+                        <span className="text-sm text-gray-300 capitalize">{field.replace('_', ' ')}</span>
+                      </label>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-500">Select which credential fields to show on the fake login page</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Email Body HTML</Label>
+                  <Textarea
+                    value={editingTemplate.body_html}
+                    onChange={(e) => setEditingTemplate(prev => ({ ...prev, body_html: e.target.value }))}
+                    placeholder="<div>Your email HTML here... Use {{TRACKING_LINK}} for the phishing link</div>"
+                    className="bg-[#0D1117] border-[#30363D] min-h-[200px] font-mono text-sm"
+                  />
+                  <p className="text-xs text-gray-500">Use {"{{TRACKING_LINK}}"} where you want the phishing link</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Custom Landing Page HTML (Optional)</Label>
+                  <Textarea
+                    value={editingTemplate.landing_page_html}
+                    onChange={(e) => setEditingTemplate(prev => ({ ...prev, landing_page_html: e.target.value }))}
+                    placeholder="<div>Custom fake login page HTML...</div>"
+                    className="bg-[#0D1117] border-[#30363D] min-h-[150px] font-mono text-sm"
+                  />
+                  <p className="text-xs text-gray-500">Leave empty to use the default credential form based on selected fields</p>
+                </div>
+              </div>
+            )}
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowEditTemplate(false)} className="border-[#30363D]">
+                Cancel
+              </Button>
+              <Button onClick={handleUpdateTemplate} className="bg-[#D4A836] hover:bg-[#B8922E] text-black">
+                Save Changes
               </Button>
             </DialogFooter>
           </DialogContent>
