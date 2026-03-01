@@ -368,6 +368,7 @@ async def import_users(request: Request, file: UploadFile = File(...)):
                     logger.warning(f"Failed to send welcome email to {email}")
             except Exception as e:
                 emails_failed += 1
+                email_sent = False
                 logger.error(f"Error sending welcome email to {email}: {e}")
             
             created_users.append({
