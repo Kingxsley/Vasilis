@@ -23,10 +23,13 @@ export default function AuthPage() {
     name: '',
     confirmPassword: '',
     phone: '',
-    message: '',
-    // Two-factor authentication code for admins. Optional for regular users.
-    twoFactorCode: ''
+    message: ''
   });
+  
+  // 2FA is now handled post-login, not during login
+  const [requires2FA, setRequires2FA] = useState(false);
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+  const [pendingToken, setPendingToken] = useState(null);
 
   const navigate = useNavigate();
   const location = useLocation();
