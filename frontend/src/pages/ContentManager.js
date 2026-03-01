@@ -611,8 +611,8 @@ export default function ContentManager() {
             <TabsTrigger value="about" className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">
               <Info className="w-4 h-4 mr-2" />About
             </TabsTrigger>
-            {/* Dynamic CMS Tiles */}
-            {cmsTiles.filter(t => t.published).map(tile => (
+            {/* Dynamic CMS Tiles (non-system only) */}
+            {cmsTiles.filter(t => t.published && !t.is_system).map(tile => (
               <TabsTrigger 
                 key={tile.tile_id} 
                 value={`cms_${tile.tile_id}`} 
