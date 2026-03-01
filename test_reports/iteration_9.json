@@ -1,0 +1,95 @@
+{
+  "summary": "Testing of security training platform features: Login without 2FA, Online Users endpoint, Executive Training modules API, and PowerPoint generation. All features verified working correctly.",
+  "mode": "generate",
+  "baseline_commit": "d3ed28d42f6ba7cfb655b15c2fc0b7ed25ed6ce0",
+  "head_commit": "d3ed28d42f6ba7cfb655b15c2fc0b7ed25ed6ce0",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "regression_results": {
+    "total_specs": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0
+  },
+  "backend_test_results": {
+    "total": 14,
+    "passed": 14,
+    "failed": 0,
+    "skipped": 0
+  },
+  "passed_tests": [
+    "Backend: test_login_endpoint_exists - PASS",
+    "Backend: test_login_without_2fa_field_succeeds - PASS (Login returns token without 2FA code)",
+    "Backend: test_login_response_structure - PASS",
+    "Backend: test_online_users_endpoint_exists - PASS",
+    "Backend: test_online_users_returns_correct_structure - PASS (Returns online_count, online_users, minutes_threshold)",
+    "Backend: test_online_users_default_minutes_is_5 - PASS",
+    "Backend: test_online_users_custom_minutes - PASS",
+    "Backend: test_online_users_requires_auth - PASS",
+    "Backend: test_available_modules_endpoint - PASS",
+    "Backend: test_available_modules_contains_data - PASS (Returns 4 modules: phishing, social_engineering, password_security, data_protection)",
+    "Backend: test_generate_presentation_endpoint - PASS (Returns valid PPTX file)",
+    "Backend: test_generate_presentation_requires_auth - PASS",
+    "Backend: test_available_modules_requires_auth - PASS",
+    "Backend: test_health_check - PASS",
+    "Frontend: Login page loads correctly without 2FA field - PASS",
+    "Frontend: Can login with valid credentials without 2FA and see dashboard - PASS",
+    "Frontend: Login form shows forgot password link - PASS",
+    "Frontend: Can toggle to inquiry form - PASS",
+    "Frontend: Complete flow: Login -> Dashboard -> Executive Training -> Download PPTX - PASS"
+  ],
+  "features_verified": {
+    "login_without_2fa": "PASS - Login endpoint /api/auth/login accepts email+password only, returns token without requiring 2FA code during login",
+    "online_users_endpoint": "PASS - GET /api/analytics/online-users returns online_count, online_users list (users active in last 5 minutes), minutes_threshold",
+    "executive_training_modules": "PASS - GET /api/executive-training/available-modules returns 4 pre-built modules with slide counts",
+    "powerpoint_generation": "PASS - GET /api/executive-training/generate/{module_key} returns valid PPTX file for download",
+    "dashboard_online_now_card": "PASS - Dashboard displays 'Online Now' stat card with count of users active in last 5 minutes"
+  },
+  "specs_created": [
+    "/app/tests/e2e/auth-flow.spec.ts",
+    "/app/tests/e2e/dashboard-exec-training.spec.ts"
+  ],
+  "specs_updated": [],
+  "quarantined_tests": [],
+  "test_report_links": [
+    "/app/backend/tests/test_features.py",
+    "/app/backend/tests/conftest.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "updated_files": [
+    "/app/backend/tests/conftest.py",
+    "/app/backend/tests/test_features.py",
+    "/app/tests/playwright.config.ts",
+    "/app/tests/fixtures/helpers.ts",
+    "/app/tests/e2e/auth-flow.spec.ts",
+    "/app/tests/e2e/dashboard-exec-training.spec.ts"
+  ],
+  "success_rate": {
+    "backend": "100% (14/14 tests passed)",
+    "frontend": "100% (5/5 tests passed)"
+  },
+  "test_credentials": {
+    "admin": {
+      "email": "admin@test.com",
+      "password": "Admin123!"
+    }
+  },
+  "seed_data_creation": "None required - used existing test data",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All requested features verified working. Login without 2FA field tested successfully. Online Users API returns users active in last 5 minutes. Executive Training page shows 4 pre-built modules (Email Phishing Awareness, Social Engineering Defense, Password Security, Data Protection & Privacy) with Download PPTX functionality. Rate limiting is active on login endpoint - wait 60s between failed login attempts.",
+  "api_endpoints_verified": [
+    "POST /api/auth/login - Returns token with email+password only (no 2FA required)",
+    "GET /api/analytics/online-users - Returns {online_count, online_users[], minutes_threshold}",
+    "GET /api/executive-training/available-modules - Returns {modules: [{key, title, subtitle, slide_count}]}",
+    "GET /api/executive-training/generate/{module_key} - Returns PPTX file"
+  ]
+}
