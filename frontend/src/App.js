@@ -336,6 +336,12 @@ const CredentialSubmissions = React.lazy(() => import('./pages/CredentialSubmiss
 const CredentialHarvest = React.lazy(() => import('./pages/CredentialHarvest'));
 // ExecutiveTraining for PowerPoint generation
 const ExecutiveTraining = React.lazy(() => import('./pages/ExecutiveTraining'));
+// CMSTiles for managing website pages
+const CMSTiles = React.lazy(() => import('./pages/CMSTiles'));
+// RSSFeedManager for managing multiple RSS feeds
+const RSSFeedManager = React.lazy(() => import('./pages/RSSFeedManager'));
+// FormSubmissions for viewing contact form and access request submissions
+const FormSubmissions = React.lazy(() => import('./pages/FormSubmissions'));
 
 // Auth Callback Handler
 const AuthCallback = () => {
