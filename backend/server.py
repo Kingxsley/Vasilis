@@ -566,11 +566,25 @@ async def login(data: UserLogin, request: Request):
         )
         raise HTTPException(status_code=403, detail="Two-factor authentication is required. Please enable 2FA to continue.")
 
-    # NEW 2FA FLOW: If user has 2FA enabled but no code provided, 
-    # we allow login but set a flag indicating 2FA verification is needed
+    # 2FA ENFORCEMENT: If user has 2FA enabled, they MUST provide a valid code to login
     requires_2fa_verification = False
     if user.get("two_factor_enabled"):
-        if data.two_factor_code:
+        if not data.two_factor_code:
+            # No 2FA code provided - return requires_2fa flag but DON'T issue token yet
+            await audit_logger.log(
+                action="login_2fa_required",
+                user_email=data.email,
+                ip_address=client_ip,
+                severity="info"
+            )
+            # Return a partial response indicating 2FA is required
+            return {
+                "requires_2fa": True,
+                "message": "Two-factor authentication required",
+                "user_id": user["user_id"],
+                "email": user["email"]
+            }
+        else:
             # User provided 2FA code - verify it
             secret = user.get("two_factor_secret")
             if not secret:
@@ -591,9 +605,6 @@ async def login(data: UserLogin, request: Request):
             except Exception as e:
                 logger.error(f"2FA verification error for {user['user_id']}: {e}")
                 raise HTTPException(status_code=500, detail="Two-factor verification failed")
-        else:
-            # No 2FA code provided - allow login but flag that verification is needed
-            requires_2fa_verification = True
     
     token = create_jwt_token(user["user_id"], user["email"], user["role"])
     
