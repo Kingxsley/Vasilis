@@ -54,6 +54,7 @@ export default function LandingPage() {
   const [branding, setBranding] = useState(null);
   const [pageContent, setPageContent] = useState(null);
   const [customPages, setCustomPages] = useState([]);
+  const [cmsTiles, setCmsTiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -62,9 +63,10 @@ export default function LandingPage() {
       axios.get(`${API}/landing-layouts/public`).catch(() => ({ data: null })),
       axios.get(`${API}/settings/branding`).catch(() => ({ data: null })),
       axios.get(`${API}/pages/landing`).catch(() => ({ data: null })),
-      axios.get(`${API}/pages/custom`).catch(() => ({ data: { pages: [] } }))
+      axios.get(`${API}/pages/custom`).catch(() => ({ data: { pages: [] } })),
+      axios.get(`${API}/cms-tiles/public`).catch(() => ({ data: { tiles: [] } }))
     ])
-      .then(([layoutRes, brandingRes, pageRes, customPagesRes]) => {
+      .then(([layoutRes, brandingRes, pageRes, customPagesRes, cmsTilesRes]) => {
         setLayout(layoutRes.data);
         setBranding(brandingRes.data);
         setPageContent(pageRes.data);
@@ -73,6 +75,11 @@ export default function LandingPage() {
           p => p.is_published && p.show_in_nav
         );
         setCustomPages(navPages);
+        // Filter published non-system CMS tiles
+        const navTiles = (cmsTilesRes.data?.tiles || []).filter(
+          t => t.published && !t.is_system
+        );
+        setCmsTiles(navTiles);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
