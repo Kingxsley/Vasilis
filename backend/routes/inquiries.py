@@ -474,7 +474,7 @@ async def approve_and_create_user(inquiry_id: str, data: ApproveAndCreateUser, r
         raise HTTPException(status_code=400, detail=f"Invalid role. Must be one of: {valid_roles}")
     
     # Validate organization if provided
-    if data.organization_id:
+    if data.organization_id and data.organization_id != "none":
         org = await db.organizations.find_one({"organization_id": data.organization_id}, {"_id": 0})
         if not org:
             raise HTTPException(status_code=400, detail="Organization not found")
@@ -489,13 +489,16 @@ async def approve_and_create_user(inquiry_id: str, data: ApproveAndCreateUser, r
     from server import hash_password
     new_user_id = f"user_{uuid.uuid4().hex[:12]}"
     
+    # Set organization_id to None if "none" was selected
+    org_id = data.organization_id if data.organization_id and data.organization_id != "none" else None
+    
     user_doc = {
         "user_id": new_user_id,
         "email": inquiry["email"],
         "name": inquiry.get("name") or inquiry["email"].split("@")[0],
         "password_hash": hash_password(temp_password),
         "role": data.role,
-        "organization_id": data.organization_id,
+        "organization_id": org_id,
         "picture": None,
         "is_active": True,
         "created_at": datetime.now(timezone.utc).isoformat(),
