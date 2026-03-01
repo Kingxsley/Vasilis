@@ -141,13 +141,13 @@ async def get_custom_nav_items(request: Request):
 
 @router.get("/public")
 async def get_public_nav_items(request: Request):
-    """Get navigation items visible to the current user"""
+    """Get navigation items visible to the current user, including published CMS tiles"""
     user = await get_current_user(request)
     user_role = user.get("role", "trainee")
     
     db = get_db()
     
-    # Get active items where user's role is in visible_to or 'all' is in visible_to
+    # Get active custom navigation items where user's role is in visible_to or 'all' is in visible_to
     items = await db.navigation_items.find(
         {
             "is_active": True,
@@ -158,6 +158,44 @@ async def get_public_nav_items(request: Request):
         },
         {"_id": 0}
     ).sort("sort_order", 1).to_list(100)
+    
+    # Also fetch published CMS tiles and add them to the content section
+    try:
+        cms_tiles = await db.cms_tiles.find(
+            {"published": True},
+            {"_id": 0}
+        ).sort("sort_order", 1).to_list(100)
+        
+        # Convert CMS tiles to navigation item format
+        for tile in cms_tiles:
+            # Determine the path based on route type
+            if tile.get("route_type") == "external" and tile.get("external_url"):
+                path = tile["external_url"]
+                link_type = "external"
+            elif tile.get("route_type") == "custom":
+                path = f"/page/{tile['slug']}"  # Custom content pages
+                link_type = "internal"
+            else:
+                # Internal routes like /blog, /news, /videos, /about
+                path = f"/{tile['slug']}"
+                link_type = "internal"
+            
+            nav_item = {
+                "item_id": f"cms_{tile['tile_id']}",
+                "label": tile["name"],
+                "link_type": link_type,
+                "path": path,
+                "icon": tile.get("icon", "FileText"),
+                "section_id": "content",  # CMS tiles go in content section
+                "visible_to": ["all"],
+                "open_in_new_tab": tile.get("route_type") == "external",
+                "sort_order": 50 + tile.get("sort_order", 100),  # After built-in content items
+                "is_active": True,
+                "is_cms_tile": True  # Mark as CMS-generated item
+            }
+            items.append(nav_item)
+    except Exception as e:
+        logger.warning(f"Failed to fetch CMS tiles for navigation: {e}")
     
     return {"items": items, "user_role": user_role}
 
