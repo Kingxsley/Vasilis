@@ -32,7 +32,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { 
   Plus, Edit, Trash2, Loader2, FileText, Video, Newspaper, 
   Upload, Eye, EyeOff, Image, Youtube, Info, Users, Rss, ExternalLink, Globe,
-  Link, Navigation, ChevronLeft, ChevronRight, Search
+  Link, Navigation, ChevronLeft, ChevronRight, Search, Settings, RefreshCw
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../App';
