@@ -762,6 +762,14 @@ const AppRouter = () => {
           }
         />
         <Route
+          path="/executive-training"
+          element={
+            <ProtectedRoute adminOnly>
+              <ExecutiveTraining />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/certificate-templates"
           element={
             <ProtectedRoute adminOnly>
