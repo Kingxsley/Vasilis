@@ -52,7 +52,37 @@ export default function Settings() {
   useEffect(() => {
     fetchBranding();
     fetchPasswordPolicy();
+    fetchCmsTiles();
   }, []);
+
+  const fetchCmsTiles = async () => {
+    try {
+      const res = await axios.get(`${API}/cms-tiles`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setCmsTiles(res.data?.tiles || []);
+    } catch (err) {
+      console.error('Failed to load CMS tiles:', err);
+    }
+  };
+
+  const toggleTileVisibility = async (tile) => {
+    try {
+      await axios.patch(`${API}/cms-tiles/${tile.tile_id}`, {
+        published: !tile.published
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setCmsTiles(prev => prev.map(t => 
+        t.tile_id === tile.tile_id ? { ...t, published: !t.published } : t
+      ));
+      
+      toast.success(`${tile.name} ${!tile.published ? 'is now visible' : 'is now hidden'}`);
+    } catch (err) {
+      toast.error('Failed to update tile visibility');
+    }
+  };
 
   const fetchPasswordPolicy = async () => {
     try {
