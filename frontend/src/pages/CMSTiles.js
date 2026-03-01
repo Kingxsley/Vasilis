@@ -50,30 +50,28 @@ const ICON_OPTIONS = {
   'Settings': Settings,
 };
 
-// TileForm component - uses refs to prevent any re-renders during typing
+// TileForm component - using plain HTML inputs to avoid any re-render issues
 const TileForm = React.forwardRef(({ initialData = {} }, ref) => {
-  const formRef = useRef({
-    name: initialData.name || '',
-    slug: initialData.slug || '',
-    icon: initialData.icon || 'FileText',
-    description: initialData.description || '',
-    route_type: initialData.route_type || 'custom',
-    external_url: initialData.external_url || '',
-    custom_content: initialData.custom_content || '',
-    published: initialData.published !== false
-  });
+  const nameRef = useRef(null);
+  const slugRef = useRef(null);
+  const descRef = useRef(null);
+  const extUrlRef = useRef(null);
+  const contentRef = useRef(null);
   
-  // For controlled Select and Switch components, we need state
-  const [icon, setIcon] = useState(formRef.current.icon);
-  const [routeType, setRouteType] = useState(formRef.current.route_type);
-  const [published, setPublished] = useState(formRef.current.published);
+  const [icon, setIcon] = useState(initialData.icon || 'FileText');
+  const [routeType, setRouteType] = useState(initialData.route_type || 'custom');
+  const [published, setPublished] = useState(initialData.published !== false);
   
   // Expose getData method to parent via ref
   React.useImperativeHandle(ref, () => ({
     getData: () => ({
-      ...formRef.current,
+      name: nameRef.current?.value || '',
+      slug: slugRef.current?.value || '',
       icon,
+      description: descRef.current?.value || '',
       route_type: routeType,
+      external_url: extUrlRef.current?.value || '',
+      custom_content: contentRef.current?.value || '',
       published
     })
   }));
@@ -83,22 +81,22 @@ const TileForm = React.forwardRef(({ initialData = {} }, ref) => {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>Tile Name *</Label>
-          <Input
-            defaultValue={formRef.current.name}
-            onChange={(e) => { formRef.current.name = e.target.value; }}
+          <input
+            ref={nameRef}
+            defaultValue={initialData.name || ''}
             placeholder="e.g., Contact Us"
-            className="bg-[#0D1117] border-[#30363D]"
+            className="flex h-9 w-full rounded-md border border-[#30363D] bg-[#0D1117] px-3 py-1 text-base text-white shadow-sm placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-[#D4A836]"
             autoComplete="off"
             data-testid="tile-name-input"
           />
         </div>
         <div className="space-y-2">
           <Label>URL Slug</Label>
-          <Input
-            defaultValue={formRef.current.slug}
-            onChange={(e) => { formRef.current.slug = e.target.value.toLowerCase().replace(/\s+/g, '-'); }}
-            placeholder="e.g., contact-us (auto-generated if empty)"
-            className="bg-[#0D1117] border-[#30363D]"
+          <input
+            ref={slugRef}
+            defaultValue={initialData.slug || ''}
+            placeholder="e.g., contact-us"
+            className="flex h-9 w-full rounded-md border border-[#30363D] bg-[#0D1117] px-3 py-1 text-base text-white shadow-sm placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-[#D4A836]"
             autoComplete="off"
           />
         </div>
@@ -107,7 +105,7 @@ const TileForm = React.forwardRef(({ initialData = {} }, ref) => {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>Icon</Label>
-          <Select value={icon} onValueChange={(v) => { setIcon(v); formRef.current.icon = v; }}>
+          <Select value={icon} onValueChange={setIcon}>
             <SelectTrigger className="bg-[#0D1117] border-[#30363D]">
               <SelectValue placeholder="Select icon" />
             </SelectTrigger>
@@ -128,7 +126,7 @@ const TileForm = React.forwardRef(({ initialData = {} }, ref) => {
         </div>
         <div className="space-y-2">
           <Label>Route Type</Label>
-          <Select value={routeType} onValueChange={(v) => { setRouteType(v); formRef.current.route_type = v; }}>
+          <Select value={routeType} onValueChange={setRouteType}>
             <SelectTrigger className="bg-[#0D1117] border-[#30363D]">
               <SelectValue placeholder="Select type" />
             </SelectTrigger>
@@ -143,11 +141,11 @@ const TileForm = React.forwardRef(({ initialData = {} }, ref) => {
 
       <div className="space-y-2">
         <Label>Description</Label>
-        <Input
-          defaultValue={formRef.current.description}
-          onChange={(e) => { formRef.current.description = e.target.value; }}
+        <input
+          ref={descRef}
+          defaultValue={initialData.description || ''}
           placeholder="Brief description of the page"
-          className="bg-[#0D1117] border-[#30363D]"
+          className="flex h-9 w-full rounded-md border border-[#30363D] bg-[#0D1117] px-3 py-1 text-base text-white shadow-sm placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-[#D4A836]"
           autoComplete="off"
         />
       </div>
@@ -155,11 +153,11 @@ const TileForm = React.forwardRef(({ initialData = {} }, ref) => {
       {routeType === 'external' && (
         <div className="space-y-2">
           <Label>External URL</Label>
-          <Input
-            defaultValue={formRef.current.external_url}
-            onChange={(e) => { formRef.current.external_url = e.target.value; }}
+          <input
+            ref={extUrlRef}
+            defaultValue={initialData.external_url || ''}
             placeholder="https://example.com"
-            className="bg-[#0D1117] border-[#30363D]"
+            className="flex h-9 w-full rounded-md border border-[#30363D] bg-[#0D1117] px-3 py-1 text-base text-white shadow-sm placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-[#D4A836]"
             autoComplete="off"
           />
         </div>
@@ -168,11 +166,11 @@ const TileForm = React.forwardRef(({ initialData = {} }, ref) => {
       {routeType === 'custom' && (
         <div className="space-y-2">
           <Label>Custom Page Content (HTML)</Label>
-          <Textarea
-            defaultValue={formRef.current.custom_content}
-            onChange={(e) => { formRef.current.custom_content = e.target.value; }}
+          <textarea
+            ref={contentRef}
+            defaultValue={initialData.custom_content || ''}
             placeholder="<div>Your custom page content...</div>"
-            className="bg-[#0D1117] border-[#30363D] min-h-[150px] font-mono text-sm"
+            className="flex w-full rounded-md border border-[#30363D] bg-[#0D1117] px-3 py-2 text-base text-white shadow-sm placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-[#D4A836] min-h-[150px] font-mono text-sm"
           />
         </div>
       )}
@@ -184,7 +182,7 @@ const TileForm = React.forwardRef(({ initialData = {} }, ref) => {
         </div>
         <Switch
           checked={published}
-          onCheckedChange={(checked) => { setPublished(checked); formRef.current.published = checked; }}
+          onCheckedChange={setPublished}
         />
       </div>
     </div>
