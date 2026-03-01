@@ -244,6 +244,15 @@ export default function ExecutiveTraining() {
               Download professional PowerPoint presentations for security awareness training
             </p>
           </div>
+          {isSuperAdmin && (
+            <Button
+              onClick={() => setShowUpload(true)}
+              className="bg-[#D4A836] hover:bg-[#B8922E] text-black"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Upload Presentation
+            </Button>
+          )}
         </div>
 
         {/* Info Banner */}
