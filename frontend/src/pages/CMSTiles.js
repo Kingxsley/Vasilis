@@ -200,16 +200,9 @@ export default function CMSTiles() {
   const [editingTile, setEditingTile] = useState(null);
   const [saving, setSaving] = useState(false);
   
-  const [newTile, setNewTile] = useState({
-    name: '',
-    slug: '',
-    icon: 'FileText',
-    description: '',
-    published: true,
-    route_type: 'custom',
-    external_url: '',
-    custom_content: ''
-  });
+  // Refs for form data
+  const createFormRef = useRef(null);
+  const editFormRef = useRef(null);
 
   const headers = { Authorization: `Bearer ${token}` };
 
@@ -230,20 +223,17 @@ export default function CMSTiles() {
   };
 
   const createTile = async () => {
-    if (!newTile.name) {
+    const formData = createFormRef.current?.getData();
+    if (!formData?.name) {
       toast.error('Please enter a tile name');
       return;
     }
     
     setSaving(true);
     try {
-      await axios.post(`${API}/cms-tiles`, newTile, { headers });
+      await axios.post(`${API}/cms-tiles`, formData, { headers });
       toast.success('Tile created successfully');
       setShowCreate(false);
-      setNewTile({
-        name: '', slug: '', icon: 'FileText', description: '',
-        published: true, route_type: 'custom', external_url: '', custom_content: ''
-      });
       fetchTiles();
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Failed to create tile');
@@ -253,14 +243,15 @@ export default function CMSTiles() {
   };
 
   const updateTile = async () => {
-    if (!editingTile?.name) {
+    const formData = editFormRef.current?.getData();
+    if (!formData?.name) {
       toast.error('Please enter a tile name');
       return;
     }
     
     setSaving(true);
     try {
-      await axios.patch(`${API}/cms-tiles/${editingTile.tile_id}`, editingTile, { headers });
+      await axios.patch(`${API}/cms-tiles/${editingTile.tile_id}`, formData, { headers });
       toast.success('Tile updated successfully');
       setShowEdit(false);
       setEditingTile(null);
