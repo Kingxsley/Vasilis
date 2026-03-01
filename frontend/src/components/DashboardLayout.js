@@ -101,6 +101,8 @@ const navGroups = [
       { path: '/landing-editor', label: 'Landing Page', icon: Layout, contentManager: true },
       { path: '/sidebar-customizer', label: 'Sidebar', icon: Layout, superAdminOnly: true },
       { path: '/media-library', label: 'Media Library', icon: Image, contentManager: true },
+      { path: '/cms-tiles', label: 'CMS Pages', icon: LayoutDashboard, superAdminOnly: true },
+      { path: '/rss-feeds', label: 'RSS Feeds', icon: ExternalLink, superAdminOnly: true },
     ]
   },
   {
