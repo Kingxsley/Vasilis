@@ -83,19 +83,13 @@ test.describe('Bug Fix - RSS Feed Manager Uses Correct API Path', () => {
 // <Toaster position="top-right" richColors closeButton duration={3000} />
 
 test.describe('Executive Training - PPT Management Features', () => {
-  test.beforeEach(async ({ page }) => {
+  // Use serial mode to share login state
+  test.describe.configure({ mode: 'serial' });
+  
+  test('Executive Training page loads and shows upload features', async ({ page }) => {
     await dismissToasts(page);
     await loginAsAdmin(page);
-  });
-
-  test('Executive Training page loads correctly', async ({ page }) => {
-    await page.goto('/executive-training');
-    await waitForAppReady(page);
     
-    await expect(page.getByTestId('executive-training-page')).toBeVisible({ timeout: 15000 });
-  });
-
-  test('Shows upload button for super admin', async ({ page }) => {
     await page.goto('/executive-training');
     await waitForAppReady(page);
     
@@ -103,13 +97,6 @@ test.describe('Executive Training - PPT Management Features', () => {
     
     // Super admin should see Upload button
     await expect(page.getByRole('button', { name: /Upload/i })).toBeVisible({ timeout: 10000 });
-  });
-
-  test('Upload dialog has proper form fields', async ({ page }) => {
-    await page.goto('/executive-training');
-    await waitForAppReady(page);
-    
-    await expect(page.getByTestId('executive-training-page')).toBeVisible({ timeout: 15000 });
     
     // Click Upload button
     await page.getByRole('button', { name: /Upload/i }).click();
@@ -117,20 +104,12 @@ test.describe('Executive Training - PPT Management Features', () => {
     // Verify dialog opens with form fields
     await expect(page.locator('[role="dialog"]')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('[role="dialog"]').getByText('Presentation Name *')).toBeVisible();
-  });
-
-  test('Uploaded presentations section visible when presentations exist', async ({ page }) => {
-    await page.goto('/executive-training');
-    await waitForAppReady(page);
     
-    await expect(page.getByTestId('executive-training-page')).toBeVisible({ timeout: 15000 });
+    // Close dialog
+    await page.keyboard.press('Escape');
     
-    // The "Uploaded Presentations" section should be visible if there are uploaded presentations
-    // or not visible if there are none - both are valid states
-    const uploadedSection = page.getByText('Uploaded Presentations');
-    // Use count to check - may or may not be visible
-    const count = await uploadedSection.count();
-    expect(count).toBeGreaterThanOrEqual(0); // Either 0 or 1
+    // The "Uploaded Presentations" section visibility depends on whether presentations exist
+    // This is valid - just verify page loads correctly
   });
 });
 
