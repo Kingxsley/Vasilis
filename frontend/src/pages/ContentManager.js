@@ -598,7 +598,7 @@ export default function ContentManager() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-[#1a1a24] border border-[#D4A836]/20 mb-6 flex-wrap">
+          <TabsList className="bg-[#1a1a24] border border-[#D4A836]/20 mb-6 flex-wrap h-auto p-1 gap-1">
             <TabsTrigger value="blog" className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">
               <FileText className="w-4 h-4 mr-2" />Blog
             </TabsTrigger>
@@ -611,7 +611,21 @@ export default function ContentManager() {
             <TabsTrigger value="about" className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">
               <Info className="w-4 h-4 mr-2" />About
             </TabsTrigger>
-{/* Menu Manager tab moved to Settings page */}
+            {/* Dynamic CMS Tiles */}
+            {cmsTiles.filter(t => t.published).map(tile => (
+              <TabsTrigger 
+                key={tile.tile_id} 
+                value={`cms_${tile.tile_id}`} 
+                className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black"
+              >
+                <FileText className="w-4 h-4 mr-2" />{tile.name}
+              </TabsTrigger>
+            ))}
+            {user?.role === 'super_admin' && (
+              <TabsTrigger value="rss" className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">
+                <Rss className="w-4 h-4 mr-2" />RSS Feeds
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {/* BLOG TAB */}
