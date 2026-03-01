@@ -252,8 +252,15 @@ export default function CredentialHarvest() {
     sender_name: '',
     sender_email: '',
     body_html: '',
-    description: ''
+    description: '',
+    preview_color: '#D4A836',
+    credential_fields: ['username', 'password'], // Default fields to collect
+    landing_page_html: '' // Custom landing page HTML
   });
+
+  // Edit template state
+  const [editingTemplate, setEditingTemplate] = useState(null);
+  const [showEditTemplate, setShowEditTemplate] = useState(false);
 
   const headers = { Authorization: `Bearer ${token}` };
 
