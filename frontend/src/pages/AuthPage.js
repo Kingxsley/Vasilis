@@ -71,7 +71,8 @@ export default function AuthPage() {
 
     try {
       if (mode === 'login') {
-        const user = await login(formData.email, formData.password, formData.twoFactorCode);
+        // Login without 2FA code - 2FA is handled post-login if user has it enabled
+        const user = await login(formData.email, formData.password);
         toast.success(`Welcome back, ${user.name}!`);
         if (user.role === 'super_admin' || user.role === 'org_admin') {
           navigate('/dashboard', { replace: true });
