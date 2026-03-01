@@ -71,13 +71,13 @@ test.describe('Iteration 14 - Bug Fixes', () => {
     await page.goto('/cms-tiles');
     await waitForAppReady(page);
     
-    // Wait for the page to load - check for CMS Tiles heading or tiles container
-    await expect(page.getByRole('heading', { level: 1 }).or(page.getByText('CMS Tiles'))).toBeVisible({ timeout: 15000 });
+    // Wait for the page to load - check for "CMS Tiles Manager" heading
+    await expect(page.getByRole('heading', { name: 'CMS Tiles Manager' })).toBeVisible({ timeout: 15000 });
     
-    // Click Create Tile button
-    const createButton = page.getByRole('button', { name: /Create Tile/i });
-    await expect(createButton).toBeVisible({ timeout: 10000 });
-    await createButton.click();
+    // Click Add New Tile button (actual button text from UI)
+    const addButton = page.getByRole('button', { name: /Add New Tile/i });
+    await expect(addButton).toBeVisible({ timeout: 10000 });
+    await addButton.click();
     
     // Verify dialog opens
     await expect(page.locator('[role="dialog"]')).toBeVisible({ timeout: 5000 });
@@ -101,12 +101,21 @@ test.describe('Iteration 14 - Bug Fixes', () => {
     await dismissToasts(page);
     await loginAsAdmin(page);
     
-    // Navigate to Forms page (sidebar link is "Forms")
-    await page.goto('/forms');
+    // Navigate to Forms page - use sidebar Forms link
+    // First go to dashboard, then click Forms
+    await page.goto('/dashboard');
     await waitForAppReady(page);
     
-    // Wait for page to load - The heading is "Forms"
-    await expect(page.getByRole('heading', { name: 'Forms' })).toBeVisible({ timeout: 15000 });
+    // Click Forms in sidebar
+    const formsLink = page.locator('nav, aside').getByRole('link', { name: 'Forms' });
+    await expect(formsLink).toBeVisible({ timeout: 15000 });
+    await formsLink.click();
+    
+    // Wait for Forms page to load
+    await page.waitForURL(/\/forms/, { timeout: 15000 });
+    
+    // Wait for the page heading "Forms" to be visible
+    await expect(page.getByRole('heading', { name: 'Forms' })).toBeVisible({ timeout: 10000 });
     
     // Check for Contact Forms tab (UI shows "Contact Forms (X)")
     const contactTab = page.getByRole('tab', { name: /Contact Forms/i });
