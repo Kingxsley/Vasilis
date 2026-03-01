@@ -647,7 +647,7 @@ export default function FormSubmissions() {
                 </SelectTrigger>
                 <SelectContent className="bg-[#161B22] border-[#30363D]">
                   <SelectItem value="none">No Organization</SelectItem>
-                  {organizations.map(org => (
+                  {organizations.filter(org => org.organization_id).map(org => (
                     <SelectItem key={org.organization_id} value={org.organization_id}>
                       {org.name}
                     </SelectItem>
