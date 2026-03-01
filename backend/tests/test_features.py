@@ -24,8 +24,8 @@ class TestAuthLoginWithout2FA:
     def test_login_without_2fa_field_succeeds(self, api_client):
         """Test that login works without 2FA code field - primary feature test"""
         response = api_client.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "test@admin.com",
-            "password": "TestAdmin123!"
+            "email": "admin@test.com",
+            "password": "Admin123!"
         })
         assert response.status_code == 200, f"Login failed: {response.text}"
         data = response.json()
@@ -37,13 +37,13 @@ class TestAuthLoginWithout2FA:
         # Verify user data is returned
         assert "user" in data, "User data not returned"
         assert "email" in data["user"], "Email not in user data"
-        assert data["user"]["email"] == "test@admin.com"
+        assert data["user"]["email"] == "admin@test.com"
     
     def test_login_response_structure(self, api_client):
         """Test login response has correct structure"""
         response = api_client.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "test@admin.com",
-            "password": "TestAdmin123!"
+            "email": "admin@test.com",
+            "password": "Admin123!"
         })
         assert response.status_code == 200
         data = response.json()
