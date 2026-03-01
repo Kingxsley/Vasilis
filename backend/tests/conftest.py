@@ -4,14 +4,14 @@ import os
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def api_client():
     """Shared requests session"""
     session = requests.Session()
     session.headers.update({"Content-Type": "application/json"})
     return session
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def auth_token(api_client):
     """Get authentication token - skip if auth fails"""
     response = api_client.post(f"{BASE_URL}/api/auth/login", json={
@@ -22,7 +22,7 @@ def auth_token(api_client):
         return response.json().get("token")
     pytest.skip(f"Authentication failed ({response.status_code}): {response.text}")
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def authenticated_client(api_client, auth_token):
     """Session with auth header"""
     api_client.headers.update({"Authorization": f"Bearer {auth_token}"})
