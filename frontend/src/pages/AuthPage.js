@@ -341,26 +341,6 @@ export default function AuthPage() {
               </div>
             )}
 
-            {/* Two-Factor Authentication Code (only for login) */}
-            {mode === 'login' && (
-              <div className="space-y-2">
-                <Label htmlFor="twoFactorCode" className="text-gray-400">Two-Factor Code</Label>
-                <div className="relative">
-                  <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                  <Input
-                    id="twoFactorCode"
-                    type="text"
-                    placeholder="Enter 6-digit code"
-                    value={formData.twoFactorCode}
-                    onChange={(e) => setFormData({ ...formData, twoFactorCode: e.target.value })}
-                    className="pl-10 bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] placeholder:text-gray-600 focus:border-[#D4A836] focus:ring-[#D4A836]/20"
-                    data-testid="twofactor-input"
-                  />
-                </div>
-                <p className="text-xs text-gray-500">Required only if two-factor authentication is enabled.</p>
-              </div>
-            )}
-
             {mode === 'reset' && (
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword" className="text-gray-400">Confirm Password</Label>
