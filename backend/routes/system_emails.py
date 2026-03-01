@@ -377,3 +377,82 @@ async def get_system_email_template_config(db, template_id: str) -> dict:
     if custom:
         return {**default, **custom}
     return default
+
+
+
+@router.post("/test-send")
+async def send_test_email_endpoint(request: Request):
+    """Send a test email to verify email configuration"""
+    await require_super_admin(request)
+    
+    body = await request.json()
+    to_email = body.get("to_email")
+    template_id = body.get("template_id", "welcome")
+    subject_override = body.get("subject")
+    
+    if not to_email:
+        raise HTTPException(status_code=400, detail="to_email is required")
+    
+    from services.email_service import is_valid_email, send_test_email, generate_email_html_from_template
+    
+    if not is_valid_email(to_email):
+        raise HTTPException(status_code=400, detail=f"Invalid email format: {to_email}")
+    
+    db = get_db()
+    
+    # Get template
+    template = await get_system_template_config(db, template_id)
+    
+    # Sample data for preview
+    sample_data = {
+        "user_name": "Test User",
+        "first_name": "Test",
+        "email": to_email,
+        "login_url": "https://vasilisnetshield.com/auth",
+        "password": "YourSecurePassword123!",
+        "company_name": "Vasilis NetShield",
+        "module_name": "Security Awareness Training",
+        "modules": "Phishing Awareness, Password Security",
+        "deadline": "2026-03-15",
+        "reset_link": "https://vasilisnetshield.com/reset-password?token=sample"
+    }
+    
+    # Generate HTML
+    html_content = generate_email_html_from_template(template, sample_data)
+    subject = subject_override or template.get("subject", "Test Email from Vasilis NetShield")
+    
+    # Send test email
+    result = await send_test_email(to_email, subject, html_content)
+    
+    if result.get("success"):
+        return {"message": f"Test email sent successfully to {to_email}", "status": "sent"}
+    else:
+        raise HTTPException(status_code=500, detail=result.get("error", "Failed to send email"))
+
+
+@router.post("/test-custom")
+async def send_custom_test_email(request: Request):
+    """Send a custom HTML test email"""
+    await require_super_admin(request)
+    
+    body = await request.json()
+    to_email = body.get("to_email")
+    subject = body.get("subject", "Test Email")
+    html_content = body.get("html_content")
+    
+    if not to_email:
+        raise HTTPException(status_code=400, detail="to_email is required")
+    if not html_content:
+        raise HTTPException(status_code=400, detail="html_content is required")
+    
+    from services.email_service import is_valid_email, send_test_email
+    
+    if not is_valid_email(to_email):
+        raise HTTPException(status_code=400, detail=f"Invalid email format: {to_email}")
+    
+    result = await send_test_email(to_email, subject, html_content)
+    
+    if result.get("success"):
+        return {"message": f"Test email sent successfully to {to_email}", "status": "sent"}
+    else:
+        raise HTTPException(status_code=500, detail=result.get("error", "Failed to send email"))
