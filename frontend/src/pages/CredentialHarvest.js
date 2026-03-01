@@ -481,8 +481,10 @@ export default function CredentialHarvest() {
   const handleEditTemplate = (template) => {
     setEditingTemplate({
       ...template,
+      body_html: template.body_html || '',
       credential_fields: template.credential_fields || ['username', 'password'],
-      landing_page_html: template.landing_page_html || ''
+      landing_page_html: template.landing_page_html || '',
+      preview_color: template.preview_color || '#D4A836'
     });
     setShowEditTemplate(true);
   };
