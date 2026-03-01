@@ -60,8 +60,12 @@ class InquiryUpdate(BaseModel):
 # ============== HELPER FUNCTIONS ==============
 
 async def notify_super_admins_of_access_request(inquiry_data: dict):
-    """Send email notification to all super admins about new access request"""
+    """Send email notification to all super admins and admin email about new access request"""
     db = get_db()
+    import os
+    
+    # Also send to the designated admin email
+    ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "info@vasilisnetshield.com")
     
     try:
         # Get all super admins
@@ -70,13 +74,18 @@ async def notify_super_admins_of_access_request(inquiry_data: dict):
             {"_id": 0, "email": 1, "name": 1}
         ).to_list(100)
         
+        # Add admin email if not already in list
+        admin_emails = [a.get("email") for a in super_admins]
+        if ADMIN_EMAIL not in admin_emails:
+            super_admins.append({"email": ADMIN_EMAIL, "name": "Admin"})
+        
         if not super_admins:
             logger.warning("No super admins found to notify about access request")
             return
         
         from services.email_service import send_access_request_notification
         
-        # Send notification to each super admin
+        # Send notification to each admin
         for admin in super_admins:
             try:
                 await send_access_request_notification(
