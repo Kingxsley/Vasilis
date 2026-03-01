@@ -590,13 +590,141 @@ export default function FormSubmissions() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {accessRequests.map((item) => (
-                  <SubmissionCard key={item.request_id} item={item} type="access" />
+                  <AccessRequestCard key={item.inquiry_id} item={item} />
                 ))}
               </div>
             )}
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Approve & Create User Dialog */}
+      <Dialog open={showApprove} onOpenChange={setShowApprove}>
+        <DialogContent className="bg-[#161B22] border-[#30363D] sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserPlus className="w-5 h-5 text-green-400" />
+              Approve & Create User
+            </DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Create a user account for {selectedItem?.name || selectedItem?.email}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="bg-[#0D1117] p-4 rounded-lg border border-[#30363D]">
+              <p className="text-sm text-gray-400">Requesting User:</p>
+              <p className="text-[#E8DDB5] font-medium">{selectedItem?.name}</p>
+              <p className="text-sm text-gray-500">{selectedItem?.email}</p>
+              {selectedItem?.organization && (
+                <p className="text-sm text-gray-500">Organization: {selectedItem.organization}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label>Role *</Label>
+              <Select value={approveForm.role} onValueChange={(v) => setApproveForm(prev => ({ ...prev, role: v }))}>
+                <SelectTrigger className="bg-[#0D1117] border-[#30363D]">
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#161B22] border-[#30363D]">
+                  <SelectItem value="trainee">Trainee</SelectItem>
+                  <SelectItem value="org_admin">Organization Admin</SelectItem>
+                  <SelectItem value="media_manager">Media Manager</SelectItem>
+                  <SelectItem value="super_admin">Super Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Organization (Optional)</Label>
+              <Select 
+                value={approveForm.organization_id} 
+                onValueChange={(v) => setApproveForm(prev => ({ ...prev, organization_id: v }))}
+              >
+                <SelectTrigger className="bg-[#0D1117] border-[#30363D]">
+                  <SelectValue placeholder="Select organization" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#161B22] border-[#30363D]">
+                  <SelectItem value="">No Organization</SelectItem>
+                  {organizations.map(org => (
+                    <SelectItem key={org.organization_id} value={org.organization_id}>
+                      {org.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-[#0D1117] rounded-lg border border-[#30363D]">
+              <div>
+                <Label>Send Welcome Email</Label>
+                <p className="text-xs text-gray-500">Email credentials to the user</p>
+              </div>
+              <Switch
+                checked={approveForm.send_welcome_email}
+                onCheckedChange={(checked) => setApproveForm(prev => ({ ...prev, send_welcome_email: checked }))}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowApprove(false)} className="border-[#30363D]">
+              Cancel
+            </Button>
+            <Button 
+              onClick={approveAndCreateUser} 
+              disabled={approving}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              {approving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <UserPlus className="w-4 h-4 mr-2" />}
+              Create User
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Assign to Admin Dialog */}
+      <Dialog open={showAssign} onOpenChange={setShowAssign}>
+        <DialogContent className="bg-[#161B22] border-[#30363D] sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Users className="w-5 h-5 text-purple-400" />
+              Assign to Admin
+            </DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Select an admin to handle this request
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2 py-4">
+            {admins.length === 0 ? (
+              <p className="text-center text-gray-500 py-4">No admins available</p>
+            ) : (
+              admins.map(admin => (
+                <Button
+                  key={admin.user_id}
+                  variant="outline"
+                  className="w-full justify-start border-[#30363D] hover:border-purple-500/50"
+                  onClick={() => assignToAdmin(admin.user_id)}
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  <div className="text-left">
+                    <p className="text-[#E8DDB5]">{admin.name || admin.email}</p>
+                    <p className="text-xs text-gray-500">{admin.role}</p>
+                  </div>
+                </Button>
+              ))
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAssign(false)} className="border-[#30363D] w-full">
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Detail Dialog */}
       <Dialog open={showDetail} onOpenChange={setShowDetail}>
