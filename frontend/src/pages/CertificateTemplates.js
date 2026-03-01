@@ -983,6 +983,26 @@ export default function CertificateTemplates() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
+                      {/* Template Preview */}
+                      <div className="mb-3 p-2 bg-[#0D1117] rounded-lg border border-[#30363D]">
+                        <div 
+                          className="w-full h-20 rounded flex items-center justify-center text-xs text-gray-400 overflow-hidden"
+                          style={{
+                            backgroundColor: template.background_color || '#ffffff',
+                            backgroundImage: template.background_image ? `url(${template.background_image})` : 'none',
+                            backgroundSize: 'cover'
+                          }}
+                        >
+                          {template.elements && template.elements.length > 0 ? (
+                            <div className="text-center text-[#1F4E79]">
+                              <div className="text-xs font-bold">Certificate Preview</div>
+                              <div className="text-[10px]">{template.elements.length} elements</div>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">Empty Template</span>
+                          )}
+                        </div>
+                      </div>
                       <div className="flex items-center justify-between mt-2">
                         <div className="flex gap-2">
                           <Button
@@ -993,6 +1013,15 @@ export default function CertificateTemplates() {
                           >
                             <Settings2 className="w-3 h-3 mr-1" />
                             Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => copyTemplate(template)}
+                            className="border-[#D4A836]/30 text-[#E8DDB5]"
+                          >
+                            <Copy className="w-3 h-3 mr-1" />
+                            Copy
                           </Button>
                           {!template.is_default && (
                             <Button
