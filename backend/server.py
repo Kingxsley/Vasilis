@@ -144,6 +144,8 @@ class UserResponse(BaseModel):
 class TokenResponse(BaseModel):
     token: str
     user: UserResponse
+    requires_2fa_verification: Optional[bool] = False
+    two_factor_enabled: Optional[bool] = False
 
 # Two-Factor Auth models
 class TwoFactorSetupResponse(BaseModel):
