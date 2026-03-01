@@ -276,7 +276,7 @@ async def create_news(data: NewsCreate, request: Request):
 
 @router.get("/news")
 async def list_news(
-    limit: int = 10,
+    limit: int = 15,
     skip: int = 0,
     search: Optional[str] = None,
     include_rss: bool = True,
