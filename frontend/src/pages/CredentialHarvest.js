@@ -36,7 +36,7 @@ import {
   KeyRound, Plus, Play, Pause, CheckCircle, Eye, 
   Send, Users, Building2, Trash2, BarChart3, AlertTriangle,
   FileText, Loader2, RefreshCw, Download, Clock, Calendar,
-  Copy, Edit, Lock, Mail, Shield, User, ExternalLink
+  Copy, Edit, Lock, Mail, Shield, User, ExternalLink, Image as ImageIcon, Type, Link
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
