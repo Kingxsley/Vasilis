@@ -1478,7 +1478,7 @@ export default function CredentialHarvest() {
 
         {/* Edit Template Dialog */}
         <Dialog open={showEditTemplate} onOpenChange={setShowEditTemplate}>
-          <DialogContent className="bg-[#161B22] border-[#30363D] sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
+          <DialogContent className="bg-[#161B22] border-[#30363D] w-[95vw] max-w-[900px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Edit className="w-5 h-5 text-[#D4A836]" />
