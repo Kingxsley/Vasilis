@@ -2083,16 +2083,26 @@ async def track_credential_submission(tracking_code: str, request: Request):
     """
     Track when a user submits credentials to a fake login page.
     This is called when the simulated phishing page captures form submission.
-    Note: We store the entered username for training purposes, but NEVER store passwords.
+    Note: We store the entered username and a password hint (2 random chars) for training purposes, but NEVER store full passwords.
     """
     db = get_db()
+    import random
     
-    # Parse request body to get entered username
+    # Parse request body to get entered username and password hint
     try:
         body = await request.json()
         entered_username = body.get("entered_username", "")
+        entered_password = body.get("entered_password", "")
+        
+        # Create password hint - 2 random characters from password in random positions
+        password_hint = ""
+        if entered_password and len(entered_password) >= 2:
+            indices = random.sample(range(len(entered_password)), min(2, len(entered_password)))
+            hint_chars = [(i, entered_password[i]) for i in sorted(indices)]
+            password_hint = f"Position {hint_chars[0][0]+1}: '{hint_chars[0][1]}', Position {hint_chars[1][0]+1}: '{hint_chars[1][1]}'" if len(hint_chars) >= 2 else f"Position {hint_chars[0][0]+1}: '{hint_chars[0][1]}'"
     except:
         entered_username = ""
+        password_hint = ""
     
     request_info = {
         "ip": request.client.host if request.client else None,
