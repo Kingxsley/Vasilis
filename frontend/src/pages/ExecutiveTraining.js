@@ -444,15 +444,47 @@ export default function ExecutiveTraining() {
             {/* Uploaded Presentations (Super Admin only) */}
             {isSuperAdmin && uploadedPresentations.length > 0 && (
               <div className="mt-8">
-                <h2 className="text-xl font-semibold text-[#E8DDB5] mb-4">Uploaded Presentations</h2>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold text-[#E8DDB5]">Uploaded Presentations</h2>
+                  {selectedPresentations.length > 0 && (
+                    <Button
+                      variant="destructive"
+                      onClick={handleBulkDelete}
+                      className="flex items-center gap-2"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Delete {selectedPresentations.length} Selected
+                    </Button>
+                  )}
+                </div>
+                
+                {/* Select All */}
+                <div className="flex items-center gap-3 pb-3 mb-4 border-b border-[#30363D]">
+                  <Checkbox
+                    checked={selectedPresentations.length === uploadedPresentations.length && uploadedPresentations.length > 0}
+                    onCheckedChange={toggleAllPresentations}
+                  />
+                  <span className="text-sm text-gray-400">
+                    {selectedPresentations.length > 0 
+                      ? `${selectedPresentations.length} selected`
+                      : 'Select all'}
+                  </span>
+                </div>
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {uploadedPresentations.map((pres) => (
                     <Card 
                       key={pres.presentation_id} 
-                      className="bg-[#161B22] border-[#30363D] hover:border-[#D4A836]/50 transition-colors"
+                      className={`bg-[#161B22] border-[#30363D] hover:border-[#D4A836]/50 transition-colors ${
+                        selectedPresentations.includes(pres.presentation_id) ? 'border-[#D4A836]' : ''
+                      }`}
                     >
                       <CardHeader className="pb-3">
                         <div className="flex items-center gap-3">
+                          <Checkbox
+                            checked={selectedPresentations.includes(pres.presentation_id)}
+                            onCheckedChange={() => togglePresentationSelection(pres.presentation_id)}
+                          />
                           <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
                             <Upload className="w-5 h-5 text-green-400" />
                           </div>
@@ -485,6 +517,16 @@ export default function ExecutiveTraining() {
                             ) : (
                               <Download className="w-4 h-4" />
                             )}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            className="border-[#30363D] text-[#E8DDB5]"
+                            onClick={() => {
+                              setEditingPresentation(pres);
+                              setShowEdit(true);
+                            }}
+                          >
+                            <Edit className="w-4 h-4" />
                           </Button>
                           <Button
                             variant="outline"
