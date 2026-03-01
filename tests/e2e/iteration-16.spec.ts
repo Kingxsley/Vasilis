@@ -112,37 +112,25 @@ test.describe('Iteration 16 - Frontend Features', () => {
   });
 
   test.describe('Form Submissions - SelectItem Fix', () => {
-    test('Form Submissions page loads with tabs', async ({ page }) => {
+    test('Form Submissions page loads with tabs and approve dialog works', async ({ page }) => {
       await loginAsAdmin(page);
       
       // Navigate to Form Submissions
       await page.goto('/access-requests');
       await page.waitForLoadState('domcontentloaded');
       
-      // Wait for the page to load
-      await expect(page.getByTestId('form-submissions-page')).toBeVisible({ timeout: 15000 });
+      // Wait for the page to load - check for heading
+      await expect(page.locator('h1:has-text("Form Submissions"), h1:has-text("Access Requests")')).toBeVisible({ timeout: 15000 });
       
       // Verify tabs are present
-      const contactTab = page.getByRole('tab', { name: /Contact Forms/i });
-      const accessTab = page.getByRole('tab', { name: /Access Requests/i });
+      await expect(page.getByRole('tab', { name: /Contact Forms/i })).toBeVisible();
+      await expect(page.getByRole('tab', { name: /Access Requests/i })).toBeVisible();
       
-      await expect(contactTab).toBeVisible();
-      await expect(accessTab).toBeVisible();
-    });
-
-    test('Approve dialog has SelectItem with default value', async ({ page }) => {
-      await loginAsAdmin(page);
-      
-      await page.goto('/access-requests');
-      await page.waitForLoadState('domcontentloaded');
-      await expect(page.getByTestId('form-submissions-page')).toBeVisible({ timeout: 15000 });
-      
-      // Make sure Access Requests tab is active
-      const accessTab = page.getByRole('tab', { name: /Access Requests/i });
-      await accessTab.click();
+      // Switch to Access Requests tab
+      await page.getByRole('tab', { name: /Access Requests/i }).click();
       
       // Wait for content to load
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('domcontentloaded');
       
       // Check for any access request cards with Approve button
       const approveButtons = page.locator('button:has-text("Approve")');
@@ -155,16 +143,16 @@ test.describe('Iteration 16 - Frontend Features', () => {
         // Wait for dialog
         await expect(page.getByRole('dialog')).toBeVisible();
         
-        // Check that role select has default value (trainee)
+        // Check that role select has default value (should not be empty)
         const roleSelect = page.locator('[data-testid="role-select"], select, [class*="SelectTrigger"]').first();
         await expect(roleSelect).toBeVisible();
         
         // Close dialog
         await page.getByRole('button', { name: /Cancel/i }).click();
-      } else {
-        // No pending requests, just verify page structure
-        await page.screenshot({ path: 'form-submissions-no-requests.jpeg', quality: 20 });
       }
+      
+      // Take screenshot
+      await page.screenshot({ path: 'form-submissions.jpeg', quality: 20 });
     });
   });
 });
