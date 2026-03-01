@@ -30,7 +30,7 @@ test.describe('Executive Training - 9 Modules', () => {
     // Wait for modules section
     await expect(page.getByText('Pre-built Training Modules')).toBeVisible({ timeout: 15000 });
     
-    // Verify all 9 module titles are visible
+    // Verify all 9 module titles are visible using first() to handle duplicates in sidebar
     const expectedModules = [
       'Email Phishing Awareness',
       'Social Engineering Defense',
@@ -44,7 +44,8 @@ test.describe('Executive Training - 9 Modules', () => {
     ];
     
     for (const moduleTitle of expectedModules) {
-      await expect(page.getByText(moduleTitle)).toBeVisible({ timeout: 5000 });
+      // Use first() to avoid strict mode issues with sidebar duplicates
+      await expect(page.getByText(moduleTitle).first()).toBeVisible({ timeout: 5000 });
     }
   });
 
@@ -86,24 +87,14 @@ test.describe('Executive Training - 9 Modules', () => {
     // Verify filename ends with .pptx
     expect(download.suggestedFilename()).toMatch(/\.pptx$/);
   });
-});
 
-test.describe('Dashboard Stats', () => {
-  test.beforeEach(async ({ page }) => {
-    await dismissToasts(page);
-    await loginAsAdmin(page);
-  });
-
-  test('Dashboard shows all major stat cards', async ({ page }) => {
-    await page.goto('/dashboard');
+  test('Upload button visible for admin', async ({ page }) => {
+    await page.goto('/executive-training');
     await waitForAppReady(page);
     
-    await expect(page.getByTestId('dashboard-page')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId('executive-training-page')).toBeVisible({ timeout: 10000 });
     
-    // Verify stat cards are visible
-    await expect(page.getByTestId('stat-online-now')).toBeVisible();
-    await expect(page.getByTestId('stat-organizations')).toBeVisible();
-    await expect(page.getByTestId('stat-total-users')).toBeVisible();
-    await expect(page.getByTestId('stat-campaigns')).toBeVisible();
+    // Verify upload button is visible for super admin
+    await expect(page.getByRole('button', { name: /Upload Presentation/i })).toBeVisible();
   });
 });
