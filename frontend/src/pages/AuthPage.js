@@ -107,12 +107,21 @@ export default function AuthPage() {
           navigate('/training', { replace: true });
         }
       } else if (mode === 'inquiry') {
-        // Submit inquiry form
-        await axios.post(`${API}/inquiries`, {
-          email: formData.email,
-          phone: formData.phone,
-          message: formData.message
-        });
+        // Submit inquiry form - also sends to contact endpoint for email notification
+        await Promise.all([
+          axios.post(`${API}/inquiries`, {
+            email: formData.email,
+            phone: formData.phone,
+            message: formData.message
+          }),
+          axios.post(`${API}/contact`, {
+            name: formData.email.split('@')[0], // Use email prefix as name
+            email: formData.email,
+            phone: formData.phone,
+            message: formData.message,
+            subject: 'Access Request'
+          }).catch(() => {}) // Silently fail if contact endpoint has issues
+        ]);
         setInquirySubmitted(true);
         toast.success('Thank you! We will contact you soon.');
       } else if (mode === 'forgot') {
