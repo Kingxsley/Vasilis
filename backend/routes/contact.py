@@ -1,0 +1,232 @@
+"""
+Contact Form Submissions Routes
+Handles contact form submissions and access requests with email notifications
+"""
+from fastapi import APIRouter, HTTPException, Request, BackgroundTasks
+from pydantic import BaseModel, EmailStr
+from typing import Optional, List
+from datetime import datetime, timezone
+import uuid
+import logging
+import os
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/contact", tags=["Contact Forms"])
+
+# Email recipient for form submissions
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "info@vasilisnetshield.com")
+
+
+def get_db():
+    from server import db
+    return db
+
+
+async def get_current_user(request: Request) -> dict:
+    from utils import get_current_user as _get_current_user, security
+    credentials = await security(request)
+    return await _get_current_user(request, credentials)
+
+
+async def require_admin(request: Request) -> dict:
+    from models import UserRole
+    user = await get_current_user(request)
+    if user.get("role") not in [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return user
+
+
+async def send_notification_email(to_email: str, subject: str, body: str):
+    """Send email notification using SendGrid if configured"""
+    try:
+        import sendgrid
+        from sendgrid.helpers.mail import Mail, Email, To, Content
+        
+        sg_api_key = os.environ.get("SENDGRID_API_KEY")
+        sender_email = os.environ.get("SENDER_EMAIL", "noreply@vasilisnetshield.com")
+        
+        if not sg_api_key:
+            logger.warning("SendGrid API key not configured, skipping email notification")
+            return False
+        
+        sg = sendgrid.SendGridAPIClient(api_key=sg_api_key)
+        message = Mail(
+            from_email=Email(sender_email),
+            to_emails=To(to_email),
+            subject=subject,
+            plain_text_content=Content("text/plain", body)
+        )
+        
+        response = sg.send(message)
+        logger.info(f"Email sent to {to_email}, status: {response.status_code}")
+        return response.status_code in [200, 201, 202]
+    except Exception as e:
+        logger.error(f"Failed to send email: {e}")
+        return False
+
+
+class ContactSubmission(BaseModel):
+    name: str
+    email: EmailStr
+    phone: Optional[str] = None
+    organization: Optional[str] = None
+    subject: Optional[str] = None
+    message: str
+
+
+class ContactReply(BaseModel):
+    submission_id: str
+    email: EmailStr
+    subject: str
+    message: str
+
+
+class StatusUpdate(BaseModel):
+    status: str
+
+
+@router.post("")
+async def submit_contact_form(data: ContactSubmission, background_tasks: BackgroundTasks):
+    """Submit a contact form (public endpoint)"""
+    db = get_db()
+    
+    submission_id = f"contact_{uuid.uuid4().hex[:12]}"
+    
+    submission = {
+        "submission_id": submission_id,
+        "name": data.name,
+        "email": data.email,
+        "phone": data.phone,
+        "organization": data.organization,
+        "subject": data.subject or "Contact Form Submission",
+        "message": data.message,
+        "status": "new",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.contact_submissions.insert_one(submission)
+    
+    # Send notification email to admin
+    email_body = f"""
+New Contact Form Submission
+
+Name: {data.name}
+Email: {data.email}
+Phone: {data.phone or 'Not provided'}
+Organization: {data.organization or 'Not provided'}
+
+Subject: {data.subject or 'Contact Form'}
+
+Message:
+{data.message}
+
+---
+View this submission in the admin dashboard.
+    """
+    
+    background_tasks.add_task(
+        send_notification_email,
+        ADMIN_EMAIL,
+        f"New Contact Form: {data.subject or 'Contact Inquiry'}",
+        email_body
+    )
+    
+    return {"message": "Contact form submitted successfully", "submission_id": submission_id}
+
+
+@router.get("/submissions")
+async def get_contact_submissions(request: Request, status: Optional[str] = None):
+    """Get all contact form submissions (admin only)"""
+    await require_admin(request)
+    db = get_db()
+    
+    query = {}
+    if status:
+        query["status"] = status
+    
+    submissions = await db.contact_submissions.find(
+        query, 
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(500)
+    
+    return submissions
+
+
+@router.get("/submissions/{submission_id}")
+async def get_submission(submission_id: str, request: Request):
+    """Get a specific contact submission"""
+    await require_admin(request)
+    db = get_db()
+    
+    submission = await db.contact_submissions.find_one(
+        {"submission_id": submission_id},
+        {"_id": 0}
+    )
+    
+    if not submission:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    
+    return submission
+
+
+@router.patch("/submissions/{submission_id}/status")
+async def update_submission_status(submission_id: str, data: StatusUpdate, request: Request):
+    """Update submission status"""
+    await require_admin(request)
+    db = get_db()
+    
+    result = await db.contact_submissions.update_one(
+        {"submission_id": submission_id},
+        {"$set": {"status": data.status, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    
+    return {"message": "Status updated"}
+
+
+@router.delete("/submissions/{submission_id}")
+async def delete_submission(submission_id: str, request: Request):
+    """Delete a contact submission"""
+    await require_admin(request)
+    db = get_db()
+    
+    result = await db.contact_submissions.delete_one({"submission_id": submission_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    
+    return {"message": "Submission deleted"}
+
+
+@router.post("/reply")
+async def send_reply(data: ContactReply, request: Request, background_tasks: BackgroundTasks):
+    """Send a reply to a contact submission"""
+    user = await require_admin(request)
+    db = get_db()
+    
+    # Send email
+    success = await send_notification_email(data.email, data.subject, data.message)
+    
+    if not success:
+        # Still save the reply attempt even if email fails
+        logger.warning(f"Email may not have been sent to {data.email}")
+    
+    # Update submission with reply
+    await db.contact_submissions.update_one(
+        {"submission_id": data.submission_id},
+        {
+            "$set": {"status": "responded", "updated_at": datetime.now(timezone.utc).isoformat()},
+            "$push": {
+                "replies": {
+                    "message": data.message,
+                    "sent_by": user.get("email"),
+                    "sent_at": datetime.now(timezone.utc).isoformat()
+                }
+            }
+        }
+    )
+    
+    return {"message": "Reply sent", "email_sent": success}
