@@ -592,6 +592,34 @@ export default function CertificateTemplates() {
     }
   };
 
+  const copyTemplate = async (template) => {
+    try {
+      const res = await axios.post(`${API}/certificate-templates`, {
+        name: `${template.name} (Copy)`,
+        description: template.description,
+        orientation: template.orientation || 'landscape',
+        border_style: template.border_style || 'classic',
+        background_color: template.background_color,
+        background_image: template.background_image,
+        elements: template.elements || []
+      }, { headers });
+      
+      toast.success('Template copied');
+      fetchData();
+      
+      // Open editor for the new copy
+      const newTemplate = {
+        ...template,
+        template_id: res.data.template_id,
+        name: `${template.name} (Copy)`,
+        is_default: false
+      };
+      openEditor(newTemplate);
+    } catch (err) {
+      toast.error('Failed to copy template');
+    }
+  };
+
   const setDefaultTemplate = async (templateId) => {
     try {
       await axios.patch(`${API}/certificate-templates/${templateId}`, {
