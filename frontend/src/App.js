@@ -786,6 +786,30 @@ const AppRouter = () => {
           }
         />
         <Route
+          path="/cms-tiles"
+          element={
+            <ProtectedRoute adminOnly>
+              <CMSTiles />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/rss-feeds"
+          element={
+            <ProtectedRoute adminOnly>
+              <RSSFeedManager />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/form-submissions"
+          element={
+            <ProtectedRoute adminOnly>
+              <FormSubmissions />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/certificate-templates"
           element={
             <ProtectedRoute adminOnly>
