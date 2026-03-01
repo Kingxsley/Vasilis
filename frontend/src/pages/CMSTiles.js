@@ -52,20 +52,33 @@ const ICON_OPTIONS = {
 
 // TileForm component - uses local state to prevent focus loss on parent re-renders
 const TileForm = ({ data, setData, isEdit = false }) => {
-  // Local state for form fields to prevent focus loss
-  const [localData, setLocalData] = useState(data);
+  // Local state for form fields - completely isolated from parent
+  const [localName, setLocalName] = useState(data.name || '');
+  const [localSlug, setLocalSlug] = useState(data.slug || '');
+  const [localIcon, setLocalIcon] = useState(data.icon || 'FileText');
+  const [localDescription, setLocalDescription] = useState(data.description || '');
+  const [localRouteType, setLocalRouteType] = useState(data.route_type || 'custom');
+  const [localExternalUrl, setLocalExternalUrl] = useState(data.external_url || '');
+  const [localCustomContent, setLocalCustomContent] = useState(data.custom_content || '');
+  const [localPublished, setLocalPublished] = useState(data.published !== false);
   
-  // Sync local state when parent data changes (e.g., when dialog opens)
+  // Sync all local changes to parent using useEffect (debounced)
   useEffect(() => {
-    setLocalData(data);
-  }, [data.tile_id]); // Only sync when tile_id changes (new tile selected)
-  
-  const handleLocalChange = (field, value) => {
-    const newData = { ...localData, [field]: value };
-    setLocalData(newData);
-    // Debounce update to parent to prevent re-renders
-    setData(newData);
-  };
+    const timeoutId = setTimeout(() => {
+      setData({
+        ...data,
+        name: localName,
+        slug: localSlug,
+        icon: localIcon,
+        description: localDescription,
+        route_type: localRouteType,
+        external_url: localExternalUrl,
+        custom_content: localCustomContent,
+        published: localPublished
+      });
+    }, 100);
+    return () => clearTimeout(timeoutId);
+  }, [localName, localSlug, localIcon, localDescription, localRouteType, localExternalUrl, localCustomContent, localPublished]);
   
   return (
     <div className="space-y-4 py-4">
@@ -73,8 +86,8 @@ const TileForm = ({ data, setData, isEdit = false }) => {
         <div className="space-y-2">
           <Label>Tile Name *</Label>
           <Input
-            value={localData.name || ''}
-            onChange={(e) => handleLocalChange('name', e.target.value)}
+            value={localName}
+            onChange={(e) => setLocalName(e.target.value)}
             placeholder="e.g., Contact Us"
             className="bg-[#0D1117] border-[#30363D]"
             autoComplete="off"
@@ -84,8 +97,8 @@ const TileForm = ({ data, setData, isEdit = false }) => {
         <div className="space-y-2">
           <Label>URL Slug</Label>
           <Input
-            value={localData.slug || ''}
-            onChange={(e) => handleLocalChange('slug', e.target.value.toLowerCase().replace(/\s+/g, '-'))}
+            value={localSlug}
+            onChange={(e) => setLocalSlug(e.target.value.toLowerCase().replace(/\s+/g, '-'))}
             placeholder="e.g., contact-us (auto-generated if empty)"
             className="bg-[#0D1117] border-[#30363D]"
             autoComplete="off"
@@ -96,7 +109,7 @@ const TileForm = ({ data, setData, isEdit = false }) => {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>Icon</Label>
-          <Select value={localData.icon} onValueChange={(v) => handleLocalChange('icon', v)}>
+          <Select value={localIcon} onValueChange={setLocalIcon}>
             <SelectTrigger className="bg-[#0D1117] border-[#30363D]">
               <SelectValue placeholder="Select icon" />
             </SelectTrigger>
@@ -117,7 +130,7 @@ const TileForm = ({ data, setData, isEdit = false }) => {
         </div>
         <div className="space-y-2">
           <Label>Route Type</Label>
-          <Select value={localData.route_type} onValueChange={(v) => handleLocalChange('route_type', v)}>
+          <Select value={localRouteType} onValueChange={setLocalRouteType}>
             <SelectTrigger className="bg-[#0D1117] border-[#30363D]">
               <SelectValue placeholder="Select type" />
             </SelectTrigger>
@@ -133,20 +146,20 @@ const TileForm = ({ data, setData, isEdit = false }) => {
       <div className="space-y-2">
         <Label>Description</Label>
         <Input
-          value={localData.description || ''}
-          onChange={(e) => handleLocalChange('description', e.target.value)}
+          value={localDescription}
+          onChange={(e) => setLocalDescription(e.target.value)}
           placeholder="Brief description of the page"
           className="bg-[#0D1117] border-[#30363D]"
           autoComplete="off"
         />
       </div>
 
-      {localData.route_type === 'external' && (
+      {localRouteType === 'external' && (
         <div className="space-y-2">
           <Label>External URL</Label>
           <Input
-            value={localData.external_url || ''}
-            onChange={(e) => handleLocalChange('external_url', e.target.value)}
+            value={localExternalUrl}
+            onChange={(e) => setLocalExternalUrl(e.target.value)}
             placeholder="https://example.com"
             className="bg-[#0D1117] border-[#30363D]"
             autoComplete="off"
@@ -154,12 +167,12 @@ const TileForm = ({ data, setData, isEdit = false }) => {
         </div>
       )}
 
-      {localData.route_type === 'custom' && (
+      {localRouteType === 'custom' && (
         <div className="space-y-2">
           <Label>Custom Page Content (HTML)</Label>
           <Textarea
-            value={localData.custom_content || ''}
-            onChange={(e) => handleLocalChange('custom_content', e.target.value)}
+            value={localCustomContent}
+            onChange={(e) => setLocalCustomContent(e.target.value)}
             placeholder="<div>Your custom page content...</div>"
             className="bg-[#0D1117] border-[#30363D] min-h-[150px] font-mono text-sm"
           />
@@ -172,8 +185,8 @@ const TileForm = ({ data, setData, isEdit = false }) => {
           <p className="text-xs text-gray-500">Show this tile in navigation</p>
         </div>
         <Switch
-          checked={localData.published}
-          onCheckedChange={(checked) => handleLocalChange('published', checked)}
+          checked={localPublished}
+          onCheckedChange={setLocalPublished}
         />
       </div>
     </div>
