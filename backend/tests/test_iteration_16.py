@@ -39,8 +39,9 @@ class TestBulkUserImportAPI:
         assert "preview" in data
 
     def test_import_preview_validates_csv_format(self, authenticated_client):
-        """Test that preview validates CSV format"""
-        csv_content = "name,email,role\nJohn Doe,john@example.com,trainee\nInvalid Row"
+        """Test that preview validates CSV format with missing fields"""
+        # Test CSV with a row missing optional organization field
+        csv_content = "name,email,role,organization_name\nJohn Doe,john@example.com,trainee,\nJane Smith,jane@example.com,org_admin,Test Org"
         files = {'file': ('test.csv', io.BytesIO(csv_content.encode()), 'text/csv')}
         
         response = requests.post(
