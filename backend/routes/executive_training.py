@@ -285,3 +285,63 @@ async def delete_uploaded_presentation(presentation_id: str, request: Request):
         raise HTTPException(status_code=404, detail="Presentation not found")
     
     return {"message": "Presentation deleted successfully"}
+
+
+@router.patch("/uploaded/{presentation_id}")
+async def update_uploaded_presentation(presentation_id: str, request: Request):
+    """Update an uploaded presentation's metadata (super admin only)"""
+    from datetime import datetime, timezone
+    
+    await require_super_admin(request)
+    db = get_db()
+    
+    # Get update data from request body
+    data = await request.json()
+    
+    # Find existing presentation
+    existing = await db.uploaded_presentations.find_one({"presentation_id": presentation_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Presentation not found")
+    
+    # Build update dict
+    update_data = {}
+    if "name" in data:
+        update_data["name"] = data["name"]
+    if "description" in data:
+        update_data["description"] = data["description"]
+    
+    if update_data:
+        update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+        await db.uploaded_presentations.update_one(
+            {"presentation_id": presentation_id},
+            {"$set": update_data}
+        )
+    
+    # Return updated presentation (without file_data)
+    updated = await db.uploaded_presentations.find_one(
+        {"presentation_id": presentation_id},
+        {"_id": 0, "file_data": 0}
+    )
+    return updated
+
+
+@router.delete("/uploaded/bulk")
+async def bulk_delete_uploaded_presentations(request: Request):
+    """Delete multiple uploaded presentations (super admin only)"""
+    await require_super_admin(request)
+    db = get_db()
+    
+    data = await request.json()
+    presentation_ids = data.get("presentation_ids", [])
+    
+    if not presentation_ids:
+        raise HTTPException(status_code=400, detail="No presentation IDs provided")
+    
+    result = await db.uploaded_presentations.delete_many(
+        {"presentation_id": {"$in": presentation_ids}}
+    )
+    
+    return {
+        "message": f"Deleted {result.deleted_count} presentations",
+        "deleted_count": result.deleted_count
+    }
