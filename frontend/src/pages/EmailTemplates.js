@@ -1010,7 +1010,7 @@ export default function EmailTemplates() {
         </Dialog>
 
         {/* Preview Dialog */}
-        <Dialog open={!!previewData} onOpenChange={() => setPreviewData(null)}>
+        <Dialog open={!!previewData} onOpenChange={() => { setPreviewData(null); setTestEmail(''); }}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-[#0f0f15] border-[#D4A836]/30">
             <DialogHeader>
               <DialogTitle className="text-[#E8DDB5]">Email Preview</DialogTitle>
@@ -1036,7 +1036,32 @@ export default function EmailTemplates() {
                   </div>
                 </div>
 
-                <Button onClick={() => setPreviewData(null)} className="w-full bg-[#D4A836] text-black hover:bg-[#C49A30]">
+                {/* Test Send Section */}
+                <div className="p-4 bg-[#1a1a24] rounded-lg border border-[#30363D]">
+                  <p className="text-sm text-[#E8DDB5] font-medium mb-3">Send Test Email</p>
+                  <div className="flex gap-2">
+                    <Input
+                      type="email"
+                      value={testEmail}
+                      onChange={(e) => setTestEmail(e.target.value)}
+                      placeholder="Enter email address"
+                      className="flex-1 bg-[#0D1117] border-[#30363D]"
+                    />
+                    <Button 
+                      onClick={() => sendTestEmail(previewData.template_id)}
+                      disabled={sendingTest || !testEmail}
+                      className="bg-[#D4A836] text-black hover:bg-[#C49A30]"
+                    >
+                      {sendingTest ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4 mr-2" />}
+                      {sendingTest ? 'Sending...' : 'Send Test'}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    A test email with sample data will be sent to verify your template.
+                  </p>
+                </div>
+
+                <Button onClick={() => { setPreviewData(null); setTestEmail(''); }} className="w-full bg-[#30363D] text-[#E8DDB5] hover:bg-[#3D444D]">
                   Close Preview
                 </Button>
               </div>
