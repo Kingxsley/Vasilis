@@ -1,0 +1,305 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - link "Logo Vasilis NetShield" [ref=e6] [cursor=pointer]:
+          - /url: /dashboard
+          - img "Logo" [ref=e7]
+          - generic [ref=e8]: Vasilis NetShield
+        - button "Collapse sidebar" [ref=e9] [cursor=pointer]:
+          - img [ref=e10]
+      - navigation [ref=e13]:
+        - generic [ref=e14]:
+          - button "Overview" [ref=e15] [cursor=pointer]:
+            - generic [ref=e16]:
+              - img [ref=e17]
+              - generic [ref=e22]: Overview
+            - img [ref=e23]
+          - generic [ref=e25]:
+            - link "Dashboard" [ref=e26] [cursor=pointer]:
+              - /url: /dashboard
+              - img [ref=e27]
+              - generic [ref=e32]: Dashboard
+            - link "Analytics" [ref=e33] [cursor=pointer]:
+              - /url: /analytics
+              - img [ref=e34]
+              - generic [ref=e36]: Analytics
+            - link "Advanced Analytics" [ref=e37] [cursor=pointer]:
+              - /url: /advanced-analytics
+              - img [ref=e38]
+              - generic [ref=e41]: Advanced Analytics
+            - link "Vulnerable Users" [ref=e42] [cursor=pointer]:
+              - /url: /vulnerable-users
+              - img [ref=e43]
+              - generic [ref=e45]: Vulnerable Users
+              - img [ref=e46]
+        - generic [ref=e50]:
+          - button "Management" [ref=e51] [cursor=pointer]:
+            - generic [ref=e52]:
+              - img [ref=e53]
+              - generic [ref=e57]: Management
+            - img [ref=e58]
+          - generic [ref=e60]:
+            - link "Organizations" [ref=e61] [cursor=pointer]:
+              - /url: /organizations
+              - img [ref=e62]
+              - generic [ref=e66]: Organizations
+            - link "Users" [ref=e67] [cursor=pointer]:
+              - /url: /users
+              - img [ref=e68]
+              - generic [ref=e73]: Users
+            - link "Import Users" [ref=e74] [cursor=pointer]:
+              - /url: /user-import
+              - img [ref=e75]
+              - generic [ref=e78]: Import Users
+            - link "Forms" [ref=e79] [cursor=pointer]:
+              - /url: /form-submissions
+              - img [ref=e80]
+              - generic [ref=e82]: Forms
+        - generic [ref=e83]:
+          - button "Simulations" [ref=e84] [cursor=pointer]:
+            - generic [ref=e85]:
+              - img [ref=e86]
+              - generic [ref=e88]: Simulations
+            - img [ref=e89]
+          - generic [ref=e91]:
+            - link "Create Sim" [ref=e92] [cursor=pointer]:
+              - /url: /simulation-builder
+              - img [ref=e93]
+              - generic [ref=e96]: Create Sim
+            - link "Phishing Sim" [ref=e97] [cursor=pointer]:
+              - /url: /phishing
+              - img [ref=e98]
+              - generic [ref=e101]: Phishing Sim
+            - link "Ad Simulation" [ref=e102] [cursor=pointer]:
+              - /url: /ads
+              - img [ref=e103]
+              - generic [ref=e105]: Ad Simulation
+            - link "Credential Harvest" [ref=e106] [cursor=pointer]:
+              - /url: /credential-harvest
+              - img [ref=e107]
+              - generic [ref=e110]: Credential Harvest
+        - generic [ref=e111]:
+          - button "Content" [ref=e112] [cursor=pointer]:
+            - generic [ref=e113]:
+              - img [ref=e114]
+              - generic [ref=e117]: Content
+            - img [ref=e118]
+          - generic [ref=e120]:
+            - link "Content Manager" [ref=e121] [cursor=pointer]:
+              - /url: /content
+              - img [ref=e122]
+              - generic [ref=e125]: Content Manager
+            - link "CMS Pages" [ref=e126] [cursor=pointer]:
+              - /url: /cms-tiles
+              - img [ref=e127]
+              - generic [ref=e132]: CMS Pages
+            - link "Media Library" [ref=e133] [cursor=pointer]:
+              - /url: /media-library
+              - img [ref=e134]
+              - generic [ref=e138]: Media Library
+        - generic [ref=e139]:
+          - button "Training" [ref=e140] [cursor=pointer]:
+            - generic [ref=e141]:
+              - img [ref=e142]
+              - generic [ref=e145]: Training
+            - img [ref=e146]
+          - generic [ref=e148]:
+            - link "Module Designer" [ref=e149] [cursor=pointer]:
+              - /url: /question-modules
+              - img [ref=e150]
+              - generic [ref=e155]: Module Designer
+            - link "Bulk Upload" [ref=e156] [cursor=pointer]:
+              - /url: /module-uploader
+              - img [ref=e157]
+              - generic [ref=e160]: Bulk Upload
+            - link "Exec Training" [ref=e161] [cursor=pointer]:
+              - /url: /executive-training
+              - img [ref=e162]
+              - generic [ref=e165]: Exec Training
+            - link "Certificates" [ref=e166] [cursor=pointer]:
+              - /url: /certificates
+              - img [ref=e167]
+              - generic [ref=e170]: Certificates
+            - link "Cert Templates" [ref=e171] [cursor=pointer]:
+              - /url: /certificate-templates
+              - img [ref=e172]
+              - generic [ref=e175]: Cert Templates
+        - generic [ref=e176]:
+          - button "Settings" [ref=e177] [cursor=pointer]:
+            - generic [ref=e178]:
+              - img [ref=e179]
+              - generic [ref=e190]: Settings
+            - img [ref=e191]
+          - generic [ref=e193]:
+            - link "Settings" [ref=e194] [cursor=pointer]:
+              - /url: /settings
+              - img [ref=e195]
+              - generic [ref=e198]: Settings
+            - link "Permissions" [ref=e199] [cursor=pointer]:
+              - /url: /permissions
+              - img [ref=e200]
+              - generic [ref=e202]: Permissions
+            - link "SEO" [ref=e203] [cursor=pointer]:
+              - /url: /seo-settings
+              - img [ref=e204]
+              - generic [ref=e207]: SEO
+            - link "Email Templates" [ref=e208] [cursor=pointer]:
+              - /url: /email-templates
+              - img [ref=e209]
+              - generic [ref=e212]: Email Templates
+        - generic [ref=e213]:
+          - button "Security" [ref=e214] [cursor=pointer]:
+            - generic [ref=e215]:
+              - img [ref=e216]
+              - generic [ref=e218]: Security
+            - img [ref=e219]
+          - generic [ref=e221]:
+            - link "Dashboard" [ref=e222] [cursor=pointer]:
+              - /url: /security
+              - img [ref=e223]
+              - generic [ref=e225]: Dashboard
+            - link "Audit Logs" [ref=e226] [cursor=pointer]:
+              - /url: /audit-logs
+              - img [ref=e227]
+              - generic [ref=e230]: Audit Logs
+            - link "Activity Logs" [ref=e231] [cursor=pointer]:
+              - /url: /activity-logs
+              - img [ref=e232]
+              - generic [ref=e234]: Activity Logs
+            - link "Password Policy" [ref=e235] [cursor=pointer]:
+              - /url: /password-policy
+              - img [ref=e236]
+              - generic [ref=e238]: Password Policy
+            - link "Security Settings" [ref=e239] [cursor=pointer]:
+              - /url: /security-settings
+              - img [ref=e240]
+              - generic [ref=e251]: Security Settings
+        - button "Help" [ref=e253] [cursor=pointer]:
+          - generic [ref=e254]:
+            - img [ref=e255]
+            - generic [ref=e258]: Help
+          - img [ref=e259]
+        - generic [ref=e261]:
+          - button "Account" [ref=e262] [cursor=pointer]:
+            - generic [ref=e263]:
+              - img [ref=e264]
+              - generic [ref=e268]: Account
+            - img [ref=e269]
+          - link "Two‑Factor" [ref=e272] [cursor=pointer]:
+            - /url: /my-security
+            - img [ref=e273]
+            - generic [ref=e277]: Two‑Factor
+      - button "T Test Admin super admin" [ref=e279] [cursor=pointer]:
+        - generic [ref=e281]: T
+        - generic [ref=e282]:
+          - paragraph [ref=e283]: Test Admin
+          - paragraph [ref=e284]: super admin
+        - img [ref=e285]
+    - main [ref=e287]:
+      - generic [ref=e288]:
+        - generic [ref=e289]:
+          - heading "Welcome back, Test" [level=1] [ref=e290]
+          - paragraph [ref=e291]: Here's what's happening with your security training
+        - generic [ref=e292]:
+          - generic [ref=e295]:
+            - generic [ref=e296]:
+              - paragraph [ref=e297]: Organizations
+              - paragraph [ref=e298]: "1"
+            - img [ref=e300]
+          - generic [ref=e306]:
+            - generic [ref=e307]:
+              - paragraph [ref=e308]: Total Users
+              - paragraph [ref=e309]: "12"
+            - img [ref=e311]
+          - generic [ref=e318]:
+            - generic [ref=e319]:
+              - paragraph [ref=e320]: Online Now
+              - paragraph [ref=e321]: "1"
+            - img [ref=e323]
+          - generic [ref=e327]:
+            - generic [ref=e328]:
+              - paragraph [ref=e329]: Inactive Users
+              - paragraph [ref=e330]: "10"
+            - img [ref=e332]
+          - generic [ref=e336]:
+            - generic [ref=e337]:
+              - paragraph [ref=e338]: Campaigns
+              - paragraph [ref=e339]: "5"
+            - img [ref=e341]
+          - generic [ref=e347]:
+            - generic [ref=e348]:
+              - paragraph [ref=e349]: Simulations
+              - paragraph [ref=e350]: "0"
+            - img [ref=e352]
+        - generic [ref=e354]:
+          - generic [ref=e355]:
+            - generic [ref=e357]:
+              - img [ref=e358]
+              - text: Average Score
+            - generic [ref=e361]:
+              - generic [ref=e367]:
+                - paragraph [ref=e368]: 85%
+                - paragraph [ref=e369]: Overall
+              - generic [ref=e370]:
+                - generic [ref=e371]:
+                  - paragraph [ref=e372]: "4"
+                  - paragraph [ref=e373]: Active Campaigns
+                - generic [ref=e375]:
+                  - paragraph [ref=e376]: "5"
+                  - paragraph [ref=e377]: Total Sessions
+          - generic [ref=e378]:
+            - generic [ref=e380]:
+              - img [ref=e381]
+              - text: Recent Training Activity
+            - generic [ref=e384]:
+              - generic [ref=e385]:
+                - generic [ref=e386]:
+                  - img [ref=e388]
+                  - generic [ref=e390]:
+                    - paragraph [ref=e391]: Phishing Email Detection
+                    - paragraph [ref=e392]: 2/24/2026
+                - generic [ref=e393]:
+                  - paragraph [ref=e394]: 6%
+                  - paragraph [ref=e395]: in progress
+              - generic [ref=e396]:
+                - generic [ref=e397]:
+                  - img [ref=e399]
+                  - generic [ref=e401]:
+                    - paragraph [ref=e402]: Phishing Email Detection
+                    - paragraph [ref=e403]: 2/24/2026
+                - generic [ref=e404]:
+                  - paragraph [ref=e405]: 0%
+                  - paragraph [ref=e406]: in progress
+              - generic [ref=e407]:
+                - generic [ref=e408]:
+                  - img [ref=e410]
+                  - generic [ref=e412]:
+                    - paragraph [ref=e413]: Phishing Email Detection
+                    - paragraph [ref=e414]: 2/24/2026
+                - generic [ref=e415]:
+                  - paragraph [ref=e416]: 0%
+                  - paragraph [ref=e417]: in progress
+              - generic [ref=e418]:
+                - generic [ref=e419]:
+                  - img [ref=e421]
+                  - generic [ref=e423]:
+                    - paragraph [ref=e424]: Phishing Email Detection
+                    - paragraph [ref=e425]: 2/24/2026
+                - generic [ref=e426]:
+                  - paragraph [ref=e427]: 0%
+                  - paragraph [ref=e428]: in progress
+              - generic [ref=e429]:
+                - generic [ref=e430]:
+                  - img [ref=e432]
+                  - generic [ref=e434]:
+                    - paragraph [ref=e435]: Phishing Email Detection
+                    - paragraph [ref=e436]: Invalid Date
+                - generic [ref=e437]:
+                  - paragraph [ref=e438]: 85%
+                  - paragraph [ref=e439]: completed
+  - region "Notifications alt+T"
+```
