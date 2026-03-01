@@ -345,25 +345,3 @@ async def update_uploaded_presentation(presentation_id: str, request: Request):
         {"_id": 0, "file_data": 0}
     )
     return updated
-
-
-@router.delete("/uploaded/bulk")
-async def bulk_delete_uploaded_presentations(request: Request):
-    """Delete multiple uploaded presentations (super admin only)"""
-    await require_super_admin(request)
-    db = get_db()
-    
-    data = await request.json()
-    presentation_ids = data.get("presentation_ids", [])
-    
-    if not presentation_ids:
-        raise HTTPException(status_code=400, detail="No presentation IDs provided")
-    
-    result = await db.uploaded_presentations.delete_many(
-        {"presentation_id": {"$in": presentation_ids}}
-    )
-    
-    return {
-        "message": f"Deleted {result.deleted_count} presentations",
-        "deleted_count": result.deleted_count
-    }
