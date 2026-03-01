@@ -11,13 +11,13 @@ test.describe('Iteration 14 - Bug Fixes', () => {
     await page.goto('/email-templates');
     await waitForAppReady(page);
     
-    // Wait for page to load
-    await expect(page.getByText('Email Templates')).toBeVisible({ timeout: 15000 });
+    // Wait for page to load - the heading is "Email & Alert Templates"
+    await expect(page.getByText('Email & Alert Templates')).toBeVisible({ timeout: 15000 });
     
-    // Check for Notifications tab (system emails)
-    const notificationsTab = page.getByRole('tab', { name: /Notifications/i });
-    await expect(notificationsTab).toBeVisible({ timeout: 10000 });
-    await notificationsTab.click();
+    // Check for System Emails tab (shown in UI)
+    const systemEmailsTab = page.getByRole('tab', { name: /System Emails/i });
+    await expect(systemEmailsTab).toBeVisible({ timeout: 10000 });
+    await systemEmailsTab.click();
     
     // Check for template cards
     await expect(page.getByText('Welcome Email')).toBeVisible({ timeout: 10000 });
@@ -46,38 +46,33 @@ test.describe('Iteration 14 - Bug Fixes', () => {
     await page.goto('/news');
     await waitForAppReady(page);
     
-    // Wait for news page to load
+    // Wait for news page to load - wait longer for RSS feeds to load
     await expect(page.getByRole('heading', { name: 'News' })).toBeVisible({ timeout: 15000 });
     
+    // Wait for loading spinner to disappear (RSS feeds take time)
+    await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {});
+    
+    // Wait additional time for RSS data
+    await expect(page.locator('.animate-spin, [class*="Loader"]')).not.toBeVisible({ timeout: 20000 }).catch(() => {});
+    
     // Check for news items or "No news yet" message
-    const newsContent = page.locator('article, [class*="news"]');
-    const noNewsMessage = page.getByText(/No news/i);
+    const hasArticles = await page.locator('article').count() > 0;
+    const noNewsVisible = await page.getByText(/No news/i).isVisible().catch(() => false);
     
-    const hasNews = await newsContent.count() > 0;
-    const hasNoNewsMessage = await noNewsMessage.isVisible().catch(() => false);
-    
-    // Either news items or "no news" message should be visible
-    expect(hasNews || hasNoNewsMessage).toBeTruthy();
-    
-    // If there are news items, check for pagination
-    if (hasNews) {
-      // Check pagination component exists if there's enough content
-      const pagination = page.locator('[data-testid="pagination"], nav[aria-label*="pagination"], .pagination');
-      // Pagination may or may not be visible depending on content count
-      // Just verify the page renders without error
-    }
+    // Either articles or no news message should appear after load
+    expect(hasArticles || noNewsVisible).toBeTruthy();
   });
 
   test('CMS Tiles - Create tile with proper input handling', async ({ page }) => {
     await dismissToasts(page);
     await loginAsAdmin(page);
     
-    // Navigate to CMS Pages
-    await page.goto('/cms-pages');
+    // Navigate to CMS Tiles page (actual route from sidebar)
+    await page.goto('/cms-tiles');
     await waitForAppReady(page);
     
-    // Wait for the page to load
-    await expect(page.getByText('CMS Pages')).toBeVisible({ timeout: 15000 });
+    // Wait for the page to load - check for CMS Tiles heading or tiles container
+    await expect(page.getByRole('heading', { level: 1 }).or(page.getByText('CMS Tiles'))).toBeVisible({ timeout: 15000 });
     
     // Click Create Tile button
     const createButton = page.getByRole('button', { name: /Create Tile/i });
@@ -106,18 +101,18 @@ test.describe('Iteration 14 - Bug Fixes', () => {
     await dismissToasts(page);
     await loginAsAdmin(page);
     
-    // Navigate to Form Submissions page
-    await page.goto('/form-submissions');
+    // Navigate to Forms page (sidebar link is "Forms")
+    await page.goto('/forms');
     await waitForAppReady(page);
     
-    // Wait for page to load
-    await expect(page.getByText('Form Submissions')).toBeVisible({ timeout: 15000 });
+    // Wait for page to load - The heading is "Forms"
+    await expect(page.getByRole('heading', { name: 'Forms' })).toBeVisible({ timeout: 15000 });
     
-    // Check for Contact Forms tab
+    // Check for Contact Forms tab (UI shows "Contact Forms (X)")
     const contactTab = page.getByRole('tab', { name: /Contact Forms/i });
     await expect(contactTab).toBeVisible({ timeout: 10000 });
     
-    // Check for Access Requests tab  
+    // Check for Access Requests tab (UI shows "Access Requests (X)")  
     const accessTab = page.getByRole('tab', { name: /Access Requests/i });
     await expect(accessTab).toBeVisible();
     
