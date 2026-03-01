@@ -6,7 +6,7 @@ BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
 @pytest.fixture(scope="session")
 def api_client():
-    """Shared requests session"""
+    """Shared requests session WITHOUT auth"""
     session = requests.Session()
     session.headers.update({"Content-Type": "application/json"})
     return session
@@ -23,7 +23,18 @@ def auth_token(api_client):
     pytest.skip(f"Authentication failed ({response.status_code}): {response.text}")
 
 @pytest.fixture(scope="session")
-def authenticated_client(api_client, auth_token):
-    """Session with auth header"""
-    api_client.headers.update({"Authorization": f"Bearer {auth_token}"})
-    return api_client
+def authenticated_client(auth_token):
+    """Separate session with auth header"""
+    session = requests.Session()
+    session.headers.update({
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {auth_token}"
+    })
+    return session
+
+@pytest.fixture
+def unauthenticated_client():
+    """Fresh client without auth for testing auth requirements"""
+    session = requests.Session()
+    session.headers.update({"Content-Type": "application/json"})
+    return session
