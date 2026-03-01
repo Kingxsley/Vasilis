@@ -50,11 +50,22 @@ const ICON_OPTIONS = {
   'Settings': Settings,
 };
 
-// TileForm component - moved outside to prevent re-creation on parent render
-const TileForm = memo(({ data, setData, isEdit = false }) => {
-  const handleChange = useCallback((field, value) => {
-    setData(prev => ({ ...prev, [field]: value }));
-  }, [setData]);
+// TileForm component - uses local state to prevent focus loss on parent re-renders
+const TileForm = ({ data, setData, isEdit = false }) => {
+  // Local state for form fields to prevent focus loss
+  const [localData, setLocalData] = useState(data);
+  
+  // Sync local state when parent data changes (e.g., when dialog opens)
+  useEffect(() => {
+    setLocalData(data);
+  }, [data.tile_id]); // Only sync when tile_id changes (new tile selected)
+  
+  const handleLocalChange = (field, value) => {
+    const newData = { ...localData, [field]: value };
+    setLocalData(newData);
+    // Debounce update to parent to prevent re-renders
+    setData(newData);
+  };
   
   return (
     <div className="space-y-4 py-4">
@@ -62,8 +73,8 @@ const TileForm = memo(({ data, setData, isEdit = false }) => {
         <div className="space-y-2">
           <Label>Tile Name *</Label>
           <Input
-            value={data.name || ''}
-            onChange={(e) => handleChange('name', e.target.value)}
+            value={localData.name || ''}
+            onChange={(e) => handleLocalChange('name', e.target.value)}
             placeholder="e.g., Contact Us"
             className="bg-[#0D1117] border-[#30363D]"
             autoComplete="off"
@@ -73,8 +84,8 @@ const TileForm = memo(({ data, setData, isEdit = false }) => {
         <div className="space-y-2">
           <Label>URL Slug</Label>
           <Input
-            value={data.slug || ''}
-            onChange={(e) => handleChange('slug', e.target.value.toLowerCase().replace(/\s+/g, '-'))}
+            value={localData.slug || ''}
+            onChange={(e) => handleLocalChange('slug', e.target.value.toLowerCase().replace(/\s+/g, '-'))}
             placeholder="e.g., contact-us (auto-generated if empty)"
             className="bg-[#0D1117] border-[#30363D]"
             autoComplete="off"
@@ -85,7 +96,7 @@ const TileForm = memo(({ data, setData, isEdit = false }) => {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>Icon</Label>
-          <Select value={data.icon} onValueChange={(v) => handleChange('icon', v)}>
+          <Select value={localData.icon} onValueChange={(v) => handleLocalChange('icon', v)}>
             <SelectTrigger className="bg-[#0D1117] border-[#30363D]">
               <SelectValue placeholder="Select icon" />
             </SelectTrigger>
@@ -106,7 +117,7 @@ const TileForm = memo(({ data, setData, isEdit = false }) => {
         </div>
         <div className="space-y-2">
           <Label>Route Type</Label>
-          <Select value={data.route_type} onValueChange={(v) => handleChange('route_type', v)}>
+          <Select value={localData.route_type} onValueChange={(v) => handleLocalChange('route_type', v)}>
             <SelectTrigger className="bg-[#0D1117] border-[#30363D]">
               <SelectValue placeholder="Select type" />
             </SelectTrigger>
