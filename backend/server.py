@@ -53,7 +53,10 @@ except Exception as e:
     raise
 
 # JWT Config
-JWT_SECRET = os.environ.get('JWT_SECRET', 'vasilisnetshield-secret-key-2024')
+JWT_SECRET = os.environ.get('JWT_SECRET')
+if not JWT_SECRET:
+    JWT_SECRET = 'vasilisnetshield-secret-key-dev-only'
+    logger.warning("⚠️ JWT_SECRET not set in environment. Using default key - DO NOT USE IN PRODUCTION!")
 JWT_ALGORITHM = "HS256"
 JWT_ACCESS_TOKEN_EXPIRE_HOURS = 24  # Shorter access token lifespan
 JWT_REFRESH_TOKEN_EXPIRE_DAYS = 7  # Refresh tokens last longer
