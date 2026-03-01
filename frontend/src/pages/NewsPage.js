@@ -72,7 +72,7 @@ export default function NewsPage() {
   };
 
   const handlePageSizeChange = (newSize) => {
-    updateParams({ limit: newSize !== 10 ? newSize : null, page: null });
+    updateParams({ limit: newSize !== 15 ? newSize : null, page: null });
   };
 
   const handleSearch = (e) => {
