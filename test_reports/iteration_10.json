@@ -1,0 +1,115 @@
+{
+  "summary": "Testing of security training platform features: Login without 2FA flow, CMS Tiles CRUD, Executive Training with 9 modules, and Upload functionality. All 24 tests passed (19 backend + 9 frontend).",
+  "mode": "generate",
+  "baseline_commit": "d3ed28d42f6ba7cfb655b15c2fc0b7ed25ed6ce0",
+  "head_commit": "a76dee54d62dc6aef050ed1b88c612d93d11252b",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "regression_results": {
+    "total_specs": 9,
+    "passed": 9,
+    "failed": 0,
+    "skipped": 0
+  },
+  "backend_test_results": {
+    "total": 19,
+    "passed": 19,
+    "failed": 0,
+    "skipped": 0
+  },
+  "passed_tests": [
+    "Backend: test_login_endpoint_exists - PASS",
+    "Backend: test_login_returns_token_without_2fa_code - PASS",
+    "Backend: test_login_response_contains_2fa_flags - PASS (Returns requires_2fa_verification and two_factor_enabled)",
+    "Backend: test_get_tiles_returns_default_tiles - PASS (Returns 4 default tiles: blog, news, videos, about)",
+    "Backend: test_get_tiles_admin_endpoint - PASS",
+    "Backend: test_create_tile - PASS (Can create custom tiles)",
+    "Backend: test_update_tile - PASS (Can update tile description/icon)",
+    "Backend: test_toggle_publish_tile - PASS (Can toggle publish status)",
+    "Backend: test_delete_custom_tile - PASS (Can delete non-system tiles)",
+    "Backend: test_cannot_delete_system_tile - PASS (System tiles protected)",
+    "Backend: test_create_tile_requires_admin - PASS",
+    "Backend: test_available_modules_returns_9_modules - PASS",
+    "Backend: test_all_expected_modules_present - PASS (phishing, social_engineering, password_security, data_protection, ransomware, insider_threat, mobile_security, remote_work, bec)",
+    "Backend: test_module_structure - PASS (Each module has key, title, subtitle, slide_count)",
+    "Backend: test_generate_each_module - PASS (Returns valid PPTX)",
+    "Backend: test_get_uploaded_presentations - PASS",
+    "Backend: test_upload_requires_super_admin - PASS (403 for non-admin)",
+    "Backend: test_upload_requires_file - PASS (400 if no file)",
+    "Backend: test_health_check - PASS",
+    "Frontend: Login page loads without 2FA field - PASS",
+    "Frontend: Can login with admin credentials - PASS",
+    "Frontend: Login form shows forgot password link - PASS",
+    "Frontend: Can toggle to inquiry form - PASS",
+    "Frontend: Executive Training shows 9 modules - PASS",
+    "Frontend: All 9 module titles visible - PASS",
+    "Frontend: Slide count badges displayed - PASS",
+    "Frontend: Can download PPTX - PASS",
+    "Frontend: Upload button visible for admin - PASS"
+  ],
+  "features_verified": {
+    "login_without_2fa": "PASS - Login endpoint /api/auth/login accepts email+password, returns token with requires_2fa_verification=false and two_factor_enabled=false for users without 2FA",
+    "cms_tiles_crud": "PASS - GET /api/cms-tiles returns 4 default tiles, POST/PATCH/DELETE work for custom tiles, system tiles protected from deletion",
+    "executive_training_9_modules": "PASS - GET /api/executive-training/available-modules returns exactly 9 unique modules with slide counts",
+    "executive_training_upload": "PASS - GET /api/executive-training/uploaded returns list, POST requires super_admin role and file",
+    "pptx_download": "PASS - GET /api/executive-training/generate/{module_key} returns valid PPTX file"
+  },
+  "specs_created": [],
+  "specs_updated": [
+    "/app/tests/e2e/auth-flow.spec.ts",
+    "/app/tests/e2e/dashboard-exec-training.spec.ts",
+    "/app/tests/fixtures/helpers.ts"
+  ],
+  "quarantined_tests": [],
+  "test_report_links": [
+    "/app/backend/tests/test_iteration_10.py",
+    "/app/backend/tests/conftest.py",
+    "/app/test_reports/pytest/pytest_results_10.xml"
+  ],
+  "action_items": [],
+  "updated_files": [
+    "/app/backend/tests/conftest.py",
+    "/app/backend/tests/test_iteration_10.py",
+    "/app/tests/fixtures/helpers.ts",
+    "/app/tests/e2e/auth-flow.spec.ts",
+    "/app/tests/e2e/dashboard-exec-training.spec.ts"
+  ],
+  "success_rate": {
+    "backend": "100% (19/19 tests passed)",
+    "frontend": "100% (9/9 tests passed)"
+  },
+  "test_credentials": {
+    "super_admin": {
+      "email": "test@admin.com",
+      "password": "TestAdmin123!"
+    },
+    "viewer": {
+      "email": "admin@test.com",
+      "password": "Admin123!"
+    }
+  },
+  "seed_data_creation": "None required - used existing test accounts",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All requested features verified working. Login without 2FA tested - returns requires_2fa_verification=false when user has no 2FA setup. CMS Tiles API supports full CRUD with 4 default system tiles. Executive Training now returns 9 modules: phishing, social_engineering, password_security, data_protection, ransomware, insider_threat, mobile_security, remote_work, bec. Upload endpoint requires super_admin role. Rate limiting is active on login - wait between repeated logins.",
+  "api_endpoints_verified": [
+    "POST /api/auth/login - Returns token with 2FA status flags",
+    "GET /api/cms-tiles - Returns 4 default system tiles",
+    "GET /api/cms-tiles/admin - Returns all tiles including unpublished (admin only)",
+    "POST /api/cms-tiles - Create custom tile (admin only)",
+    "PATCH /api/cms-tiles/{tile_id} - Update tile",
+    "PATCH /api/cms-tiles/{tile_id}/publish - Toggle publish status",
+    "DELETE /api/cms-tiles/{tile_id} - Delete custom tile (system tiles protected)",
+    "GET /api/executive-training/available-modules - Returns 9 modules",
+    "GET /api/executive-training/generate/{module_key} - Returns PPTX file",
+    "GET /api/executive-training/uploaded - List uploaded presentations",
+    "POST /api/executive-training/upload - Upload custom presentation (super_admin only)"
+  ]
+}
