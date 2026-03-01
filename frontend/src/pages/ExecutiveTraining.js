@@ -639,6 +639,60 @@ export default function ExecutiveTraining() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Presentation Dialog */}
+      <Dialog open={showEdit} onOpenChange={setShowEdit}>
+        <DialogContent className="bg-[#161B22] border-[#30363D]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit className="w-5 h-5 text-[#D4A836]" />
+              Edit Presentation
+            </DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Update the presentation name and description
+            </DialogDescription>
+          </DialogHeader>
+
+          {editingPresentation && (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>Presentation Name *</Label>
+                <Input
+                  value={editingPresentation.name}
+                  onChange={(e) => setEditingPresentation(prev => ({ ...prev, name: e.target.value }))}
+                  className="bg-[#0D1117] border-[#30363D]"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Description</Label>
+                <Input
+                  value={editingPresentation.description || ''}
+                  onChange={(e) => setEditingPresentation(prev => ({ ...prev, description: e.target.value }))}
+                  className="bg-[#0D1117] border-[#30363D]"
+                />
+              </div>
+              
+              <div className="text-xs text-gray-500">
+                <p>Filename: {editingPresentation.filename}</p>
+                <p>Size: {(editingPresentation.file_size / 1024).toFixed(0)} KB</p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEdit(false)} className="border-[#30363D]">
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleEditPresentation} 
+              className="bg-[#D4A836] hover:bg-[#B8922E] text-black"
+            >
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
