@@ -367,6 +367,28 @@ async def generate_user_module_certificate(user_id: str, module_id: str, request
         cert_record["template_id"] = template_doc.get("template_id")
     await db.certificates.insert_one(cert_record)
 
+    # Audit log the certificate download
+    try:
+        from server import audit_logger
+        from middleware.security import get_client_ip
+        await audit_logger.log(
+            action="certificate_downloaded",
+            user_id=current_user["user_id"],
+            user_email=current_user.get("email"),
+            ip_address=get_client_ip(request),
+            details={
+                "resource_type": "certificate",
+                "resource_id": certificate_id,
+                "certificate_user_id": user_id,
+                "module_id": module_id,
+                "module_name": module_name
+            },
+            severity="info",
+            request=request
+        )
+    except Exception as e:
+        logger.error(f"Failed to log certificate download: {e}")
+
     filename = f"certificate_{module_name.replace(' ', '_')}_{certificate_id}.pdf"
     return StreamingResponse(
         io.BytesIO(pdf_bytes),
