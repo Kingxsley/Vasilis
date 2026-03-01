@@ -521,9 +521,9 @@ async def approve_and_create_user(inquiry_id: str, data: ApproveAndCreateUser, r
         try:
             from services.email_service import send_welcome_email
             await send_welcome_email(
-                to_email=inquiry["email"],
+                user_email=inquiry["email"],
                 user_name=inquiry.get("name") or inquiry["email"].split("@")[0],
-                temp_password=temp_password,
+                password=temp_password,
                 db=db
             )
             logger.info(f"Welcome email sent to {inquiry['email']}")
