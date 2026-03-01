@@ -614,6 +614,33 @@ export default function Settings() {
                   <p className="text-xs text-gray-500">{branding.show_about ? 'Visible' : 'Hidden'}</p>
                 </div>
               </div>
+              
+              {/* CMS Tiles Visibility */}
+              {cmsTiles.filter(t => !t.is_system).length > 0 && (
+                <div className="mt-6 pt-6 border-t border-[#D4A836]/20">
+                  <div className="flex items-center gap-2 mb-4">
+                    <LayoutGrid className="w-5 h-5 text-[#D4A836]" />
+                    <h3 className="font-medium text-[#E8DDB5]">Custom CMS Pages</h3>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {cmsTiles.filter(t => !t.is_system).map(tile => (
+                      <div 
+                        key={tile.tile_id}
+                        className={`p-4 rounded-lg border cursor-pointer transition-all ${tile.published ? 'border-[#D4A836] bg-[#D4A836]/10' : 'border-gray-600 bg-[#1a1a24]'}`}
+                        onClick={() => toggleTileVisibility(tile)}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-medium text-[#E8DDB5] text-sm truncate">{tile.name}</span>
+                          {tile.published ? <Eye className="w-4 h-4 text-[#D4A836]" /> : <EyeOff className="w-4 h-4 text-gray-500" />}
+                        </div>
+                        <p className="text-xs text-gray-500">{tile.published ? 'Visible' : 'Hidden'}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-3">These are custom pages created in CMS Pages</p>
+                </div>
+              )}
+              
               <p className="text-xs text-gray-500 mt-4">Click on a page to toggle its visibility in the navigation bar</p>
             </CardContent>
           </Card>
