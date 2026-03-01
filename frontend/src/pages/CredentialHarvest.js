@@ -955,6 +955,7 @@ export default function CredentialHarvest() {
                       <TableRow className="border-[#30363D]">
                         <TableHead className="text-gray-400">User</TableHead>
                         <TableHead className="text-gray-400">Entered Username</TableHead>
+                        <TableHead className="text-gray-400">Password Hint</TableHead>
                         <TableHead className="text-gray-400">Campaign</TableHead>
                         <TableHead className="text-gray-400">Submitted</TableHead>
                         <TableHead className="text-gray-400">Status</TableHead>
@@ -973,6 +974,15 @@ export default function CredentialHarvest() {
                             <code className="text-sm bg-[#21262D] px-2 py-1 rounded text-[#FFB300]">
                               {s.entered_username || '-'}
                             </code>
+                          </TableCell>
+                          <TableCell>
+                            {s.password_hint ? (
+                              <code className="text-sm bg-red-900/20 px-2 py-1 rounded text-red-400 border border-red-500/30">
+                                {s.password_hint}
+                              </code>
+                            ) : (
+                              <span className="text-gray-500">-</span>
+                            )}
                           </TableCell>
                           <TableCell>
                             <Badge variant="outline" className="border-[#30363D]">
