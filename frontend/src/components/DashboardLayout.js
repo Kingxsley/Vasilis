@@ -126,6 +126,7 @@ const navGroups = [
     items: [
       { path: '/settings', label: 'Settings', icon: Settings, superAdminOnly: true },
       { path: '/permissions', label: 'Permissions', icon: ShieldAlert, superAdminOnly: true },
+      { path: '/form-submissions', label: 'Form Submissions', icon: MessageSquare, superAdminOnly: true },
       { path: '/seo-settings', label: 'SEO', icon: Search, superAdminOnly: true },
       { path: '/email-templates', label: 'Email Templates', icon: MailIcon, superAdminOnly: true },
     ]
