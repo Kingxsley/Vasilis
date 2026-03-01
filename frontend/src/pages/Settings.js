@@ -5,7 +5,8 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Upload, Trash2, Loader2, Globe, Palette, Menu, Eye, EyeOff, Clock, Key, Image } from 'lucide-react';
+import { Switch } from '../components/ui/switch';
+import { Upload, Trash2, Loader2, Globe, Palette, Menu, Eye, EyeOff, Clock, Key, Image, FileText, LayoutGrid } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../App';
 
@@ -35,6 +36,7 @@ export default function Settings() {
     social_youtube: '',
     discord_webhook_url: ''
   });
+  const [cmsTiles, setCmsTiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
