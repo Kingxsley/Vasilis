@@ -157,112 +157,122 @@ export default function CMSTiles() {
     return ICON_OPTIONS[iconName] || FileText;
   };
 
-  const TileForm = ({ data, setData, isEdit = false }) => (
-    <div className="space-y-4 py-4">
-      <div className="grid grid-cols-2 gap-4">
+  const TileForm = ({ data, setData, isEdit = false }) => {
+    const handleChange = (field, value) => {
+      setData(prev => ({ ...prev, [field]: value }));
+    };
+    
+    return (
+      <div className="space-y-4 py-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>Tile Name *</Label>
+            <Input
+              value={data.name || ''}
+              onChange={(e) => handleChange('name', e.target.value)}
+              placeholder="e.g., Contact Us"
+              className="bg-[#0D1117] border-[#30363D]"
+              autoComplete="off"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>URL Slug</Label>
+            <Input
+              value={data.slug || ''}
+              onChange={(e) => handleChange('slug', e.target.value.toLowerCase().replace(/\s+/g, '-'))}
+              placeholder="e.g., contact-us (auto-generated if empty)"
+              className="bg-[#0D1117] border-[#30363D]"
+              autoComplete="off"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>Icon</Label>
+            <Select value={data.icon} onValueChange={(v) => handleChange('icon', v)}>
+              <SelectTrigger className="bg-[#0D1117] border-[#30363D]">
+                <SelectValue placeholder="Select icon" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#161B22] border-[#30363D]">
+                {Object.keys(ICON_OPTIONS).map(icon => {
+                  const IconComp = ICON_OPTIONS[icon];
+                  return (
+                    <SelectItem key={icon} value={icon}>
+                      <div className="flex items-center gap-2">
+                        <IconComp className="w-4 h-4" />
+                        {icon}
+                      </div>
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Route Type</Label>
+            <Select value={data.route_type} onValueChange={(v) => handleChange('route_type', v)}>
+              <SelectTrigger className="bg-[#0D1117] border-[#30363D]">
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#161B22] border-[#30363D]">
+                <SelectItem value="internal">Internal Page</SelectItem>
+                <SelectItem value="custom">Custom Content</SelectItem>
+                <SelectItem value="external">External Link</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
         <div className="space-y-2">
-          <Label>Tile Name *</Label>
+          <Label>Description</Label>
           <Input
-            value={data.name}
-            onChange={(e) => setData(prev => ({ ...prev, name: e.target.value }))}
-            placeholder="e.g., Contact Us"
+            value={data.description || ''}
+            onChange={(e) => handleChange('description', e.target.value)}
+            placeholder="Brief description of the page"
             className="bg-[#0D1117] border-[#30363D]"
+            autoComplete="off"
           />
         </div>
-        <div className="space-y-2">
-          <Label>URL Slug</Label>
-          <Input
-            value={data.slug}
-            onChange={(e) => setData(prev => ({ ...prev, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') }))}
-            placeholder="e.g., contact-us (auto-generated if empty)"
-            className="bg-[#0D1117] border-[#30363D]"
+
+        {data.route_type === 'external' && (
+          <div className="space-y-2">
+            <Label>External URL</Label>
+            <Input
+              value={data.external_url || ''}
+              onChange={(e) => handleChange('external_url', e.target.value)}
+              placeholder="https://example.com"
+              className="bg-[#0D1117] border-[#30363D]"
+              autoComplete="off"
+            />
+          </div>
+        )}
+
+        {data.route_type === 'custom' && (
+          <div className="space-y-2">
+            <Label>Custom Page Content (HTML)</Label>
+            <Textarea
+              value={data.custom_content || ''}
+              onChange={(e) => handleChange('custom_content', e.target.value)}
+              placeholder="<div>Your custom page content...</div>"
+              className="bg-[#0D1117] border-[#30363D] min-h-[150px] font-mono text-sm"
+            />
+          </div>
+        )}
+
+        <div className="flex items-center justify-between p-3 bg-[#0D1117] rounded-lg border border-[#30363D]">
+          <div>
+            <Label>Published</Label>
+            <p className="text-xs text-gray-500">Show this tile in navigation</p>
+          </div>
+          <Switch
+            checked={data.published}
+            onCheckedChange={(checked) => handleChange('published', checked)}
           />
         </div>
       </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Icon</Label>
-          <Select value={data.icon} onValueChange={(v) => setData(prev => ({ ...prev, icon: v }))}>
-            <SelectTrigger className="bg-[#0D1117] border-[#30363D]">
-              <SelectValue placeholder="Select icon" />
-            </SelectTrigger>
-            <SelectContent className="bg-[#161B22] border-[#30363D]">
-              {Object.keys(ICON_OPTIONS).map(icon => {
-                const IconComp = ICON_OPTIONS[icon];
-                return (
-                  <SelectItem key={icon} value={icon}>
-                    <div className="flex items-center gap-2">
-                      <IconComp className="w-4 h-4" />
-                      {icon}
-                    </div>
-                  </SelectItem>
-                );
-              })}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label>Route Type</Label>
-          <Select value={data.route_type} onValueChange={(v) => setData(prev => ({ ...prev, route_type: v }))}>
-            <SelectTrigger className="bg-[#0D1117] border-[#30363D]">
-              <SelectValue placeholder="Select type" />
-            </SelectTrigger>
-            <SelectContent className="bg-[#161B22] border-[#30363D]">
-              <SelectItem value="internal">Internal Page</SelectItem>
-              <SelectItem value="custom">Custom Content</SelectItem>
-              <SelectItem value="external">External Link</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label>Description</Label>
-        <Input
-          value={data.description}
-          onChange={(e) => setData(prev => ({ ...prev, description: e.target.value }))}
-          placeholder="Brief description of the page"
-          className="bg-[#0D1117] border-[#30363D]"
-        />
-      </div>
-
-      {data.route_type === 'external' && (
-        <div className="space-y-2">
-          <Label>External URL</Label>
-          <Input
-            value={data.external_url}
-            onChange={(e) => setData(prev => ({ ...prev, external_url: e.target.value }))}
-            placeholder="https://example.com"
-            className="bg-[#0D1117] border-[#30363D]"
-          />
-        </div>
-      )}
-
-      {data.route_type === 'custom' && (
-        <div className="space-y-2">
-          <Label>Custom Page Content (HTML)</Label>
-          <Textarea
-            value={data.custom_content}
-            onChange={(e) => setData(prev => ({ ...prev, custom_content: e.target.value }))}
-            placeholder="<div>Your custom page content...</div>"
-            className="bg-[#0D1117] border-[#30363D] min-h-[150px] font-mono text-sm"
-          />
-        </div>
-      )}
-
-      <div className="flex items-center justify-between p-3 bg-[#0D1117] rounded-lg border border-[#30363D]">
-        <div>
-          <Label>Published</Label>
-          <p className="text-xs text-gray-500">Show this tile in navigation</p>
-        </div>
-        <Switch
-          checked={data.published}
-          onCheckedChange={(checked) => setData(prev => ({ ...prev, published: checked }))}
-        />
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <DashboardLayout>
