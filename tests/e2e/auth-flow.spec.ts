@@ -1,8 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { waitForAppReady, dismissToasts } from '../fixtures/helpers';
-
-const TEST_EMAIL = 'admin@test.com';
-const TEST_PASSWORD = 'Admin123!';
+import { waitForAppReady, dismissToasts, ADMIN_EMAIL, ADMIN_PASSWORD, VIEWER_EMAIL, VIEWER_PASSWORD } from '../fixtures/helpers';
 
 test.describe('Authentication - Login without 2FA', () => {
   test.beforeEach(async ({ page }) => {
@@ -19,17 +16,17 @@ test.describe('Authentication - Login without 2FA', () => {
     await expect(page.getByTestId('auth-submit-btn')).toBeVisible();
     
     // Verify NO 2FA code field is shown on initial login form
-    const twoFactorInput = page.locator('[data-testid="two-factor-input"], input[placeholder*="2FA"], input[placeholder*="authenticator"], input[placeholder*="verification code"]');
+    const twoFactorInput = page.getByTestId('twofactor-input');
     await expect(twoFactorInput).not.toBeVisible();
   });
 
-  test('Can login with valid credentials without 2FA and see dashboard', async ({ page }) => {
+  test('Can login with valid credentials and see dashboard', async ({ page }) => {
     await page.goto('/auth');
     await waitForAppReady(page);
     
-    // Fill login form
-    await page.getByTestId('email-input').fill(TEST_EMAIL);
-    await page.getByTestId('password-input').fill(TEST_PASSWORD);
+    // Fill login form with admin credentials
+    await page.getByTestId('email-input').fill(ADMIN_EMAIL);
+    await page.getByTestId('password-input').fill(ADMIN_PASSWORD);
     
     // Submit login
     await page.getByTestId('auth-submit-btn').click();
@@ -37,7 +34,7 @@ test.describe('Authentication - Login without 2FA', () => {
     // Wait for redirect to dashboard or training
     await expect(page).toHaveURL(/\/(dashboard|training)/, { timeout: 30000 });
     
-    // Verify we're on the dashboard page
+    // Verify we're on the dashboard page (super_admin goes to dashboard)
     await expect(page.getByTestId('dashboard-page')).toBeVisible({ timeout: 10000 });
   });
 
