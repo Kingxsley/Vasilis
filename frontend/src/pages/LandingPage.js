@@ -75,9 +75,9 @@ export default function LandingPage() {
           p => p.is_published && p.show_in_nav
         );
         setCustomPages(navPages);
-        // Filter published non-system CMS tiles
+        // Filter published non-system CMS tiles (all returned from /public are published)
         const navTiles = (cmsTilesRes.data?.tiles || []).filter(
-          t => t.published && !t.is_system
+          t => !t.is_system && t.name  // Exclude system tiles and empty names
         );
         setCmsTiles(navTiles);
       })
