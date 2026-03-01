@@ -230,12 +230,13 @@ class TestFormSubmissions:
         # Should return a list
         assert isinstance(response.json(), list)
     
-    def test_access_requests_endpoint_not_found(self, authenticated_client):
-        """Test access requests endpoint - currently returns 404 (frontend catches error)"""
-        response = authenticated_client.get(f"{BASE_URL}/api/access-requests")
-        # NOTE: This endpoint doesn't exist yet - frontend handles gracefully with catch
-        # This is expected behavior currently
-        assert response.status_code == 404
+    def test_inquiries_endpoint_exists(self, authenticated_client):
+        """Test inquiries endpoint exists and returns data"""
+        response = authenticated_client.get(f"{BASE_URL}/api/inquiries")
+        assert response.status_code == 200
+        data = response.json()
+        # Should return inquiries list with pagination info
+        assert "inquiries" in data or isinstance(data, list)
     
     def test_contact_submissions_requires_auth(self, unauthenticated_client):
         """Test that contact submissions endpoint requires authentication"""
