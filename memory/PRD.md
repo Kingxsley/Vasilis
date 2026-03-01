@@ -586,3 +586,52 @@ JWT_SECRET=<secure-random-string>
 - `training_sessions` - User training progress
 - `settings` - System configuration
 - `audit_logs` - Security audit trail
+
+---
+
+## Session Changes (March 2026 - E1 Fork) - P0-P2 Bug Fixes
+
+### P0 - Critical Issues Fixed
+1. **Bulk User Import Function Signature** - VERIFIED WORKING:
+   - Fixed `send_welcome_email` call in `inquiries.py` to use correct params (`user_email`, `password` instead of `to_email`, `temp_password`)
+   - User import API endpoints working: `/api/import/users/preview` and `/api/import/users`
+   
+2. **SelectItem Runtime Error** - VERIFIED WORKING:
+   - Changed default `organization_id` from empty string `''` to `'none'` in FormSubmissions.js
+   - Added filter to remove orgs with empty IDs from Select dropdown
+   - Approve & Create User workflow now works without runtime errors
+
+### P1 - High Priority Issues Fixed
+3. **News Page Pagination** - VERIFIED WORKING:
+   - Increased RSS items per feed from 10 to 50
+   - Backend now aggregates ALL RSS entries, sorts by date, then applies pagination
+   - Frontend correctly receives total count for pagination
+   - API: `/api/content/news?include_rss=true&skip=X&limit=Y`
+
+4. **Credential Harvest Statistics Dashboard** - VERIFIED WORKING:
+   - Added organization filtering to CredentialSubmissions page
+   - New org filter dropdown alongside campaign filter
+   - Backend supports `organization_id` query param on `/api/phishing/credential-submissions/stats`
+
+### P2 - Medium Priority Issues Fixed
+5. **CMS Tile Input Bug** - VERIFIED WORKING:
+   - Extracted `TileForm` component outside main component (was causing re-render on each keystroke)
+   - Wrapped with `React.memo()` and `useCallback` for performance
+   - Input now accepts multiple characters without losing focus
+
+6. **Security Vulnerability Scan** - COMPLETED:
+   - Added filename sanitization for PPTX uploads (regex to prevent path traversal)
+   - Verified CORS configuration is environment-aware
+   - Verified JWT secret warns when using default
+   - Verified no dangerous `eval`/`exec` calls in backend
+   - All sensitive routes have proper authentication
+
+### Testing Results (Iteration 16)
+- **Backend**: 100% pass rate (20/20 tests)
+- **Frontend**: 83% pass rate (5/6 tests, 1 skipped due to rate limiting)
+- **Test Files**: `/app/backend/tests/test_iteration_16.py`, `/app/tests/e2e/iteration-16.spec.ts`
+
+## Remaining Tasks (P3 - Future)
+- Expand PPT modules to 30-50 slides
+- Replace credential harvest editor with true drag-and-drop builder
+- Add rate limiting bypass for test accounts
