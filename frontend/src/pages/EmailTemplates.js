@@ -241,6 +241,39 @@ export default function EmailTemplates() {
     }
   };
 
+  // Validate email format
+  const isValidEmail = (email) => {
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+  };
+
+  // Send test email
+  const sendTestEmail = async (templateId) => {
+    if (!testEmail) {
+      toast.error('Please enter an email address');
+      return;
+    }
+    
+    if (!isValidEmail(testEmail)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+    
+    setSendingTest(true);
+    try {
+      await axios.post(`${API}/system-emails/test-send`, {
+        to_email: testEmail,
+        template_id: templateId
+      }, { headers });
+      toast.success(`Test email sent to ${testEmail}`);
+      setTestEmail('');
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to send test email');
+    } finally {
+      setSendingTest(false);
+    }
+  };
+
   const handlePreview = async (templateId) => {
     try {
       const res = await axios.post(`${API}/email-templates/${templateId}/preview`, {}, { headers });
