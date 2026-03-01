@@ -6,6 +6,9 @@ import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Textarea } from '../components/ui/textarea';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Switch } from '../components/ui/switch';
 import {
   Dialog,
   DialogContent,
@@ -15,9 +18,17 @@ import {
   DialogFooter,
 } from '../components/ui/dialog';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../components/ui/select';
+import {
   Mail, Phone, Building2, User, Calendar, Loader2, 
   CheckCircle, Clock, AlertCircle, Trash2, Eye, MessageSquare,
-  Send, ArrowRight, FileText, RefreshCw
+  Send, ArrowRight, FileText, RefreshCw, UserPlus, UserCheck,
+  Users, Shield, XCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
@@ -26,17 +37,28 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 export default function FormSubmissions() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [submissions, setSubmissions] = useState([]);
   const [accessRequests, setAccessRequests] = useState([]);
+  const [organizations, setOrganizations] = useState([]);
+  const [admins, setAdmins] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('contact');
+  const [activeTab, setActiveTab] = useState('access');
   const [selectedItem, setSelectedItem] = useState(null);
   const [showDetail, setShowDetail] = useState(false);
+  const [showApprove, setShowApprove] = useState(false);
+  const [showAssign, setShowAssign] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [sending, setSending] = useState(false);
+  const [approving, setApproving] = useState(false);
+  const [approveForm, setApproveForm] = useState({
+    role: 'trainee',
+    organization_id: '',
+    send_welcome_email: true
+  });
 
   const headers = { Authorization: `Bearer ${token}` };
+  const isSuperAdmin = user?.role === 'super_admin';
 
   useEffect(() => {
     fetchData();
