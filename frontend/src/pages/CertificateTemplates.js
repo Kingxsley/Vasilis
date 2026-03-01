@@ -321,15 +321,41 @@ const ElementProperties = ({ element, onUpdate, onDelete, signatures, certifying
       )}
 
       {(element.type === 'logo' || element.type === 'image') && (
-        <div>
-          <Label className="text-gray-400">Image URL or upload</Label>
+        <div className="space-y-3">
+          <Label className="text-gray-400">Image Source</Label>
           <div className="space-y-2">
             <Input
               value={element.content || ''}
               onChange={(e) => onUpdate(element.id, { content: e.target.value })}
               className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]"
-              placeholder="Image URL or base64"
+              placeholder="Image URL (https://...) or paste base64"
             />
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    onUpdate(element.id, { content: event.target.result });
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
+              className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]"
+            />
+            {/* Image Preview */}
+            {element.content && (
+              <div className="mt-2 p-2 bg-white rounded border border-[#30363D]">
+                <img 
+                  src={element.content} 
+                  alt="Preview" 
+                  className="max-h-24 object-contain mx-auto"
+                  onError={(e) => { e.target.style.display = 'none'; }}
+                />
+              </div>
+            )}
             <p className="text-xs text-gray-500">Use {'{company_logo}'} for dynamic company logo</p>
           </div>
         </div>
