@@ -63,7 +63,7 @@ export default function FormSubmissions() {
     try {
       const endpoint = type === 'contact' 
         ? `${API}/contact/submissions/${id}/status`
-        : `${API}/access-requests/${id}/status`;
+        : `${API}/inquiries/${id}/status`;
       
       await axios.patch(endpoint, { status }, { headers });
       toast.success('Status updated');
@@ -79,7 +79,7 @@ export default function FormSubmissions() {
     try {
       const endpoint = type === 'contact' 
         ? `${API}/contact/submissions/${id}`
-        : `${API}/access-requests/${id}`;
+        : `${API}/inquiries/${id}`;
       
       await axios.delete(endpoint, { headers });
       toast.success('Submission deleted');
