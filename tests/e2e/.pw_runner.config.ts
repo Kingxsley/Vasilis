@@ -2,13 +2,13 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: '/app/tests/e2e',
-  outputDir: '/root/.emergent/automation_output/20260301_082956/test-results',
+  outputDir: '/root/.emergent/automation_output/20260301_083157/test-results',
   timeout: 60000,
   retries: 0,
   workers: 1,
   reporter: [
     ['line'],
-    ['json', { outputFile: '/root/.emergent/automation_output/20260301_082956/results.json' }],
+    ['json', { outputFile: '/root/.emergent/automation_output/20260301_083157/results.json' }],
   ],
   use: {
     baseURL: 'https://vasilis-cert-fix.preview.emergentagent.com',
