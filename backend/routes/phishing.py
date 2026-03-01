@@ -627,7 +627,7 @@ async def launch_campaign(campaign_id: str, request: Request):
         response["errors"] = errors[:10]  # Include first 10 errors
         response["total_errors"] = len(errors)
         if sent_count == 0:
-            response["message"] = f"Campaign launched but no emails were sent. Check email configuration (SENDGRID_API_KEY, SENDER_EMAIL)."
+            response["message"] = "Campaign launched but no emails were sent. Check email configuration (SENDGRID_API_KEY, SENDER_EMAIL)."
     
     return response
 
