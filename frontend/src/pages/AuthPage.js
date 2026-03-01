@@ -388,7 +388,7 @@ export default function AuthPage() {
               </div>
             )}
 
-            {mode === 'login' && (
+            {mode === 'login' && !requires2FA && (
               <div className="flex justify-end">
                 <button
                   type="button"
@@ -397,6 +397,44 @@ export default function AuthPage() {
                   data-testid="forgot-password-btn"
                 >
                   Forgot password?
+                </button>
+              </div>
+            )}
+
+            {/* 2FA Input - shown when required */}
+            {requires2FA && (
+              <div className="space-y-4 animate-slide-up">
+                <div className="bg-[#D4A836]/10 border border-[#D4A836]/30 rounded-lg p-4 mb-4">
+                  <p className="text-[#D4A836] text-sm font-medium mb-1">Two-Factor Authentication Required</p>
+                  <p className="text-gray-400 text-xs">Enter the 6-digit code from your authenticator app</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="twoFactorCode" className="text-gray-400">Authentication Code</Label>
+                  <div className="relative">
+                    <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                    <Input
+                      id="twoFactorCode"
+                      type="text"
+                      placeholder="Enter 6-digit code"
+                      value={twoFactorCode}
+                      onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      className="pl-10 bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] placeholder:text-gray-600 focus:border-[#D4A836] focus:ring-[#D4A836]/20 text-center text-xl tracking-widest"
+                      data-testid="twofactor-input"
+                      maxLength={6}
+                      autoFocus
+                    />
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRequires2FA(false);
+                    setPendingToken(null);
+                    setTwoFactorCode('');
+                  }}
+                  className="text-sm text-gray-400 hover:text-[#D4A836]"
+                >
+                  ← Back to login
                 </button>
               </div>
             )}
