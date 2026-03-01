@@ -86,6 +86,26 @@ A comprehensive security awareness and training platform that helps organization
 
 ## Current Status (March 2026)
 
+### Session 16 Updates (March 1, 2026) - SETTINGS & CUSTOMIZATION
+
+#### CMS Tiles in Navigation Settings
+1. **Settings Page Integration** - All CMS tiles now visible in Settings > Navigation Menu
+2. **Toggle Visibility** - Click to toggle any tile's visibility in the navigation bar
+3. **Separated Sections** - Built-in pages (Blog, Videos, News, About) and Custom CMS Pages shown separately
+
+#### Credential Harvest Password Hint
+4. **Password Hint Feature** - Displays 2 random characters from submitted passwords with positions
+   - Example: "Position 3: 'a', Position 7: 'x'"
+   - Helps identify weak password patterns in training
+   - Full password NEVER stored
+
+#### Form Submission Email Templates
+5. **New Email Templates Added:**
+   - Contact Form Notification - Sent to admins when contact form submitted
+   - Access Request Notification - Sent to admins when access requested
+   - Access Request Approved - Sent to users when their request is approved
+6. **Customizable Variables** - Each template supports custom variables like {sender_name}, {message}, etc.
+
 ### Session 15 Updates (March 1, 2026) - ACCESS REQUEST WORKFLOW
 
 #### New Access Request Workflow Features
