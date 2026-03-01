@@ -295,7 +295,7 @@ async def update_inquiry(inquiry_id: str, data: InquiryUpdate, request: Request)
     user = await require_super_admin(request)
     db = get_db()
     
-    valid_statuses = ["pending", "contacted", "approved", "rejected"]
+    valid_statuses = ["pending", "contacted", "approved", "rejected", "resolved", "assigned"]
     if data.status not in valid_statuses:
         raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
     
@@ -337,6 +337,238 @@ async def update_inquiry(inquiry_id: str, data: InquiryUpdate, request: Request)
         pass
     
     return {"message": "Inquiry updated", "status": data.status}
+
+
+@router.post("/{inquiry_id}/approve")
+async def approve_and_create_user(inquiry_id: str, data: ApproveAndCreateUser, request: Request):
+    """Approve access request and create user account"""
+    user = await require_super_admin(request)
+    db = get_db()
+    
+    # Get the inquiry
+    inquiry = await db.inquiries.find_one({"inquiry_id": inquiry_id}, {"_id": 0})
+    if not inquiry:
+        raise HTTPException(status_code=404, detail="Inquiry not found")
+    
+    if inquiry.get("status") == "approved":
+        raise HTTPException(status_code=400, detail="This request has already been approved")
+    
+    # Check if user already exists
+    existing_user = await db.users.find_one({"email": inquiry["email"]}, {"_id": 0})
+    if existing_user:
+        raise HTTPException(status_code=400, detail=f"User with email {inquiry['email']} already exists")
+    
+    # Validate role
+    valid_roles = ["trainee", "org_admin", "super_admin", "media_manager"]
+    if data.role not in valid_roles:
+        raise HTTPException(status_code=400, detail=f"Invalid role. Must be one of: {valid_roles}")
+    
+    # Validate organization if provided
+    if data.organization_id:
+        org = await db.organizations.find_one({"organization_id": data.organization_id}, {"_id": 0})
+        if not org:
+            raise HTTPException(status_code=400, detail="Organization not found")
+    
+    # Generate secure password
+    import secrets
+    import string
+    password_chars = string.ascii_letters + string.digits + "!@#$%^&*"
+    temp_password = ''.join(secrets.choice(password_chars) for _ in range(16))
+    
+    # Create the user
+    from server import hash_password
+    new_user_id = f"user_{uuid.uuid4().hex[:12]}"
+    
+    user_doc = {
+        "user_id": new_user_id,
+        "email": inquiry["email"],
+        "name": inquiry.get("name") or inquiry["email"].split("@")[0],
+        "password_hash": hash_password(temp_password),
+        "role": data.role,
+        "organization_id": data.organization_id,
+        "picture": None,
+        "is_active": True,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "last_login": datetime.now(timezone.utc).isoformat(),
+        "created_from_inquiry": inquiry_id,
+        "must_change_password": True  # Force password change on first login
+    }
+    
+    await db.users.insert_one(user_doc)
+    
+    # Update inquiry status
+    await db.inquiries.update_one(
+        {"inquiry_id": inquiry_id},
+        {"$set": {
+            "status": "approved",
+            "approved_by": user["user_id"],
+            "approved_at": datetime.now(timezone.utc).isoformat(),
+            "created_user_id": new_user_id,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    # Send welcome email with credentials if requested
+    if data.send_welcome_email:
+        try:
+            from services.email_service import send_welcome_email
+            await send_welcome_email(
+                to_email=inquiry["email"],
+                user_name=inquiry.get("name") or inquiry["email"].split("@")[0],
+                temp_password=temp_password,
+                db=db
+            )
+            logger.info(f"Welcome email sent to {inquiry['email']}")
+        except Exception as e:
+            logger.error(f"Failed to send welcome email: {e}")
+    
+    # Log the approval
+    try:
+        from server import audit_logger
+        await audit_logger.log(
+            action="access_request_approved",
+            user_id=user["user_id"],
+            user_email=user.get("email"),
+            details={
+                "inquiry_id": inquiry_id,
+                "new_user_id": new_user_id,
+                "new_user_email": inquiry["email"],
+                "role": data.role,
+                "organization_id": data.organization_id
+            },
+            severity="info"
+        )
+    except Exception:
+        pass
+    
+    return {
+        "message": f"User account created for {inquiry['email']}",
+        "user_id": new_user_id,
+        "email": inquiry["email"],
+        "role": data.role,
+        "temp_password": temp_password if not data.send_welcome_email else None,
+        "welcome_email_sent": data.send_welcome_email
+    }
+
+
+@router.post("/{inquiry_id}/assign")
+async def assign_to_admin(inquiry_id: str, data: AssignToAdmin, request: Request):
+    """Assign access request to a specific admin for handling"""
+    user = await require_super_admin(request)
+    db = get_db()
+    
+    # Get the inquiry
+    inquiry = await db.inquiries.find_one({"inquiry_id": inquiry_id}, {"_id": 0})
+    if not inquiry:
+        raise HTTPException(status_code=404, detail="Inquiry not found")
+    
+    # Verify the target admin exists and is an admin
+    target_admin = await db.users.find_one(
+        {"user_id": data.admin_id, "role": {"$in": ["super_admin", "org_admin"]}},
+        {"_id": 0, "user_id": 1, "email": 1, "name": 1, "role": 1}
+    )
+    if not target_admin:
+        raise HTTPException(status_code=400, detail="Target admin not found or is not an admin")
+    
+    # Update inquiry
+    await db.inquiries.update_one(
+        {"inquiry_id": inquiry_id},
+        {"$set": {
+            "status": "assigned",
+            "assigned_to": data.admin_id,
+            "assigned_to_name": target_admin.get("name", target_admin.get("email")),
+            "assigned_by": user["user_id"],
+            "assigned_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    # Optionally send notification email to assigned admin
+    try:
+        from services.email_service import send_test_email
+        await send_test_email(
+            to_email=target_admin["email"],
+            subject=f"Access Request Assigned: {inquiry.get('name', inquiry['email'])}",
+            html_content=f"""
+            <div style="font-family: Arial, sans-serif; padding: 20px;">
+                <h2 style="color: #D4A836;">Access Request Assigned to You</h2>
+                <p>An access request has been assigned to you for handling:</p>
+                <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <p><strong>Name:</strong> {inquiry.get('name', 'N/A')}</p>
+                    <p><strong>Email:</strong> {inquiry.get('email')}</p>
+                    <p><strong>Organization:</strong> {inquiry.get('organization', 'N/A')}</p>
+                    <p><strong>Message:</strong> {inquiry.get('message', 'N/A')}</p>
+                </div>
+                <p>Please review and take appropriate action.</p>
+            </div>
+            """
+        )
+    except Exception as e:
+        logger.warning(f"Failed to send assignment notification: {e}")
+    
+    return {
+        "message": f"Request assigned to {target_admin.get('name', target_admin.get('email'))}",
+        "assigned_to": {
+            "user_id": target_admin["user_id"],
+            "name": target_admin.get("name"),
+            "email": target_admin.get("email")
+        }
+    }
+
+
+@router.post("/{inquiry_id}/resolve")
+async def resolve_inquiry(inquiry_id: str, request: Request):
+    """Mark an inquiry as resolved"""
+    user = await require_admin(request)
+    db = get_db()
+    
+    # Get the inquiry
+    inquiry = await db.inquiries.find_one({"inquiry_id": inquiry_id}, {"_id": 0})
+    if not inquiry:
+        raise HTTPException(status_code=404, detail="Inquiry not found")
+    
+    # Update inquiry status
+    await db.inquiries.update_one(
+        {"inquiry_id": inquiry_id},
+        {"$set": {
+            "status": "resolved",
+            "resolved_by": user["user_id"],
+            "resolved_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    # Log the resolution
+    try:
+        from server import audit_logger
+        await audit_logger.log(
+            action="access_request_resolved",
+            user_id=user["user_id"],
+            user_email=user.get("email"),
+            details={
+                "inquiry_id": inquiry_id,
+                "requester_email": inquiry.get("email")
+            },
+            severity="info"
+        )
+    except Exception:
+        pass
+    
+    return {"message": "Request marked as resolved"}
+
+
+@router.get("/admins/list")
+async def list_admins_for_assignment(request: Request):
+    """Get list of admins for assignment dropdown"""
+    await require_super_admin(request)
+    db = get_db()
+    
+    admins = await db.users.find(
+        {"role": {"$in": ["super_admin", "org_admin"]}, "is_active": True},
+        {"_id": 0, "user_id": 1, "email": 1, "name": 1, "role": 1}
+    ).to_list(100)
+    
+    return {"admins": admins}
 
 
 @router.delete("/{inquiry_id}")
