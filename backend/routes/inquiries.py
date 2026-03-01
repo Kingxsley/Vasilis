@@ -10,11 +10,112 @@ from typing import Optional
 from datetime import datetime, timezone
 import uuid
 import logging
+import aiohttp
 
 from models import UserRole
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/inquiries", tags=["Inquiries"])
+
+
+def get_db():
+    from server import db
+    return db
+
+
+async def send_discord_notification(webhook_url: str, embed: dict):
+    """Send a Discord webhook notification"""
+    if not webhook_url or not webhook_url.startswith("https://discord.com/api/webhooks/"):
+        return False
+    
+    try:
+        payload = {
+            "username": "Vasilis NetShield",
+            "embeds": [embed]
+        }
+        
+        async with aiohttp.ClientSession() as session:
+            async with session.post(webhook_url, json=payload) as resp:
+                return resp.status in [200, 204]
+    except Exception as e:
+        logger.warning(f"Failed to send Discord notification: {e}")
+        return False
+
+
+async def notify_super_admins_discord(db, notification_type: str, details: dict):
+    """Send Discord notification to all super admins with configured webhooks"""
+    # Get branding settings for global webhook
+    branding = await db.branding_settings.find_one({}, {"_id": 0, "discord_webhook_url": 1})
+    global_webhook = branding.get("discord_webhook_url") if branding else None
+    
+    # Also get org-specific webhooks if applicable
+    org_webhooks = []
+    if details.get("organization_id"):
+        org = await db.organizations.find_one(
+            {"organization_id": details["organization_id"]},
+            {"_id": 0, "discord_webhook_url": 1}
+        )
+        if org and org.get("discord_webhook_url"):
+            org_webhooks.append(org["discord_webhook_url"])
+    
+    # Build embed based on notification type
+    if notification_type == "access_request_new":
+        embed = {
+            "title": "🔔 New Access Request",
+            "description": f"A new access request has been submitted.",
+            "color": 5793266,  # Purple
+            "fields": [
+                {"name": "Name", "value": details.get("name", "N/A"), "inline": True},
+                {"name": "Email", "value": details.get("email", "N/A"), "inline": True},
+                {"name": "Organization", "value": details.get("organization", "N/A"), "inline": True},
+                {"name": "Country", "value": details.get("country", "N/A"), "inline": True}
+            ],
+            "footer": {"text": "Vasilis NetShield Security Platform"},
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+        if details.get("message"):
+            embed["fields"].append({"name": "Message", "value": details["message"][:1000], "inline": False})
+    
+    elif notification_type == "access_request_assigned":
+        embed = {
+            "title": "📋 Access Request Assigned",
+            "description": f"An access request has been assigned to you for review.",
+            "color": 10181046,  # Blue
+            "fields": [
+                {"name": "Requester", "value": details.get("requester_name", "N/A"), "inline": True},
+                {"name": "Email", "value": details.get("requester_email", "N/A"), "inline": True},
+                {"name": "Assigned By", "value": details.get("assigned_by", "N/A"), "inline": True}
+            ],
+            "footer": {"text": "Vasilis NetShield Security Platform"},
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+    
+    elif notification_type == "contact_form_new":
+        embed = {
+            "title": "📧 New Contact Form Submission",
+            "description": f"Someone has contacted you via the website.",
+            "color": 3447003,  # Green
+            "fields": [
+                {"name": "Name", "value": details.get("name", "N/A"), "inline": True},
+                {"name": "Email", "value": details.get("email", "N/A"), "inline": True},
+                {"name": "Subject", "value": details.get("subject", "General Inquiry"), "inline": True}
+            ],
+            "footer": {"text": "Vasilis NetShield Security Platform"},
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+        if details.get("message"):
+            embed["fields"].append({"name": "Message", "value": details["message"][:1000], "inline": False})
+    
+    else:
+        return
+    
+    # Send to global webhook
+    if global_webhook:
+        await send_discord_notification(global_webhook, embed)
+    
+    # Send to org webhooks
+    for webhook in org_webhooks:
+        await send_discord_notification(webhook, embed)
 
 
 def get_db():
