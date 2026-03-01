@@ -133,20 +133,20 @@ const TileForm = ({ data, setData, isEdit = false }) => {
       <div className="space-y-2">
         <Label>Description</Label>
         <Input
-          value={data.description || ''}
-          onChange={(e) => handleChange('description', e.target.value)}
+          value={localData.description || ''}
+          onChange={(e) => handleLocalChange('description', e.target.value)}
           placeholder="Brief description of the page"
           className="bg-[#0D1117] border-[#30363D]"
           autoComplete="off"
         />
       </div>
 
-      {data.route_type === 'external' && (
+      {localData.route_type === 'external' && (
         <div className="space-y-2">
           <Label>External URL</Label>
           <Input
-            value={data.external_url || ''}
-            onChange={(e) => handleChange('external_url', e.target.value)}
+            value={localData.external_url || ''}
+            onChange={(e) => handleLocalChange('external_url', e.target.value)}
             placeholder="https://example.com"
             className="bg-[#0D1117] border-[#30363D]"
             autoComplete="off"
@@ -154,12 +154,12 @@ const TileForm = ({ data, setData, isEdit = false }) => {
         </div>
       )}
 
-      {data.route_type === 'custom' && (
+      {localData.route_type === 'custom' && (
         <div className="space-y-2">
           <Label>Custom Page Content (HTML)</Label>
           <Textarea
-            value={data.custom_content || ''}
-            onChange={(e) => handleChange('custom_content', e.target.value)}
+            value={localData.custom_content || ''}
+            onChange={(e) => handleLocalChange('custom_content', e.target.value)}
             placeholder="<div>Your custom page content...</div>"
             className="bg-[#0D1117] border-[#30363D] min-h-[150px] font-mono text-sm"
           />
@@ -172,7 +172,7 @@ const TileForm = ({ data, setData, isEdit = false }) => {
           <p className="text-xs text-gray-500">Show this tile in navigation</p>
         </div>
         <Switch
-          checked={data.published}
+          checked={localData.published}
           onCheckedChange={(checked) => handleChange('published', checked)}
         />
       </div>
