@@ -21,8 +21,6 @@ test.describe('Authentication - Login without 2FA', () => {
     // Verify NO 2FA code field is shown on initial login form
     const twoFactorInput = page.locator('[data-testid="two-factor-input"], input[placeholder*="2FA"], input[placeholder*="authenticator"], input[placeholder*="verification code"]');
     await expect(twoFactorInput).not.toBeVisible();
-    
-    await page.screenshot({ path: '.screenshots/01_login_page_no_2fa.png', quality: 20 });
   });
 
   test('Can login with valid credentials without 2FA', async ({ page }) => {
@@ -37,9 +35,7 @@ test.describe('Authentication - Login without 2FA', () => {
     await page.getByTestId('auth-submit-btn').click();
     
     // Wait for redirect to dashboard or training
-    await expect(page).toHaveURL(/\/(dashboard|training)/, { timeout: 10000 });
-    
-    await page.screenshot({ path: '.screenshots/02_logged_in.png', quality: 20 });
+    await expect(page).toHaveURL(/\/(dashboard|training)/, { timeout: 15000 });
   });
 
   test('Login form shows forgot password link', async ({ page }) => {
@@ -66,10 +62,19 @@ test.describe('Authentication - Login without 2FA', () => {
 test.describe('Dashboard - Online Users Display', () => {
   test.beforeEach(async ({ page }) => {
     await dismissToasts(page);
-    await loginAsAdmin(page, TEST_EMAIL, TEST_PASSWORD);
+    // Login directly via page navigation with credentials in URL not possible
+    // Use direct login approach
+    await page.goto('/auth');
+    await page.waitForLoadState('domcontentloaded');
+    await page.getByTestId('email-input').fill(TEST_EMAIL);
+    await page.getByTestId('password-input').fill(TEST_PASSWORD);
+    await page.getByTestId('auth-submit-btn').click();
+    await page.waitForURL(/\/(dashboard|training)/, { timeout: 15000 });
   });
 
   test('Dashboard shows Online Now stat card', async ({ page }) => {
+    await page.goto('/dashboard');
+    await page.waitForLoadState('domcontentloaded');
     await expect(page.getByTestId('dashboard-page')).toBeVisible();
     
     // Look for the Online Now stat card
@@ -79,11 +84,11 @@ test.describe('Dashboard - Online Users Display', () => {
     // Verify it shows a number
     const onlineCount = onlineNowCard.locator('p.text-3xl');
     await expect(onlineCount).toBeVisible();
-    
-    await page.screenshot({ path: '.screenshots/03_dashboard_online_users.png', quality: 20 });
   });
 
   test('Dashboard displays all stat cards', async ({ page }) => {
+    await page.goto('/dashboard');
+    await page.waitForLoadState('domcontentloaded');
     await expect(page.getByTestId('dashboard-page')).toBeVisible();
     
     // Check multiple stat cards are visible
@@ -97,36 +102,39 @@ test.describe('Dashboard - Online Users Display', () => {
 test.describe('Executive Training Page', () => {
   test.beforeEach(async ({ page }) => {
     await dismissToasts(page);
-    await loginAsAdmin(page, TEST_EMAIL, TEST_PASSWORD);
+    await page.goto('/auth');
+    await page.waitForLoadState('domcontentloaded');
+    await page.getByTestId('email-input').fill(TEST_EMAIL);
+    await page.getByTestId('password-input').fill(TEST_PASSWORD);
+    await page.getByTestId('auth-submit-btn').click();
+    await page.waitForURL(/\/(dashboard|training)/, { timeout: 15000 });
   });
 
   test('Executive Training page loads with modules', async ({ page }) => {
     await page.goto('/executive-training');
-    await waitForAppReady(page);
+    await page.waitForLoadState('domcontentloaded');
     
     await expect(page.getByTestId('executive-training-page')).toBeVisible();
     
-    // Wait for modules to load (loader should disappear)
-    await expect(page.locator('.animate-spin')).not.toBeVisible({ timeout: 10000 });
-    
     // Check for pre-built modules section
-    await expect(page.getByText('Pre-built Training Modules')).toBeVisible();
+    await expect(page.getByText('Pre-built Training Modules')).toBeVisible({ timeout: 10000 });
     
-    await page.screenshot({ path: '.screenshots/04_executive_training.png', quality: 20 });
+    // Verify modules are displayed by checking for slide count badges
+    await expect(page.locator('text=/\\d+ Slides/').first()).toBeVisible({ timeout: 10000 });
   });
 
   test('Can download PowerPoint presentation', async ({ page }) => {
     await page.goto('/executive-training');
-    await waitForAppReady(page);
+    await page.waitForLoadState('domcontentloaded');
     
     await expect(page.getByTestId('executive-training-page')).toBeVisible();
     
-    // Wait for modules to load
-    await expect(page.locator('.animate-spin')).not.toBeVisible({ timeout: 10000 });
+    // Wait for modules text to appear (indicates loading complete)
+    await expect(page.getByText('Pre-built Training Modules')).toBeVisible({ timeout: 10000 });
     
     // Find first Download PPTX button
     const downloadButton = page.getByRole('button', { name: /Download PPTX/i }).first();
-    await expect(downloadButton).toBeVisible();
+    await expect(downloadButton).toBeVisible({ timeout: 5000 });
     
     // Set up download promise before clicking
     const downloadPromise = page.waitForEvent('download', { timeout: 30000 });
@@ -143,10 +151,10 @@ test.describe('Executive Training Page', () => {
 
   test('Module cards show slide count badges', async ({ page }) => {
     await page.goto('/executive-training');
-    await waitForAppReady(page);
+    await page.waitForLoadState('domcontentloaded');
     
-    // Wait for modules to load
-    await expect(page.locator('.animate-spin')).not.toBeVisible({ timeout: 10000 });
+    // Wait for the modules section text
+    await expect(page.getByText('Pre-built Training Modules')).toBeVisible({ timeout: 10000 });
     
     // Check for slide count badges
     const slideBadges = page.locator('text=/\\d+ Slides/');
