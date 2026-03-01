@@ -1304,13 +1304,137 @@ export default function CredentialHarvest() {
               </div>
 
               <div className="space-y-2">
-                <Label>Email Body HTML</Label>
-                <Textarea
-                  value={newTemplate.body_html}
-                  onChange={(e) => setNewTemplate(prev => ({ ...prev, body_html: e.target.value }))}
-                  placeholder="<div>Your email HTML here... Use {{TRACKING_LINK}} for the phishing link</div>"
-                  className="bg-[#0D1117] border-[#30363D] min-h-[150px] font-mono text-sm"
-                />
+                <Label>Email Body</Label>
+                <Tabs defaultValue="visual" className="w-full">
+                  <TabsList className="bg-[#0D1117] border border-[#30363D]">
+                    <TabsTrigger value="visual">Visual Builder</TabsTrigger>
+                    <TabsTrigger value="html">HTML Code</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="visual" className="mt-2">
+                    <div className="bg-[#0D1117] border border-[#30363D] rounded-lg p-4 space-y-3">
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="border-[#30363D] text-xs"
+                          onClick={() => {
+                            const html = newTemplate.body_html || '';
+                            setNewTemplate(prev => ({ 
+                              ...prev, 
+                              body_html: html + '\n<div style="background:#f5f5f5;padding:20px;text-align:center;"><img src="LOGO_URL" alt="Logo" style="max-width:150px;"></div>'
+                            }));
+                          }}
+                        >
+                          <ImageIcon className="w-3 h-3 mr-1" /> Logo
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="border-[#30363D] text-xs"
+                          onClick={() => {
+                            const html = newTemplate.body_html || '';
+                            setNewTemplate(prev => ({ 
+                              ...prev, 
+                              body_html: html + '\n<h1 style="color:#333;font-size:24px;text-align:center;margin:20px 0;">Your Title Here</h1>'
+                            }));
+                          }}
+                        >
+                          <Type className="w-3 h-3 mr-1" /> Header
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="border-[#30363D] text-xs"
+                          onClick={() => {
+                            const html = newTemplate.body_html || '';
+                            setNewTemplate(prev => ({ 
+                              ...prev, 
+                              body_html: html + '\n<p style="color:#555;font-size:14px;line-height:1.6;padding:10px 20px;">Your paragraph text here. Explain the urgency and reason for the action.</p>'
+                            }));
+                          }}
+                        >
+                          <FileText className="w-3 h-3 mr-1" /> Text
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="border-[#30363D] text-xs"
+                          onClick={() => {
+                            const html = newTemplate.body_html || '';
+                            setNewTemplate(prev => ({ 
+                              ...prev, 
+                              body_html: html + '\n<div style="text-align:center;margin:30px 0;"><a href="{{TRACKING_LINK}}" style="background:#D4A836;color:#000;padding:12px 30px;text-decoration:none;border-radius:5px;font-weight:bold;">Verify Now</a></div>'
+                            }));
+                          }}
+                        >
+                          <Link className="w-3 h-3 mr-1" /> Button
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="border-[#30363D] text-xs"
+                          onClick={() => {
+                            const html = newTemplate.body_html || '';
+                            setNewTemplate(prev => ({ 
+                              ...prev, 
+                              body_html: html + '\n<hr style="border:none;border-top:1px solid #ddd;margin:20px 0;">'
+                            }));
+                          }}
+                        >
+                          Divider
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="border-[#30363D] text-xs"
+                          onClick={() => {
+                            const html = newTemplate.body_html || '';
+                            setNewTemplate(prev => ({ 
+                              ...prev, 
+                              body_html: html + '\n<div style="background:#fff3cd;border:1px solid #ffc107;padding:15px;border-radius:5px;margin:15px 20px;"><strong>⚠️ Warning:</strong> Your account requires immediate attention.</div>'
+                            }));
+                          }}
+                        >
+                          <AlertTriangle className="w-3 h-3 mr-1" /> Alert
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="border-[#30363D] text-xs"
+                          onClick={() => {
+                            const html = newTemplate.body_html || '';
+                            setNewTemplate(prev => ({ 
+                              ...prev, 
+                              body_html: html + '\n<div style="background:#f8f9fa;padding:15px;text-align:center;font-size:12px;color:#888;border-top:1px solid #ddd;">This is an automated message. Do not reply.</div>'
+                            }));
+                          }}
+                        >
+                          Footer
+                        </Button>
+                      </div>
+                      
+                      {/* Preview */}
+                      <div className="bg-white rounded-lg p-4 min-h-[200px]">
+                        <div 
+                          dangerouslySetInnerHTML={{ __html: newTemplate.body_html || '<p style="color:#999;text-align:center;">Click buttons above to add email elements</p>' }}
+                          className="prose prose-sm max-w-none"
+                        />
+                      </div>
+                      
+                      <p className="text-xs text-gray-500">Click elements above to add them to your email. Switch to HTML tab for fine-tuning.</p>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="html" className="mt-2">
+                    <Textarea
+                      value={newTemplate.body_html}
+                      onChange={(e) => setNewTemplate(prev => ({ ...prev, body_html: e.target.value }))}
+                      placeholder="<div>Your email HTML here... Use {{TRACKING_LINK}} for the phishing link</div>"
+                      className="bg-[#0D1117] border-[#30363D] min-h-[250px] font-mono text-sm"
+                    />
+                  </TabsContent>
+                </Tabs>
                 <p className="text-xs text-gray-500">Use {"{{TRACKING_LINK}}"} where you want the phishing link</p>
               </div>
 
