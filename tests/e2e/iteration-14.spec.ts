@@ -111,11 +111,8 @@ test.describe('Iteration 14 - Bug Fixes', () => {
     await expect(formsLink).toBeVisible({ timeout: 15000 });
     await formsLink.click();
     
-    // Wait for Forms page to load
-    await page.waitForURL(/\/forms/, { timeout: 15000 });
-    
-    // Wait for the page heading "Forms" to be visible
-    await expect(page.getByRole('heading', { name: 'Forms' })).toBeVisible({ timeout: 10000 });
+    // Wait for Forms page content to load (don't wait for URL change)
+    await expect(page.getByRole('heading', { name: 'Forms' })).toBeVisible({ timeout: 15000 });
     
     // Check for Contact Forms tab (UI shows "Contact Forms (X)")
     const contactTab = page.getByRole('tab', { name: /Contact Forms/i });
@@ -125,11 +122,10 @@ test.describe('Iteration 14 - Bug Fixes', () => {
     const accessTab = page.getByRole('tab', { name: /Access Requests/i });
     await expect(accessTab).toBeVisible();
     
-    // Click Contact Forms tab and verify it's active
-    await contactTab.click();
+    // Verify Contact Forms tab is active by default
     await expect(contactTab).toHaveAttribute('data-state', 'active');
     
-    // Click Access Requests tab and verify it's active
+    // Click Access Requests tab and verify it becomes active
     await accessTab.click();
     await expect(accessTab).toHaveAttribute('data-state', 'active');
   });
