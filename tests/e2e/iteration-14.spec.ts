@@ -122,12 +122,12 @@ test.describe('Iteration 14 - Bug Fixes', () => {
     const accessTab = page.getByRole('tab', { name: /Access Requests/i });
     await expect(accessTab).toBeVisible();
     
-    // Verify Contact Forms tab is active by default
-    await expect(contactTab).toHaveAttribute('data-state', 'active');
-    
-    // Click Access Requests tab and verify it becomes active
-    await accessTab.click();
+    // Verify Access Requests tab is active by default (activeTab = 'access' in code)
     await expect(accessTab).toHaveAttribute('data-state', 'active');
+    
+    // Click Contact Forms tab and verify it becomes active
+    await contactTab.click();
+    await expect(contactTab).toHaveAttribute('data-state', 'active');
   });
 
   test('News RSS Feeds - Status shows Active/Inactive correctly', async ({ page }) => {
