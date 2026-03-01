@@ -53,7 +53,7 @@ export default function FormSubmissions() {
   const [approving, setApproving] = useState(false);
   const [approveForm, setApproveForm] = useState({
     role: 'trainee',
-    organization_id: '',
+    organization_id: 'none',
     send_welcome_email: true
   });
 
