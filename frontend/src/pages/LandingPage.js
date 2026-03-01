@@ -217,6 +217,19 @@ export default function LandingPage() {
                   {page.title}
                 </Link>
               ))}
+              {/* CMS Tiles */}
+              {isReady && cmsTiles.map(tile => (
+                <Link 
+                  key={tile.tile_id}
+                  to={tile.route_type === 'external' ? tile.external_url : `/page/${tile.slug}`}
+                  target={tile.route_type === 'external' ? '_blank' : undefined}
+                  rel={tile.route_type === 'external' ? 'noopener noreferrer' : undefined}
+                  className="text-gray-400 hover:text-[#E8DDB5] transition-colors" 
+                  style={{ '--hover-color': textColor }}
+                >
+                  {tile.name}
+                </Link>
+              ))}
               <Link to="/auth">
                 <Button variant="ghost" className="hover:text-white hover:bg-white/10" style={{ color: textColor }} data-testid="login-btn">
                   Login
