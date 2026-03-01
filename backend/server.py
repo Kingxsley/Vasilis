@@ -2612,6 +2612,59 @@ async def get_user_analytics(
         "days_inactive_threshold": days_inactive
     }
 
+@api_router.get("/analytics/online-users")
+async def get_online_users(
+    organization_id: Optional[str] = None,
+    minutes: int = 5,
+    user: dict = Depends(require_admin)
+):
+    """
+    Return currently online users - those with activity in the last X minutes.
+    
+    This is different from 'active users' which just shows users who logged in recently.
+    Online users are those actively using the platform right now.
+    """
+    from datetime import timedelta
+    cutoff = datetime.now(timezone.utc) - timedelta(minutes=minutes)
+    
+    # Build query for activity logs
+    activity_query = {"timestamp": {"$gte": cutoff.isoformat()}}
+    if organization_id:
+        activity_query["organization_id"] = organization_id
+    
+    # Get unique user IDs from recent activity
+    pipeline = [
+        {"$match": activity_query},
+        {"$group": {
+            "_id": "$user_id",
+            "user_email": {"$first": "$user_email"},
+            "user_name": {"$first": "$user_name"},
+            "last_activity": {"$max": "$timestamp"},
+            "activity_count": {"$sum": 1}
+        }},
+        {"$sort": {"last_activity": -1}}
+    ]
+    
+    online_users = await db.activity_logs.aggregate(pipeline).to_list(100)
+    
+    # Format the response
+    formatted_users = []
+    for u in online_users:
+        if u["_id"]:  # Skip entries without user_id
+            formatted_users.append({
+                "user_id": u["_id"],
+                "email": u.get("user_email", "Unknown"),
+                "name": u.get("user_name", "Unknown"),
+                "last_activity": u.get("last_activity"),
+                "activity_count": u.get("activity_count", 0)
+            })
+    
+    return {
+        "online_count": len(formatted_users),
+        "online_users": formatted_users,
+        "minutes_threshold": minutes
+    }
+
 @api_router.get("/analytics/overview")
 async def get_analytics_overview(
     days: int = 30,
