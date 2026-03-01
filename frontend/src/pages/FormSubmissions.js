@@ -232,6 +232,10 @@ export default function FormSubmissions() {
       'responded': 'bg-green-500/20 text-green-400',
       'resolved': 'bg-green-500/20 text-green-400',
       'closed': 'bg-gray-500/20 text-gray-400',
+      'approved': 'bg-green-500/20 text-green-400',
+      'rejected': 'bg-red-500/20 text-red-400',
+      'assigned': 'bg-purple-500/20 text-purple-400',
+      'contacted': 'bg-blue-500/20 text-blue-400',
     };
     
     const icons = {
@@ -241,6 +245,10 @@ export default function FormSubmissions() {
       'responded': CheckCircle,
       'resolved': CheckCircle,
       'closed': CheckCircle,
+      'approved': UserCheck,
+      'rejected': XCircle,
+      'assigned': Users,
+      'contacted': Mail,
     };
     
     const Icon = icons[status] || Clock;
@@ -252,6 +260,136 @@ export default function FormSubmissions() {
       </Badge>
     );
   };
+
+  const AccessRequestCard = ({ item }) => (
+    <Card className="bg-[#161B22] border-[#30363D] hover:border-[#D4A836]/50 transition-colors">
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-purple-500/10">
+              <FileText className="w-5 h-5 text-purple-400" />
+            </div>
+            <div>
+              <CardTitle className="text-base text-[#E8DDB5]">{item.name || 'Unknown'}</CardTitle>
+              <p className="text-xs text-gray-500">{item.email}</p>
+            </div>
+          </div>
+          {getStatusBadge(item.status)}
+        </div>
+      </CardHeader>
+      <CardContent>
+        {item.organization && (
+          <div className="flex items-center text-xs text-gray-400 mb-2">
+            <Building2 className="w-3 h-3 mr-1" />
+            {item.organization}
+          </div>
+        )}
+        {item.assigned_to_name && (
+          <div className="flex items-center text-xs text-purple-400 mb-2">
+            <Users className="w-3 h-3 mr-1" />
+            Assigned to: {item.assigned_to_name}
+          </div>
+        )}
+        {item.phone && (
+          <div className="flex items-center text-xs text-gray-400 mb-2">
+            <Phone className="w-3 h-3 mr-1" />
+            {item.phone}
+          </div>
+        )}
+        <p className="text-sm text-gray-400 mb-3 line-clamp-2">
+          {item.message || 'No message provided'}
+        </p>
+        <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+          <span className="flex items-center">
+            <Calendar className="w-3 h-3 mr-1" />
+            {new Date(item.created_at).toLocaleDateString()}
+          </span>
+          {item.country && item.country !== 'Unknown' && (
+            <span>{item.country}</span>
+          )}
+        </div>
+        
+        {/* Action Buttons */}
+        <div className="flex flex-wrap gap-2">
+          {item.status === 'pending' && isSuperAdmin && (
+            <>
+              <Button
+                size="sm"
+                className="bg-green-600 hover:bg-green-700 text-white"
+                onClick={() => {
+                  setSelectedItem(item);
+                  setShowApprove(true);
+                }}
+              >
+                <UserPlus className="w-3 h-3 mr-1" />
+                Approve & Create
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-purple-500/30 text-purple-400"
+                onClick={() => {
+                  setSelectedItem(item);
+                  setShowAssign(true);
+                }}
+              >
+                <Users className="w-3 h-3 mr-1" />
+                Assign
+              </Button>
+            </>
+          )}
+          
+          {item.status !== 'resolved' && item.status !== 'approved' && item.status !== 'rejected' && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-green-500/30 text-green-400"
+              onClick={() => resolveRequest(item.inquiry_id)}
+            >
+              <CheckCircle className="w-3 h-3 mr-1" />
+              Resolve
+            </Button>
+          )}
+          
+          {item.status === 'pending' && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-red-500/30 text-red-400"
+              onClick={() => rejectRequest(item.inquiry_id)}
+            >
+              <XCircle className="w-3 h-3 mr-1" />
+              Reject
+            </Button>
+          )}
+          
+          <Button
+            size="sm"
+            variant="outline"
+            className="border-[#30363D]"
+            onClick={() => {
+              setSelectedItem(item);
+              setShowDetail(true);
+            }}
+          >
+            <Eye className="w-3 h-3 mr-1" />
+            View
+          </Button>
+          
+          {isSuperAdmin && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+              onClick={() => deleteSubmission(item.inquiry_id, 'access')}
+            >
+              <Trash2 className="w-3 h-3" />
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   const SubmissionCard = ({ item, type }) => (
     <Card className="bg-[#161B22] border-[#30363D] hover:border-[#D4A836]/50 transition-colors">
