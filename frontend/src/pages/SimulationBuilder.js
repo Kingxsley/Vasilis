@@ -923,6 +923,48 @@ export default function SimulationBuilder() {
             </div>
           </div>
         );
+      case 'image':
+        return (
+          <div className="space-y-3">
+            <div>
+              <Label className="text-xs text-gray-400 mb-1 block">Image URL</Label>
+              <Input
+                value={value}
+                onChange={(e) => updateBlockValue(block.instanceId, e.target.value)}
+                placeholder="Enter image URL (https://...) or paste image data"
+                className="bg-[#0D1117] border-[#30363D] text-white"
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-gray-400 mb-1 block">Or Upload Image</Label>
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      updateBlockValue(block.instanceId, event.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }}
+                className="bg-[#0D1117] border-[#30363D] text-white"
+              />
+            </div>
+            {value && (value.startsWith('http') || value.startsWith('data:')) && (
+              <div className="bg-white p-2 rounded border border-[#30363D]">
+                <img 
+                  src={value} 
+                  alt="Preview" 
+                  className="max-h-32 object-contain mx-auto"
+                  onError={(e) => { e.target.style.display = 'none'; }}
+                />
+              </div>
+            )}
+          </div>
+        );
       default:
         return (
           <Input
