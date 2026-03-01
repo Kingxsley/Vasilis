@@ -1219,6 +1219,197 @@ export default function ContentManager() {
             </Dialog>
           </TabsContent>
 
+          {/* Dynamic CMS Tile Content */}
+          {cmsTiles.filter(t => t.published).map(tile => (
+            <TabsContent key={tile.tile_id} value={`cms_${tile.tile_id}`}>
+              <Card className="bg-[#161B22] border-[#30363D]">
+                <CardHeader>
+                  <CardTitle className="text-[#E8DDB5] flex items-center justify-between">
+                    <span>{tile.name}</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-[#30363D]"
+                      onClick={() => window.open(`/page/${tile.slug}`, '_blank')}
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      View Page
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="prose prose-invert max-w-none">
+                    {tile.content ? (
+                      <div dangerouslySetInnerHTML={{ __html: tile.content }} />
+                    ) : (
+                      <p className="text-gray-500">No content yet. Edit this page in CMS Pages.</p>
+                    )}
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-[#30363D]">
+                    <Button
+                      onClick={() => window.location.href = '/cms-tiles'}
+                      className="bg-[#D4A836] hover:bg-[#B8922E] text-black"
+                    >
+                      <Settings className="w-4 h-4 mr-2" />
+                      Edit in CMS Pages
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          ))}
+
+          {/* RSS Feeds Tab (Super Admin Only) */}
+          {user?.role === 'super_admin' && (
+            <TabsContent value="rss">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold text-[#E8DDB5]">RSS Feed Sources</h2>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={fetchRssFeeds}
+                    className="border-[#30363D] text-[#E8DDB5]"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Refresh
+                  </Button>
+                  <Button
+                    onClick={() => setRssFeedDialogOpen(true)}
+                    className="bg-[#D4A836] hover:bg-[#B8922E] text-black"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Feed
+                  </Button>
+                </div>
+              </div>
+
+              <div className="card-dark rounded-xl border border-[#D4A836]/20 overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-[#D4A836]/20">
+                      <TableHead className="text-gray-400">Name</TableHead>
+                      <TableHead className="text-gray-400">URL</TableHead>
+                      <TableHead className="text-gray-400">Status</TableHead>
+                      <TableHead className="text-gray-400 text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {rssFeeds.map((feed) => (
+                      <TableRow key={feed.feed_id} className="border-[#D4A836]/20">
+                        <TableCell className="text-[#E8DDB5] font-medium">{feed.name}</TableCell>
+                        <TableCell className="text-gray-400 max-w-xs truncate">{feed.url}</TableCell>
+                        <TableCell>
+                          <Badge className={feed.enabled ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}>
+                            {feed.enabled ? 'Active' : 'Inactive'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => toggleRssFeedEnabled(feed)}
+                            className="text-gray-400 hover:text-[#E8DDB5]"
+                          >
+                            {feed.enabled ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => deleteRssFeed(feed.feed_id)}
+                            className="text-gray-400 hover:text-red-400"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {rssFeeds.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center text-gray-500 py-8">
+                          No RSS feeds configured. Add feeds to aggregate news from external sources.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="mt-4 p-4 bg-[#161B22] border border-[#30363D] rounded-lg">
+                <h3 className="text-sm font-medium text-[#E8DDB5] mb-2">Popular Cybersecurity Feeds</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {[
+                    { name: 'Krebs on Security', url: 'https://krebsonsecurity.com/feed/' },
+                    { name: 'The Hacker News', url: 'https://feeds.feedburner.com/TheHackersNews' },
+                    { name: 'Schneier on Security', url: 'https://www.schneier.com/feed/' },
+                    { name: 'Dark Reading', url: 'https://www.darkreading.com/rss.xml' },
+                  ].map((suggestion) => (
+                    <Button
+                      key={suggestion.name}
+                      variant="outline"
+                      size="sm"
+                      className="justify-start border-[#30363D] text-gray-400 hover:text-[#E8DDB5]"
+                      onClick={async () => {
+                        try {
+                          await axios.post(`${API}/content/news/rss-feeds`, {
+                            name: suggestion.name,
+                            url: suggestion.url,
+                            enabled: true
+                          }, { headers: { Authorization: `Bearer ${token}` } });
+                          toast.success(`Added ${suggestion.name}`);
+                          fetchRssFeeds();
+                        } catch (error) {
+                          toast.error('Failed to add feed');
+                        }
+                      }}
+                    >
+                      <Plus className="w-3 h-3 mr-2" />
+                      {suggestion.name}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              {/* RSS Feed Dialog */}
+              <Dialog open={rssFeedDialogOpen} onOpenChange={setRssFeedDialogOpen}>
+                <DialogContent className="bg-[#0f0f15] border-[#D4A836]/20">
+                  <DialogHeader>
+                    <DialogTitle className="text-[#E8DDB5]">Add RSS Feed</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleRssFeedSubmit} className="space-y-4 mt-4">
+                    <div>
+                      <Label className="text-gray-400">Feed Name</Label>
+                      <Input
+                        value={rssFeedForm.name}
+                        onChange={(e) => setRssFeedForm({ ...rssFeedForm, name: e.target.value })}
+                        placeholder="e.g., Krebs on Security"
+                        className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-gray-400">Feed URL</Label>
+                      <Input
+                        value={rssFeedForm.url}
+                        onChange={(e) => setRssFeedForm({ ...rssFeedForm, url: e.target.value })}
+                        placeholder="https://example.com/feed.xml"
+                        className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]"
+                        required
+                      />
+                    </div>
+                    <div className="flex justify-end gap-3">
+                      <Button type="button" variant="outline" onClick={() => setRssFeedDialogOpen(false)}
+                        className="border-[#D4A836]/30 text-[#E8DDB5]">
+                        Cancel
+                      </Button>
+                      <Button type="submit" disabled={saving} className="bg-[#D4A836] hover:bg-[#C49A30] text-black">
+                        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Add Feed'}
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </TabsContent>
+          )}
 
         </Tabs>
       </div>
