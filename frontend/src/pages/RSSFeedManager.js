@@ -279,7 +279,7 @@ export default function RSSFeedManager() {
               <Card 
                 key={feed.feed_id}
                 className={`bg-[#161B22] border-[#30363D] transition-colors ${
-                  feed.is_active ? 'hover:border-[#D4A836]/50' : 'opacity-60'
+                  feed.enabled ? 'hover:border-[#D4A836]/50' : 'opacity-60'
                 }`}
               >
                 <CardHeader className="pb-2">
@@ -293,7 +293,7 @@ export default function RSSFeedManager() {
                         <p className="text-xs text-gray-500">{feed.category}</p>
                       </div>
                     </div>
-                    {feed.is_active ? (
+                    {feed.enabled ? (
                       <Badge className="bg-green-500/20 text-green-400 text-xs">
                         <CheckCircle className="w-3 h-3 mr-1" />
                         Active
