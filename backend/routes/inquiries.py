@@ -295,6 +295,15 @@ async def create_inquiry(data: InquiryCreate, request: Request):
         "message": data.message
     })
     
+    # Send Discord notification to super admins
+    await notify_super_admins_discord(db, "access_request_new", {
+        "name": data.name,
+        "email": data.email,
+        "organization": data.organization,
+        "message": data.message,
+        "country": geo_data.get("country", "Unknown")
+    })
+    
     # Also send contact form submission to info@vasilisnetshield.com
     try:
         from services.email_service import send_contact_form_submission
