@@ -66,6 +66,40 @@ async def send_notification_email(to_email: str, subject: str, body: str):
         return False
 
 
+async def send_discord_contact_notification(db, name: str, email: str, subject: str, message: str):
+    """Send Discord notification for contact form submission"""
+    import aiohttp
+    
+    # Get global webhook
+    branding = await db.branding_settings.find_one({}, {"_id": 0, "discord_webhook_url": 1})
+    webhook_url = branding.get("discord_webhook_url") if branding else None
+    
+    if not webhook_url or not webhook_url.startswith("https://discord.com/api/webhooks/"):
+        return
+    
+    embed = {
+        "title": "📧 New Contact Form Submission",
+        "description": "Someone has contacted you via the website.",
+        "color": 3447003,
+        "fields": [
+            {"name": "Name", "value": name or "N/A", "inline": True},
+            {"name": "Email", "value": email or "N/A", "inline": True},
+            {"name": "Subject", "value": subject or "General Inquiry", "inline": True}
+        ],
+        "footer": {"text": "Vasilis NetShield Security Platform"},
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+    
+    if message:
+        embed["fields"].append({"name": "Message", "value": message[:1000], "inline": False})
+    
+    try:
+        async with aiohttp.ClientSession() as session:
+            await session.post(webhook_url, json={"username": "Vasilis NetShield", "embeds": [embed]})
+    except Exception as e:
+        logger.warning(f"Failed to send Discord notification: {e}")
+
+
 class ContactSubmission(BaseModel):
     name: str
     email: EmailStr
