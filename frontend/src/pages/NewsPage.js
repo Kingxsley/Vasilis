@@ -21,7 +21,7 @@ export default function NewsPage() {
   
   // Pagination state from URL params
   const page = parseInt(searchParams.get('page')) || 1;
-  const pageSize = parseInt(searchParams.get('limit')) || 10;
+  const pageSize = parseInt(searchParams.get('limit')) || 15;
   const searchQuery = searchParams.get('q') || '';
   const [searchInput, setSearchInput] = useState(searchQuery);
 
