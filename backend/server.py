@@ -3522,6 +3522,7 @@ from routes.alert_templates import router as alert_templates_router
 from routes.custom_email_templates import router as custom_email_templates_router
 from routes.system_emails import router as system_emails_router
 from routes.executive_training import router as executive_training_router
+from routes.cms_tiles import router as cms_tiles_router
 
 # Import RBAC manager
 from middleware.rbac import rbac_manager
