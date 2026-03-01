@@ -113,6 +113,8 @@ export default function EmailTemplates() {
   const [customEmailTemplates, setCustomEmailTemplates] = useState([]);
   const [editingEmailTemplate, setEditingEmailTemplate] = useState(null);
   const [emailPreview, setEmailPreview] = useState(null);
+  const [testEmail, setTestEmail] = useState('');
+  const [sendingTest, setSendingTest] = useState(false);
   const [emailFormData, setEmailFormData] = useState({
     name: '',
     description: '',
