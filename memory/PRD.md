@@ -86,6 +86,33 @@ A comprehensive security awareness and training platform that helps organization
 
 ## Current Status (March 2026)
 
+### Session 15 Updates (March 1, 2026) - ACCESS REQUEST WORKFLOW
+
+#### New Access Request Workflow Features
+1. **Approve & Create User** - Create user account directly from access request
+   - Assign role (trainee, org_admin, media_manager, super_admin)
+   - Assign organization (optional)
+   - Auto-generate secure password
+   - Optional welcome email with credentials
+2. **Assign to Admin** - Assign request to specific admin for handling
+   - Sends email notification to assigned admin
+   - Shows assigned admin name on request card
+3. **Resolve Request** - Mark request as resolved/completed
+4. **Reject Request** - Reject access request with status update
+5. **Delete Request** - Remove access request (super admin only)
+
+#### Backend Endpoints Added
+- `POST /api/inquiries/{id}/approve` - Create user from request
+- `POST /api/inquiries/{id}/assign` - Assign to admin
+- `POST /api/inquiries/{id}/resolve` - Mark resolved
+- `GET /api/inquiries/admins/list` - Get admins for assignment dropdown
+
+#### UI Enhancements
+- Access Requests tab now default on Forms page
+- Action buttons shown based on request status
+- Country/location shown on request cards
+- Assigned admin name displayed
+
 ### Session 14 Updates (March 1, 2026) - COMPREHENSIVE FIXES
 
 #### Email & Campaigns
