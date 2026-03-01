@@ -277,7 +277,7 @@ export default function EmailTemplates() {
   const handlePreview = async (templateId) => {
     try {
       const res = await axios.post(`${API}/email-templates/${templateId}/preview`, {}, { headers });
-      setPreviewData(res.data);
+      setPreviewData({ ...res.data, template_id: templateId });
     } catch (err) {
       toast.error('Failed to generate preview');
     }
