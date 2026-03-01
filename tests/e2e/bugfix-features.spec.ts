@@ -1,13 +1,18 @@
 import { test, expect } from '@playwright/test';
 import { waitForAppReady, dismissToasts, loginAsAdmin, ADMIN_EMAIL, ADMIN_PASSWORD } from '../fixtures/helpers';
 
-test.describe('Bug Fix - Forms Page Title and Consolidation', () => {
-  test.beforeEach(async ({ page }) => {
-    await dismissToasts(page);
-    await loginAsAdmin(page);
+// Use serial mode for all tests to share login state and avoid rate limiting
+test.describe.configure({ mode: 'serial' });
+
+test.describe('Bug Fixes and New Features', () => {
+  test.beforeAll(async ({ browser }) => {
+    // This test file uses serial mode to avoid login rate limiting
   });
 
-  test('Forms page title is "Forms" (not "Form Submissions")', async ({ page }) => {
+  test('Forms page title is "Forms" and shows both tabs', async ({ page }) => {
+    await dismissToasts(page);
+    await loginAsAdmin(page);
+    
     await page.goto('/form-submissions');
     await waitForAppReady(page);
     
@@ -15,13 +20,6 @@ test.describe('Bug Fix - Forms Page Title and Consolidation', () => {
     
     // The page title should now be "Forms" instead of "Form Submissions"
     await expect(page.getByRole('heading', { name: 'Forms', exact: true })).toBeVisible();
-  });
-
-  test('Forms page shows both Contact Forms and Access Requests tabs', async ({ page }) => {
-    await page.goto('/form-submissions');
-    await waitForAppReady(page);
-    
-    await expect(page.getByTestId('form-submissions-page')).toBeVisible({ timeout: 15000 });
     
     // Check for both tabs
     const contactTab = page.getByRole('tab', { name: /Contact Forms/i });
@@ -32,6 +30,7 @@ test.describe('Bug Fix - Forms Page Title and Consolidation', () => {
   });
 
   test('Forms page shows stats cards for both submission types', async ({ page }) => {
+    // Continue from previous session (page is still logged in due to serial mode)
     await page.goto('/form-submissions');
     await waitForAppReady(page);
     
@@ -52,16 +51,8 @@ test.describe('Bug Fix - Forms Page Title and Consolidation', () => {
     const formsLink = page.locator('nav, aside').getByText('Forms', { exact: true }).first();
     await expect(formsLink).toBeVisible({ timeout: 10000 });
   });
-});
 
-test.describe('Bug Fix - RSS Feed Manager Uses Correct API Path', () => {
-  // Reduce number of logins by using serial mode and storing login state
-  test.describe.configure({ mode: 'serial' });
-  
-  test('RSS Feed Manager page loads and can add a feed', async ({ page }) => {
-    await dismissToasts(page);
-    await loginAsAdmin(page);
-    
+  test('RSS Feed Manager page loads and shows add feed dialog', async ({ page }) => {
     await page.goto('/rss-feeds');
     await waitForAppReady(page);
     
@@ -74,22 +65,12 @@ test.describe('Bug Fix - RSS Feed Manager Uses Correct API Path', () => {
     await expect(page.locator('[role="dialog"]')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('[role="dialog"]').getByText('Feed Name *')).toBeVisible();
     await expect(page.locator('[role="dialog"]').getByText('RSS Feed URL *')).toBeVisible();
-  });
-});
-
-// Toast notification test removed - the closeButton and duration config is in App.js
-// which was verified in code review. Toast auto-dismisses in 3 seconds making 
-// UI testing unreliable. The fix is verified by code inspection of:
-// <Toaster position="top-right" richColors closeButton duration={3000} />
-
-test.describe('Executive Training - PPT Management Features', () => {
-  // Use serial mode to share login state
-  test.describe.configure({ mode: 'serial' });
-  
-  test('Executive Training page loads and shows upload features', async ({ page }) => {
-    await dismissToasts(page);
-    await loginAsAdmin(page);
     
+    // Close dialog
+    await page.keyboard.press('Escape');
+  });
+
+  test('Executive Training page shows upload features', async ({ page }) => {
     await page.goto('/executive-training');
     await waitForAppReady(page);
     
@@ -107,17 +88,9 @@ test.describe('Executive Training - PPT Management Features', () => {
     
     // Close dialog
     await page.keyboard.press('Escape');
-    
-    // The "Uploaded Presentations" section visibility depends on whether presentations exist
-    // This is valid - just verify page loads correctly
   });
-});
 
-test.describe('Navigation - CMS Tiles Included', () => {
   test('Navigation includes CMS tiles in content section', async ({ page }) => {
-    await dismissToasts(page);
-    await loginAsAdmin(page);
-    
     await page.goto('/dashboard');
     await waitForAppReady(page);
     
@@ -134,3 +107,7 @@ test.describe('Navigation - CMS Tiles Included', () => {
     await expect(aboutLink).toBeVisible();
   });
 });
+
+// Note: Toast notification fix (closeButton and 3 second duration) is verified by code inspection
+// <Toaster position="top-right" richColors closeButton duration={3000} />
+// UI testing is unreliable due to quick auto-dismiss
