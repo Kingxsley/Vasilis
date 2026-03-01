@@ -21,21 +21,30 @@ ADMIN_EMAIL = "test@admin.com"
 ADMIN_PASSWORD = "TestAdmin123!"
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def authenticated_client():
-    """Get authenticated session with admin credentials"""
+    """Get authenticated session with admin credentials - session scoped to avoid rate limits"""
+    import time
     session = requests.Session()
     session.headers.update({"Content-Type": "application/json"})
     
-    response = session.post(f"{BASE_URL}/api/auth/login", json={
-        "email": ADMIN_EMAIL,
-        "password": ADMIN_PASSWORD
-    })
+    # Retry up to 3 times with backoff for rate limiting
+    for attempt in range(3):
+        response = session.post(f"{BASE_URL}/api/auth/login", json={
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
+        })
+        
+        if response.status_code == 200:
+            token = response.json().get("token")
+            session.headers.update({"Authorization": f"Bearer {token}"})
+            return session
+        elif response.status_code == 429:
+            retry_after = response.json().get("retry_after", 60)
+            time.sleep(min(retry_after + 1, 65))  # Wait for rate limit to reset
+        else:
+            break
     
-    if response.status_code == 200:
-        token = response.json().get("token")
-        session.headers.update({"Authorization": f"Bearer {token}"})
-        return session
     pytest.skip("Authentication failed - skipping authenticated tests")
 
 
