@@ -84,7 +84,36 @@ A comprehensive security awareness and training platform that helps organization
 - [x] System-wide Discord webhook
 - [x] Security settings (force 2FA)
 
-## Current Status (Feb 2026)
+## Current Status (March 2026)
+
+### Session 9 Updates (March 1, 2026) - COMPLETED
+
+#### P0 Bug Fixes
+1. **2FA Flow Changed** - Removed 2FA field from login page. 2FA is now only prompted AFTER successful login if user has it enabled
+2. **Online Users Metric** - Dashboard "Active Users" changed to "Online Now" - shows users active in last 5 minutes via real-time activity tracking
+
+#### P1 Feature Enhancements
+3. **Certificate Templates** - Added Copy & Edit functionality for templates with image preview support
+4. **Credential Harvest Templates** - Now editable with customizable credential fields:
+   - Username, Password, Email, Phone, Authenticator Code
+   - Templates can be copied and modified
+   - Statistics work for credential submissions
+5. **Simulation Builder** - Fixed image/URL fields to properly render images instead of showing URL text
+
+#### P2 New Features
+6. **Audit Logging Enhanced** - Added logging for:
+   - Certificate downloads
+   - Presentation downloads
+   - User imports (already existed)
+7. **Executive Training Module** - New feature for generating PowerPoint presentations:
+   - 4 Pre-built modules: Email Phishing Awareness (19 slides), Social Engineering Defense (17 slides), Password Security (16 slides), Data Protection & Privacy (15 slides)
+   - Downloadable PPTX files with professional dark theme design
+   - Access at `/executive-training`
+
+### Test Credentials
+- Admin: `test@admin.com` / `TestAdmin123!`
+
+## Previous Status (Feb 2026)
 
 ### Training Session UI Fix (Feb 24, 2026) - COMPLETED
 - **Removed Empty Email Preview Box** - Fixed `TrainingSession.js` to not show email preview UI for question types that don't need it
