@@ -204,13 +204,21 @@ const AuthProvider = ({ children }) => {
       payload.two_factor_code = twoFactorCode;
     }
     const response = await axios.post(`${API}/auth/login`, payload);
-    const { token: newToken, user: userData } = response.data;
+    const { token: newToken, user: userData, requires_2fa_verification, two_factor_enabled } = response.data;
     localStorage.setItem('token', newToken);
     setToken(newToken);
-    setUser(userData);
+    setUser({
+      ...userData,
+      requires_2fa_verification,
+      two_factor_enabled
+    });
     // Schedule automatic token refresh
     scheduleTokenRefresh(newToken);
-    return userData;
+    return {
+      ...userData,
+      requires_2fa_verification,
+      two_factor_enabled
+    };
   };
 
   const register = async (email, password, name) => {
