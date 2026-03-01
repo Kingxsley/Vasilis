@@ -273,6 +273,28 @@ async def download_uploaded_presentation(presentation_id: str, request: Request)
     )
 
 
+@router.delete("/uploaded/bulk")
+async def bulk_delete_uploaded_presentations(request: Request):
+    """Delete multiple uploaded presentations (super admin only)"""
+    await require_super_admin(request)
+    db = get_db()
+    
+    data = await request.json()
+    presentation_ids = data.get("presentation_ids", [])
+    
+    if not presentation_ids:
+        raise HTTPException(status_code=400, detail="No presentation IDs provided")
+    
+    result = await db.uploaded_presentations.delete_many(
+        {"presentation_id": {"$in": presentation_ids}}
+    )
+    
+    return {
+        "message": f"Deleted {result.deleted_count} presentations",
+        "deleted_count": result.deleted_count
+    }
+
+
 @router.delete("/uploaded/{presentation_id}")
 async def delete_uploaded_presentation(presentation_id: str, request: Request):
     """Delete an uploaded presentation (super admin only)"""
