@@ -4,7 +4,7 @@ Generates detailed 30-50 slide presentations for security awareness training mod
 """
 from pptx import Presentation
 from pptx.util import Inches, Pt
-from pptx.dml.color import RgbColor
+from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.enum.shapes import MSO_SHAPE
 import io
@@ -15,15 +15,15 @@ logger = logging.getLogger(__name__)
 
 # Color scheme - Professional dark theme
 COLORS = {
-    "primary": RgbColor(212, 168, 54),      # Gold #D4A836
-    "background": RgbColor(13, 17, 23),     # Dark #0D1117
-    "text": RgbColor(232, 221, 181),        # Light text #E8DDB5
-    "accent": RgbColor(41, 121, 255),       # Blue #2979FF
-    "danger": RgbColor(255, 59, 48),        # Red #FF3B30
-    "success": RgbColor(0, 230, 118),       # Green #00E676
-    "warning": RgbColor(255, 179, 0),       # Yellow #FFB300
-    "white": RgbColor(255, 255, 255),
-    "dark_bg": RgbColor(22, 27, 34),        # Card bg #161B22
+    "primary": RGBColor(212, 168, 54),      # Gold #D4A836
+    "background": RGBColor(13, 17, 23),     # Dark #0D1117
+    "text": RGBColor(232, 221, 181),        # Light text #E8DDB5
+    "accent": RGBColor(41, 121, 255),       # Blue #2979FF
+    "danger": RGBColor(255, 59, 48),        # Red #FF3B30
+    "success": RGBColor(0, 230, 118),       # Green #00E676
+    "warning": RGBColor(255, 179, 0),       # Yellow #FFB300
+    "white": RGBColor(255, 255, 255),
+    "dark_bg": RGBColor(22, 27, 34),        # Card bg #161B22
 }
 
 
