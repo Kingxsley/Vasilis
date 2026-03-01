@@ -38,8 +38,8 @@ export async function loginAsAdmin(page: Page, email?: string, password?: string
   await page.getByTestId('email-input').fill(email || ADMIN_EMAIL);
   await page.getByTestId('password-input').fill(password || ADMIN_PASSWORD);
   await page.getByTestId('auth-submit-btn').click();
-  // Wait for navigation to dashboard or training page
-  await page.waitForURL(/\/(dashboard|training)/);
+  // Wait for navigation to dashboard or training page with longer timeout for rate limiting
+  await page.waitForURL(/\/(dashboard|training)/, { timeout: 45000 });
 }
 
 export async function loginAsViewer(page: Page) {
