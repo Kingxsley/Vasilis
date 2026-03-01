@@ -312,6 +312,153 @@ PHISHING_CONTENT = {
                 "Report suspicious activity",
                 "Stay informed about new threats"
             ]
+        },
+        {
+            "title": "Real-World Example: Gift Card Scam",
+            "content": "CEO impersonation requesting gift card purchases",
+            "bullets": [
+                "Attacker spoofs CEO email",
+                "Urgent request for gift cards",
+                "Claims confidential business purpose",
+                "Asks for card codes via email",
+                "Targets new employees or assistants"
+            ]
+        },
+        {
+            "title": "Mobile Phishing Threats",
+            "bullets": [
+                "SMS phishing (Smishing)",
+                "Fake app store notifications",
+                "Malicious QR codes",
+                "Social media phishing",
+                "Compromised mobile apps",
+                "Smaller screens hide red flags"
+            ]
+        },
+        {
+            "title": "Voice Phishing (Vishing)",
+            "content": "Phone-based social engineering attacks",
+            "bullets": [
+                "Caller ID spoofing",
+                "Impersonating banks or tech support",
+                "Creating urgency over the phone",
+                "Requesting remote access",
+                "Threatening account suspension"
+            ]
+        },
+        {
+            "title": "AI-Powered Phishing",
+            "content": "Modern threats using artificial intelligence",
+            "bullets": [
+                "ChatGPT-generated phishing emails",
+                "Deepfake voice calls",
+                "Personalized attacks at scale",
+                "Better grammar and localization",
+                "Adaptive attack techniques"
+            ],
+            "warning": "AI makes phishing emails harder to detect!"
+        },
+        {
+            "title": "URL Analysis Techniques",
+            "bullets": [
+                "Hover over links to see destination",
+                "Look for HTTPS and valid certificates",
+                "Check for lookalike domains (paypa1.com)",
+                "Use URL expansion tools for shortened links",
+                "Verify domain ownership via WHOIS",
+                "Be wary of subdomains (login.company.attacker.com)"
+            ]
+        },
+        {
+            "title": "Email Header Analysis",
+            "bullets": [
+                "Check the 'Received' headers",
+                "Verify SPF/DKIM/DMARC authentication",
+                "Look for header inconsistencies",
+                "Check the originating IP address",
+                "Compare Reply-To with From address"
+            ]
+        },
+        {
+            "title": "Attachment Safety",
+            "type": "two_column",
+            "left_title": "Dangerous Types",
+            "left_items": [".exe files", ".js files", ".macro-enabled docs", "Password-protected ZIPs"],
+            "right_title": "Safer Types",
+            "right_items": [".pdf (with caution)", "Plain .txt files", ".jpg images", "Cloud-shared links"]
+        },
+        {
+            "title": "Creating a Phishing-Resistant Culture",
+            "bullets": [
+                "Regular security awareness training",
+                "Simulated phishing exercises",
+                "Clear reporting procedures",
+                "No-blame reporting policy",
+                "Recognition for reporting",
+                "Continuous communication"
+            ]
+        },
+        {
+            "title": "Technical Defenses",
+            "bullets": [
+                "Email filtering and sandboxing",
+                "Web content filtering",
+                "DNS-based protection",
+                "Endpoint protection platforms",
+                "Security awareness training platforms",
+                "Phishing simulation tools"
+            ]
+        },
+        {
+            "title": "Building Your Defense",
+            "type": "two_column",
+            "left_title": "Personal Actions",
+            "left_items": ["Stay vigilant", "Verify requests", "Report suspicious emails", "Use MFA"],
+            "right_title": "Organizational Actions",
+            "right_items": ["Deploy email filters", "Train employees", "Test with simulations", "Update policies"]
+        },
+        {
+            "title": "Phishing Response Playbook",
+            "bullets": [
+                "1. Don't panic - time is still valuable",
+                "2. Don't interact further with the email",
+                "3. Report to IT security immediately",
+                "4. If credentials shared, change passwords",
+                "5. If clicked, disconnect and scan",
+                "6. Document the incident"
+            ]
+        },
+        {
+            "title": "Resources and Tools",
+            "bullets": [
+                "haveibeenpwned.com - Check for breaches",
+                "VirusTotal - Scan suspicious files/URLs",
+                "URLscan.io - Analyze suspicious URLs",
+                "PhishTank - Report phishing sites",
+                "Your IT security team - First point of contact"
+            ]
+        },
+        {
+            "title": "Quiz: Spot the Phishing",
+            "content": "Test your knowledge with these scenarios",
+            "bullets": [
+                "Email from 'IT' asking for password reset",
+                "Urgent invoice from unknown vendor",
+                "Prize notification you didn't enter",
+                "LinkedIn connection from stranger",
+                "Bank alert about suspicious activity"
+            ]
+        },
+        {
+            "title": "Action Items",
+            "bullets": [
+                "Enable MFA on all accounts today",
+                "Review your email security settings",
+                "Update passwords for sensitive accounts",
+                "Bookmark legitimate sites you use",
+                "Share this training with colleagues",
+                "Report your first suspicious email"
+            ]
         }
     ]
 }
