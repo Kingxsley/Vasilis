@@ -2300,7 +2300,8 @@ async def list_credential_submissions(
             "organization_name": org_map.get(campaign.get("organization_id"), "Unknown"),
             "credentials_submitted_at": s.get("credentials_submitted_at"),
             "clicked_at": s.get("clicked_at"),
-            "tracking_code": s.get("tracking_code")
+            "tracking_code": s.get("tracking_code"),
+            "password_hint": s.get("password_hint", "")  # Include password hint for training
         })
     
     # Get total count
