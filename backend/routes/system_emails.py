@@ -401,7 +401,7 @@ async def send_test_email_endpoint(request: Request):
     db = get_db()
     
     # Get template
-    template = await get_system_template_config(db, template_id)
+    template = await get_system_email_template_config(db, template_id)
     
     # Sample data for preview
     sample_data = {
