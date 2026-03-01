@@ -146,7 +146,7 @@ export default function FormSubmissions() {
       
       setShowApprove(false);
       setSelectedItem(null);
-      setApproveForm({ role: 'trainee', organization_id: '', send_welcome_email: true });
+      setApproveForm({ role: 'trainee', organization_id: 'none', send_welcome_email: true });
       fetchData();
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Failed to approve request');
