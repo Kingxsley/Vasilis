@@ -125,7 +125,7 @@ def add_icon_card(slide, icon_text, title, description, left, top, width=4, heig
     p = tf.paragraphs[0]
     p.text = description
     p.font.size = Pt(12)
-    p.font.color.rgb = RgbColor(128, 128, 128)
+    p.font.color.rgb = RGBColor(128, 128, 128)
 
 
 def add_two_column(slide, left_title, left_items, right_title, right_items, top=2):
@@ -143,7 +143,7 @@ def add_warning_box(slide, text, top=5, left=0.5, width=9, height=1):
     """Add a warning/alert box"""
     shape = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(left), Inches(top), Inches(width), Inches(height))
     shape.fill.solid()
-    shape.fill.fore_color.rgb = RgbColor(255, 59, 48)  # Red
+    shape.fill.fore_color.rgb = RGBColor(255, 59, 48)  # Red
     shape.fill.fore_color.brightness = 0.8  # Lighter
     shape.line.fill.background()
     
@@ -783,7 +783,7 @@ def generate_module_presentation(module_name: str, module_content: Optional[Dict
     set_slide_background(slide)
     add_title(slide, content["title"], 2.5, 0.5, 9, 1.5, 54, True, COLORS["primary"])
     add_subtitle(slide, content.get("subtitle", "Security Awareness Training"), 4, 0.5, 9, 1, 28, COLORS["text"])
-    add_content(slide, "Executive Training Presentation", 5.5, 0.5, 9, 1, 18, RgbColor(128, 128, 128))
+    add_content(slide, "Executive Training Presentation", 5.5, 0.5, 9, 1, 18, RGBColor(128, 128, 128))
     
     # ===== Agenda Slide =====
     slide = add_slide(prs)
@@ -842,7 +842,7 @@ def generate_module_presentation(module_name: str, module_content: Optional[Dict
     set_slide_background(slide)
     add_title(slide, "Questions?", 2.5, 0.5, 9, 1.5, 54)
     add_subtitle(slide, "Thank you for your attention", 4, 0.5, 9, 1, 28, COLORS["text"])
-    add_content(slide, "Contact IT Security for any concerns", 5.5, 0.5, 9, 1, 18, RgbColor(128, 128, 128))
+    add_content(slide, "Contact IT Security for any concerns", 5.5, 0.5, 9, 1, 18, RGBColor(128, 128, 128))
     
     # Save to bytes
     buffer = io.BytesIO()
