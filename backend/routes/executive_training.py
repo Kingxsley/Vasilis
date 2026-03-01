@@ -40,7 +40,7 @@ class PresentationRequest(BaseModel):
 @router.get("/available-modules")
 async def get_available_modules(request: Request):
     """Get list of available predefined presentation modules"""
-    user = await require_admin(request)
+    await require_admin(request)  # Verify admin access
     
     from services.pptx_generator import get_available_modules, MODULE_CONTENT
     
