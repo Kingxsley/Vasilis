@@ -226,7 +226,7 @@ export default function FormSubmissions() {
           <div>
             <h1 className="text-3xl font-bold mb-2 flex items-center gap-3" style={{ fontFamily: 'Chivo, sans-serif' }}>
               <Mail className="w-8 h-8 text-[#D4A836]" />
-              Form Submissions
+              Forms
             </h1>
             <p className="text-gray-400">
               View and respond to contact inquiries and access requests
