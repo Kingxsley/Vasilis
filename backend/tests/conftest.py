@@ -15,12 +15,12 @@ def api_client():
 def auth_token(api_client):
     """Get authentication token - skip if auth fails"""
     response = api_client.post(f"{BASE_URL}/api/auth/login", json={
-        "email": "test@admin.com",
-        "password": "TestAdmin123!"
+        "email": "admin@test.com",
+        "password": "Admin123!"
     })
     if response.status_code == 200:
         return response.json().get("token")
-    pytest.skip("Authentication failed - skipping authenticated tests")
+    pytest.skip(f"Authentication failed ({response.status_code}): {response.text}")
 
 @pytest.fixture
 def authenticated_client(api_client, auth_token):
