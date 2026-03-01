@@ -442,17 +442,45 @@ export default function AuthPage() {
             <Button 
               type="submit" 
               className="w-full bg-[#D4A836] hover:bg-[#C49A30] text-black font-semibold h-12"
-              disabled={loading}
+              disabled={loading || (requires2FA && twoFactorCode.length !== 6)}
               data-testid="auth-submit-btn"
+              onClick={(e) => {
+                if (requires2FA) {
+                  e.preventDefault();
+                  setLoading(true);
+                  login(pendingToken.email, pendingToken.password, twoFactorCode)
+                    .then(result => {
+                      if (result.requires_2fa) {
+                        toast.error('Invalid code, please try again');
+                      } else {
+                        toast.success(`Welcome back, ${result.name}!`);
+                        setRequires2FA(false);
+                        setPendingToken(null);
+                        setTwoFactorCode('');
+                        if (result.role === 'super_admin' || result.role === 'org_admin') {
+                          navigate('/dashboard', { replace: true });
+                        } else {
+                          navigate('/training', { replace: true });
+                        }
+                      }
+                    })
+                    .catch(err => {
+                      toast.error(err.response?.data?.detail || 'Invalid authentication code');
+                    })
+                    .finally(() => setLoading(false));
+                }
+              }}
             >
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {mode === 'login' ? 'Signing in...' : 
+                  {requires2FA ? 'Verifying...' :
+                   mode === 'login' ? 'Signing in...' : 
                    mode === 'inquiry' ? 'Submitting...' :
                    mode === 'forgot' ? 'Sending...' : 'Resetting...'}
                 </>
               ) : (
+                requires2FA ? 'Verify Code' :
                 mode === 'login' ? 'Sign in' : 
                 mode === 'inquiry' ? 'Submit Inquiry' :
                 mode === 'forgot' ? 'Send reset link' : 'Reset password'
