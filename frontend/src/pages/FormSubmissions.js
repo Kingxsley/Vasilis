@@ -131,6 +131,69 @@ export default function FormSubmissions() {
     }
   };
 
+  // Access Request specific functions
+  const approveAndCreateUser = async () => {
+    if (!selectedItem) return;
+    
+    setApproving(true);
+    try {
+      const res = await axios.post(`${API}/inquiries/${selectedItem.inquiry_id}/approve`, approveForm, { headers });
+      toast.success(res.data.message);
+      
+      if (res.data.temp_password && !approveForm.send_welcome_email) {
+        toast.info(`Temporary password: ${res.data.temp_password}`, { duration: 10000 });
+      }
+      
+      setShowApprove(false);
+      setSelectedItem(null);
+      setApproveForm({ role: 'trainee', organization_id: '', send_welcome_email: true });
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to approve request');
+    } finally {
+      setApproving(false);
+    }
+  };
+
+  const assignToAdmin = async (adminId) => {
+    if (!selectedItem) return;
+    
+    try {
+      const res = await axios.post(`${API}/inquiries/${selectedItem.inquiry_id}/assign`, 
+        { admin_id: adminId }, 
+        { headers }
+      );
+      toast.success(res.data.message);
+      setShowAssign(false);
+      setSelectedItem(null);
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to assign request');
+    }
+  };
+
+  const resolveRequest = async (inquiryId) => {
+    try {
+      await axios.post(`${API}/inquiries/${inquiryId}/resolve`, {}, { headers });
+      toast.success('Request marked as resolved');
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to resolve request');
+    }
+  };
+
+  const rejectRequest = async (inquiryId) => {
+    if (!window.confirm('Are you sure you want to reject this request?')) return;
+    
+    try {
+      await axios.patch(`${API}/inquiries/${inquiryId}`, { status: 'rejected' }, { headers });
+      toast.success('Request rejected');
+      fetchData();
+    } catch (err) {
+      toast.error('Failed to reject request');
+    }
+  };
+
   const sendReply = async () => {
     if (!replyText.trim()) {
       toast.error('Please enter a reply message');
