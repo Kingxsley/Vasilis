@@ -4,34 +4,38 @@ import { waitForAppReady, dismissToasts } from '../fixtures/helpers';
 const TEST_EMAIL = 'admin@test.com';
 const TEST_PASSWORD = 'Admin123!';
 
-// Serial execution - login once and reuse for all tests
-test.describe.configure({ mode: 'serial' });
-
 test.describe('Dashboard and Executive Training', () => {
-  test.beforeAll(async ({ browser }) => {
-    // Login once and save storage state
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    await dismissToasts(page);
+  // Login and persist state in the first test
+  let isLoggedIn = false;
+
+  async function ensureLoggedIn(page: any) {
+    if (isLoggedIn) {
+      return;
+    }
     
-    await page.goto('https://vasilis-cert-fix.preview.emergentagent.com/auth');
+    // Check if already authenticated by trying to access dashboard
+    await page.goto('/dashboard');
     await page.waitForLoadState('domcontentloaded');
-    await page.getByTestId('email-input').fill(TEST_EMAIL);
-    await page.getByTestId('password-input').fill(TEST_PASSWORD);
-    await page.getByTestId('auth-submit-btn').click();
     
-    // Wait for successful navigation
-    await page.waitForURL(/\/(dashboard|training)/, { timeout: 30000 });
+    // If redirected to auth page, login
+    if (page.url().includes('/auth')) {
+      await page.goto('/auth');
+      await page.waitForLoadState('domcontentloaded');
+      await page.getByTestId('email-input').fill(TEST_EMAIL);
+      await page.getByTestId('password-input').fill(TEST_PASSWORD);
+      await page.getByTestId('auth-submit-btn').click();
+      await page.waitForURL(/\/(dashboard|training)/, { timeout: 30000 });
+    }
     
-    // Save storage state
-    await context.storageState({ path: '/tmp/auth-state.json' });
-    await context.close();
+    isLoggedIn = true;
+  }
+
+  test.beforeEach(async ({ page }) => {
+    await dismissToasts(page);
+    await ensureLoggedIn(page);
   });
 
-  test.use({ storageState: '/tmp/auth-state.json' });
-
   test('Dashboard shows Online Now stat card', async ({ page }) => {
-    await dismissToasts(page);
     await page.goto('/dashboard');
     await page.waitForLoadState('domcontentloaded');
     await expect(page.getByTestId('dashboard-page')).toBeVisible({ timeout: 10000 });
@@ -46,7 +50,6 @@ test.describe('Dashboard and Executive Training', () => {
   });
 
   test('Dashboard displays all stat cards', async ({ page }) => {
-    await dismissToasts(page);
     await page.goto('/dashboard');
     await page.waitForLoadState('domcontentloaded');
     await expect(page.getByTestId('dashboard-page')).toBeVisible({ timeout: 10000 });
@@ -59,7 +62,6 @@ test.describe('Dashboard and Executive Training', () => {
   });
 
   test('Executive Training page loads with modules', async ({ page }) => {
-    await dismissToasts(page);
     await page.goto('/executive-training');
     await page.waitForLoadState('domcontentloaded');
     
@@ -73,7 +75,6 @@ test.describe('Dashboard and Executive Training', () => {
   });
 
   test('Can download PowerPoint presentation', async ({ page }) => {
-    await dismissToasts(page);
     await page.goto('/executive-training');
     await page.waitForLoadState('domcontentloaded');
     
@@ -100,7 +101,6 @@ test.describe('Dashboard and Executive Training', () => {
   });
 
   test('Module cards show slide count badges', async ({ page }) => {
-    await dismissToasts(page);
     await page.goto('/executive-training');
     await page.waitForLoadState('domcontentloaded');
     
