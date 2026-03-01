@@ -110,8 +110,8 @@ test.describe('Form Submissions Page', () => {
     await waitForAppReady(page);
     
     await expect(page.getByTestId('form-submissions-page')).toBeVisible({ timeout: 15000 });
-    // Use heading role to avoid matching nav item
-    await expect(page.getByRole('heading', { name: 'Form Submissions' })).toBeVisible();
+    // Page title changed to "Forms" in iteration 12 bugfix
+    await expect(page.getByRole('heading', { name: 'Forms', exact: true })).toBeVisible();
   });
 
   test('Shows stats cards', async ({ page }) => {
