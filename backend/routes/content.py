@@ -327,8 +327,8 @@ async def list_news(
                     if response.status_code == 200:
                         root = ET.fromstring(response.content)
                         items = root.findall(".//item") or root.findall(".//{http://www.w3.org/2005/Atom}entry")
-                        # Get more items per feed (up to 10)
-                        for item in items[:10]:
+                        # Get all items from each feed (up to 50)
+                        for item in items[:50]:
                             title = item.findtext("title") or item.findtext("{http://www.w3.org/2005/Atom}title")
                             description = item.findtext("description") or item.findtext("{http://www.w3.org/2005/Atom}summary")
                             link = item.findtext("link")
@@ -336,7 +336,7 @@ async def list_news(
                                 link_elem = item.find("{http://www.w3.org/2005/Atom}link")
                                 if link_elem is not None:
                                     link = link_elem.get("href")
-                            pub_date = item.findtext("pubDate") or item.findtext("{http://www.w3.org/2005/Atom}published")
+                            pub_date = item.findtext("pubDate") or item.findtext("{http://www.w3.org/2005/Atom}published") or item.findtext("{http://www.w3.org/2005/Atom}updated")
                             if title:
                                 combined_news.append({
                                     "news_id": f"rss_{hash(title + (link or '')) % 10000000}",
