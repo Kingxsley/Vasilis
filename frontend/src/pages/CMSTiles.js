@@ -429,7 +429,7 @@ export default function CMSTiles() {
             </DialogDescription>
           </DialogHeader>
           
-          <TileForm data={newTile} setData={setNewTile} />
+          {showCreate && <TileForm ref={createFormRef} initialData={{}} />}
           
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreate(false)} className="border-[#30363D]">
@@ -456,8 +456,8 @@ export default function CMSTiles() {
             </DialogDescription>
           </DialogHeader>
           
-          {editingTile && (
-            <TileForm data={editingTile} setData={setEditingTile} isEdit />
+          {showEdit && editingTile && (
+            <TileForm ref={editFormRef} initialData={editingTile} />
           )}
           
           <DialogFooter>
