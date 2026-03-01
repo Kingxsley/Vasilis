@@ -124,12 +124,21 @@ const ContactFormBlock = ({ content }) => {
     setSubmitting(true);
     
     try {
-      await axios.post(`${API}/inquiries`, {
-        name: formData.name,
-        email: formData.email,
-        message: formData.message,
-        source: 'custom_page_contact_form'
-      });
+      // Post to both inquiries (legacy) and contact endpoints
+      await Promise.all([
+        axios.post(`${API}/inquiries`, {
+          name: formData.name,
+          email: formData.email,
+          message: formData.message,
+          source: 'custom_page_contact_form'
+        }),
+        axios.post(`${API}/contact`, {
+          name: formData.name,
+          email: formData.email,
+          message: formData.message,
+          subject: 'Contact Form Submission'
+        }).catch(() => {}) // Silently fail if contact endpoint doesn't exist
+      ]);
       setSubmitted(true);
       toast.success(content.success_message || 'Thank you for your message!');
     } catch (error) {
