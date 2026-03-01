@@ -462,7 +462,7 @@ export default function CredentialHarvest() {
     const template = {
       id: `custom_${Date.now()}`,
       ...newTemplate,
-      preview_color: '#6366f1'
+      preview_color: newTemplate.preview_color || '#6366f1'
     };
 
     const savedTemplates = JSON.parse(localStorage.getItem('credential_templates') || '[]');
@@ -470,8 +470,106 @@ export default function CredentialHarvest() {
     localStorage.setItem('credential_templates', JSON.stringify(savedTemplates));
     setTemplates([...templates, template]);
     setShowNewTemplate(false);
-    setNewTemplate({ name: '', brand: '', subject: '', sender_name: '', sender_email: '', body_html: '', description: '' });
+    setNewTemplate({ 
+      name: '', brand: '', subject: '', sender_name: '', sender_email: '', 
+      body_html: '', description: '', preview_color: '#D4A836',
+      credential_fields: ['username', 'password'], landing_page_html: ''
+    });
     toast.success('Template saved');
+  };
+
+  const handleEditTemplate = (template) => {
+    setEditingTemplate({
+      ...template,
+      credential_fields: template.credential_fields || ['username', 'password'],
+      landing_page_html: template.landing_page_html || ''
+    });
+    setShowEditTemplate(true);
+  };
+
+  const handleUpdateTemplate = () => {
+    if (!editingTemplate.name || !editingTemplate.subject || !editingTemplate.sender_email) {
+      toast.error('Please fill in required fields');
+      return;
+    }
+
+    // Check if it's a default template or custom template
+    const isDefault = DEFAULT_TEMPLATES.some(t => t.id === editingTemplate.id);
+    
+    if (isDefault) {
+      // For default templates, create a modified copy in localStorage
+      const savedTemplates = JSON.parse(localStorage.getItem('credential_templates') || '[]');
+      const existingIdx = savedTemplates.findIndex(t => t.id === `modified_${editingTemplate.id}`);
+      
+      const modifiedTemplate = {
+        ...editingTemplate,
+        id: `modified_${editingTemplate.id}`,
+        name: editingTemplate.name.includes('(Modified)') ? editingTemplate.name : `${editingTemplate.name} (Modified)`
+      };
+      
+      if (existingIdx >= 0) {
+        savedTemplates[existingIdx] = modifiedTemplate;
+      } else {
+        savedTemplates.push(modifiedTemplate);
+      }
+      localStorage.setItem('credential_templates', JSON.stringify(savedTemplates));
+      
+      // Update templates list
+      const updatedTemplates = templates.map(t => 
+        t.id === editingTemplate.id ? modifiedTemplate : t
+      );
+      if (!updatedTemplates.find(t => t.id === modifiedTemplate.id)) {
+        updatedTemplates.push(modifiedTemplate);
+      }
+      setTemplates(updatedTemplates);
+    } else {
+      // For custom templates, update in localStorage
+      const savedTemplates = JSON.parse(localStorage.getItem('credential_templates') || '[]');
+      const idx = savedTemplates.findIndex(t => t.id === editingTemplate.id);
+      if (idx >= 0) {
+        savedTemplates[idx] = editingTemplate;
+        localStorage.setItem('credential_templates', JSON.stringify(savedTemplates));
+      }
+      setTemplates(templates.map(t => t.id === editingTemplate.id ? editingTemplate : t));
+    }
+    
+    setShowEditTemplate(false);
+    setEditingTemplate(null);
+    toast.success('Template updated');
+  };
+
+  const handleDeleteTemplate = (templateId) => {
+    const isDefault = DEFAULT_TEMPLATES.some(t => t.id === templateId);
+    if (isDefault) {
+      toast.error('Cannot delete default templates. You can edit them instead.');
+      return;
+    }
+    
+    if (!window.confirm('Are you sure you want to delete this template?')) return;
+    
+    const savedTemplates = JSON.parse(localStorage.getItem('credential_templates') || '[]');
+    const filtered = savedTemplates.filter(t => t.id !== templateId);
+    localStorage.setItem('credential_templates', JSON.stringify(filtered));
+    setTemplates(templates.filter(t => t.id !== templateId));
+    toast.success('Template deleted');
+  };
+
+  const handleCopyTemplate = (template) => {
+    const newId = `custom_${Date.now()}`;
+    const copiedTemplate = {
+      ...template,
+      id: newId,
+      name: `${template.name} (Copy)`
+    };
+    
+    const savedTemplates = JSON.parse(localStorage.getItem('credential_templates') || '[]');
+    savedTemplates.push(copiedTemplate);
+    localStorage.setItem('credential_templates', JSON.stringify(savedTemplates));
+    setTemplates([...templates, copiedTemplate]);
+    toast.success('Template copied');
+    
+    // Open editor for the copy
+    handleEditTemplate(copiedTemplate);
   };
 
   const getUsersForOrg = (orgId) => {
