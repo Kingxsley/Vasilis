@@ -47,10 +47,10 @@ export default function FormSubmissions() {
     try {
       const [contactRes, accessRes] = await Promise.all([
         axios.get(`${API}/contact/submissions`, { headers }).catch(() => ({ data: [] })),
-        axios.get(`${API}/access-requests`, { headers }).catch(() => ({ data: [] }))
+        axios.get(`${API}/inquiries`, { headers }).catch(() => ({ data: { inquiries: [] } }))
       ]);
       setSubmissions(contactRes.data || []);
-      setAccessRequests(accessRes.data || []);
+      setAccessRequests(accessRes.data?.inquiries || accessRes.data || []);
     } catch (err) {
       console.error('Failed to fetch data:', err);
       toast.error('Failed to load submissions');
