@@ -484,6 +484,7 @@ const AppRouter = () => {
         <Route path="/blog/:slug" element={<BlogPostPage />} />
         <Route path="/videos" element={<VideosPage />} />
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
         <Route path="/news" element={<NewsPage />} />
         <Route path="/page/:slug" element={<CustomPage />} />
         <Route
