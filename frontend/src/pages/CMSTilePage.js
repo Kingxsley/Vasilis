@@ -405,6 +405,25 @@ export default function CMSTilePage() {
       case 'events':
         return <EventsSection branding={branding} />;
       
+      case 'team':
+      case 'services':
+      case 'faq':
+      case 'testimonials':
+      case 'pricing':
+      case 'gallery':
+      case 'features':
+        return (
+          <div className="text-center py-16">
+            <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center bg-yellow-500/20">
+              <Calendar className="w-8 h-8 text-yellow-500" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2" style={{ color: textColor }}>Coming Soon</h3>
+            <p className="text-gray-400 max-w-md mx-auto">
+              This page type is under development. Check back soon for {tile.route_type.replace('_', ' ')} functionality!
+            </p>
+          </div>
+        );
+      
       case 'custom':
       default:
         // Render HTML content from visual editor
