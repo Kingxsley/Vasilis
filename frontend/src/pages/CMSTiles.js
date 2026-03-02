@@ -26,7 +26,8 @@ import {
   LayoutGrid, Plus, Trash2, Edit, Eye, EyeOff, 
   GripVertical, FileText, Newspaper, Video, Info,
   Phone, Users, HelpCircle, Briefcase, Home, Loader2,
-  ExternalLink, Settings, Globe, Image as ImageIcon, Link, Bold, Italic, List, ListOrdered, Quote
+  ExternalLink, Settings, Globe, Image as ImageIcon, Link, Bold, Italic, List, ListOrdered, Quote,
+  Calendar, Mail, Star, MessageSquare, DollarSign, Award, BookOpen, Layers, Shield, Zap
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
