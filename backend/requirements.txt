@@ -48,6 +48,3 @@ python-dateutil==2.9.0.post0
 
 # Template rendering
 Jinja2==3.1.6
-
-# AI Content Generation (optional - needs OPENAI_API_KEY)
-openai==1.99.9
