@@ -310,6 +310,7 @@ const BlogListPage = React.lazy(() => import('./pages/Blog').then(m => ({ defaul
 const BlogPostPage = React.lazy(() => import('./pages/Blog').then(m => ({ default: m.BlogPost })));
 const VideosPage = React.lazy(() => import('./pages/VideosPage'));
 const AboutPage = React.lazy(() => import('./pages/AboutPage'));
+const ContactPage = React.lazy(() => import('./pages/ContactPage'));
 const NewsPage = React.lazy(() => import('./pages/NewsPage'));
 const MediaLibrary = React.lazy(() => import('./pages/MediaLibrary'));
 const SEOSettings = React.lazy(() => import('./pages/SEOSettings'));
