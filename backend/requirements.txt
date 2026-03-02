@@ -96,7 +96,6 @@ pytest==9.0.2
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 python-http-client==3.3.7
-python-jose==3.5.0
 python-multipart==0.0.9
 python-pptx==1.0.2
 pytokens==0.4.1
