@@ -342,6 +342,8 @@ const CMSTiles = React.lazy(() => import('./pages/CMSTiles'));
 const RSSFeedManager = React.lazy(() => import('./pages/RSSFeedManager'));
 // FormSubmissions for viewing contact form and access request submissions
 const FormSubmissions = React.lazy(() => import('./pages/FormSubmissions'));
+// EventsPage for events management with calendar, RSVP, and ICS support
+const EventsPage = React.lazy(() => import('./pages/EventsPage'));
 
 // Auth Callback Handler
 const AuthCallback = () => {
