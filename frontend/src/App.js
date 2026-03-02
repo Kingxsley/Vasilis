@@ -310,7 +310,6 @@ const BlogListPage = React.lazy(() => import('./pages/Blog').then(m => ({ defaul
 const BlogPostPage = React.lazy(() => import('./pages/Blog').then(m => ({ default: m.BlogPost })));
 const VideosPage = React.lazy(() => import('./pages/VideosPage'));
 const AboutPage = React.lazy(() => import('./pages/AboutPage'));
-const ContactPage = React.lazy(() => import('./pages/ContactPage'));
 const NewsPage = React.lazy(() => import('./pages/NewsPage'));
 const MediaLibrary = React.lazy(() => import('./pages/MediaLibrary'));
 const SEOSettings = React.lazy(() => import('./pages/SEOSettings'));
@@ -319,6 +318,7 @@ const PermissionsPage = React.lazy(() => import('./pages/PermissionsPage'));
 const AuditLogs = React.lazy(() => import('./pages/AuditLogs'));
 const PasswordPolicyPage = React.lazy(() => import('./pages/PasswordPolicyPage'));
 const CustomPage = React.lazy(() => import('./pages/CustomPage'));
+const CMSTilePage = React.lazy(() => import('./pages/CMSTilePage'));
 const ActivityLogs = React.lazy(() => import('./pages/ActivityLogs'));
 const SimulationBuilder = React.lazy(() => import('./pages/SimulationBuilder'));
 const Documentation = React.lazy(() => import('./pages/Documentation'));
