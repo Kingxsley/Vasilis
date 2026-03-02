@@ -444,7 +444,7 @@ const DynamicRouteHandler = () => {
     const checkRoute = async () => {
       // First, check if this is a valid CMS tile
       try {
-        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/cms-tiles/public/${slug}`);
+        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/cms-tiles/${slug}`);
         if (res.ok) {
           setRouteType('cms');
           setLoading(false);
