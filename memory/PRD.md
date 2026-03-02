@@ -631,7 +631,77 @@ JWT_SECRET=<secure-random-string>
 - **Frontend**: 83% pass rate (5/6 tests, 1 skipped due to rate limiting)
 - **Test Files**: `/app/backend/tests/test_iteration_16.py`, `/app/tests/e2e/iteration-16.spec.ts`
 
+---
+
+## Session Changes (March 2026 - E1 Fork #2) - Events Management System
+
+### New Feature: Events Management System
+**Complete event scheduling system with:**
+1. **Visual Editor** (TipTap WYSIWYG) - No HTML coding required
+   - Bold, italic, strike formatting
+   - Headings (H1, H2)
+   - Bullet and numbered lists
+   - Image insertion via URL
+   - Link insertion
+   - Blockquotes
+
+2. **Calendar View** (react-big-calendar)
+   - Month, week, day, and agenda views
+   - Click event to edit
+   - Visual event display with gold accent color
+
+3. **RSVP System**
+   - Enable/disable per event
+   - Max attendees limit
+   - Email confirmation on RSVP
+   - View RSVPs list (admin)
+
+4. **ICS Support**
+   - Import .ics files to create multiple events
+   - Export single event as .ics
+   - Export all events as .ics
+
+5. **Recurring Events**
+   - Daily, weekly, monthly, yearly frequencies
+   - Custom interval (e.g., every 2 weeks)
+   - End date or count limit
+
+6. **Photo Upload**
+   - Optional photo per event
+   - Base64 storage
+   - Preview in event list
+
+7. **Access Control**
+   - Super admin only can create/edit/delete
+   - Public can RSVP to events
+
+**Files Created:**
+- `/app/backend/routes/events.py` - Full CRUD, RSVP, ICS import/export
+- `/app/frontend/src/pages/EventsPage.js` - Calendar view + list view + forms
+
+**API Endpoints:**
+- `GET /api/events` - List all events
+- `POST /api/events` - Create event
+- `PATCH /api/events/{id}` - Update event
+- `DELETE /api/events/{id}` - Delete event
+- `POST /api/events/{id}/rsvp` - RSVP to event
+- `GET /api/events/{id}/rsvps` - View RSVPs
+- `GET /api/events/{id}/ics` - Export as ICS
+- `POST /api/events/import/ics` - Import ICS file
+
+### Bug Fix: CMS Tile Input Focus Issue
+- Converted TileForm to use uncontrolled inputs with `refs`
+- Plain HTML `<input>` elements instead of controlled components
+- `useImperativeHandle` to expose `getData()` method
+- Form data only read on submit, not during typing
+
+### Git Push Secret Issue
+- Removed SendGrid API key and JWT_SECRET from `.env` file
+- Keys should be set in Vercel environment variables for production
+- Added JWT_SECRET back for local development only
+
 ## Remaining Tasks (P3 - Future)
 - Expand PPT modules to 30-50 slides
 - Replace credential harvest editor with true drag-and-drop builder
 - Add rate limiting bypass for test accounts
+- Event reminder email scheduler (background task)
