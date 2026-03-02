@@ -432,24 +432,64 @@ const LoadingFallback = () => (
 );
 
 // Ad Tracker Wrapper - routes campaign IDs to AdTracker
-// Checks if the path looks like a campaign ID (ad or phishing)
-// If not a campaign ID, redirect to home
-const AdTrackerWrapper = () => {
+// Dynamic route handler - checks for CMS tiles first, then ad campaigns
+// If neither, redirects to home
+const DynamicRouteHandler = () => {
   const params = useParams();
-  const campaignId = params.campaignId;
-  
-  // Check if this looks like a valid campaign ID
-  // Ad campaign IDs start with "adcamp_" or "adcmp_" (legacy format)
-  // Phishing campaign IDs start with "phish_"
-  if (campaignId && (
-    campaignId.startsWith('adcamp_') || 
-    campaignId.startsWith('adcmp_') ||
-    campaignId.startsWith('phish_')
-  )) {
+  const slug = params.slug;
+  const [routeType, setRouteType] = useState(null); // 'cms', 'ad', 'not_found'
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkRoute = async () => {
+      // First, check if this is a valid CMS tile
+      try {
+        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/cms-tiles/public/${slug}`);
+        if (res.ok) {
+          setRouteType('cms');
+          setLoading(false);
+          return;
+        }
+      } catch (e) {
+        // Not a CMS tile, continue checking
+      }
+
+      // Check if this looks like a valid campaign ID
+      if (slug && (
+        slug.startsWith('adcamp_') || 
+        slug.startsWith('adcmp_') ||
+        slug.startsWith('phish_')
+      )) {
+        setRouteType('ad');
+        setLoading(false);
+        return;
+      }
+
+      // Neither CMS tile nor ad campaign
+      setRouteType('not_found');
+      setLoading(false);
+    };
+
+    checkRoute();
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[#D4A836] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (routeType === 'cms') {
+    return <CMSTilePage />;
+  }
+
+  if (routeType === 'ad') {
     return <AdTracker />;
   }
-  
-  // Not a valid campaign ID - redirect to home
+
+  // Not found - redirect to home
   return <Navigate to="/" replace />;
 };
 
