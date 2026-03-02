@@ -41,21 +41,22 @@ export const PublicNav = ({ branding, isLoading = false }) => {
   const textColor = branding?.text_color || '#E8DDB5';
   const primaryColor = branding?.primary_color || '#D4A836';
   
-  // Fetch custom pages that should show in nav
+  // Fetch CMS tiles that should show in nav
   useEffect(() => {
-    const fetchCustomPages = async () => {
+    const fetchNavPages = async () => {
       try {
-        const res = await axios.get(`${API}/pages/custom`);
-        // Only show published pages with show_in_nav = true
-        const navPages = (res.data.pages || []).filter(
-          p => p.is_published && p.show_in_nav
-        );
-        setCustomPages(navPages);
+        // Fetch CMS tiles that are published and have show_in_nav
+        const res = await axios.get(`${API}/cms-tiles/nav`);
+        const tiles = (res.data.tiles || []).filter(t => t.published);
+        setCustomPages(tiles.map(t => ({
+          slug: t.slug,
+          title: t.name
+        })));
       } catch (error) {
-        console.error('Failed to fetch custom pages:', error);
+        console.error('Failed to fetch nav pages:', error);
       }
     };
-    fetchCustomPages();
+    fetchNavPages();
   }, []);
   
   // Navigation visibility
