@@ -71,10 +71,9 @@ export const PublicNav = ({ branding, isLoading = false }) => {
     showVideos && { to: '/videos', label: 'Videos' },
     showNews && { to: '/news', label: 'News' },
     showAbout && { to: '/about', label: 'About' },
-    showContact && { to: '/contact', label: 'Contact' },
-    // Add custom pages
+    // Add custom CMS pages at root level
     ...customPages.map(page => ({
-      to: `/page/${page.slug}`,
+      to: `/${page.slug}`,
       label: page.title
     }))
   ].filter(Boolean);
