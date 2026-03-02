@@ -705,3 +705,22 @@ JWT_SECRET=<secure-random-string>
 - Replace credential harvest editor with true drag-and-drop builder
 - Add rate limiting bypass for test accounts
 - Event reminder email scheduler (background task)
+
+---
+
+## Session Changes (December 2025 - E1 Fork) - Vercel Deployment Fix
+
+### P0 - Critical Fix: Vercel Build Failure
+**Root Cause:** `requirements.txt` contained packages that fail to install on Vercel:
+- `starkbank-ecdsa==2.2.0` - Fails during `pip install` on Vercel's Python runtime
+- `emergentintegrations==0.1.0` - Internal Emergent package, not on PyPI
+- `python-jose==3.5.0` - Unused (app uses PyJWT instead), could pull starkbank-ecdsa as dependency
+
+**Fix Applied:**
+- Removed all 3 packages from `/app/backend/requirements.txt`
+- Backend verified working locally
+- Total packages reduced from 141 to 138
+
+**User Action Required:**
+1. Push to GitHub via "Save to Github"
+2. Redeploy on Vercel with cache cleared
