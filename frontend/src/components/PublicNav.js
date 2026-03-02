@@ -63,7 +63,6 @@ export const PublicNav = ({ branding, isLoading = false }) => {
   const showVideos = branding?.show_videos !== false;
   const showNews = branding?.show_news !== false;
   const showAbout = branding?.show_about !== false;
-  const showContact = branding?.show_contact !== false;
   
   // Build visible nav items (exclude current page)
   const allNavItems = [
