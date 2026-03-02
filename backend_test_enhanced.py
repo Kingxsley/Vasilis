@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 class EnhancedVasilisNetShieldTester:
-    def __init__(self, base_url="https://security-training-v1.preview.emergentagent.com"):
+    def __init__(self, base_url="https://cms-tile-fix.preview.emergentagent.com"):
         self.base_url = base_url.rstrip('/')
         self.api_base = f"{self.base_url}/api"
         self.token = None
