@@ -173,17 +173,25 @@ async def get_public_tiles():
 async def get_all_tiles_admin(request: Request):
     """Get all CMS tiles for admin (includes unpublished)"""
     await require_super_admin(request)
-    db = get_db()
-    
-    # Initialize if needed
-    count = await db.cms_tiles.count_documents({})
-    if count == 0:
-        for tile in DEFAULT_TILES:
-            tile["created_at"] = datetime.now(timezone.utc).isoformat()
-            await db.cms_tiles.insert_one(tile.copy())
-    
-    tiles = await db.cms_tiles.find({}, {"_id": 0}).sort("sort_order", 1).to_list(100)
-    return {"tiles": tiles}
+    try:
+        db = get_db()
+        
+        if db is None:
+            return {"tiles": []}
+        
+        # Initialize if needed
+        count = await db.cms_tiles.count_documents({})
+        if count == 0:
+            for tile in DEFAULT_TILES:
+                tile["created_at"] = datetime.now(timezone.utc).isoformat()
+                await db.cms_tiles.insert_one(tile.copy())
+        
+        tiles = await db.cms_tiles.find({}, {"_id": 0}).sort("sort_order", 1).to_list(100)
+        return {"tiles": tiles}
+    except Exception as e:
+        import logging
+        logging.error(f"Error fetching admin tiles: {e}")
+        return {"tiles": []}
 
 
 @router.get("/{slug}")
