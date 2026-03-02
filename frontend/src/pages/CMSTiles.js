@@ -440,22 +440,6 @@ function TileFormPage({ tile, onSave, onCancel, saving }) {
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label>Page Type</Label>
-                <Select value={routeType} onValueChange={setRouteType}>
-                  <SelectTrigger className="bg-[#0D1117] border-[#30363D]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#161B22] border-[#30363D]">
-                    <SelectItem value="custom">Custom Content</SelectItem>
-                    <SelectItem value="contact_form">Contact Form</SelectItem>
-                    <SelectItem value="events">Events Calendar</SelectItem>
-                    <SelectItem value="internal">Internal Page</SelectItem>
-                    <SelectItem value="external">External Link</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
               {routeType === 'external' && (
                 <div className="space-y-2">
                   <Label>External URL</Label>
@@ -479,8 +463,50 @@ function TileFormPage({ tile, onSave, onCancel, saving }) {
           </Card>
         </div>
 
-        {/* Right Column - Content Editor */}
-        <div className="lg:col-span-2">
+        {/* Right Column - Page Type & Content */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Page Type Selector */}
+          <Card className="bg-[#161B22] border-[#30363D]">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Layers className="w-4 h-4 text-[#D4A836]" />
+                Page Type
+              </CardTitle>
+              <CardDescription>
+                Choose what type of content this page will display
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {PAGE_TYPES.map((type) => {
+                  const TypeIcon = type.icon;
+                  const isSelected = routeType === type.id;
+                  return (
+                    <button
+                      key={type.id}
+                      onClick={() => setRouteType(type.id)}
+                      className={`p-3 rounded-lg border-2 transition-all text-left ${
+                        isSelected 
+                          ? 'border-[#D4A836] bg-[#D4A836]/10' 
+                          : 'border-[#30363D] bg-[#0D1117] hover:border-[#D4A836]/50'
+                      }`}
+                    >
+                      <div 
+                        className="w-8 h-8 rounded-lg flex items-center justify-center mb-2"
+                        style={{ backgroundColor: `${type.color}20` }}
+                      >
+                        <TypeIcon className="w-4 h-4" style={{ color: type.color }} />
+                      </div>
+                      <h4 className="font-medium text-sm text-white">{type.name}</h4>
+                      <p className="text-xs text-gray-500 mt-1 line-clamp-2">{type.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Content Editor - Only for custom type */}
           {routeType === 'custom' && (
             <Card className="bg-[#161B22] border-[#30363D]">
               <CardHeader>
@@ -501,30 +527,246 @@ function TileFormPage({ tile, onSave, onCancel, saving }) {
             </Card>
           )}
 
+          {/* Page Type Previews */}
           {routeType === 'contact_form' && (
             <Card className="bg-[#161B22] border-[#30363D]">
-              <CardContent className="p-8 text-center">
-                <Phone className="w-12 h-12 text-[#D4A836] mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-white mb-2">Contact Form Page</h3>
-                <p className="text-gray-400">
-                  This page will display a contact form where visitors can send you messages.
-                  <br />
-                  Form submissions will appear in your Forms inbox.
-                </p>
+              <CardContent className="p-8">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-green-500/20">
+                    <Mail className="w-6 h-6 text-green-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-white mb-2">Contact Form Preview</h3>
+                    <p className="text-gray-400 mb-4">
+                      This page will display a professional contact form with the following fields:
+                    </p>
+                    <ul className="text-sm text-gray-400 space-y-1">
+                      <li>• Name (required)</li>
+                      <li>• Email (required)</li>
+                      <li>• Phone number</li>
+                      <li>• Organization</li>
+                      <li>• Subject</li>
+                      <li>• Message (required)</li>
+                    </ul>
+                    <p className="text-xs text-gray-500 mt-4">
+                      Submissions appear in Forms → Contact Submissions
+                    </p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           )}
 
           {routeType === 'events' && (
             <Card className="bg-[#161B22] border-[#30363D]">
-              <CardContent className="p-8 text-center">
-                <Globe className="w-12 h-12 text-[#D4A836] mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-white mb-2">Events Calendar Page</h3>
-                <p className="text-gray-400">
-                  This page will display your events calendar with RSVP functionality.
-                  <br />
-                  Manage events from the Events section in the sidebar.
-                </p>
+              <CardContent className="p-8">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-blue-500/20">
+                    <Calendar className="w-6 h-6 text-blue-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-white mb-2">Events Calendar Preview</h3>
+                    <p className="text-gray-400 mb-4">
+                      This page will display your upcoming events with:
+                    </p>
+                    <ul className="text-sm text-gray-400 space-y-1">
+                      <li>• Event cards with images</li>
+                      <li>• Date and time display</li>
+                      <li>• Location information</li>
+                      <li>• RSVP functionality</li>
+                    </ul>
+                    <p className="text-xs text-gray-500 mt-4">
+                      Manage events in Events section
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {routeType === 'team' && (
+            <Card className="bg-[#161B22] border-[#30363D]">
+              <CardContent className="p-8">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-purple-500/20">
+                    <Users className="w-6 h-6 text-purple-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-white mb-2">Team Members Page</h3>
+                    <p className="text-gray-400 mb-4">
+                      Showcase your team with professional profiles including:
+                    </p>
+                    <ul className="text-sm text-gray-400 space-y-1">
+                      <li>• Profile photos</li>
+                      <li>• Names and titles</li>
+                      <li>• Short bios</li>
+                      <li>• Social media links</li>
+                    </ul>
+                    <p className="text-xs text-yellow-500 mt-4">
+                      Coming soon - Team management will be in a dedicated section
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {routeType === 'services' && (
+            <Card className="bg-[#161B22] border-[#30363D]">
+              <CardContent className="p-8">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-orange-500/20">
+                    <Briefcase className="w-6 h-6 text-orange-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-white mb-2">Services Page</h3>
+                    <p className="text-gray-400 mb-4">
+                      Display your services or offerings with:
+                    </p>
+                    <ul className="text-sm text-gray-400 space-y-1">
+                      <li>• Service icons</li>
+                      <li>• Titles and descriptions</li>
+                      <li>• Feature lists</li>
+                      <li>• Call-to-action buttons</li>
+                    </ul>
+                    <p className="text-xs text-yellow-500 mt-4">
+                      Coming soon - Services management will be in a dedicated section
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {routeType === 'faq' && (
+            <Card className="bg-[#161B22] border-[#30363D]">
+              <CardContent className="p-8">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-cyan-500/20">
+                    <HelpCircle className="w-6 h-6 text-cyan-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-white mb-2">FAQ Page</h3>
+                    <p className="text-gray-400 mb-4">
+                      Display frequently asked questions with:
+                    </p>
+                    <ul className="text-sm text-gray-400 space-y-1">
+                      <li>• Expandable accordion sections</li>
+                      <li>• Category organization</li>
+                      <li>• Search functionality</li>
+                    </ul>
+                    <p className="text-xs text-yellow-500 mt-4">
+                      Coming soon - FAQ management will be in a dedicated section
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {routeType === 'testimonials' && (
+            <Card className="bg-[#161B22] border-[#30363D]">
+              <CardContent className="p-8">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-pink-500/20">
+                    <MessageSquare className="w-6 h-6 text-pink-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-white mb-2">Testimonials Page</h3>
+                    <p className="text-gray-400 mb-4">
+                      Showcase customer testimonials with:
+                    </p>
+                    <ul className="text-sm text-gray-400 space-y-1">
+                      <li>• Customer photos</li>
+                      <li>• Star ratings</li>
+                      <li>• Review text</li>
+                      <li>• Company/role info</li>
+                    </ul>
+                    <p className="text-xs text-yellow-500 mt-4">
+                      Coming soon - Testimonials management will be in a dedicated section
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {routeType === 'pricing' && (
+            <Card className="bg-[#161B22] border-[#30363D]">
+              <CardContent className="p-8">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-lime-500/20">
+                    <DollarSign className="w-6 h-6 text-lime-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-white mb-2">Pricing Page</h3>
+                    <p className="text-gray-400 mb-4">
+                      Display your pricing plans with:
+                    </p>
+                    <ul className="text-sm text-gray-400 space-y-1">
+                      <li>• Plan comparison cards</li>
+                      <li>• Feature checklists</li>
+                      <li>• Highlighted popular plan</li>
+                      <li>• CTA buttons</li>
+                    </ul>
+                    <p className="text-xs text-yellow-500 mt-4">
+                      Coming soon - Pricing management will be in a dedicated section
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {routeType === 'gallery' && (
+            <Card className="bg-[#161B22] border-[#30363D]">
+              <CardContent className="p-8">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-red-500/20">
+                    <ImageIcon className="w-6 h-6 text-red-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-white mb-2">Gallery Page</h3>
+                    <p className="text-gray-400 mb-4">
+                      Display an image gallery with:
+                    </p>
+                    <ul className="text-sm text-gray-400 space-y-1">
+                      <li>• Masonry grid layout</li>
+                      <li>• Lightbox preview</li>
+                      <li>• Category filters</li>
+                      <li>• Image captions</li>
+                    </ul>
+                    <p className="text-xs text-gray-500 mt-4">
+                      Images managed in Media Library
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {routeType === 'features' && (
+            <Card className="bg-[#161B22] border-[#30363D]">
+              <CardContent className="p-8">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-violet-500/20">
+                    <Zap className="w-6 h-6 text-violet-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-white mb-2">Features Page</h3>
+                    <p className="text-gray-400 mb-4">
+                      Highlight product/service features with:
+                    </p>
+                    <ul className="text-sm text-gray-400 space-y-1">
+                      <li>• Feature cards with icons</li>
+                      <li>• Descriptions</li>
+                      <li>• Visual layout options</li>
+                    </ul>
+                    <p className="text-xs text-yellow-500 mt-4">
+                      Coming soon - Features management will be in a dedicated section
+                    </p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           )}
@@ -532,11 +774,12 @@ function TileFormPage({ tile, onSave, onCancel, saving }) {
           {routeType === 'internal' && (
             <Card className="bg-[#161B22] border-[#30363D]">
               <CardContent className="p-8 text-center">
-                <Info className="w-12 h-12 text-gray-500 mx-auto mb-4" />
+                <Link className="w-12 h-12 text-gray-500 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-white mb-2">Internal Link</h3>
                 <p className="text-gray-400">
-                  Internal pages link to existing application routes.
+                  This navigation item will link to an existing page in your app.
                   <br />
-                  Configure the slug to match an existing route.
+                  Configure the slug to match the route (e.g., "blog", "videos").
                 </p>
               </CardContent>
             </Card>
@@ -546,10 +789,11 @@ function TileFormPage({ tile, onSave, onCancel, saving }) {
             <Card className="bg-[#161B22] border-[#30363D]">
               <CardContent className="p-8 text-center">
                 <ExternalLink className="w-12 h-12 text-gray-500 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-white mb-2">External Link</h3>
                 <p className="text-gray-400">
-                  External links redirect users to another website.
+                  This navigation item will redirect users to another website.
                   <br />
-                  Enter the full URL including https://
+                  Enter the full URL including https:// above.
                 </p>
               </CardContent>
             </Card>
