@@ -1,0 +1,50 @@
+# Core FastAPI
+fastapi==0.115.0
+uvicorn==0.30.0
+starlette==0.37.2
+python-multipart==0.0.9
+
+# Database
+motor==3.6.0
+pymongo==4.9
+
+# Authentication
+bcrypt==4.2.0
+PyJWT==2.9.0
+passlib==1.7.4
+
+# Validation
+pydantic==2.9.0
+pydantic-settings==2.5.0
+email-validator==2.2.0
+
+# HTTP Client
+httpx==0.28.1
+aiohttp==3.13.3
+
+# Environment
+python-dotenv==1.0.1
+
+# Email (SendGrid) - Updated version without starkbank-ecdsa
+sendgrid==6.12.2
+
+# Excel/PDF Reports
+openpyxl==3.1.5
+reportlab==4.2.0
+
+# Image processing
+pillow==10.4.0
+
+# Two-Factor Authentication
+pyotp==2.8.0
+qrcode==8.2
+
+# PowerPoint generation
+python-pptx==1.0.2
+
+# ICS/Calendar support
+icalendar==7.0.2
+python-dateutil==2.9.0.post0
+
+# Template rendering
+Jinja2==3.1.6
