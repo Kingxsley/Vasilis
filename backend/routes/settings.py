@@ -129,12 +129,85 @@ class BrandingUpdate(BaseModel):
 @router.get("/branding")
 async def get_branding():
     """Get branding settings (public endpoint)"""
-    db = get_db()
-    
-    settings = await db.settings.find_one({"type": "branding"}, {"_id": 0})
-    
-    if not settings:
-        # Return defaults
+    try:
+        db = get_db()
+        
+        if db is None:
+            # Database not connected - return defaults
+            return {
+                "company_name": "Vasilis NetShield",
+                "tagline": "Human + AI Powered Security Training",
+                "logo_url": None,
+                "favicon_url": None,
+                "primary_color": "#D4A836",
+                "secondary_color": "#0f3460",
+                "text_color": "#E8DDB5",
+                "heading_color": "#FFFFFF",
+                "accent_color": "#D4A836",
+                "show_blog": True,
+                "show_videos": True,
+                "show_news": True,
+                "show_about": True,
+                "footer_copyright": None,
+                "social_facebook": None,
+                "social_twitter": None,
+                "social_linkedin": None,
+                "social_instagram": None,
+                "social_youtube": None
+            }
+        
+        settings = await db.settings.find_one({"type": "branding"}, {"_id": 0})
+        
+        if not settings:
+            # Return defaults
+            return {
+                "company_name": "Vasilis NetShield",
+                "tagline": "Human + AI Powered Security Training",
+                "logo_url": None,
+                "favicon_url": None,
+                "primary_color": "#D4A836",
+                "secondary_color": "#0f3460",
+                "text_color": "#E8DDB5",
+                "heading_color": "#FFFFFF",
+                "accent_color": "#D4A836",
+                "show_blog": True,
+                "show_videos": True,
+                "show_news": True,
+                "show_about": True,
+                "footer_copyright": None,
+                "social_facebook": None,
+                "social_twitter": None,
+                "social_linkedin": None,
+                "social_instagram": None,
+                "social_youtube": None
+            }
+        
+        return {
+            "company_name": settings.get("company_name", "Vasilis NetShield"),
+            "tagline": settings.get("tagline", "Human + AI Powered Security Training"),
+            "logo_url": settings.get("logo_url"),
+            "favicon_url": settings.get("favicon_url"),
+            "primary_color": settings.get("primary_color", "#D4A836"),
+            "secondary_color": settings.get("secondary_color", "#0f3460"),
+            "text_color": settings.get("text_color", "#E8DDB5"),
+            "heading_color": settings.get("heading_color", "#FFFFFF"),
+            "accent_color": settings.get("accent_color", "#D4A836"),
+            "show_blog": settings.get("show_blog", True),
+            "show_videos": settings.get("show_videos", True),
+            "show_news": settings.get("show_news", True),
+            "show_about": settings.get("show_about", True),
+            "footer_copyright": settings.get("footer_copyright"),
+            "social_facebook": settings.get("social_facebook"),
+            "social_twitter": settings.get("social_twitter"),
+            "social_linkedin": settings.get("social_linkedin"),
+            "social_instagram": settings.get("social_instagram"),
+            "social_youtube": settings.get("social_youtube"),
+            "discord_webhook_url": settings.get("discord_webhook_url")
+        }
+    except Exception as e:
+        # On any error, return defaults instead of 500
+        import logging
+        logging.error(f"Error fetching branding: {e}")
         return {
             "company_name": "Vasilis NetShield",
             "tagline": "Human + AI Powered Security Training",
@@ -156,29 +229,6 @@ async def get_branding():
             "social_instagram": None,
             "social_youtube": None
         }
-    
-    return {
-        "company_name": settings.get("company_name", "Vasilis NetShield"),
-        "tagline": settings.get("tagline", "Human + AI Powered Security Training"),
-        "logo_url": settings.get("logo_url"),
-        "favicon_url": settings.get("favicon_url"),
-        "primary_color": settings.get("primary_color", "#D4A836"),
-        "secondary_color": settings.get("secondary_color", "#0f3460"),
-        "text_color": settings.get("text_color", "#E8DDB5"),
-        "heading_color": settings.get("heading_color", "#FFFFFF"),
-        "accent_color": settings.get("accent_color", "#D4A836"),
-        "show_blog": settings.get("show_blog", True),
-        "show_videos": settings.get("show_videos", True),
-        "show_news": settings.get("show_news", True),
-        "show_about": settings.get("show_about", True),
-        "footer_copyright": settings.get("footer_copyright"),
-        "social_facebook": settings.get("social_facebook"),
-        "social_twitter": settings.get("social_twitter"),
-        "social_linkedin": settings.get("social_linkedin"),
-        "social_instagram": settings.get("social_instagram"),
-        "social_youtube": settings.get("social_youtube"),
-        "discord_webhook_url": settings.get("discord_webhook_url")
-    }
 
 
 @router.patch("/branding")
