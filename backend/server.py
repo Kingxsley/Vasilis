@@ -39,18 +39,19 @@ logger = logging.getLogger(__name__)
 mongo_url = os.environ.get('MONGO_URL', '')
 db_name = os.environ.get('DB_NAME', 'vasilisnetshield')
 
-if not mongo_url:
-    logger.error("MONGO_URL environment variable is not set!")
-    # Use a dummy for startup, will fail on actual DB operations
-    mongo_url = "mongodb://localhost:27017"
+db = None
+client = None
 
-try:
-    client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=5000)
-    db = client[db_name]
-    logger.info(f"MongoDB client initialized for database: {db_name}")
-except Exception as e:
-    logger.error(f"Failed to initialize MongoDB client: {e}")
-    raise
+if not mongo_url:
+    logger.error("MONGO_URL environment variable is not set! Database operations will fail.")
+else:
+    try:
+        client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=5000)
+        db = client[db_name]
+        logger.info(f"MongoDB client initialized for database: {db_name}")
+    except Exception as e:
+        logger.error(f"Failed to initialize MongoDB client: {e}")
+        db = None
 
 # JWT Config
 JWT_SECRET = os.environ.get('JWT_SECRET')
