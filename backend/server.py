@@ -3577,6 +3577,7 @@ api_router.include_router(system_emails_router)
 api_router.include_router(executive_training_router)
 api_router.include_router(cms_tiles_router)
 api_router.include_router(contact_router)
+api_router.include_router(events_router)
 
 
 async def _handle_phishing_tracking(campaign_id: str, u: str = None, request: Request = None):
