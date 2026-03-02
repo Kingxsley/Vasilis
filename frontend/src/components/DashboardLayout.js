@@ -493,7 +493,9 @@ export const DashboardLayout = ({ children }) => {
 
       {/* Main Content */}
       <main className={`${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'} pt-16 lg:pt-0 min-h-screen transition-all bg-[#0D1117]`}>
-        {children}
+        <div className="p-4 sm:p-6 lg:p-8">
+          {children}
+        </div>
       </main>
     </div>
   );
