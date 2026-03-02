@@ -3527,6 +3527,7 @@ from routes.system_emails import router as system_emails_router
 from routes.executive_training import router as executive_training_router
 from routes.cms_tiles import router as cms_tiles_router
 from routes.contact import router as contact_router
+from routes.events import router as events_router
 
 # Import RBAC manager
 from middleware.rbac import rbac_manager
