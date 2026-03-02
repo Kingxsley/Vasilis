@@ -97,6 +97,7 @@ const navGroups = [
     items: [
       { path: '/content', label: 'Content Manager', icon: FileText, contentManager: true },
       { path: '/cms-tiles', label: 'CMS Pages', icon: LayoutDashboard, superAdminOnly: true },
+      { path: '/events', label: 'Events', icon: CalendarDays, superAdminOnly: true },
       { path: '/media-library', label: 'Media Library', icon: Image, contentManager: true },
     ]
   },
