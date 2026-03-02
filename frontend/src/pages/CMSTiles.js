@@ -41,6 +41,106 @@ import TipTapLink from '@tiptap/extension-link';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Page Type Definitions with visual configuration
+const PAGE_TYPES = [
+  {
+    id: 'custom',
+    name: 'Custom Content',
+    description: 'Create your own content with the visual editor',
+    icon: FileText,
+    color: '#D4A836',
+    hasEditor: true
+  },
+  {
+    id: 'contact_form',
+    name: 'Contact Form',
+    description: 'Contact form with name, email, phone, and message fields',
+    icon: Mail,
+    color: '#4CAF50',
+    hasEditor: false
+  },
+  {
+    id: 'events',
+    name: 'Events Calendar',
+    description: 'Display your events with RSVP functionality',
+    icon: Calendar,
+    color: '#2196F3',
+    hasEditor: false
+  },
+  {
+    id: 'team',
+    name: 'Team Members',
+    description: 'Showcase your team with photos and bios',
+    icon: Users,
+    color: '#9C27B0',
+    hasEditor: false
+  },
+  {
+    id: 'services',
+    name: 'Services',
+    description: 'Display your services or offerings',
+    icon: Briefcase,
+    color: '#FF9800',
+    hasEditor: false
+  },
+  {
+    id: 'faq',
+    name: 'FAQ',
+    description: 'Frequently asked questions with accordion',
+    icon: HelpCircle,
+    color: '#00BCD4',
+    hasEditor: false
+  },
+  {
+    id: 'testimonials',
+    name: 'Testimonials',
+    description: 'Customer reviews and testimonials',
+    icon: MessageSquare,
+    color: '#E91E63',
+    hasEditor: false
+  },
+  {
+    id: 'pricing',
+    name: 'Pricing',
+    description: 'Pricing plans and comparison table',
+    icon: DollarSign,
+    color: '#8BC34A',
+    hasEditor: false
+  },
+  {
+    id: 'gallery',
+    name: 'Gallery',
+    description: 'Image gallery with lightbox',
+    icon: ImageIcon,
+    color: '#FF5722',
+    hasEditor: false
+  },
+  {
+    id: 'features',
+    name: 'Features',
+    description: 'Highlight features with icons and descriptions',
+    icon: Zap,
+    color: '#673AB7',
+    hasEditor: false
+  },
+  {
+    id: 'internal',
+    name: 'Internal Link',
+    description: 'Link to an existing page in your app',
+    icon: Link,
+    color: '#607D8B',
+    hasEditor: false
+  },
+  {
+    id: 'external',
+    name: 'External Link',
+    description: 'Redirect to an external website',
+    icon: ExternalLink,
+    color: '#795548',
+    hasEditor: false
+  }
+];
+
 // Icon mapping
 const ICON_OPTIONS = {
   'FileText': FileText,
@@ -54,6 +154,17 @@ const ICON_OPTIONS = {
   'Home': Home,
   'Globe': Globe,
   'Settings': Settings,
+  'Calendar': Calendar,
+  'Mail': Mail,
+  'Star': Star,
+  'MessageSquare': MessageSquare,
+  'DollarSign': DollarSign,
+  'Award': Award,
+  'BookOpen': BookOpen,
+  'Layers': Layers,
+  'Shield': Shield,
+  'Zap': Zap,
+  'ImageIcon': ImageIcon,
 };
 
 // Visual Editor Toolbar
