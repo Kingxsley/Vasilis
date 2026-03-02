@@ -796,6 +796,14 @@ const AppRouter = () => {
           }
         />
         <Route
+          path="/events"
+          element={
+            <ProtectedRoute adminOnly>
+              <EventsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/rss-feeds"
           element={
             <ProtectedRoute adminOnly>
