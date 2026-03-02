@@ -169,6 +169,28 @@ async def get_public_tiles():
         return {"tiles": []}
 
 
+@router.get("/nav")
+async def get_nav_tiles():
+    """Get CMS tiles that should appear in navigation (non-system, published, custom pages)"""
+    try:
+        db = get_db()
+        
+        if db is None:
+            return {"tiles": []}
+        
+        # Get published custom tiles (not system tiles like Blog, Videos, etc.)
+        tiles = await db.cms_tiles.find(
+            {"published": True, "is_system": {"$ne": True}}, 
+            {"_id": 0, "name": 1, "slug": 1, "icon": 1, "route_type": 1, "published": 1}
+        ).sort("sort_order", 1).to_list(100)
+        
+        return {"tiles": tiles}
+    except Exception as e:
+        import logging
+        logging.error(f"Error fetching nav tiles: {e}")
+        return {"tiles": []}
+
+
 @router.get("/admin")
 async def get_all_tiles_admin(request: Request):
     """Get all CMS tiles for admin (includes unpublished)"""
