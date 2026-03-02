@@ -143,22 +143,30 @@ async def get_all_tiles(request: Request, include_unpublished: bool = False):
 @router.get("/public")
 async def get_public_tiles():
     """Get published CMS tiles (no auth required) for landing page navigation"""
-    db = get_db()
-    
-    # Initialize if needed
-    count = await db.cms_tiles.count_documents({})
-    if count == 0:
-        for tile in DEFAULT_TILES:
-            tile["created_at"] = datetime.now(timezone.utc).isoformat()
-            await db.cms_tiles.insert_one(tile.copy())
-    
-    # Only return published tiles with necessary fields
-    tiles = await db.cms_tiles.find(
-        {"published": True}, 
-        {"_id": 0, "tile_id": 1, "name": 1, "slug": 1, "icon": 1, "route_type": 1, "external_url": 1, "is_system": 1, "published": 1}
-    ).sort("sort_order", 1).to_list(100)
-    
-    return {"tiles": tiles}
+    try:
+        db = get_db()
+        
+        if db is None:
+            return {"tiles": []}
+        
+        # Initialize if needed
+        count = await db.cms_tiles.count_documents({})
+        if count == 0:
+            for tile in DEFAULT_TILES:
+                tile["created_at"] = datetime.now(timezone.utc).isoformat()
+                await db.cms_tiles.insert_one(tile.copy())
+        
+        # Only return published tiles with necessary fields
+        tiles = await db.cms_tiles.find(
+            {"published": True}, 
+            {"_id": 0, "tile_id": 1, "name": 1, "slug": 1, "icon": 1, "route_type": 1, "external_url": 1, "is_system": 1, "published": 1}
+        ).sort("sort_order", 1).to_list(100)
+        
+        return {"tiles": tiles}
+    except Exception as e:
+        import logging
+        logging.error(f"Error fetching public tiles: {e}")
+        return {"tiles": []}
 
 
 @router.get("/admin")
