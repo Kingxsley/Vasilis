@@ -336,6 +336,8 @@ function TileFormPage({ tile, onSave, onCancel, saving }) {
                   </SelectTrigger>
                   <SelectContent className="bg-[#161B22] border-[#30363D]">
                     <SelectItem value="custom">Custom Content</SelectItem>
+                    <SelectItem value="contact_form">Contact Form</SelectItem>
+                    <SelectItem value="events">Events Calendar</SelectItem>
                     <SelectItem value="internal">Internal Page</SelectItem>
                     <SelectItem value="external">External Link</SelectItem>
                   </SelectContent>
