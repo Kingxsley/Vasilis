@@ -884,9 +884,9 @@ const AppRouter = () => {
             </ProtectedRoute>
           }
         />
-        {/* Ad Tracking Route - catches campaign IDs at root level */}
-        {/* URL format: /{campaign_id}?u={tracking_code} */}
-        <Route path="/:campaignId" element={<AdTrackerWrapper />} />
+        {/* Dynamic Route - CMS tiles and Ad Tracking at root level */}
+        {/* First checks for CMS tiles, then ad campaigns */}
+        <Route path="/:slug" element={<DynamicRouteHandler />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </React.Suspense>
