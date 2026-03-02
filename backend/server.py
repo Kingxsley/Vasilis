@@ -64,6 +64,26 @@ JWT_REFRESH_TOKEN_EXPIRE_DAYS = 7  # Refresh tokens last longer
 # Create the main app
 app = FastAPI(title="Vasilis NetShield API")
 
+# Global exception handler to ensure proper JSON responses with CORS
+from fastapi.responses import JSONResponse
+from fastapi import Request as FastAPIRequest
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: FastAPIRequest, exc: Exception):
+    """Handle all unhandled exceptions and return proper JSON with error info"""
+    import traceback
+    logger.error(f"Unhandled exception: {exc}")
+    logger.error(traceback.format_exc())
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error", "error": str(exc)},
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+        }
+    )
+
 # Initialize audit logger (connected to DB after startup)
 audit_logger = AuditLogger()
 
