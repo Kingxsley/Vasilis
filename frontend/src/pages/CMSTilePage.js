@@ -342,7 +342,7 @@ export default function CMSTilePage() {
 
   const fetchTile = async () => {
     try {
-      const res = await axios.get(`${API}/cms-tiles/public/${slug}`);
+      const res = await axios.get(`${API}/cms-tiles/${slug}`);
       setTile(res.data);
     } catch (err) {
       if (err.response?.status === 404) {
