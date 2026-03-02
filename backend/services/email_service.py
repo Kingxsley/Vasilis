@@ -1237,3 +1237,114 @@ View detailed analytics: {analytics_url}
     
     return success_count > 0
 
+
+
+async def send_event_rsvp_confirmation(to_email: str, event_title: str, event_date: str, event_location: str = None, db=None) -> bool:
+    """Send RSVP confirmation email"""
+    sg_api_key = os.environ.get("SENDGRID_API_KEY")
+    sender_email = os.environ.get("SENDER_EMAIL", "noreply@vasilisnetshield.com")
+    
+    if not sg_api_key:
+        logger.warning("SendGrid API key not configured")
+        return False
+    
+    if not is_valid_email(to_email):
+        logger.warning(f"Invalid email format: {to_email}")
+        return False
+    
+    # Format date nicely
+    try:
+        from dateutil.parser import parse
+        dt = parse(event_date)
+        formatted_date = dt.strftime("%B %d, %Y at %I:%M %p")
+    except:
+        formatted_date = event_date
+    
+    location_html = f"<p><strong>Location:</strong> {event_location}</p>" if event_location else ""
+    
+    html_content = f"""
+    <html>
+    <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
+        <div style="background-color: #0D1117; padding: 30px; border-radius: 10px;">
+            <h1 style="color: #D4A836; margin-bottom: 20px;">RSVP Confirmed!</h1>
+            <p style="color: #E6EDF3; font-size: 16px;">Thank you for registering for:</p>
+            <h2 style="color: #FFFFFF; margin: 20px 0;">{event_title}</h2>
+            <div style="background-color: #161B22; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <p style="color: #E6EDF3;"><strong>Date:</strong> {formatted_date}</p>
+                {location_html}
+            </div>
+            <p style="color: #8B949E; font-size: 14px;">We look forward to seeing you there!</p>
+            <hr style="border: 1px solid #30363D; margin: 30px 0;">
+            <p style="color: #8B949E; font-size: 12px; text-align: center;">
+                VasilisNetShield Security Training
+            </p>
+        </div>
+    </body>
+    </html>
+    """
+    
+    try:
+        sg = SendGridAPIClient(api_key=sg_api_key)
+        message = Mail(
+            from_email=Email(sender_email, "VasilisNetShield Events"),
+            to_emails=[To(to_email)],
+            subject=f"RSVP Confirmed: {event_title}",
+            html_content=Content("text/html", html_content)
+        )
+        
+        response = sg.send(message)
+        return response.status_code == 202
+    except Exception as e:
+        logger.error(f"Failed to send RSVP confirmation: {e}")
+        return False
+
+
+async def send_event_reminder(to_email: str, event_title: str, event_date: str, event_location: str = None) -> bool:
+    """Send event reminder email"""
+    sg_api_key = os.environ.get("SENDGRID_API_KEY")
+    sender_email = os.environ.get("SENDER_EMAIL", "noreply@vasilisnetshield.com")
+    
+    if not sg_api_key or not is_valid_email(to_email):
+        return False
+    
+    # Format date nicely
+    try:
+        from dateutil.parser import parse
+        dt = parse(event_date)
+        formatted_date = dt.strftime("%B %d, %Y at %I:%M %p")
+    except:
+        formatted_date = event_date
+    
+    location_html = f"<p><strong>Location:</strong> {event_location}</p>" if event_location else ""
+    
+    html_content = f"""
+    <html>
+    <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background-color: #0D1117; padding: 30px; border-radius: 10px;">
+            <h1 style="color: #D4A836;">Event Reminder</h1>
+            <p style="color: #E6EDF3;">Don't forget! You're registered for:</p>
+            <h2 style="color: #FFFFFF;">{event_title}</h2>
+            <div style="background-color: #161B22; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <p style="color: #E6EDF3;"><strong>Date:</strong> {formatted_date}</p>
+                {location_html}
+            </div>
+            <p style="color: #8B949E;">See you soon!</p>
+        </div>
+    </body>
+    </html>
+    """
+    
+    try:
+        sg = SendGridAPIClient(api_key=sg_api_key)
+        message = Mail(
+            from_email=Email(sender_email, "VasilisNetShield Events"),
+            to_emails=[To(to_email)],
+            subject=f"Reminder: {event_title} is coming up!",
+            html_content=Content("text/html", html_content)
+        )
+        
+        response = sg.send(message)
+        return response.status_code == 202
+    except Exception as e:
+        logger.error(f"Failed to send event reminder: {e}")
+        return False
