@@ -446,10 +446,11 @@ export default function CMSTiles() {
       </Dialog>
 
       {/* Edit Tile Dialog */}
-      <Dialog open={showEdit} onOpenChange={setShowEdit}>
+      <Dialog open={showEdit} onOpenChange={setShowEdit} modal={false}>
         <DialogContent 
           className="bg-[#161B22] border-[#30363D] sm:max-w-[600px]"
           onOpenAutoFocus={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
         >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
