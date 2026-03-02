@@ -389,6 +389,34 @@ function TileFormPage({ tile, onSave, onCancel, saving }) {
             </Card>
           )}
 
+          {routeType === 'contact_form' && (
+            <Card className="bg-[#161B22] border-[#30363D]">
+              <CardContent className="p-8 text-center">
+                <Phone className="w-12 h-12 text-[#D4A836] mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-white mb-2">Contact Form Page</h3>
+                <p className="text-gray-400">
+                  This page will display a contact form where visitors can send you messages.
+                  <br />
+                  Form submissions will appear in your Forms inbox.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {routeType === 'events' && (
+            <Card className="bg-[#161B22] border-[#30363D]">
+              <CardContent className="p-8 text-center">
+                <Globe className="w-12 h-12 text-[#D4A836] mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-white mb-2">Events Calendar Page</h3>
+                <p className="text-gray-400">
+                  This page will display your events calendar with RSVP functionality.
+                  <br />
+                  Manage events from the Events section in the sidebar.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
           {routeType === 'internal' && (
             <Card className="bg-[#161B22] border-[#30363D]">
               <CardContent className="p-8 text-center">
