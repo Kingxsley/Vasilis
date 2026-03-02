@@ -36,9 +36,8 @@ const localizer = dateFnsLocalizer({
 
 // Visual Editor Toolbar Component
 const EditorToolbar = ({ editor }) => {
-  if (!editor) return null;
-
   const addImage = useCallback(() => {
+    if (!editor) return;
     const url = window.prompt('Enter image URL:');
     if (url) {
       editor.chain().focus().setImage({ src: url }).run();
@@ -46,11 +45,14 @@ const EditorToolbar = ({ editor }) => {
   }, [editor]);
 
   const addLink = useCallback(() => {
+    if (!editor) return;
     const url = window.prompt('Enter URL:');
     if (url) {
       editor.chain().focus().setLink({ href: url }).run();
     }
   }, [editor]);
+
+  if (!editor) return null;
 
   return (
     <div className="flex flex-wrap gap-1 p-2 border-b border-[#30363D] bg-[#0D1117]">
