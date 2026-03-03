@@ -310,6 +310,20 @@ export default function CMSTiles() {
     }
   };
 
+  const seedDemoPages = async () => {
+    try {
+      const res = await axios.post(`${API}/cms-tiles/seed-demo`, {}, { headers });
+      if (res.data.pages?.length > 0) {
+        toast.success(res.data.message);
+        fetchTiles();
+      } else {
+        toast.info('Demo pages already exist');
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to seed demo pages');
+    }
+  };
+
   const getIconComponent = (iconName) => {
     return ICON_OPTIONS[iconName] || FileText;
   };
@@ -366,13 +380,24 @@ export default function CMSTiles() {
               Create and manage website pages with visual editor
             </p>
           </div>
-          <Button 
-            onClick={() => setView('create')}
-            className="bg-[#D4A836] hover:bg-[#B8922E] text-black"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Create Page
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline"
+              onClick={seedDemoPages}
+              className="border-[#D4A836]/50 text-[#D4A836] hover:bg-[#D4A836]/10"
+              data-testid="seed-demo-btn"
+            >
+              <Zap className="w-4 h-4 mr-2" />
+              Seed Demo Pages
+            </Button>
+            <Button 
+              onClick={() => setView('create')}
+              className="bg-[#D4A836] hover:bg-[#B8922E] text-black"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create Page
+            </Button>
+          </div>
         </div>
 
         {/* Tiles Grid */}

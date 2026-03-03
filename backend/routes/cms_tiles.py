@@ -380,3 +380,91 @@ async def reorder_tiles(items: List[dict], request: Request):
             )
     
     return {"message": "Tiles reordered successfully"}
+
+
+
+# Example pages with blocks - seeded if user clicks "Seed Demo" button
+EXAMPLE_PAGES = [
+    {
+        "tile_id": "tile_events_page",
+        "name": "Events",
+        "slug": "events",
+        "icon": "Calendar",
+        "description": "Upcoming events and workshops",
+        "is_system": False,
+        "published": True,
+        "sort_order": 10,
+        "route_type": "custom",
+        "blocks": [
+            {"id": "events_block_1", "type": "heading", "content": {"text": "Upcoming Events", "level": "h1", "align": "center"}},
+            {"id": "events_block_2", "type": "events", "content": {"limit": 6, "layout": "grid"}}
+        ]
+    },
+    {
+        "tile_id": "tile_demo_page",
+        "name": "Page Builder Demo",
+        "slug": "demo",
+        "icon": "Sparkles",
+        "description": "Showcase of all page builder block types",
+        "is_system": False,
+        "published": True,
+        "sort_order": 11,
+        "route_type": "custom",
+        "blocks": [
+            {"id": "demo_h1", "type": "heading", "content": {"text": "Page Builder Demo", "level": "h1", "align": "center"}},
+            {"id": "demo_text", "type": "text", "content": {"html": "<p style='text-align:center;'>This page demonstrates all the block types available in the visual page builder.</p>"}},
+            {"id": "demo_team_h", "type": "heading", "content": {"text": "Meet Our Team", "level": "h2", "align": "center"}},
+            {"id": "demo_team", "type": "team", "content": {"columns": 3, "members": [
+                {"name": "Sarah Johnson", "role": "CEO", "image": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400", "bio": "Leading our mission."},
+                {"name": "Michael Chen", "role": "CTO", "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400", "bio": "Building secure solutions."},
+                {"name": "Emily Rodriguez", "role": "Head of Training", "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400", "bio": "Creating awareness programs."}
+            ]}},
+            {"id": "demo_test_h", "type": "heading", "content": {"text": "What Our Clients Say", "level": "h2", "align": "center"}},
+            {"id": "demo_test", "type": "testimonials", "content": {"items": [
+                {"quote": "This platform transformed our security training!", "author": "James Wilson", "role": "CISO, TechCorp"},
+                {"quote": "Easy to use and highly effective.", "author": "Amanda Lee", "role": "HR Director"}
+            ]}},
+            {"id": "demo_price_h", "type": "heading", "content": {"text": "Pricing Plans", "level": "h2", "align": "center"}},
+            {"id": "demo_price", "type": "pricing", "content": {"plans": [
+                {"name": "Starter", "price": "$29", "period": "/mo", "features": ["50 users", "Basic simulations", "Email support"], "cta": "Start Trial", "popular": False},
+                {"name": "Professional", "price": "$99", "period": "/mo", "features": ["500 users", "Advanced simulations", "Priority support", "API access"], "cta": "Get Started", "popular": True},
+                {"name": "Enterprise", "price": "Custom", "period": "", "features": ["Unlimited", "Dedicated manager", "Custom integrations"], "cta": "Contact Sales", "popular": False}
+            ]}},
+            {"id": "demo_faq_h", "type": "heading", "content": {"text": "Frequently Asked Questions", "level": "h2", "align": "center"}},
+            {"id": "demo_faq", "type": "faq", "content": {"items": [
+                {"question": "How long does implementation take?", "answer": "Most organizations are onboarded within 24 hours."},
+                {"question": "Is there a free trial?", "answer": "Yes! 14-day free trial with full access."},
+                {"question": "Can I customize training content?", "answer": "Absolutely! Our visual builder lets you create custom content."}
+            ]}},
+            {"id": "demo_feat_h", "type": "heading", "content": {"text": "Key Features", "level": "h2", "align": "center"}},
+            {"id": "demo_feat", "type": "features", "content": {"columns": 3, "items": [
+                {"icon": "Shield", "title": "Advanced Protection", "description": "Multi-layered security training."},
+                {"icon": "Zap", "title": "Fast Deployment", "description": "Get up and running in minutes."},
+                {"icon": "Star", "title": "Top Rated", "description": "Trusted by 500+ organizations."}
+            ]}},
+            {"id": "demo_cta", "type": "cta", "content": {"title": "Ready to Get Started?", "description": "Join 500+ organizations.", "buttonText": "Start Free Trial", "buttonUrl": "/auth"}}
+        ]
+    }
+]
+
+
+@router.post("/seed-demo")
+async def seed_demo_pages(request: Request):
+    """Seed example pages with blocks (Events, Demo) - Admin only"""
+    await require_super_admin(request)
+    db = get_db()
+    
+    created = []
+    for page in EXAMPLE_PAGES:
+        # Check if page already exists by slug
+        existing = await db.cms_tiles.find_one({"slug": page["slug"]})
+        if not existing:
+            page_data = page.copy()
+            page_data["created_at"] = datetime.now(timezone.utc).isoformat()
+            page_data["created_by"] = (await get_current_user(request)).get("user_id", "system")
+            await db.cms_tiles.insert_one(page_data)
+            created.append(page["name"])
+    
+    if created:
+        return {"message": f"Created demo pages: {', '.join(created)}", "pages": created}
+    return {"message": "Demo pages already exist", "pages": []}
