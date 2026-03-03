@@ -19,16 +19,8 @@ const iconMap = {
   Zap: Zap,
 };
 
-// Logo Component - shows logo directly without loading skeleton
-const Logo = ({ className = "h-10" }) => {
-  const [branding, setBranding] = useState(null);
-
-  useEffect(() => {
-    axios.get(`${API}/settings/branding`)
-      .then(res => setBranding(res.data))
-      .catch(() => {});
-  }, []);
-
+// Logo Component - shows logo immediately without waiting for API
+const Logo = ({ branding, className = "h-10" }) => {
   const handleClick = (e) => {
     e.preventDefault();
     window.location.href = '/';
@@ -39,7 +31,7 @@ const Logo = ({ className = "h-10" }) => {
       {branding?.logo_url ? (
         <img src={branding.logo_url} alt="Logo" className="w-8 h-8 object-contain" />
       ) : (
-        /* Use the site favicon when no logo is uploaded */
+        /* Use the site favicon when no logo is uploaded - shows immediately */
         <img src="/favicon.svg" alt="Logo" className="w-8 h-8 object-contain" />
       )}
       <span className="text-xl font-bold text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
@@ -171,17 +163,12 @@ export default function LandingPage() {
   const statsContent = statsSection?.content || null;
 
   // Navigation - CMS tiles only (no hardcoded pages)
-  const isReady = !loading && branding !== null;
-  
-  // Count visible nav items for mobile - CMS tiles only
-  const visibleNavItems = isReady ? [
-    // Only CMS tiles that are not system tiles
-    ...cmsTiles.filter(t => !t.is_system).map(tile => ({
-      to: tile.route_type === 'external' ? tile.external_url : `/${tile.slug}`,
-      label: tile.name,
-      external: tile.route_type === 'external'
-    }))
-  ].filter(Boolean) : [];
+  // Show nav items as soon as cmsTiles loads, don't wait for other data
+  const visibleNavItems = cmsTiles.filter(t => !t.is_system).map(tile => ({
+    to: tile.route_type === 'external' ? tile.external_url : `/${tile.slug}`,
+    label: tile.name,
+    external: tile.route_type === 'external'
+  }));
 
   return (
     <div className="min-h-screen">
@@ -189,12 +176,12 @@ export default function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-[#D4A836]/20" style={{ borderColor: `${primaryColor}33` }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <Logo />
+            <Logo branding={branding} />
             
             {/* Desktop Navigation - CMS Tiles Only */}
             <div className="hidden md:flex items-center gap-6">
-              {/* CMS Tiles (non-system only) */}
-              {isReady && cmsTiles.filter(t => !t.is_system).map(tile => (
+              {/* CMS Tiles (non-system only) - show immediately when available */}
+              {cmsTiles.filter(t => !t.is_system).map(tile => (
                 tile.route_type === 'external' ? (
                   <a 
                     key={tile.tile_id}
@@ -768,7 +755,7 @@ export default function LandingPage() {
       <footer className="py-12 border-t border-[#D4A836]/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <Logo />
+            <Logo branding={branding} />
             
             {/* Social Links */}
             {(branding?.social_facebook || branding?.social_twitter || branding?.social_linkedin || branding?.social_instagram || branding?.social_youtube) && (

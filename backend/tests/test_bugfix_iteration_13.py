@@ -10,7 +10,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://page-builder-fixes-1.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://admin-unify-1.preview.emergentagent.com')
 API = f"{BASE_URL}/api"
 
 @pytest.fixture(scope="module")

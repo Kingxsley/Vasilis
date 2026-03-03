@@ -11,7 +11,7 @@ export default defineConfig({
     ['json', { outputFile: '/root/.emergent/automation_output/20260303_062416/results.json' }],
   ],
   use: {
-    baseURL: 'https://page-builder-fixes-1.preview.emergentagent.com',
+    baseURL: 'https://admin-unify-1.preview.emergentagent.com',
     screenshot: 'only-on-failure',
     trace: 'off',
     headless: true,

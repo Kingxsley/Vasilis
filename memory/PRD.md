@@ -791,3 +791,31 @@ JWT_SECRET=<secure-random-string>
 **User Action Required:**
 1. Push to GitHub via "Save to Github"
 2. Redeploy on Vercel with cache cleared
+
+---
+
+## Session Changes (March 2026) - Landing Page Performance & Delete Pages
+
+### P0 - Fixed: Logo and Navigation Loading Delay
+**Issue:** The logo and navigation menu items were not appearing until ALL API calls completed, causing a noticeable delay on page load.
+
+**Root Cause:** 
+1. The `Logo` component had its own separate API call to fetch branding, causing duplicate requests
+2. Navigation items waited for `isReady` flag which required ALL data to load
+
+**Fix Applied:**
+- Removed independent API call from `Logo` component - now receives `branding` as prop
+- Navigation items now render immediately when `cmsTiles` data is available
+- Logo shows fallback (favicon.svg) instantly while branding loads
+
+### P0 - Verified: Delete Custom Pages Functionality  
+**Feature:** Ability to delete custom CMS pages from the admin Content Manager
+
+**Status:** Already working - verified via API testing:
+- DELETE endpoint: `DELETE /api/cms-tiles/{tile_id}` 
+- Only non-system tiles can be deleted
+- Confirmation dialog prevents accidental deletion
+- Successfully deleted duplicate "Events" page during testing
+
+### Files Modified:
+- `/app/frontend/src/pages/LandingPage.js` - Optimized Logo and navigation loading
