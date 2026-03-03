@@ -1,0 +1,97 @@
+{
+  "summary": "Iteration 17 - CMS Page Builder and Block Rendering Tests. Verified P0 fix (Events block now uses start_date correctly) and P1 fix (Contact form without sidebar). All 12 backend tests and 11 frontend E2E tests passed.",
+  "mode": "generate",
+  "baseline_commit": "28d7ccbd7e26104a9f7d617457e10bcd086baad3",
+  "head_commit": "f5aaeee8c161374689ed507dc2496f721cdf2a50",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "regression_results": {
+    "total_specs": 23,
+    "passed": 23,
+    "failed": 0,
+    "skipped": 0
+  },
+  "specs_created": [
+    "/app/tests/e2e/cms-pagebuilder.spec.ts",
+    "/app/backend/tests/test_cms_pagebuilder.py"
+  ],
+  "specs_updated": [],
+  "quarantined_tests": [],
+  "test_report_links": [
+    "/app/backend/tests/test_cms_pagebuilder.py",
+    "/app/test_reports/pytest/pytest_results_17.xml"
+  ],
+  "tests_verified": {
+    "backend": {
+      "cms_tiles_api": {
+        "nav_tiles": "PASS - /api/cms-tiles/nav returns published custom tiles",
+        "tile_by_slug_contact": "PASS - /api/cms-tiles/Contact-us returns tile with contact_form block",
+        "tile_by_slug_events": "PASS - /api/cms-tiles/events-page returns tile with events block",
+        "public_tiles": "PASS - /api/cms-tiles/public returns only published tiles",
+        "nonexistent_tile": "PASS - Returns 404 for non-existent tiles"
+      },
+      "events_api": {
+        "list_events": "PASS - /api/events returns events list",
+        "upcoming_events": "PASS - /api/events/upcoming returns upcoming events with start_date",
+        "event_date_format": "PASS - Events use start_date field (not start_time) in ISO format"
+      },
+      "contact_form_api": {
+        "form_submission": "PASS - /api/contact accepts valid form submissions",
+        "validation": "PASS - Validates required fields"
+      },
+      "block_types": {
+        "contact_form_block": "PASS - Has correct structure with title and buttonText",
+        "events_block": "PASS - Has correct structure with limit and layout"
+      }
+    },
+    "frontend": {
+      "cms_pages": {
+        "contact_page_at_root_url": "PASS - /Contact-us loads with contact form",
+        "events_page_at_root_url": "PASS - /events-page loads with events",
+        "dynamic_navigation": "PASS - CMS pages appear in navigation",
+        "navigation_links": "PASS - Nav links work correctly"
+      },
+      "events_block": {
+        "date_format": "PASS - Events show correct date format (Sun, Mar 15, 02:00 PM)",
+        "event_display": "PASS - Events display title and date correctly"
+      },
+      "contact_form": {
+        "no_sidebar": "PASS - Contact form renders without sidebar (clean design)",
+        "required_fields": "PASS - Has all required fields (name, email, message)",
+        "form_submission": "PASS - Form submission works and shows success message"
+      },
+      "block_rendering": {
+        "heading_block": "PASS - Heading renders correctly",
+        "text_block": "PASS - Text block renders HTML content"
+      }
+    }
+  },
+  "action_items": [],
+  "updated_files": [
+    "/app/tests/e2e/cms-pagebuilder.spec.ts",
+    "/app/backend/tests/test_cms_pagebuilder.py"
+  ],
+  "success_rate": {
+    "backend": "100% (12/12)",
+    "frontend": "100% (11/11)"
+  },
+  "seed_data_creation": "Test data prefixed with TEST_ used for contact form submission tests",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "CMS Page Builder features verified: 1) Events block uses start_date correctly (P0 fixed), 2) Contact form renders without sidebar (P1 fixed), 3) CMS pages served at root URLs work correctly, 4) Dynamic navigation with CMS tiles works. All block types that have renderers work correctly. The Visual Block Editor admin panel was not tested (requires admin login) - focus was on public-facing CMS pages.",
+  "features_confirmed_working": [
+    "CMS Pages at Root URLs - /Contact-us, /events-page",
+    "Events Block - start_date field renders correct date format",
+    "Contact Form Block - clean design without sidebar",
+    "Dynamic Navigation - CMS tiles appear in nav",
+    "Contact Form Submission - API accepts and processes submissions",
+    "Block Rendering - heading, text, events, contact_form blocks render correctly"
+  ]
+}

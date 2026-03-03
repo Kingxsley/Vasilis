@@ -488,6 +488,588 @@ const BlockEditor = ({ block, onChange }) => {
         </div>
       );
 
+    case 'team':
+      return (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <Label>Team Members</Label>
+            <Button
+              size="sm"
+              onClick={() => {
+                const members = [...(content.members || [])];
+                members.push({ name: 'New Member', role: 'Position', image: '', bio: '' });
+                updateContent('members', members);
+              }}
+              className="bg-[#D4A836] text-black"
+            >
+              <Plus className="w-3 h-3 mr-1" /> Add Member
+            </Button>
+          </div>
+          <div className="space-y-3 max-h-64 overflow-y-auto">
+            {(content.members || []).map((member, idx) => (
+              <div key={idx} className="p-3 bg-[#0D1117] border border-[#30363D] rounded-lg space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-400">Member {idx + 1}</span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 w-6 p-0 text-red-400"
+                    onClick={() => {
+                      const members = content.members.filter((_, i) => i !== idx);
+                      updateContent('members', members);
+                    }}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
+                <Input
+                  placeholder="Name"
+                  value={member.name || ''}
+                  onChange={(e) => {
+                    const members = [...content.members];
+                    members[idx] = { ...members[idx], name: e.target.value };
+                    updateContent('members', members);
+                  }}
+                  className="bg-[#161B22] border-[#30363D] text-sm"
+                />
+                <Input
+                  placeholder="Role/Position"
+                  value={member.role || ''}
+                  onChange={(e) => {
+                    const members = [...content.members];
+                    members[idx] = { ...members[idx], role: e.target.value };
+                    updateContent('members', members);
+                  }}
+                  className="bg-[#161B22] border-[#30363D] text-sm"
+                />
+                <Input
+                  placeholder="Image URL"
+                  value={member.image || ''}
+                  onChange={(e) => {
+                    const members = [...content.members];
+                    members[idx] = { ...members[idx], image: e.target.value };
+                    updateContent('members', members);
+                  }}
+                  className="bg-[#161B22] border-[#30363D] text-sm"
+                />
+                <Textarea
+                  placeholder="Short bio"
+                  value={member.bio || ''}
+                  onChange={(e) => {
+                    const members = [...content.members];
+                    members[idx] = { ...members[idx], bio: e.target.value };
+                    updateContent('members', members);
+                  }}
+                  rows={2}
+                  className="bg-[#161B22] border-[#30363D] text-sm"
+                />
+              </div>
+            ))}
+          </div>
+          <div className="space-y-2">
+            <Label>Columns</Label>
+            <Select value={String(content.columns || 3)} onValueChange={(v) => updateContent('columns', parseInt(v))}>
+              <SelectTrigger className="bg-[#0D1117] border-[#30363D]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-[#161B22] border-[#30363D]">
+                <SelectItem value="2">2 Columns</SelectItem>
+                <SelectItem value="3">3 Columns</SelectItem>
+                <SelectItem value="4">4 Columns</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      );
+
+    case 'testimonials':
+      return (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <Label>Testimonials</Label>
+            <Button
+              size="sm"
+              onClick={() => {
+                const items = [...(content.items || [])];
+                items.push({ quote: 'Great service!', author: 'John Doe', role: 'CEO', image: '' });
+                updateContent('items', items);
+              }}
+              className="bg-[#D4A836] text-black"
+            >
+              <Plus className="w-3 h-3 mr-1" /> Add
+            </Button>
+          </div>
+          <div className="space-y-3 max-h-64 overflow-y-auto">
+            {(content.items || []).map((item, idx) => (
+              <div key={idx} className="p-3 bg-[#0D1117] border border-[#30363D] rounded-lg space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-400">Testimonial {idx + 1}</span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 w-6 p-0 text-red-400"
+                    onClick={() => {
+                      const items = content.items.filter((_, i) => i !== idx);
+                      updateContent('items', items);
+                    }}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
+                <Textarea
+                  placeholder="Quote"
+                  value={item.quote || ''}
+                  onChange={(e) => {
+                    const items = [...content.items];
+                    items[idx] = { ...items[idx], quote: e.target.value };
+                    updateContent('items', items);
+                  }}
+                  rows={2}
+                  className="bg-[#161B22] border-[#30363D] text-sm"
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    placeholder="Author name"
+                    value={item.author || ''}
+                    onChange={(e) => {
+                      const items = [...content.items];
+                      items[idx] = { ...items[idx], author: e.target.value };
+                      updateContent('items', items);
+                    }}
+                    className="bg-[#161B22] border-[#30363D] text-sm"
+                  />
+                  <Input
+                    placeholder="Role/Title"
+                    value={item.role || ''}
+                    onChange={(e) => {
+                      const items = [...content.items];
+                      items[idx] = { ...items[idx], role: e.target.value };
+                      updateContent('items', items);
+                    }}
+                    className="bg-[#161B22] border-[#30363D] text-sm"
+                  />
+                </div>
+                <Input
+                  placeholder="Author image URL"
+                  value={item.image || ''}
+                  onChange={(e) => {
+                    const items = [...content.items];
+                    items[idx] = { ...items[idx], image: e.target.value };
+                    updateContent('items', items);
+                  }}
+                  className="bg-[#161B22] border-[#30363D] text-sm"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+    case 'pricing':
+      return (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <Label>Pricing Plans</Label>
+            <Button
+              size="sm"
+              onClick={() => {
+                const plans = [...(content.plans || [])];
+                plans.push({ name: 'Plan', price: '$0', period: '/month', features: ['Feature 1'], cta: 'Get Started', popular: false });
+                updateContent('plans', plans);
+              }}
+              className="bg-[#D4A836] text-black"
+            >
+              <Plus className="w-3 h-3 mr-1" /> Add Plan
+            </Button>
+          </div>
+          <div className="space-y-3 max-h-80 overflow-y-auto">
+            {(content.plans || []).map((plan, idx) => (
+              <div key={idx} className="p-3 bg-[#0D1117] border border-[#30363D] rounded-lg space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-400">Plan {idx + 1}</span>
+                  <div className="flex items-center gap-2">
+                    <label className="flex items-center gap-1 text-xs text-gray-400">
+                      <input
+                        type="checkbox"
+                        checked={plan.popular || false}
+                        onChange={(e) => {
+                          const plans = [...content.plans];
+                          plans[idx] = { ...plans[idx], popular: e.target.checked };
+                          updateContent('plans', plans);
+                        }}
+                        className="rounded"
+                      />
+                      Popular
+                    </label>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 w-6 p-0 text-red-400"
+                      onClick={() => {
+                        const plans = content.plans.filter((_, i) => i !== idx);
+                        updateContent('plans', plans);
+                      }}
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </div>
+                <Input
+                  placeholder="Plan name"
+                  value={plan.name || ''}
+                  onChange={(e) => {
+                    const plans = [...content.plans];
+                    plans[idx] = { ...plans[idx], name: e.target.value };
+                    updateContent('plans', plans);
+                  }}
+                  className="bg-[#161B22] border-[#30363D] text-sm"
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    placeholder="Price (e.g. $29)"
+                    value={plan.price || ''}
+                    onChange={(e) => {
+                      const plans = [...content.plans];
+                      plans[idx] = { ...plans[idx], price: e.target.value };
+                      updateContent('plans', plans);
+                    }}
+                    className="bg-[#161B22] border-[#30363D] text-sm"
+                  />
+                  <Input
+                    placeholder="Period (e.g. /month)"
+                    value={plan.period || ''}
+                    onChange={(e) => {
+                      const plans = [...content.plans];
+                      plans[idx] = { ...plans[idx], period: e.target.value };
+                      updateContent('plans', plans);
+                    }}
+                    className="bg-[#161B22] border-[#30363D] text-sm"
+                  />
+                </div>
+                <Textarea
+                  placeholder="Features (one per line)"
+                  value={(plan.features || []).join('\n')}
+                  onChange={(e) => {
+                    const plans = [...content.plans];
+                    plans[idx] = { ...plans[idx], features: e.target.value.split('\n').filter(f => f.trim()) };
+                    updateContent('plans', plans);
+                  }}
+                  rows={3}
+                  className="bg-[#161B22] border-[#30363D] text-sm"
+                />
+                <Input
+                  placeholder="Button text"
+                  value={plan.cta || ''}
+                  onChange={(e) => {
+                    const plans = [...content.plans];
+                    plans[idx] = { ...plans[idx], cta: e.target.value };
+                    updateContent('plans', plans);
+                  }}
+                  className="bg-[#161B22] border-[#30363D] text-sm"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+    case 'faq':
+      return (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <Label>FAQ Items</Label>
+            <Button
+              size="sm"
+              onClick={() => {
+                const items = [...(content.items || [])];
+                items.push({ question: 'New Question?', answer: 'Answer here.' });
+                updateContent('items', items);
+              }}
+              className="bg-[#D4A836] text-black"
+            >
+              <Plus className="w-3 h-3 mr-1" /> Add Q&A
+            </Button>
+          </div>
+          <div className="space-y-3 max-h-64 overflow-y-auto">
+            {(content.items || []).map((item, idx) => (
+              <div key={idx} className="p-3 bg-[#0D1117] border border-[#30363D] rounded-lg space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-400">Q&A {idx + 1}</span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 w-6 p-0 text-red-400"
+                    onClick={() => {
+                      const items = content.items.filter((_, i) => i !== idx);
+                      updateContent('items', items);
+                    }}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
+                <Input
+                  placeholder="Question"
+                  value={item.question || ''}
+                  onChange={(e) => {
+                    const items = [...content.items];
+                    items[idx] = { ...items[idx], question: e.target.value };
+                    updateContent('items', items);
+                  }}
+                  className="bg-[#161B22] border-[#30363D] text-sm"
+                />
+                <Textarea
+                  placeholder="Answer"
+                  value={item.answer || ''}
+                  onChange={(e) => {
+                    const items = [...content.items];
+                    items[idx] = { ...items[idx], answer: e.target.value };
+                    updateContent('items', items);
+                  }}
+                  rows={2}
+                  className="bg-[#161B22] border-[#30363D] text-sm"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+    case 'features':
+      return (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <Label>Feature Items</Label>
+            <Button
+              size="sm"
+              onClick={() => {
+                const items = [...(content.items || [])];
+                items.push({ icon: 'Zap', title: 'Feature', description: 'Description' });
+                updateContent('items', items);
+              }}
+              className="bg-[#D4A836] text-black"
+            >
+              <Plus className="w-3 h-3 mr-1" /> Add Feature
+            </Button>
+          </div>
+          <div className="space-y-3 max-h-64 overflow-y-auto">
+            {(content.items || []).map((item, idx) => (
+              <div key={idx} className="p-3 bg-[#0D1117] border border-[#30363D] rounded-lg space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-400">Feature {idx + 1}</span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 w-6 p-0 text-red-400"
+                    onClick={() => {
+                      const items = content.items.filter((_, i) => i !== idx);
+                      updateContent('items', items);
+                    }}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
+                <Select 
+                  value={item.icon || 'Zap'} 
+                  onValueChange={(v) => {
+                    const items = [...content.items];
+                    items[idx] = { ...items[idx], icon: v };
+                    updateContent('items', items);
+                  }}
+                >
+                  <SelectTrigger className="bg-[#161B22] border-[#30363D] text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#161B22] border-[#30363D]">
+                    <SelectItem value="Zap">⚡ Lightning</SelectItem>
+                    <SelectItem value="Shield">🛡️ Shield</SelectItem>
+                    <SelectItem value="Star">⭐ Star</SelectItem>
+                    <SelectItem value="Heart">❤️ Heart</SelectItem>
+                    <SelectItem value="Check">✓ Check</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Input
+                  placeholder="Feature title"
+                  value={item.title || ''}
+                  onChange={(e) => {
+                    const items = [...content.items];
+                    items[idx] = { ...items[idx], title: e.target.value };
+                    updateContent('items', items);
+                  }}
+                  className="bg-[#161B22] border-[#30363D] text-sm"
+                />
+                <Textarea
+                  placeholder="Feature description"
+                  value={item.description || ''}
+                  onChange={(e) => {
+                    const items = [...content.items];
+                    items[idx] = { ...items[idx], description: e.target.value };
+                    updateContent('items', items);
+                  }}
+                  rows={2}
+                  className="bg-[#161B22] border-[#30363D] text-sm"
+                />
+              </div>
+            ))}
+          </div>
+          <div className="space-y-2">
+            <Label>Columns</Label>
+            <Select value={String(content.columns || 3)} onValueChange={(v) => updateContent('columns', parseInt(v))}>
+              <SelectTrigger className="bg-[#0D1117] border-[#30363D]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-[#161B22] border-[#30363D]">
+                <SelectItem value="2">2 Columns</SelectItem>
+                <SelectItem value="3">3 Columns</SelectItem>
+                <SelectItem value="4">4 Columns</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      );
+
+    case 'gallery':
+      return (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <Label>Gallery Images</Label>
+            <Button
+              size="sm"
+              onClick={() => {
+                const images = [...(content.images || [])];
+                images.push({ url: '', alt: '' });
+                updateContent('images', images);
+              }}
+              className="bg-[#D4A836] text-black"
+            >
+              <Plus className="w-3 h-3 mr-1" /> Add Image
+            </Button>
+          </div>
+          <div className="space-y-3 max-h-64 overflow-y-auto">
+            {(content.images || []).map((img, idx) => (
+              <div key={idx} className="p-3 bg-[#0D1117] border border-[#30363D] rounded-lg space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-400">Image {idx + 1}</span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 w-6 p-0 text-red-400"
+                    onClick={() => {
+                      const images = content.images.filter((_, i) => i !== idx);
+                      updateContent('images', images);
+                    }}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
+                <Input
+                  placeholder="Image URL"
+                  value={typeof img === 'string' ? img : img.url || ''}
+                  onChange={(e) => {
+                    const images = [...content.images];
+                    images[idx] = { url: e.target.value, alt: typeof img === 'object' ? img.alt : '' };
+                    updateContent('images', images);
+                  }}
+                  className="bg-[#161B22] border-[#30363D] text-sm"
+                />
+                <Input
+                  placeholder="Alt text"
+                  value={typeof img === 'object' ? img.alt || '' : ''}
+                  onChange={(e) => {
+                    const images = [...content.images];
+                    images[idx] = { url: typeof images[idx] === 'string' ? images[idx] : images[idx].url, alt: e.target.value };
+                    updateContent('images', images);
+                  }}
+                  className="bg-[#161B22] border-[#30363D] text-sm"
+                />
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Columns</Label>
+              <Select value={String(content.columns || 3)} onValueChange={(v) => updateContent('columns', parseInt(v))}>
+                <SelectTrigger className="bg-[#0D1117] border-[#30363D]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-[#161B22] border-[#30363D]">
+                  <SelectItem value="2">2 Columns</SelectItem>
+                  <SelectItem value="3">3 Columns</SelectItem>
+                  <SelectItem value="4">4 Columns</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Gap</Label>
+              <Select value={String(content.gap || 4)} onValueChange={(v) => updateContent('gap', parseInt(v))}>
+                <SelectTrigger className="bg-[#0D1117] border-[#30363D]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-[#161B22] border-[#30363D]">
+                  <SelectItem value="2">Small</SelectItem>
+                  <SelectItem value="4">Medium</SelectItem>
+                  <SelectItem value="6">Large</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+      );
+
+    case 'list':
+      return (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label>List Type</Label>
+            <Select value={content.type || 'bullet'} onValueChange={(v) => updateContent('type', v)}>
+              <SelectTrigger className="bg-[#0D1117] border-[#30363D]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-[#161B22] border-[#30363D]">
+                <SelectItem value="bullet">Bullet Points</SelectItem>
+                <SelectItem value="numbered">Numbered</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Items (one per line)</Label>
+            <Textarea
+              value={(content.items || []).join('\n')}
+              onChange={(e) => updateContent('items', e.target.value.split('\n').filter(i => i.trim()))}
+              placeholder="Item 1&#10;Item 2&#10;Item 3"
+              rows={5}
+              className="bg-[#0D1117] border-[#30363D]"
+            />
+          </div>
+        </div>
+      );
+
+    case 'map':
+      return (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label>Address or Location</Label>
+            <Input
+              value={content.address || ''}
+              onChange={(e) => updateContent('address', e.target.value)}
+              placeholder="123 Main St, New York, NY"
+              className="bg-[#0D1117] border-[#30363D]"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Zoom Level</Label>
+            <Input
+              type="number"
+              value={content.zoom || 15}
+              onChange={(e) => updateContent('zoom', parseInt(e.target.value))}
+              min={1}
+              max={20}
+              className="bg-[#0D1117] border-[#30363D]"
+            />
+          </div>
+          <p className="text-xs text-gray-500">Enter an address to embed a Google Map</p>
+        </div>
+      );
+
     default:
       return (
         <div className="p-4 text-center text-gray-400">

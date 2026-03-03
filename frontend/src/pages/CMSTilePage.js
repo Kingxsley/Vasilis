@@ -166,12 +166,66 @@ const BlockRenderer = ({ block, branding }) => {
     case 'events':
       return <EventsSection branding={branding} limit={content.limit} layout={content.layout} />;
 
+    case 'team':
+      return <TeamSection branding={branding} content={content} />;
+
+    case 'testimonials':
+      return <TestimonialsSection branding={branding} content={content} />;
+
+    case 'pricing':
+      return <PricingSection branding={branding} content={content} />;
+
+    case 'faq':
+      return <FAQSection branding={branding} content={content} />;
+
+    case 'features':
+      return <FeaturesSection branding={branding} content={content} />;
+
+    case 'gallery':
+      return <GallerySection branding={branding} content={content} />;
+
+    case 'list':
+      return (
+        <div className="mb-6" style={{ color: textColor }}>
+          {content.type === 'numbered' ? (
+            <ol className="list-decimal list-inside space-y-2">
+              {(content.items || []).map((item, i) => (
+                <li key={i} className="text-base">{item}</li>
+              ))}
+            </ol>
+          ) : (
+            <ul className="list-disc list-inside space-y-2">
+              {(content.items || []).map((item, i) => (
+                <li key={i} className="text-base">{item}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      );
+
+    case 'map':
+      const mapQuery = encodeURIComponent(content.address || 'New York');
+      return (
+        <div className="mb-6 rounded-lg overflow-hidden">
+          <iframe
+            src={`https://www.google.com/maps?q=${mapQuery}&output=embed`}
+            width="100%"
+            height="400"
+            style={{ border: 0 }}
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            title="Map"
+          />
+        </div>
+      );
+
     default:
       return null;
   }
 };
 
-// Contact Form Component
+// Contact Form Component - Clean design without sidebar
 const ContactFormSection = ({ branding, formContent = {} }) => {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -219,189 +273,435 @@ const ContactFormSection = ({ branding, formContent = {} }) => {
   const buttonText = formContent.buttonText || 'Send Message';
 
   return (
-    <div className="max-w-5xl mx-auto grid lg:grid-cols-3 gap-8">
-      {/* Contact Info */}
-      <div className="lg:col-span-1 space-y-6">
-        <Card className="bg-[#0f0f15] border-[#1a1a2e]">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${primaryColor}20` }}>
-                <Mail className="w-5 h-5" style={{ color: accentColor }} />
+    <div className="max-w-2xl mx-auto">
+      <Card className="bg-[#0f0f15] border-[#1a1a2e]">
+        <CardContent className="p-6 sm:p-8">
+          {submitted ? (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: `${primaryColor}20` }}>
+                <CheckCircle className="w-8 h-8" style={{ color: accentColor }} />
               </div>
-              <div>
-                <h3 className="font-semibold mb-1" style={{ color: headingColor }}>Email</h3>
-                <p className="text-sm" style={{ color: textColor, opacity: 0.7 }}>
-                  {branding?.contact_email || 'info@vasilisnetshield.com'}
-                </p>
-              </div>
+              <h3 className="text-2xl font-bold mb-2" style={{ color: headingColor }}>Message Sent!</h3>
+              <p className="mb-6" style={{ color: textColor, opacity: 0.7 }}>
+                Thank you for reaching out. We'll get back to you soon.
+              </p>
+              <Button 
+                onClick={() => setSubmitted(false)}
+                style={{ backgroundColor: primaryColor }}
+                className="hover:opacity-90"
+              >
+                Send Another Message
+              </Button>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-[#0f0f15] border-[#1a1a2e]">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${primaryColor}20` }}>
-                <Phone className="w-5 h-5" style={{ color: accentColor }} />
-              </div>
-              <div>
-                <h3 className="font-semibold mb-1" style={{ color: headingColor }}>Phone</h3>
-                <p className="text-sm" style={{ color: textColor, opacity: 0.7 }}>
-                  {branding?.contact_phone || 'Available upon request'}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-[#0f0f15] border-[#1a1a2e]">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${primaryColor}20` }}>
-                <MapPin className="w-5 h-5" style={{ color: accentColor }} />
-              </div>
-              <div>
-                <h3 className="font-semibold mb-1" style={{ color: headingColor }}>Location</h3>
-                <p className="text-sm" style={{ color: textColor, opacity: 0.7 }}>
-                  {branding?.company_address || 'Remote / Global'}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Contact Form */}
-      <div className="lg:col-span-2">
-        <Card className="bg-[#0f0f15] border-[#1a1a2e]">
-          <CardContent className="p-6 sm:p-8">
-            {submitted ? (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: `${primaryColor}20` }}>
-                  <CheckCircle className="w-8 h-8" style={{ color: accentColor }} />
-                </div>
-                <h3 className="text-2xl font-bold mb-2" style={{ color: headingColor }}>Message Sent!</h3>
-                <p className="mb-6" style={{ color: textColor, opacity: 0.7 }}>
-                  Thank you for reaching out. We'll get back to you soon.
-                </p>
-                <Button 
-                  onClick={() => setSubmitted(false)}
-                  style={{ backgroundColor: primaryColor }}
-                  className="hover:opacity-90"
-                >
-                  Send Another Message
-                </Button>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-6" data-testid="contact-form">
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name" style={{ color: textColor }}>Name *</Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      placeholder="Your name"
-                      required
-                      className="bg-[#0a0a0f] border-[#30363D] focus:border-[#D4A836]"
-                      style={{ color: textColor }}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email" style={{ color: textColor }}>Email *</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder="your@email.com"
-                      required
-                      className="bg-[#0a0a0f] border-[#30363D] focus:border-[#D4A836]"
-                      style={{ color: textColor }}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="phone" style={{ color: textColor }}>Phone</Label>
-                    <Input
-                      id="phone"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      placeholder="+1 (555) 000-0000"
-                      className="bg-[#0a0a0f] border-[#30363D] focus:border-[#D4A836]"
-                      style={{ color: textColor }}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="organization" style={{ color: textColor }}>Organization</Label>
-                    <Input
-                      id="organization"
-                      name="organization"
-                      value={formData.organization}
-                      onChange={handleChange}
-                      placeholder="Your company"
-                      className="bg-[#0a0a0f] border-[#30363D] focus:border-[#D4A836]"
-                      style={{ color: textColor }}
-                    />
-                  </div>
-                </div>
-
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-6" data-testid="contact-form">
+              <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="subject" style={{ color: textColor }}>Subject</Label>
+                  <Label htmlFor="name" style={{ color: textColor }}>Name *</Label>
                   <Input
-                    id="subject"
-                    name="subject"
-                    value={formData.subject}
+                    id="name"
+                    name="name"
+                    value={formData.name}
                     onChange={handleChange}
-                    placeholder="What's this about?"
+                    placeholder="Your name"
+                    required
                     className="bg-[#0a0a0f] border-[#30363D] focus:border-[#D4A836]"
                     style={{ color: textColor }}
                   />
                 </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="message" style={{ color: textColor }}>Message *</Label>
-                  <Textarea
-                    id="message"
-                    name="message"
-                    value={formData.message}
+                  <Label htmlFor="email" style={{ color: textColor }}>Email *</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
                     onChange={handleChange}
-                    placeholder="Tell us more about your inquiry..."
-                    rows={5}
+                    placeholder="your@email.com"
                     required
-                    className="bg-[#0a0a0f] border-[#30363D] focus:border-[#D4A836] resize-none"
+                    className="bg-[#0a0a0f] border-[#30363D] focus:border-[#D4A836]"
                     style={{ color: textColor }}
                   />
                 </div>
+              </div>
 
-                <Button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full hover:opacity-90"
-                  style={{ backgroundColor: primaryColor }}
-                >
-                  {submitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4 mr-2" />
-                      Send Message
-                    </>
-                  )}
-                </Button>
-              </form>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="phone" style={{ color: textColor }}>Phone</Label>
+                  <Input
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    placeholder="+1 (555) 000-0000"
+                    className="bg-[#0a0a0f] border-[#30363D] focus:border-[#D4A836]"
+                    style={{ color: textColor }}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="organization" style={{ color: textColor }}>Organization</Label>
+                  <Input
+                    id="organization"
+                    name="organization"
+                    value={formData.organization}
+                    onChange={handleChange}
+                    placeholder="Your company"
+                    className="bg-[#0a0a0f] border-[#30363D] focus:border-[#D4A836]"
+                    style={{ color: textColor }}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="subject" style={{ color: textColor }}>Subject</Label>
+                <Input
+                  id="subject"
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleChange}
+                  placeholder="What's this about?"
+                  className="bg-[#0a0a0f] border-[#30363D] focus:border-[#D4A836]"
+                  style={{ color: textColor }}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="message" style={{ color: textColor }}>Message *</Label>
+                <Textarea
+                  id="message"
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
+                  placeholder="Tell us more about your inquiry..."
+                  rows={5}
+                  required
+                  className="bg-[#0a0a0f] border-[#30363D] focus:border-[#D4A836] resize-none"
+                  style={{ color: textColor }}
+                />
+              </div>
+
+              <Button
+                type="submit"
+                disabled={submitting}
+                className="w-full hover:opacity-90"
+                style={{ backgroundColor: primaryColor }}
+                data-testid="contact-form-submit"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4 mr-2" />
+                    {buttonText}
+                  </>
+                )}
+              </Button>
+            </form>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+// Team Members Section
+const TeamSection = ({ branding, content }) => {
+  const textColor = branding?.text_color || '#E8DDB5';
+  const headingColor = branding?.heading_color || '#FFFFFF';
+  const primaryColor = branding?.primary_color || '#D4A836';
+  const members = content.members || [];
+  const columns = content.columns || 3;
+
+  if (members.length === 0) {
+    return (
+      <div className="text-center py-12 text-gray-400">
+        <p>No team members added yet</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`grid gap-6 mb-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-${columns}`}>
+      {members.map((member, index) => (
+        <Card key={index} className="bg-[#0f0f15] border-[#1a1a2e] overflow-hidden">
+          {member.image && (
+            <div className="aspect-square overflow-hidden">
+              <img 
+                src={member.image} 
+                alt={member.name} 
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+          <CardContent className="p-6 text-center">
+            <h3 className="text-lg font-semibold mb-1" style={{ color: headingColor }}>
+              {member.name}
+            </h3>
+            <p className="text-sm mb-3" style={{ color: primaryColor }}>
+              {member.role}
+            </p>
+            {member.bio && (
+              <p className="text-sm" style={{ color: textColor, opacity: 0.7 }}>
+                {member.bio}
+              </p>
             )}
           </CardContent>
         </Card>
+      ))}
+    </div>
+  );
+};
+
+// Testimonials Section
+const TestimonialsSection = ({ branding, content }) => {
+  const textColor = branding?.text_color || '#E8DDB5';
+  const headingColor = branding?.heading_color || '#FFFFFF';
+  const primaryColor = branding?.primary_color || '#D4A836';
+  const items = content.items || [];
+
+  if (items.length === 0) {
+    return (
+      <div className="text-center py-12 text-gray-400">
+        <p>No testimonials added yet</p>
       </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-6 mb-6 md:grid-cols-2 lg:grid-cols-3">
+      {items.map((item, index) => (
+        <Card key={index} className="bg-[#0f0f15] border-[#1a1a2e]">
+          <CardContent className="p-6">
+            <Quote className="w-8 h-8 mb-4" style={{ color: primaryColor, opacity: 0.5 }} />
+            <p className="text-base mb-4 italic" style={{ color: textColor }}>
+              "{item.quote}"
+            </p>
+            <div className="flex items-center gap-3">
+              {item.image && (
+                <img 
+                  src={item.image} 
+                  alt={item.author} 
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+              )}
+              <div>
+                <p className="font-semibold text-sm" style={{ color: headingColor }}>
+                  {item.author}
+                </p>
+                {item.role && (
+                  <p className="text-xs" style={{ color: textColor, opacity: 0.6 }}>
+                    {item.role}
+                  </p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+};
+
+// Pricing Table Section
+const PricingSection = ({ branding, content }) => {
+  const textColor = branding?.text_color || '#E8DDB5';
+  const headingColor = branding?.heading_color || '#FFFFFF';
+  const primaryColor = branding?.primary_color || '#D4A836';
+  const plans = content.plans || [];
+
+  if (plans.length === 0) {
+    return (
+      <div className="text-center py-12 text-gray-400">
+        <p>No pricing plans added yet</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-6 mb-6 md:grid-cols-2 lg:grid-cols-3">
+      {plans.map((plan, index) => (
+        <Card 
+          key={index} 
+          className={`bg-[#0f0f15] border-[#1a1a2e] relative ${plan.popular ? 'ring-2' : ''}`}
+          style={plan.popular ? { '--tw-ring-color': primaryColor } : {}}
+        >
+          {plan.popular && (
+            <div 
+              className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 text-xs font-bold rounded-full"
+              style={{ backgroundColor: primaryColor, color: '#000' }}
+            >
+              POPULAR
+            </div>
+          )}
+          <CardContent className="p-6 text-center">
+            <h3 className="text-xl font-bold mb-2" style={{ color: headingColor }}>
+              {plan.name}
+            </h3>
+            <div className="mb-6">
+              <span className="text-4xl font-bold" style={{ color: primaryColor }}>
+                {plan.price}
+              </span>
+              <span className="text-sm" style={{ color: textColor, opacity: 0.6 }}>
+                {plan.period}
+              </span>
+            </div>
+            <ul className="space-y-3 mb-6 text-left">
+              {(plan.features || []).map((feature, i) => (
+                <li key={i} className="flex items-center gap-2" style={{ color: textColor }}>
+                  <CheckCircle className="w-4 h-4 flex-shrink-0" style={{ color: primaryColor }} />
+                  <span className="text-sm">{feature}</span>
+                </li>
+              ))}
+            </ul>
+            <Button
+              className="w-full"
+              style={{ 
+                backgroundColor: plan.popular ? primaryColor : 'transparent',
+                color: plan.popular ? '#000' : primaryColor,
+                border: plan.popular ? 'none' : `2px solid ${primaryColor}`
+              }}
+            >
+              {plan.cta || 'Get Started'}
+            </Button>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+};
+
+// FAQ Accordion Section
+const FAQSection = ({ branding, content }) => {
+  const [openIndex, setOpenIndex] = useState(null);
+  const textColor = branding?.text_color || '#E8DDB5';
+  const headingColor = branding?.heading_color || '#FFFFFF';
+  const primaryColor = branding?.primary_color || '#D4A836';
+  const items = content.items || [];
+
+  if (items.length === 0) {
+    return (
+      <div className="text-center py-12 text-gray-400">
+        <p>No FAQ items added yet</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3 mb-6 max-w-3xl mx-auto">
+      {items.map((item, index) => (
+        <Card 
+          key={index} 
+          className="bg-[#0f0f15] border-[#1a1a2e] overflow-hidden cursor-pointer"
+          onClick={() => setOpenIndex(openIndex === index ? null : index)}
+        >
+          <CardContent className="p-0">
+            <div 
+              className="p-4 flex items-center justify-between"
+              style={{ color: headingColor }}
+            >
+              <span className="font-medium">{item.question}</span>
+              <span 
+                className="text-xl transition-transform"
+                style={{ 
+                  transform: openIndex === index ? 'rotate(45deg)' : 'none',
+                  color: primaryColor
+                }}
+              >
+                +
+              </span>
+            </div>
+            {openIndex === index && (
+              <div 
+                className="px-4 pb-4 border-t border-[#1a1a2e] pt-3"
+                style={{ color: textColor, opacity: 0.8 }}
+              >
+                {item.answer}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+};
+
+// Features Grid Section
+const FeaturesSection = ({ branding, content }) => {
+  const textColor = branding?.text_color || '#E8DDB5';
+  const headingColor = branding?.heading_color || '#FFFFFF';
+  const primaryColor = branding?.primary_color || '#D4A836';
+  const items = content.items || [];
+  const columns = content.columns || 3;
+
+  if (items.length === 0) {
+    return (
+      <div className="text-center py-12 text-gray-400">
+        <p>No features added yet</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`grid gap-6 mb-6 sm:grid-cols-2 lg:grid-cols-${columns}`}>
+      {items.map((item, index) => (
+        <Card key={index} className="bg-[#0f0f15] border-[#1a1a2e]">
+          <CardContent className="p-6">
+            <div 
+              className="w-12 h-12 rounded-lg flex items-center justify-center mb-4"
+              style={{ backgroundColor: `${primaryColor}20` }}
+            >
+              <span className="text-2xl" style={{ color: primaryColor }}>
+                {item.icon === 'Zap' ? '⚡' : 
+                 item.icon === 'Shield' ? '🛡️' : 
+                 item.icon === 'Star' ? '⭐' : 
+                 item.icon === 'Heart' ? '❤️' : 
+                 item.icon === 'Check' ? '✓' : '✦'}
+              </span>
+            </div>
+            <h3 className="text-lg font-semibold mb-2" style={{ color: headingColor }}>
+              {item.title}
+            </h3>
+            <p className="text-sm" style={{ color: textColor, opacity: 0.7 }}>
+              {item.description}
+            </p>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+};
+
+// Image Gallery Section
+const GallerySection = ({ branding, content }) => {
+  const images = content.images || [];
+  const columns = content.columns || 3;
+  const gap = content.gap || 4;
+
+  if (images.length === 0) {
+    return (
+      <div className="text-center py-12 text-gray-400">
+        <p>No images added yet</p>
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      className={`grid mb-6 sm:grid-cols-2 lg:grid-cols-${columns}`}
+      style={{ gap: `${gap * 4}px` }}
+    >
+      {images.map((image, index) => (
+        <div key={index} className="overflow-hidden rounded-lg">
+          <img 
+            src={typeof image === 'string' ? image : image.url} 
+            alt={typeof image === 'string' ? `Gallery image ${index + 1}` : image.alt || ''} 
+            className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
+          />
+        </div>
+      ))}
     </div>
   );
 };
@@ -417,7 +717,7 @@ const EventsSection = ({ branding }) => {
 
   const fetchEvents = async () => {
     try {
-      const res = await axios.get(`${API}/events/public`);
+      const res = await axios.get(`${API}/events/upcoming`);
       setEvents(res.data.events || []);
     } catch (err) {
       console.error('Failed to fetch events:', err);
@@ -458,7 +758,7 @@ const EventsSection = ({ branding }) => {
             <h3 className="font-semibold text-lg mb-2" style={{ color: textColor }}>{event.title}</h3>
             <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
               <Calendar className="w-4 h-4" />
-              {new Date(event.start_time).toLocaleDateString('en-US', {
+              {new Date(event.start_date).toLocaleDateString('en-US', {
                 weekday: 'short',
                 month: 'short',
                 day: 'numeric',
