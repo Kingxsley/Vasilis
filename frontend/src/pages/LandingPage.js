@@ -170,29 +170,14 @@ export default function LandingPage() {
   const statsSection = findSection('stats');
   const statsContent = statsSection?.content || null;
 
-  // Navigation visibility from branding settings
-  const showBlog = branding?.show_blog !== false;
-  const showVideos = branding?.show_videos !== false;
-  const showNews = branding?.show_news !== false;
-  const showAbout = branding?.show_about !== false;
-  
-  // Only show nav items after branding is loaded to prevent flash
+  // Navigation - CMS tiles only (no hardcoded pages)
   const isReady = !loading && branding !== null;
   
-  // Count visible nav items for mobile - only when ready
+  // Count visible nav items for mobile - CMS tiles only
   const visibleNavItems = isReady ? [
-    showBlog && { to: '/blog', label: 'Blog' },
-    showVideos && { to: '/videos', label: 'Videos' },
-    showNews && { to: '/news', label: 'News' },
-    showAbout && { to: '/about', label: 'About' },
-    // Add custom pages
-    ...customPages.map(page => ({
-      to: `/page/${page.slug}`,
-      label: page.title
-    })),
-    // Add CMS tiles
-    ...cmsTiles.map(tile => ({
-      to: tile.route_type === 'external' ? tile.external_url : `/page/${tile.slug}`,
+    // Only CMS tiles that are not system tiles
+    ...cmsTiles.filter(t => !t.is_system).map(tile => ({
+      to: tile.route_type === 'external' ? tile.external_url : `/${tile.slug}`,
       label: tile.name,
       external: tile.route_type === 'external'
     }))
@@ -206,35 +191,31 @@ export default function LandingPage() {
           <div className="flex items-center justify-between h-16">
             <Logo />
             
-            {/* Desktop Navigation */}
+            {/* Desktop Navigation - CMS Tiles Only */}
             <div className="hidden md:flex items-center gap-6">
-              {isReady && showBlog && <Link to="/blog" className="text-gray-400 hover:text-[#E8DDB5] transition-colors" style={{ '--hover-color': textColor }}>Blog</Link>}
-              {isReady && showVideos && <Link to="/videos" className="text-gray-400 hover:text-[#E8DDB5] transition-colors" style={{ '--hover-color': textColor }}>Videos</Link>}
-              {isReady && showNews && <Link to="/news" className="text-gray-400 hover:text-[#E8DDB5] transition-colors" style={{ '--hover-color': textColor }}>News</Link>}
-              {isReady && showAbout && <Link to="/about" className="text-gray-400 hover:text-[#E8DDB5] transition-colors" style={{ '--hover-color': textColor }}>About</Link>}
-              {/* Custom Pages */}
-              {isReady && customPages.map(page => (
-                <Link 
-                  key={page.slug}
-                  to={`/page/${page.slug}`} 
-                  className="text-gray-400 hover:text-[#E8DDB5] transition-colors" 
-                  style={{ '--hover-color': textColor }}
-                >
-                  {page.title}
-                </Link>
-              ))}
-              {/* CMS Tiles */}
-              {isReady && cmsTiles.map(tile => (
-                <Link 
-                  key={tile.tile_id}
-                  to={tile.route_type === 'external' ? tile.external_url : `/page/${tile.slug}`}
-                  target={tile.route_type === 'external' ? '_blank' : undefined}
-                  rel={tile.route_type === 'external' ? 'noopener noreferrer' : undefined}
-                  className="text-gray-400 hover:text-[#E8DDB5] transition-colors" 
-                  style={{ '--hover-color': textColor }}
-                >
-                  {tile.name}
-                </Link>
+              {/* CMS Tiles (non-system only) */}
+              {isReady && cmsTiles.filter(t => !t.is_system).map(tile => (
+                tile.route_type === 'external' ? (
+                  <a 
+                    key={tile.tile_id}
+                    href={tile.external_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-400 hover:text-[#E8DDB5] transition-colors" 
+                    style={{ '--hover-color': textColor }}
+                  >
+                    {tile.name}
+                  </a>
+                ) : (
+                  <Link 
+                    key={tile.tile_id}
+                    to={`/${tile.slug}`}
+                    className="text-gray-400 hover:text-[#E8DDB5] transition-colors" 
+                    style={{ '--hover-color': textColor }}
+                  >
+                    {tile.name}
+                  </Link>
+                )
               ))}
               <Link to="/auth">
                 <Button variant="ghost" className="hover:text-white hover:bg-white/10" style={{ color: textColor }} data-testid="login-btn">

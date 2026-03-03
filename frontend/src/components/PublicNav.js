@@ -59,24 +59,12 @@ export const PublicNav = ({ branding, isLoading = false }) => {
     fetchNavPages();
   }, []);
   
-  // Navigation visibility
-  const showBlog = branding?.show_blog !== false;
-  const showVideos = branding?.show_videos !== false;
-  const showNews = branding?.show_news !== false;
-  const showAbout = branding?.show_about !== false;
-  
-  // Build visible nav items (exclude current page)
-  const allNavItems = [
-    showBlog && { to: '/blog', label: 'Blog' },
-    showVideos && { to: '/videos', label: 'Videos' },
-    showNews && { to: '/news', label: 'News' },
-    showAbout && { to: '/about', label: 'About' },
-    // Add custom CMS pages at root level
-    ...customPages.map(page => ({
-      to: `/${page.slug}`,
-      label: page.title
-    }))
-  ].filter(Boolean);
+  // Navigation visibility - now controlled entirely by CMS tiles
+  // Build visible nav items from CMS tiles only
+  const allNavItems = customPages.map(page => ({
+    to: `/${page.slug}`,
+    label: page.title
+  }));
   
   // Filter out current page from nav
   const navItems = allNavItems.filter(item => !location.pathname.startsWith(item.to));
