@@ -8,13 +8,171 @@ import { Textarea } from '../components/ui/textarea';
 import { Card, CardContent } from '../components/ui/card';
 import { PublicNav } from '../components/layout/PublicNav';
 import { PublicFooter } from '../components/layout/PublicFooter';
-import { Loader2, ArrowLeft, AlertTriangle, Send, Mail, Phone, MapPin, CheckCircle, Calendar } from 'lucide-react';
+import { Loader2, ArrowLeft, AlertTriangle, Send, Mail, Phone, MapPin, CheckCircle, Calendar, Quote } from 'lucide-react';
 import { toast } from 'sonner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+// Block Renderer - renders individual blocks on the public page
+const BlockRenderer = ({ block, branding }) => {
+  const { type, content } = block;
+  const textColor = branding?.text_color || '#E8DDB5';
+  const headingColor = branding?.heading_color || '#FFFFFF';
+  const primaryColor = branding?.primary_color || '#D4A836';
+
+  switch (type) {
+    case 'heading':
+      const HeadingTag = content.level || 'h2';
+      const headingClasses = {
+        h1: 'text-4xl sm:text-5xl font-bold',
+        h2: 'text-3xl sm:text-4xl font-bold',
+        h3: 'text-2xl sm:text-3xl font-semibold',
+        h4: 'text-xl sm:text-2xl font-semibold',
+      };
+      return (
+        <HeadingTag 
+          className={`${headingClasses[HeadingTag]} ${content.align === 'center' ? 'text-center' : content.align === 'right' ? 'text-right' : 'text-left'} mb-6`}
+          style={{ color: headingColor }}
+        >
+          {content.text}
+        </HeadingTag>
+      );
+
+    case 'text':
+      return (
+        <div 
+          className="prose prose-invert max-w-none mb-6"
+          style={{ color: textColor }}
+          dangerouslySetInnerHTML={{ __html: content.html }}
+        />
+      );
+
+    case 'image':
+      const widthClasses = {
+        small: 'max-w-[25%]',
+        medium: 'max-w-[50%]',
+        large: 'max-w-[75%]',
+        full: 'max-w-full'
+      };
+      return (
+        <figure className={`mb-6 ${widthClasses[content.width || 'full']} mx-auto`}>
+          <img 
+            src={content.url} 
+            alt={content.alt || ''} 
+            className="w-full rounded-lg"
+          />
+          {content.caption && (
+            <figcaption className="text-center text-sm text-gray-400 mt-2">
+              {content.caption}
+            </figcaption>
+          )}
+        </figure>
+      );
+
+    case 'video':
+      // Extract video ID from YouTube/Vimeo URL
+      const getVideoEmbed = (url) => {
+        if (url.includes('youtube.com') || url.includes('youtu.be')) {
+          const videoId = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/)?.[1];
+          return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+        }
+        if (url.includes('vimeo.com')) {
+          const videoId = url.match(/vimeo\.com\/(\d+)/)?.[1];
+          return videoId ? `https://player.vimeo.com/video/${videoId}` : null;
+        }
+        return null;
+      };
+      const embedUrl = getVideoEmbed(content.url);
+      return embedUrl ? (
+        <div className="aspect-video mb-6 rounded-lg overflow-hidden">
+          <iframe 
+            src={embedUrl} 
+            className="w-full h-full"
+            allowFullScreen
+            title="Video"
+          />
+        </div>
+      ) : null;
+
+    case 'divider':
+      return (
+        <hr 
+          className="my-8 border-0 h-px"
+          style={{ 
+            backgroundColor: content.color || '#30363D',
+            borderStyle: content.style || 'solid'
+          }}
+        />
+      );
+
+    case 'spacer':
+      return <div style={{ height: content.height || 40 }} />;
+
+    case 'quote':
+      return (
+        <blockquote className="border-l-4 pl-6 py-2 my-6" style={{ borderColor: primaryColor }}>
+          <p className="text-lg italic mb-2" style={{ color: textColor }}>
+            "{content.text}"
+          </p>
+          {content.author && (
+            <cite className="text-sm text-gray-400">— {content.author}</cite>
+          )}
+        </blockquote>
+      );
+
+    case 'button':
+      const buttonStyles = {
+        primary: { backgroundColor: primaryColor, color: '#000' },
+        secondary: { backgroundColor: 'transparent', border: `2px solid ${primaryColor}`, color: primaryColor },
+        outline: { backgroundColor: 'transparent', border: '2px solid #30363D', color: textColor }
+      };
+      return (
+        <div className={`mb-6 ${content.align === 'center' ? 'text-center' : content.align === 'right' ? 'text-right' : 'text-left'}`}>
+          <a 
+            href={content.url}
+            className="inline-block px-6 py-3 rounded-lg font-medium transition-opacity hover:opacity-80"
+            style={buttonStyles[content.style || 'primary']}
+          >
+            {content.text}
+          </a>
+        </div>
+      );
+
+    case 'cta':
+      return (
+        <div 
+          className="rounded-lg p-8 text-center my-8"
+          style={{ backgroundColor: `${primaryColor}10`, border: `1px solid ${primaryColor}30` }}
+        >
+          <h3 className="text-2xl font-bold mb-2" style={{ color: headingColor }}>
+            {content.title}
+          </h3>
+          <p className="mb-6" style={{ color: textColor, opacity: 0.8 }}>
+            {content.description}
+          </p>
+          <a 
+            href={content.buttonUrl}
+            className="inline-block px-6 py-3 rounded-lg font-medium transition-opacity hover:opacity-80"
+            style={{ backgroundColor: primaryColor, color: '#000' }}
+          >
+            {content.buttonText}
+          </a>
+        </div>
+      );
+
+    case 'contact_form':
+      return <ContactFormSection branding={branding} formContent={content} />;
+
+    case 'events':
+      return <EventsSection branding={branding} limit={content.limit} layout={content.layout} />;
+
+    default:
+      return null;
+  }
+};
+
 // Contact Form Component
-const ContactFormSection = ({ branding }) => {
+const ContactFormSection = ({ branding, formContent = {} }) => {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({
@@ -55,6 +213,10 @@ const ContactFormSection = ({ branding }) => {
   const headingColor = branding?.heading_color || '#FFFFFF';
   const accentColor = branding?.accent_color || '#D4A836';
   const primaryColor = branding?.primary_color || '#D4A836';
+  
+  const title = formContent.title || 'Get in Touch';
+  const description = formContent.description || 'Fill out the form below and we\'ll get back to you.';
+  const buttonText = formContent.buttonText || 'Send Message';
 
   return (
     <div className="max-w-5xl mx-auto grid lg:grid-cols-3 gap-8">
@@ -396,8 +558,20 @@ export default function CMSTilePage() {
     return null;
   }
 
-  // Render page based on route_type
+  // Render page based on blocks (new system) or route_type (legacy)
   const renderContent = () => {
+    // If the tile has blocks, render them
+    if (tile.blocks && tile.blocks.length > 0) {
+      return (
+        <div className="space-y-0">
+          {tile.blocks.map((block, index) => (
+            <BlockRenderer key={block.id || index} block={block} branding={branding} />
+          ))}
+        </div>
+      );
+    }
+
+    // Legacy route_type based rendering
     switch (tile.route_type) {
       case 'contact_form':
         return <ContactFormSection branding={branding} />;

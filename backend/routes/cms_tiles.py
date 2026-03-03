@@ -117,6 +117,7 @@ class TileUpdate(BaseModel):
     route_type: Optional[str] = None
     external_url: Optional[str] = None
     custom_content: Optional[str] = None
+    blocks: Optional[list] = None
 
 
 @router.get("")
@@ -312,6 +313,8 @@ async def update_tile(tile_id: str, data: TileUpdate, request: Request):
         update_data["external_url"] = data.external_url
     if data.custom_content is not None:
         update_data["custom_content"] = data.custom_content
+    if data.blocks is not None:
+        update_data["blocks"] = data.blocks
     
     if update_data:
         update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
