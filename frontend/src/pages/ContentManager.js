@@ -32,13 +32,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { 
   Plus, Edit, Trash2, Loader2, FileText, Video, Newspaper, 
   Upload, Eye, EyeOff, Image, Youtube, Info, Users, Rss, ExternalLink, Globe,
-  Link, Navigation, ChevronLeft, ChevronRight, Search, Settings, RefreshCw
+  Link, Navigation, ChevronLeft, ChevronRight, Search, Settings, RefreshCw, Layers, LayoutGrid, GripVertical, Zap
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../App';
 
 // Lazy load RichTextEditor to avoid SSR issues
 const RichTextEditor = lazy(() => import('../components/common/RichTextEditor'));
+
+// Import Visual Block Editor for Pages tab
+import VisualBlockEditor from '../components/VisualBlockEditor';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -77,9 +80,368 @@ const ROLE_OPTIONS = [
   { id: "all", label: "All Users" },
 ];
 
+// Icon mapping for Pages
+const PAGE_ICON_OPTIONS = {
+  'FileText': FileText,
+  'Newspaper': Newspaper,
+  'Video': Video,
+  'Info': Info,
+  'Users': Users,
+  'Globe': Globe,
+  'Settings': Settings,
+  'Layers': Layers,
+  'LayoutGrid': LayoutGrid,
+  'Zap': Zap,
+};
+
+// Pages Tab Component - Visual Page Builder
+function PagesTab({ token, user }) {
+  const [tiles, setTiles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [view, setView] = useState('list'); // 'list', 'create', 'edit'
+  const [editingTile, setEditingTile] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  const headers = { Authorization: `Bearer ${token}` };
+
+  useEffect(() => {
+    fetchTiles();
+  }, []);
+
+  const fetchTiles = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${API}/cms-tiles?include_unpublished=true`, { headers });
+      setTiles(res.data.tiles || []);
+    } catch (err) {
+      toast.error('Failed to load pages');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createTile = async (formData) => {
+    setSaving(true);
+    try {
+      await axios.post(`${API}/cms-tiles`, formData, { headers });
+      toast.success('Page created successfully');
+      setView('list');
+      fetchTiles();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to create page');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const updateTile = async (formData) => {
+    setSaving(true);
+    try {
+      await axios.patch(`${API}/cms-tiles/${editingTile.tile_id}`, formData, { headers });
+      toast.success('Page updated successfully');
+      setView('list');
+      setEditingTile(null);
+      fetchTiles();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to update page');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteTile = async (tileId) => {
+    if (!window.confirm('Are you sure you want to delete this page?')) return;
+    try {
+      await axios.delete(`${API}/cms-tiles/${tileId}`, { headers });
+      toast.success('Page deleted');
+      fetchTiles();
+    } catch (err) {
+      toast.error('Failed to delete page');
+    }
+  };
+
+  const togglePublish = async (tile) => {
+    try {
+      await axios.patch(`${API}/cms-tiles/${tile.tile_id}`, { published: !tile.published }, { headers });
+      toast.success(tile.published ? 'Page unpublished' : 'Page published');
+      fetchTiles();
+    } catch (err) {
+      toast.error('Failed to update page');
+    }
+  };
+
+  const seedDemoPages = async () => {
+    try {
+      const res = await axios.post(`${API}/cms-tiles/seed-demo`, {}, { headers });
+      if (res.data.pages?.length > 0) {
+        toast.success(res.data.message);
+        fetchTiles();
+      } else {
+        toast.info('Demo pages already exist');
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to seed demo pages');
+    }
+  };
+
+  const getIconComponent = (iconName) => PAGE_ICON_OPTIONS[iconName] || FileText;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-[#D4A836]" />
+      </div>
+    );
+  }
+
+  // Form view for create/edit
+  if (view === 'create' || (view === 'edit' && editingTile)) {
+    return (
+      <PageFormView
+        tile={editingTile}
+        onSave={editingTile ? updateTile : createTile}
+        onCancel={() => { setView('list'); setEditingTile(null); }}
+        saving={saving}
+      />
+    );
+  }
+
+  // List view
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold text-[#E8DDB5]">Website Pages</h2>
+          <p className="text-gray-500 text-sm">Create and manage pages with visual editor</p>
+        </div>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={seedDemoPages}
+            className="border-[#D4A836]/50 text-[#D4A836] hover:bg-[#D4A836]/10"
+          >
+            <Zap className="w-4 h-4 mr-2" />
+            Seed Demo
+          </Button>
+          <Button 
+            onClick={() => setView('create')}
+            className="bg-[#D4A836] hover:bg-[#B8922E] text-black"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Create Page
+          </Button>
+        </div>
+      </div>
+
+      {/* Tiles Grid */}
+      {tiles.length === 0 ? (
+        <Card className="bg-[#161B22] border-[#30363D]">
+          <CardContent className="p-8 text-center">
+            <LayoutGrid className="w-12 h-12 text-gray-500 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-white mb-2">No Pages Yet</h3>
+            <p className="text-gray-400 mb-4">Create your first page or seed demo pages</p>
+            <div className="flex gap-2 justify-center">
+              <Button variant="outline" onClick={seedDemoPages} className="border-[#D4A836]/50 text-[#D4A836]">
+                <Zap className="w-4 h-4 mr-2" />Seed Demo
+              </Button>
+              <Button onClick={() => setView('create')} className="bg-[#D4A836] text-black">
+                <Plus className="w-4 h-4 mr-2" />Create Page
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {tiles.map(tile => {
+            const IconComp = getIconComponent(tile.icon);
+            return (
+              <Card key={tile.tile_id} className="bg-[#161B22] border-[#30363D] hover:border-[#D4A836]/50 transition-colors">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-[#D4A836]/10 flex items-center justify-center">
+                        <IconComp className="w-5 h-5 text-[#D4A836]" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-white">{tile.name}</h3>
+                        <p className="text-xs text-gray-500">/{tile.slug}</p>
+                      </div>
+                    </div>
+                    <Badge className={tile.published ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}>
+                      {tile.published ? 'Published' : 'Draft'}
+                    </Badge>
+                  </div>
+                  
+                  <p className="text-sm text-gray-400 mb-3 line-clamp-2">{tile.description || 'No description'}</p>
+                  
+                  {tile.is_system ? (
+                    <p className="text-xs text-gray-500">Internal</p>
+                  ) : (
+                    <p className="text-xs text-gray-500">{tile.route_type === 'external' ? 'External Link' : 'Custom Page'}</p>
+                  )}
+
+                  <div className="flex items-center justify-end gap-1 mt-3 pt-3 border-t border-[#30363D]">
+                    {!tile.is_system && (
+                      <>
+                        <Button size="sm" variant="ghost" onClick={() => togglePublish(tile)} className="text-gray-400 hover:text-[#E8DDB5]">
+                          {tile.published ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => { setEditingTile(tile); setView('edit'); }} className="text-gray-400 hover:text-[#E8DDB5]">
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => deleteTile(tile.tile_id)} className="text-gray-400 hover:text-red-400">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Page Form Component for Create/Edit
+function PageFormView({ tile, onSave, onCancel, saving }) {
+  const [name, setName] = useState(tile?.name || '');
+  const [slug, setSlug] = useState(tile?.slug || '');
+  const [description, setDescription] = useState(tile?.description || '');
+  const [icon, setIcon] = useState(tile?.icon || 'FileText');
+  const [routeType, setRouteType] = useState(tile?.route_type || 'custom');
+  const [externalUrl, setExternalUrl] = useState(tile?.external_url || '');
+  const [blocks, setBlocks] = useState(tile?.blocks || []);
+  const [published, setPublished] = useState(tile?.published !== false);
+
+  const handleSave = () => {
+    if (!name.trim()) {
+      toast.error('Please enter a page name');
+      return;
+    }
+    onSave({
+      name,
+      slug: slug || name.toLowerCase().replace(/\s+/g, '-'),
+      description,
+      icon,
+      route_type: routeType,
+      external_url: externalUrl,
+      blocks,
+      published
+    });
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-white">
+            {tile ? 'Edit Page' : 'Create New Page'}
+          </h2>
+          <p className="text-gray-400 text-sm">
+            {tile ? 'Modify your page content and settings' : 'Add a new page to your website'}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={onCancel} className="border-[#30363D]">
+            Cancel
+          </Button>
+          <Button onClick={handleSave} className="bg-[#D4A836] hover:bg-[#B8922E] text-black" disabled={saving}>
+            {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            {tile ? 'Save Changes' : 'Create Page'}
+          </Button>
+        </div>
+      </div>
+
+      {/* Form */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - Settings */}
+        <div className="space-y-4">
+          <Card className="bg-[#161B22] border-[#30363D]">
+            <CardHeader>
+              <CardTitle className="text-base">Page Settings</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Page Name</Label>
+                <Input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g., About Us"
+                  className="bg-[#0D1117] border-[#30363D]"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>URL Slug</Label>
+                <Input
+                  value={slug}
+                  onChange={(e) => setSlug(e.target.value)}
+                  placeholder="about-us"
+                  className="bg-[#0D1117] border-[#30363D]"
+                />
+                <p className="text-xs text-gray-500">yoursite.com/{slug || 'page-slug'}</p>
+              </div>
+              <div className="space-y-2">
+                <Label>Description</Label>
+                <Input
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Brief description"
+                  className="bg-[#0D1117] border-[#30363D]"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Icon</Label>
+                <Select value={icon} onValueChange={setIcon}>
+                  <SelectTrigger className="bg-[#0D1117] border-[#30363D]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#161B22] border-[#30363D]">
+                    {Object.keys(PAGE_ICON_OPTIONS).map(iconName => (
+                      <SelectItem key={iconName} value={iconName}>{iconName}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center justify-between pt-2">
+                <Label>Published</Label>
+                <input
+                  type="checkbox"
+                  checked={published}
+                  onChange={(e) => setPublished(e.target.checked)}
+                  className="w-4 h-4"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column - Visual Editor */}
+        <div className="lg:col-span-2">
+          <Card className="bg-[#161B22] border-[#30363D]">
+            <CardHeader>
+              <CardTitle className="text-base">Page Content</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <VisualBlockEditor
+                blocks={blocks}
+                onChange={setBlocks}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ContentManager() {
   const { token, user } = useAuth();
-  const [activeTab, setActiveTab] = useState('blog');
+  const [activeTab, setActiveTab] = useState('pages');
   const [loading, setLoading] = useState(true);
   
   // CMS Tiles state
@@ -599,6 +961,9 @@ export default function ContentManager() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="bg-[#1a1a24] border border-[#D4A836]/20 mb-6 flex-wrap h-auto p-1 gap-1">
+            <TabsTrigger value="pages" className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">
+              <Layers className="w-4 h-4 mr-2" />Pages
+            </TabsTrigger>
             <TabsTrigger value="blog" className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">
               <FileText className="w-4 h-4 mr-2" />Blog
             </TabsTrigger>
@@ -611,22 +976,17 @@ export default function ContentManager() {
             <TabsTrigger value="about" className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">
               <Info className="w-4 h-4 mr-2" />About
             </TabsTrigger>
-            {/* Dynamic CMS Tiles (non-system only) */}
-            {cmsTiles.filter(t => t.published && !t.is_system).map(tile => (
-              <TabsTrigger 
-                key={tile.tile_id} 
-                value={`cms_${tile.tile_id}`} 
-                className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black"
-              >
-                <FileText className="w-4 h-4 mr-2" />{tile.name}
-              </TabsTrigger>
-            ))}
             {user?.role === 'super_admin' && (
               <TabsTrigger value="rss" className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">
                 <Rss className="w-4 h-4 mr-2" />RSS Feeds
               </TabsTrigger>
             )}
           </TabsList>
+
+          {/* PAGES TAB - Visual Page Builder */}
+          <TabsContent value="pages">
+            <PagesTab token={token} user={user} />
+          </TabsContent>
 
           {/* BLOG TAB */}
           <TabsContent value="blog">
@@ -1218,46 +1578,6 @@ export default function ContentManager() {
               </DialogContent>
             </Dialog>
           </TabsContent>
-
-          {/* Dynamic CMS Tile Content (non-system only) */}
-          {cmsTiles.filter(t => t.published && !t.is_system).map(tile => (
-            <TabsContent key={tile.tile_id} value={`cms_${tile.tile_id}`}>
-              <Card className="bg-[#161B22] border-[#30363D]">
-                <CardHeader>
-                  <CardTitle className="text-[#E8DDB5] flex items-center justify-between">
-                    <span>{tile.name}</span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-[#30363D]"
-                      onClick={() => window.open(`/page/${tile.slug}`, '_blank')}
-                    >
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      View Page
-                    </Button>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="prose prose-invert max-w-none">
-                    {tile.content ? (
-                      <div dangerouslySetInnerHTML={{ __html: tile.content }} />
-                    ) : (
-                      <p className="text-gray-500">No content yet. Edit this page in CMS Pages.</p>
-                    )}
-                  </div>
-                  <div className="mt-4 pt-4 border-t border-[#30363D]">
-                    <Button
-                      onClick={() => window.location.href = '/cms-tiles'}
-                      className="bg-[#D4A836] hover:bg-[#B8922E] text-black"
-                    >
-                      <Settings className="w-4 h-4 mr-2" />
-                      Edit in CMS Pages
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          ))}
 
           {/* RSS Feeds Tab (Super Admin Only) */}
           {user?.role === 'super_admin' && (

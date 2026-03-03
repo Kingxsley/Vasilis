@@ -96,7 +96,6 @@ const navGroups = [
     contentManager: true, // Only super_admin and media_manager can access
     items: [
       { path: '/content', label: 'Content Manager', icon: FileText, contentManager: true },
-      { path: '/cms-tiles', label: 'CMS Pages', icon: LayoutDashboard, superAdminOnly: true },
       { path: '/events', label: 'Events', icon: CalendarDays, superAdminOnly: true },
       { path: '/media-library', label: 'Media Library', icon: Image, contentManager: true },
     ]

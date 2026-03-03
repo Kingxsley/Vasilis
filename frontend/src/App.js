@@ -830,11 +830,7 @@ const AppRouter = () => {
         />
         <Route
           path="/cms-tiles"
-          element={
-            <ProtectedRoute adminOnly>
-              <CMSTiles />
-            </ProtectedRoute>
-          }
+          element={<Navigate to="/content" replace />}
         />
         <Route
           path="/events"
