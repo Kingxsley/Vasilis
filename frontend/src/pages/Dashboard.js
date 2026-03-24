@@ -2,9 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { useAuth } from '../App';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '../components/ui/select';
+import { MultiOrgSelect } from '../components/common/MultiOrgSelect';
 import { Building2, Users, Target, BookOpen, TrendingUp, Activity, Award, Shield, QrCode, Usb, AlertTriangle, Mail, FileWarning, Lock, Eye, RefreshCw } from 'lucide-react';
 import axios from 'axios';
 
@@ -49,7 +47,7 @@ export default function Dashboard() {
   const [userStats, setUserStats] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState(null);
   const [organizations, setOrganizations] = useState([]);
-  const [selectedOrg, setSelectedOrg] = useState('all');
+  const [selectedOrgs, setSelectedOrgs] = useState([]);
 
   useEffect(() => {
     fetchOrganizations();
@@ -57,7 +55,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchDashboardData();
-  }, [selectedOrg]);
+  }, [selectedOrgs]);
 
   const fetchOrganizations = async () => {
     try {
@@ -68,22 +66,21 @@ export default function Dashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      const orgParam = selectedOrg !== 'all' ? selectedOrg : null;
-      const orgQuery = orgParam ? `?organization_id=${orgParam}` : '';
-      const orgQueryAmp = orgParam ? `&organization_id=${orgParam}` : '';
+      const orgParams = {};
+      if (selectedOrgs.length > 0) {
+        orgParams.organization_ids = selectedOrgs.join(',');
+      }
       
       const [statsRes, analyticsRes, userAnalyticsRes, onlineUsersRes] = await Promise.all([
-        axios.get(`${API}/dashboard/stats${orgQuery}`, {
-          headers: { Authorization: `Bearer ${token}` }
+        axios.get(`${API}/dashboard/stats`, { headers: { Authorization: `Bearer ${token}` }, params: orgParams }),
+        axios.get(`${API}/analytics/training`, { headers: { Authorization: `Bearer ${token}` }, params: orgParams }),
+        axios.get(`${API}/analytics/users`, {
+          headers: { Authorization: `Bearer ${token}` },
+          params: orgParams.organization_ids ? orgParams : (user?.role !== 'super_admin' && user?.organization_id ? { organization_id: user.organization_id } : {})
         }),
-        axios.get(`${API}/analytics/training${orgQuery}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get(`${API}/analytics/users${orgQuery || (user?.role !== 'super_admin' && user?.organization_id ? `?organization_id=${user.organization_id}` : '')}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get(`${API}/analytics/online-users${orgQuery || (user?.role !== 'super_admin' && user?.organization_id ? `?organization_id=${user.organization_id}` : '')}`, {
-          headers: { Authorization: `Bearer ${token}` }
+        axios.get(`${API}/analytics/online-users`, {
+          headers: { Authorization: `Bearer ${token}` },
+          params: orgParams.organization_ids ? orgParams : (user?.role !== 'super_admin' && user?.organization_id ? { organization_id: user.organization_id } : {})
         }).catch(() => ({ data: { online_count: 0, online_users: [] } }))
       ]);
       setStats(statsRes.data);
@@ -156,17 +153,11 @@ export default function Dashboard() {
           </div>
           {user?.role === 'super_admin' && organizations.length > 0 && (
             <div className="flex items-center gap-2">
-              <Select value={selectedOrg} onValueChange={setSelectedOrg}>
-                <SelectTrigger className="w-[220px] bg-[#161B22] border-[#30363D]">
-                  <SelectValue placeholder="All Organizations" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#161B22] border-[#30363D]">
-                  <SelectItem value="all">All Organizations</SelectItem>
-                  {organizations.map(org => (
-                    <SelectItem key={org.organization_id} value={org.organization_id}>{org.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <MultiOrgSelect
+                organizations={organizations}
+                selectedOrgs={selectedOrgs}
+                onChange={setSelectedOrgs}
+              />
               <button onClick={fetchDashboardData} className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5">
                 <RefreshCw className="w-4 h-4" />
               </button>

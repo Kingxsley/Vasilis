@@ -6,9 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Input } from '../components/ui/input';
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '../components/ui/select';
+import { MultiOrgSelect } from '../components/common/MultiOrgSelect';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '../components/ui/table';
@@ -62,10 +60,14 @@ export default function AnalyticsHub() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const orgParam = selectedOrgs.length === 1 ? selectedOrgs[0] : null;
+      const params = {};
+      if (selectedOrgs.length > 0) {
+        params.organization_ids = selectedOrgs.join(',');
+      }
+      
       const [statsRes, analyticsRes] = await Promise.all([
-        axios.get(`${API}/dashboard/stats`, { headers, params: orgParam ? { organization_id: orgParam } : {} }),
-        axios.get(`${API}/analytics/training`, { headers, params: orgParam ? { organization_id: orgParam } : {} }),
+        axios.get(`${API}/dashboard/stats`, { headers, params }),
+        axios.get(`${API}/analytics/training`, { headers, params }),
       ]);
       setStats(statsRes.data);
       setAnalytics(analyticsRes.data);
@@ -74,7 +76,7 @@ export default function AnalyticsHub() {
       try {
         const [phishRes, vulnRes] = await Promise.all([
           axios.get(`${API}/phishing/campaigns`, { headers }).catch(() => ({ data: [] })),
-          axios.get(`${API}/vulnerable-users`, { headers, params: orgParam ? { organization_id: orgParam } : {} }).catch(() => ({ data: { users: [] } })),
+          axios.get(`${API}/vulnerable-users`, { headers, params }).catch(() => ({ data: { users: [] } })),
         ]);
         setAdvancedData({
           phishingCampaigns: Array.isArray(phishRes.data) ? phishRes.data : phishRes.data?.campaigns || [],
@@ -125,17 +127,11 @@ export default function AnalyticsHub() {
             <p className="text-gray-400">Training performance insights and metrics</p>
           </div>
           <div className="flex items-center gap-3">
-            <Select value={selectedOrgs.length === 1 ? selectedOrgs[0] : 'all'} onValueChange={v => setSelectedOrgs(v === 'all' ? [] : [v])}>
-              <SelectTrigger className="w-[220px] bg-[#161B22] border-[#30363D]">
-                <SelectValue placeholder="All Organizations" />
-              </SelectTrigger>
-              <SelectContent className="bg-[#161B22] border-[#30363D]">
-                <SelectItem value="all">All Organizations</SelectItem>
-                {organizations.map(org => (
-                  <SelectItem key={org.organization_id} value={org.organization_id}>{org.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <MultiOrgSelect
+              organizations={organizations}
+              selectedOrgs={selectedOrgs}
+              onChange={setSelectedOrgs}
+            />
             <Button variant="outline" size="icon" onClick={fetchData} className="border-[#30363D]">
               <RefreshCw className="w-4 h-4" />
             </Button>

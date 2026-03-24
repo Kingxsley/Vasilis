@@ -2223,18 +2223,33 @@ async def generate_ai_content(data: AIGenerateRequest, user: dict = Depends(requ
 @api_router.get("/dashboard/stats", response_model=DashboardStats)
 async def get_dashboard_stats(
     organization_id: Optional[str] = None,
+    organization_ids: Optional[str] = None,
     user: dict = Depends(require_admin)
 ):
     # Org admins only see stats for their organization
     org_filter = {}
-    if organization_id and user.get("role") == "super_admin":
+    # Support multiple org IDs (comma-separated)
+    if organization_ids and user.get("role") == "super_admin":
+        ids_list = [oid.strip() for oid in organization_ids.split(",") if oid.strip()]
+        if ids_list:
+            org_filter = {"organization_id": {"$in": ids_list}}
+    elif organization_id and user.get("role") == "super_admin":
         org_filter = {"organization_id": organization_id}
     elif user.get("role") == "org_admin" and user.get("organization_id"):
         org_filter = {"organization_id": user["organization_id"]}
     
-    if user.get("role") == "super_admin":
+    if user.get("role") == "super_admin" and not org_filter:
         total_orgs = await db.organizations.count_documents({})
         total_users = await db.users.count_documents({})
+    elif user.get("role") == "super_admin" and org_filter:
+        org_ids_in_filter = org_filter.get("organization_id", {})
+        if isinstance(org_ids_in_filter, dict) and "$in" in org_ids_in_filter:
+            total_orgs = len(org_ids_in_filter["$in"])
+        elif isinstance(org_ids_in_filter, str):
+            total_orgs = 1
+        else:
+            total_orgs = await db.organizations.count_documents({})
+        total_users = await db.users.count_documents(org_filter)
     else:
         total_orgs = 1 if user.get("organization_id") else 0
         total_users = await db.users.count_documents(org_filter)
@@ -2295,12 +2310,20 @@ async def get_dashboard_stats(
 @api_router.get("/analytics/training")
 async def get_training_analytics(
     organization_id: Optional[str] = None,
+    organization_ids: Optional[str] = None,
     user: dict = Depends(require_admin)
 ):
     match_stage = {}
-    if organization_id:
-        # Get users in org
-        users = await db.users.find({"organization_id": organization_id}, {"user_id": 1}).to_list(1000)
+    # Support multiple org IDs (comma-separated)
+    target_org_ids = []
+    if organization_ids:
+        target_org_ids = [oid.strip() for oid in organization_ids.split(",") if oid.strip()]
+    elif organization_id:
+        target_org_ids = [organization_id]
+    
+    if target_org_ids:
+        # Get users in specified orgs
+        users = await db.users.find({"organization_id": {"$in": target_org_ids}}, {"user_id": 1}).to_list(10000)
         user_ids = [u["user_id"] for u in users]
         match_stage["user_id"] = {"$in": user_ids}
     
