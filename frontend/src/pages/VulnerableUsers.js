@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { 
   AlertTriangle, 
   Download, 
@@ -257,6 +258,7 @@ export default function VulnerableUsers() {
   const totalRisks = (stats.critical || 0) + (stats.high || 0) + (stats.medium || 0) + (stats.low || 0);
 
   return (
+    <DashboardLayout>
     <div className="space-y-4" data-testid="vulnerable-users-page">
       {/* Compact Header */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3">
@@ -644,5 +646,6 @@ export default function VulnerableUsers() {
         </CardContent>
       </Card>
     </div>
+    </DashboardLayout>
   );
 }
