@@ -33,6 +33,54 @@ import axios from 'axios';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Image compression utility - compresses images to reduce payload size
+const compressImage = (dataUrl, maxWidth = 800, quality = 0.7) => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+      
+      // Scale down if wider than maxWidth
+      if (width > maxWidth) {
+        height = (height * maxWidth) / width;
+        width = maxWidth;
+      }
+      
+      canvas.width = width;
+      canvas.height = height;
+      
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      
+      // Get compressed data URL
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => resolve(dataUrl); // Return original if compression fails
+    img.src = dataUrl;
+  });
+};
+
+// Compress all images in elements before saving
+const compressElementImages = async (elements) => {
+  const compressed = [];
+  for (const elem of elements) {
+    const newElem = { ...elem };
+    
+    // Check if content is a base64 image
+    if (newElem.content && typeof newElem.content === 'string' && newElem.content.startsWith('data:image')) {
+      // Compress images for logo, signature, certifying_body, image types
+      if (['logo', 'image', 'signature', 'certifying_body'].includes(newElem.type)) {
+        newElem.content = await compressImage(newElem.content, 600, 0.6);
+      }
+    }
+    
+    compressed.push(newElem);
+  }
+  return compressed;
+};
+
 // Draggable element component
 const DraggableElement = ({ element, isSelected, onSelect, onDrag, onResize, scale }) => {
   const elementRef = useRef(null);
@@ -675,20 +723,43 @@ export default function CertificateTemplates({ embedded = false }) {
     if (!editingTemplate) return;
     setSaving(true);
     try {
-      await axios.patch(`${API}/certificate-templates/${editingTemplate.template_id}`, {
+      // Compress images in elements to reduce payload size
+      const compressedElements = await compressElementImages(elements);
+      
+      // Compress background image if present
+      let compressedBgImage = editingTemplate.background_image;
+      if (compressedBgImage && compressedBgImage.startsWith('data:image')) {
+        compressedBgImage = await compressImage(compressedBgImage, 1200, 0.7);
+      }
+      
+      const payload = {
         name: editingTemplate.name,
         description: editingTemplate.description,
         background_color: editingTemplate.background_color,
-        background_image: editingTemplate.background_image,
+        background_image: compressedBgImage,
         border_style: editingTemplate.border_style,
         orientation: editingTemplate.orientation,
-        elements
-      }, { headers });
+        elements: compressedElements
+      };
+      
+      // Check payload size and warn if large
+      const payloadSize = JSON.stringify(payload).length;
+      if (payloadSize > 4 * 1024 * 1024) {
+        toast.error('Template is too large. Try using smaller images.');
+        setSaving(false);
+        return;
+      }
+      
+      await axios.patch(`${API}/certificate-templates/${editingTemplate.template_id}`, payload, { headers });
       toast.success('Template saved');
       fetchData();
     } catch (err) {
       console.error('Save template error:', err);
-      toast.error('Failed to save template');
+      if (err.response?.status === 413) {
+        toast.error('Template too large. Please use smaller images or remove some elements.');
+      } else {
+        toast.error('Failed to save template');
+      }
     } finally {
       setSaving(false);
     }
@@ -853,6 +924,40 @@ export default function CertificateTemplates({ embedded = false }) {
   if (showEditor && editingTemplate) {
     const selectedEl = elements.find(e => e.id === selectedElement);
     
+    // Preview PDF function
+    const previewPDF = async () => {
+      if (!editingTemplate) return;
+      try {
+        // First save the template with compressed images
+        const compressedElements = await compressElementImages(elements);
+        let compressedBgImage = editingTemplate.background_image;
+        if (compressedBgImage && compressedBgImage.startsWith('data:image')) {
+          compressedBgImage = await compressImage(compressedBgImage, 1200, 0.7);
+        }
+        
+        // Save first
+        await axios.patch(`${API}/certificate-templates/${editingTemplate.template_id}`, {
+          name: editingTemplate.name,
+          description: editingTemplate.description,
+          background_color: editingTemplate.background_color,
+          background_image: compressedBgImage,
+          border_style: editingTemplate.border_style,
+          orientation: editingTemplate.orientation,
+          elements: compressedElements
+        }, { headers });
+        
+        // Then open preview in new tab
+        window.open(`${API}/certificate-templates/${editingTemplate.template_id}/preview`, '_blank');
+      } catch (err) {
+        console.error('Preview error:', err);
+        if (err.response?.status === 413) {
+          toast.error('Template too large. Please use smaller images.');
+        } else {
+          toast.error('Failed to generate preview');
+        }
+      }
+    };
+    
     const editorContent = (
         <div className="p-3 lg:p-4 h-[calc(100vh-64px)] flex flex-col" data-testid="certificate-editor">
           {/* Editor Header - compact */}
@@ -862,6 +967,10 @@ export default function CertificateTemplates({ embedded = false }) {
               <span className="text-xs text-gray-500 hidden sm:inline">Click elements to edit • Drag to reposition</span>
             </div>
             <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={previewPDF} className="border-[#D4A836]/30 text-[#E8DDB5] h-8">
+                <Eye className="w-3.5 h-3.5 mr-1.5" />
+                Preview PDF
+              </Button>
               <Button variant="outline" size="sm" onClick={closeEditor} className="border-[#D4A836]/30 text-[#E8DDB5] h-8">
                 Cancel
               </Button>

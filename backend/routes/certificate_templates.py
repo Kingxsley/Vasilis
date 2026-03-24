@@ -213,6 +213,85 @@ async def delete_certificate_template(template_id: str, request: Request):
     return {"message": "Template deleted"}
 
 
+@router.get("/{template_id}/preview")
+async def preview_certificate_template(template_id: str, request: Request):
+    """
+    Generate a PDF preview of a certificate template with sample data.
+    Returns the actual rendered PDF so preview matches final output exactly.
+    """
+    from fastapi.responses import Response
+    from services.certificate_service import generate_certificate_preview
+    
+    await require_admin(request)
+    db = get_db()
+    
+    template = await db.certificate_templates.find_one({"template_id": template_id}, {"_id": 0})
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found")
+    
+    try:
+        pdf_bytes = generate_certificate_preview(template)
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"inline; filename=preview_{template_id}.pdf"
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Preview generation failed: {str(e)}")
+
+
+@router.post("/{template_id}/preview")
+async def preview_certificate_with_data(template_id: str, request: Request):
+    """
+    Generate a PDF preview with custom placeholder data.
+    Accepts JSON body with placeholder values.
+    """
+    from fastapi.responses import Response
+    from services.certificate_service import generate_certificate_from_template
+    
+    await require_admin(request)
+    db = get_db()
+    
+    template = await db.certificate_templates.find_one({"template_id": template_id}, {"_id": 0})
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found")
+    
+    try:
+        body = await request.json()
+        placeholders = body.get("placeholders", {})
+    except Exception:
+        placeholders = {}
+    
+    # Default placeholders
+    from datetime import datetime, timezone
+    default_placeholders = {
+        "user_name": "John Doe",
+        "user_email": "john.doe@example.com",
+        "training_name": "Security Awareness Training",
+        "modules_completed": "Security Awareness Training",
+        "average_score": "85.0%",
+        "average_score_value": 85.0,
+        "completion_date": datetime.now(timezone.utc).strftime("%B %d, %Y"),
+        "organization_name": "Example Organization",
+        "certificate_id": "CERT-PREVIEW-001",
+    }
+    default_placeholders.update(placeholders)
+    
+    try:
+        pdf_bytes = generate_certificate_from_template(template, default_placeholders, include_footer=False)
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"inline; filename=preview_{template_id}.pdf"
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Preview generation failed: {str(e)}")
+
+
 # ============== ASSET ROUTES (Signatures, Logos, Certifying Bodies) ==============
 
 @router.get("/assets/signatures")
