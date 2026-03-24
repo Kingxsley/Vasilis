@@ -475,7 +475,7 @@ const ElementProperties = ({ element, onUpdate, onDelete, signatures, certifying
   );
 };
 
-export default function CertificateTemplates() {
+export default function CertificateTemplates({ embedded = false }) {
   const { token } = useAuth();
   const [activeTab, setActiveTab] = useState('templates');
   const [templates, setTemplates] = useState([]);
@@ -909,9 +909,8 @@ export default function CertificateTemplates() {
   }
 
   // Main view
-  return (
-    <DashboardLayout>
-      <div className="p-6 lg:p-8" data-testid="certificate-templates-page">
+  const content = (
+      <div className={embedded ? "" : "p-6 lg:p-8"} data-testid="certificate-templates-page">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl font-bold text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>
@@ -1320,6 +1319,8 @@ export default function CertificateTemplates() {
           </DialogContent>
         </Dialog>
       </div>
-    </DashboardLayout>
   );
+
+  if (embedded) return content;
+  return <DashboardLayout>{content}</DashboardLayout>;
 }

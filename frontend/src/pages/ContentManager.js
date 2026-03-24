@@ -271,6 +271,11 @@ function PagesTab({ token, user }) {
                     <Badge className={tile.published ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}>
                       {tile.published ? 'Published' : 'Draft'}
                     </Badge>
+                    {tile.visibility && (
+                      <Badge className={tile.visibility === 'public' ? 'bg-blue-500/20 text-blue-400 ml-1' : tile.visibility === 'draft' ? 'bg-yellow-500/20 text-yellow-400 ml-1' : 'bg-gray-500/20 text-gray-400 ml-1'}>
+                        {tile.visibility === 'public' ? 'Public' : tile.visibility === 'draft' ? 'Draft' : 'Private'}
+                      </Badge>
+                    )}
                   </div>
                   
                   <p className="text-sm text-gray-400 mb-3 line-clamp-2">{tile.description || 'No description'}</p>
@@ -316,6 +321,9 @@ function PageFormView({ tile, onSave, onCancel, saving }) {
   const [externalUrl, setExternalUrl] = useState(tile?.external_url || '');
   const [blocks, setBlocks] = useState(tile?.blocks || []);
   const [published, setPublished] = useState(tile?.published !== false);
+  const [visibility, setVisibility] = useState(tile?.visibility || 'private');
+  const [metaTitle, setMetaTitle] = useState(tile?.meta_title || '');
+  const [metaDescription, setMetaDescription] = useState(tile?.meta_description || '');
 
   const handleSave = () => {
     if (!name.trim()) {
@@ -330,7 +338,10 @@ function PageFormView({ tile, onSave, onCancel, saving }) {
       route_type: routeType,
       external_url: externalUrl,
       blocks,
-      published
+      published,
+      visibility,
+      meta_title: metaTitle,
+      meta_description: metaDescription,
     });
   };
 
@@ -414,6 +425,40 @@ function PageFormView({ tile, onSave, onCancel, saving }) {
                   checked={published}
                   onChange={(e) => setPublished(e.target.checked)}
                   className="w-4 h-4"
+                />
+              </div>
+              <div className="space-y-2 pt-2">
+                <Label>Visibility</Label>
+                <Select value={visibility} onValueChange={setVisibility}>
+                  <SelectTrigger className="bg-[#0D1117] border-[#30363D]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#161B22] border-[#30363D]">
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="private">Private (Login Required)</SelectItem>
+                    <SelectItem value="public">Public (No Login)</SelectItem>
+                  </SelectContent>
+                </Select>
+                {visibility === 'public' && (
+                  <p className="text-xs text-green-400">This page will be accessible at /{slug || 'page-slug'}</p>
+                )}
+              </div>
+              <div className="space-y-2 pt-2">
+                <Label>SEO Title</Label>
+                <Input
+                  value={metaTitle}
+                  onChange={(e) => setMetaTitle(e.target.value)}
+                  placeholder="Page title for search engines"
+                  className="bg-[#0D1117] border-[#30363D]"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>SEO Description</Label>
+                <Input
+                  value={metaDescription}
+                  onChange={(e) => setMetaDescription(e.target.value)}
+                  placeholder="Brief description for search engines"
+                  className="bg-[#0D1117] border-[#30363D]"
                 />
               </div>
             </CardContent>

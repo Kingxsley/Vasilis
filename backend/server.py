@@ -2469,10 +2469,15 @@ async def generate_ai_content(data: AIGenerateRequest, user: dict = Depends(requ
 # ============== ANALYTICS ROUTES ==============
 
 @api_router.get("/dashboard/stats", response_model=DashboardStats)
-async def get_dashboard_stats(user: dict = Depends(require_admin)):
+async def get_dashboard_stats(
+    organization_id: Optional[str] = None,
+    user: dict = Depends(require_admin)
+):
     # Org admins only see stats for their organization
     org_filter = {}
-    if user.get("role") == "org_admin" and user.get("organization_id"):
+    if organization_id and user.get("role") == "super_admin":
+        org_filter = {"organization_id": organization_id}
+    elif user.get("role") == "org_admin" and user.get("organization_id"):
         org_filter = {"organization_id": user["organization_id"]}
     
     if user.get("role") == "super_admin":

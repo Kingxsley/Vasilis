@@ -49,55 +49,36 @@ const Logo = ({ collapsed = false }) => {
   );
 };
 
-// Navigation structure with groups
+// Navigation structure with groups - Simplified & Modular
 const navGroups = [
   {
-    id: 'main',
-    label: 'Overview',
+    id: 'dashboard',
+    label: 'Dashboard',
     icon: LayoutDashboard,
     items: [
       { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, adminOnly: true },
-      { path: '/analytics', label: 'Analytics', icon: BarChart3, adminOnly: true },
-      { path: '/advanced-analytics', label: 'Advanced Analytics', icon: TrendingUp, adminOnly: true },
-      { path: '/vulnerable-users', label: 'Vulnerable Users', icon: AlertTriangle, adminOnly: true, openInNewTab: true },
     ]
   },
   {
-    id: 'management',
-    label: 'Management',
-    icon: Building2,
+    id: 'users',
+    label: 'Users & Organizations',
+    icon: Users,
     items: [
       { path: '/organizations', label: 'Organizations', icon: Building2, superAdminOnly: true },
       { path: '/users', label: 'Users', icon: Users, adminOnly: true },
-      { path: '/user-import', label: 'Import Users', icon: Upload, adminOnly: true },
-      { path: '/form-submissions', label: 'Forms', icon: MessageSquare, superAdminOnly: true },
+      { path: '/form-submissions', label: 'Forms & Requests', icon: MessageSquare, superAdminOnly: true },
     ]
   },
   {
     id: 'simulations',
     label: 'Simulations',
     icon: Crosshair,
-    // Available to all admin roles; individual items may restrict further
     adminOnly: true,
     items: [
-      { path: '/simulation-builder', label: 'Create Sim', icon: Wand2, superAdminOnly: true },
-      { path: '/phishing', label: 'Phishing Sim', icon: Mail, superAdminOnly: true },
-      { path: '/ads', label: 'Ad Simulation', icon: Monitor, superAdminOnly: true },
+      { path: '/simulation-builder', label: 'Sim Builder', icon: Wand2, superAdminOnly: true },
+      { path: '/phishing', label: 'Phishing', icon: Mail, superAdminOnly: true },
+      { path: '/ads', label: 'Ad Campaigns', icon: Monitor, superAdminOnly: true },
       { path: '/credential-harvest', label: 'Credential Harvest', icon: KeyRound, superAdminOnly: true },
-      // Remove the Scenario Manager from the navigation.  Scenario
-      // management functionality has been consolidated into the Module
-      // Builder and is no longer exposed as a separate menu.
-    ]
-  },
-  {
-    id: 'content',
-    label: 'Content',
-    icon: FileText,
-    contentManager: true, // Only super_admin and media_manager can access
-    items: [
-      { path: '/content', label: 'Content Manager', icon: FileText, contentManager: true },
-      { path: '/events', label: 'Events', icon: CalendarDays, superAdminOnly: true },
-      { path: '/media-library', label: 'Media Library', icon: Image, contentManager: true },
     ]
   },
   {
@@ -106,55 +87,51 @@ const navGroups = [
     icon: GraduationCap,
     items: [
       { path: '/training', label: 'My Training', icon: BookOpen, adminOnly: false },
-      { path: '/question-modules', label: 'Module Designer', icon: Users, adminOnly: true },
-      { path: '/module-uploader', label: 'Bulk Upload', icon: Upload, adminOnly: true },
+      { path: '/question-modules', label: 'Module Designer', icon: Layout, adminOnly: true },
       { path: '/executive-training', label: 'Exec Training', icon: Presentation, superAdminOnly: true },
       { path: '/certificates', label: 'Certificates', icon: Award, superAdminOnly: true },
-      { path: '/certificate-templates', label: 'Cert Templates', icon: Award, superAdminOnly: true },
     ]
   },
   {
-    id: 'settings',
-    label: 'Settings',
-    icon: Cog,
-    superAdminOnly: true, // Only super_admin can access settings
+    id: 'content',
+    label: 'Content',
+    icon: FileText,
+    contentManager: true,
     items: [
-      { path: '/settings', label: 'Settings', icon: Settings, superAdminOnly: true },
-      { path: '/permissions', label: 'Permissions', icon: ShieldAlert, superAdminOnly: true },
-      { path: '/seo-settings', label: 'SEO', icon: Search, superAdminOnly: true },
-      { path: '/email-templates', label: 'Email Templates', icon: MailIcon, superAdminOnly: true },
+      { path: '/content', label: 'Content Manager', icon: FileText, contentManager: true },
+      { path: '/events', label: 'Events', icon: CalendarDays, superAdminOnly: true },
+      { path: '/media-library', label: 'Media Library', icon: Image, contentManager: true },
     ]
   },
   {
-    id: 'security',
-    label: 'Security',
-    icon: ShieldAlert,
+    id: 'analytics',
+    label: 'Analytics & Reports',
+    icon: BarChart3,
+    adminOnly: true,
+    items: [
+      { path: '/analytics', label: 'Analytics', icon: BarChart3, adminOnly: true },
+      { path: '/vulnerable-users', label: 'Vulnerable Users', icon: AlertTriangle, adminOnly: true },
+    ]
+  },
+  {
+    id: 'admin',
+    label: 'Administration',
+    icon: Cog,
     superAdminOnly: true,
     items: [
-      { path: '/security', label: 'Dashboard', icon: ShieldAlert, superAdminOnly: true },
-      { path: '/audit-logs', label: 'Audit Logs', icon: FileText, superAdminOnly: true },
-      { path: '/activity-logs', label: 'Activity Logs', icon: Activity, superAdminOnly: true },
-      { path: '/password-policy', label: 'Password Policy', icon: ShieldAlert, superAdminOnly: true },
-      // Super admin-only page for configuring global security controls such as 2FA enforcement and session timeouts
-      { path: '/security-settings', label: 'Security Settings', icon: Cog, superAdminOnly: true },
+      { path: '/settings', label: 'Settings', icon: Settings, superAdminOnly: true },
+      { path: '/security-hub', label: 'Security & Logs', icon: ShieldAlert, superAdminOnly: true },
+      { path: '/email-templates', label: 'Email Templates', icon: MailIcon, superAdminOnly: true },
+      { path: '/permissions', label: 'Permissions', icon: ShieldAlert, superAdminOnly: true },
+      { path: '/seo-settings', label: 'SEO', icon: Search, superAdminOnly: true },
     ]
   },
-  {
-    id: 'help',
-    label: 'Help',
-    icon: HelpCircle,
-    items: [
-      // Hide the help/documentation menu from trainees by marking this item as adminOnly.
-      { path: '/documentation', label: 'Documentation', icon: BookOpen, adminOnly: true },
-    ]
-  },
-
   {
     id: 'account',
     label: 'Account',
     icon: Key,
     items: [
-      { path: '/my-security', label: 'Two‑Factor', icon: Key, adminOnly: false }
+      { path: '/my-security', label: 'Two-Factor Auth', icon: Key, adminOnly: false },
     ]
   },
 ];
@@ -165,7 +142,7 @@ export const DashboardLayout = ({ children }) => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // All groups expanded by default to reduce click times
-  const [expandedGroups, setExpandedGroups] = useState(['main', 'simulations', 'content', 'training', 'settings', 'management', 'security', 'account']);
+  const [expandedGroups, setExpandedGroups] = useState(['dashboard', 'simulations', 'content', 'training', 'users', 'analytics', 'admin', 'account']);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [customNavItems, setCustomNavItems] = useState([]);
 

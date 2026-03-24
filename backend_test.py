@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
 Backend API Testing for VasilisNetShield
-Tests the key APIs and functionality mentioned in the bug fixes.
+Testing the specific endpoints mentioned in the review request
 """
 
 import requests
 import json
 import sys
 from datetime import datetime
+import uuid
 
 class VasilisNetShieldTester:
     def __init__(self, base_url="https://clean-modular.preview.emergentagent.com"):
@@ -37,7 +38,7 @@ class VasilisNetShieldTester:
             "response_data": response_data
         })
 
-    def make_request(self, method, endpoint, data=None, headers=None, expected_status=None):
+    def make_request(self, method, endpoint, data=None, headers=None, allow_redirects=True):
         """Make HTTP request with error handling"""
         url = f"{self.api_base}/{endpoint.lstrip('/')}"
         
@@ -51,13 +52,13 @@ class VasilisNetShieldTester:
         
         try:
             if method.upper() == 'GET':
-                response = requests.get(url, headers=headers, timeout=10)
+                response = requests.get(url, headers=headers, timeout=15, allow_redirects=allow_redirects)
             elif method.upper() == 'POST':
-                response = requests.post(url, json=data, headers=headers, timeout=10)
-            elif method.upper() == 'PUT':
-                response = requests.put(url, json=data, headers=headers, timeout=10)
+                response = requests.post(url, json=data, headers=headers, timeout=15, allow_redirects=allow_redirects)
+            elif method.upper() == 'PATCH':
+                response = requests.patch(url, json=data, headers=headers, timeout=15, allow_redirects=allow_redirects)
             elif method.upper() == 'DELETE':
-                response = requests.delete(url, headers=headers, timeout=10)
+                response = requests.delete(url, headers=headers, timeout=15, allow_redirects=allow_redirects)
             else:
                 raise ValueError(f"Unsupported method: {method}")
             
@@ -67,42 +68,18 @@ class VasilisNetShieldTester:
             print(f"Request failed: {e}")
             return None
 
-    def test_health_check(self):
-        """Test backend health check"""
-        response = self.make_request('GET', '/health')
-        
-        if response is None:
-            self.log_test("Health Check", False, "Request failed - no response")
-            return False
-            
-        if response.status_code == 200:
-            try:
-                data = response.json()
-                if data.get('status') == 'healthy':
-                    self.log_test("Health Check", True, f"Backend is healthy - {data}")
-                    return True
-                else:
-                    self.log_test("Health Check", False, f"Backend status not healthy: {data}")
-                    return False
-            except:
-                self.log_test("Health Check", False, f"Invalid JSON response: {response.text}")
-                return False
-        else:
-            self.log_test("Health Check", False, f"Expected 200, got {response.status_code}: {response.text}")
-            return False
-
-    def test_user_registration(self):
-        """Test user registration - creates super admin user"""
-        user_data = {
-            "email": f"testadmin_{datetime.now().strftime('%H%M%S')}@example.com",
-            "password": "TestPassword123!",
-            "name": "Test Admin User"
+    def test_login(self):
+        """Test login with provided admin credentials"""
+        print("\n🔍 Testing Admin Login...")
+        login_data = {
+            "email": "admin@vasilisnetshield.com",
+            "password": "Admin123!"
         }
         
-        response = self.make_request('POST', '/auth/register', user_data)
+        response = self.make_request('POST', '/auth/login', login_data)
         
         if response is None:
-            self.log_test("User Registration", False, "Request failed")
+            self.log_test("Admin Login", False, "Request failed")
             return False
             
         if response.status_code == 200:
@@ -112,194 +89,307 @@ class VasilisNetShieldTester:
                 self.user_data = data.get('user')
                 
                 if self.token and self.user_data:
-                    self.log_test("User Registration", True, f"User created: {self.user_data['email']} with role {self.user_data['role']}")
+                    self.log_test("Admin Login", True, f"Successfully logged in as {self.user_data['email']} with role {self.user_data.get('role', 'unknown')}")
                     return True
                 else:
-                    self.log_test("User Registration", False, f"Missing token or user data: {data}")
+                    self.log_test("Admin Login", False, f"Missing token or user data: {data}")
                     return False
             except:
-                self.log_test("User Registration", False, f"Invalid JSON response: {response.text}")
+                self.log_test("Admin Login", False, f"Invalid JSON response: {response.text}")
                 return False
         else:
-            self.log_test("User Registration", False, f"Expected 200, got {response.status_code}: {response.text}")
+            self.log_test("Admin Login", False, f"Expected 200, got {response.status_code}: {response.text}")
             return False
 
-    def test_create_training_module_with_scenarios(self):
-        """Test creating training module with scenarios field"""
+    def test_dashboard_stats(self):
+        """Test dashboard stats endpoint with and without organization_id parameter"""
+        print("\n🔍 Testing Dashboard Stats...")
         if not self.token:
-            self.log_test("Training Module Creation", False, "No auth token available")
+            self.log_test("Dashboard Stats", False, "No auth token available")
             return False
-            
-        module_data = {
-            "name": "Test Security Module",
-            "module_type": "phishing",
-            "description": "Test module for security training",
-            "difficulty": "medium",
-            "duration_minutes": 30,
-            "scenarios_count": 2,
-            "scenarios": ["scenario_1", "scenario_2"],
-            "is_active": True
-        }
         
-        response = self.make_request('POST', '/training/modules', module_data)
+        # Test without organization_id
+        response = self.make_request('GET', '/dashboard/stats')
         
         if response is None:
-            self.log_test("Training Module Creation", False, "Request failed")
-            return False
-            
-        if response.status_code in [200, 201]:
-            try:
-                data = response.json()
-                if data.get('scenarios') == module_data['scenarios']:
-                    self.log_test("Training Module Creation", True, f"Module created with scenarios: {data['scenarios']}")
-                    return True
-                else:
-                    self.log_test("Training Module Creation", False, f"Scenarios field not properly handled: {data}")
-                    return False
-            except:
-                self.log_test("Training Module Creation", False, f"Invalid JSON response: {response.text}")
-                return False
-        else:
-            self.log_test("Training Module Creation", False, f"Expected 200/201, got {response.status_code}: {response.text}")
-            return False
-
-    def test_phishing_tracking_route(self):
-        """Test phishing tracking route for phish_ campaign IDs"""
-        # Test with a phish_ prefixed campaign ID
-        phish_campaign_id = "phish_test123"
-        
-        response = self.make_request('GET', f'/track/{phish_campaign_id}')
-        
-        if response is None:
-            self.log_test("Phishing Tracking Route", False, "Request failed")
-            return False
-        
-        # For phishing campaigns, we expect either a tracking page or proper routing    
-        if response.status_code in [200, 404]:  # 404 is acceptable for non-existent campaign
-            self.log_test("Phishing Tracking Route", True, f"Phish campaign route accessible (status: {response.status_code})")
-            return True
-        else:
-            self.log_test("Phishing Tracking Route", False, f"Unexpected status {response.status_code}: {response.text}")
-            return False
-
-    def test_ad_tracking_route(self):
-        """Test ad tracking route for ad campaign IDs"""
-        # Test with an ad campaign ID 
-        ad_campaign_id = "adcamp_test123"
-        
-        response = self.make_request('GET', f'/track/{ad_campaign_id}')
-        
-        if response is None:
-            self.log_test("Ad Tracking Route", False, "Request failed")
-            return False
-            
-        # For ad campaigns, we expect either a tracking page or proper routing
-        if response.status_code in [200, 404]:  # 404 is acceptable for non-existent campaign
-            self.log_test("Ad Tracking Route", True, f"Ad campaign route accessible (status: {response.status_code})")
-            return True
-        else:
-            self.log_test("Ad Tracking Route", False, f"Unexpected status {response.status_code}: {response.text}")
-            return False
-
-    def test_phishing_stats_endpoint(self):
-        """Test phishing stats endpoint includes both phishing and ad data"""
-        if not self.token:
-            self.log_test("Phishing Stats Endpoint", False, "No auth token available")
-            return False
-            
-        response = self.make_request('GET', '/phishing/stats')
-        
-        if response is None:
-            self.log_test("Phishing Stats Endpoint", False, "Request failed")
+            self.log_test("Dashboard Stats (no org)", False, "Request failed")
             return False
             
         if response.status_code == 200:
             try:
                 data = response.json()
-                # Check for expected fields that should aggregate both phishing and ad data
-                expected_fields = ['total_campaigns', 'total_sent', 'total_opened', 'total_clicked']
-                has_required_fields = all(field in data for field in expected_fields)
-                
-                if has_required_fields:
-                    self.log_test("Phishing Stats Endpoint", True, f"Stats endpoint working with aggregated data: {data}")
-                    return True
+                if isinstance(data, dict) and 'total_users' in data:
+                    self.log_test("Dashboard Stats (no org)", True, f"Got stats: {data}")
                 else:
-                    self.log_test("Phishing Stats Endpoint", False, f"Missing expected aggregated fields: {data}")
+                    self.log_test("Dashboard Stats (no org)", False, f"Invalid stats format: {data}")
                     return False
             except:
-                self.log_test("Phishing Stats Endpoint", False, f"Invalid JSON response: {response.text}")
+                self.log_test("Dashboard Stats (no org)", False, f"Invalid JSON response: {response.text}")
                 return False
         else:
-            self.log_test("Phishing Stats Endpoint", False, f"Expected 200, got {response.status_code}: {response.text}")
+            self.log_test("Dashboard Stats (no org)", False, f"Expected 200, got {response.status_code}: {response.text}")
+            return False
+        
+        # Test with organization_id parameter
+        response = self.make_request('GET', '/dashboard/stats?organization_id=test_org')
+        
+        if response is None:
+            self.log_test("Dashboard Stats (with org)", False, "Request failed")
+            return False
+            
+        if response.status_code == 200:
+            try:
+                data = response.json()
+                if isinstance(data, dict):
+                    self.log_test("Dashboard Stats (with org)", True, f"Got filtered stats: {data}")
+                    return True
+                else:
+                    self.log_test("Dashboard Stats (with org)", False, f"Invalid stats format: {data}")
+                    return False
+            except:
+                self.log_test("Dashboard Stats (with org)", False, f"Invalid JSON response: {response.text}")
+                return False
+        else:
+            self.log_test("Dashboard Stats (with org)", False, f"Expected 200, got {response.status_code}: {response.text}")
             return False
 
-    def test_favicon_serving(self):
-        """Test that favicon.svg is served properly"""
-        response = requests.get(f"{self.base_url}/favicon.svg", timeout=10)
+    def test_organizations(self):
+        """Test fetching organizations"""
+        print("\n🔍 Testing Organizations...")
+        if not self.token:
+            self.log_test("Organizations", False, "No auth token available")
+            return False
         
+        response = self.make_request('GET', '/organizations')
+        
+        if response is None:
+            self.log_test("Organizations", False, "Request failed")
+            return False
+            
         if response.status_code == 200:
-            if 'svg' in response.headers.get('content-type', '').lower():
-                self.log_test("Favicon SVG Serving", True, "Favicon.svg served with correct content type")
+            try:
+                data = response.json()
+                if isinstance(data, list):
+                    self.log_test("Organizations", True, f"Got {len(data)} organizations")
+                    return True
+                else:
+                    self.log_test("Organizations", False, f"Expected list, got: {type(data)}")
+                    return False
+            except:
+                self.log_test("Organizations", False, f"Invalid JSON response: {response.text}")
+                return False
+        else:
+            self.log_test("Organizations", False, f"Expected 200, got {response.status_code}: {response.text}")
+            return False
+
+    def test_cms_tiles(self):
+        """Test fetching CMS tiles"""
+        print("\n🔍 Testing CMS Tiles...")
+        if not self.token:
+            self.log_test("CMS Tiles", False, "No auth token available")
+            return False
+        
+        response = self.make_request('GET', '/cms-tiles')
+        
+        if response is None:
+            self.log_test("CMS Tiles", False, "Request failed")
+            return False
+            
+        if response.status_code == 200:
+            try:
+                data = response.json()
+                if isinstance(data, dict) and 'tiles' in data:
+                    tiles = data['tiles']
+                    self.log_test("CMS Tiles", True, f"Got {len(tiles)} CMS tiles")
+                    return True
+                else:
+                    self.log_test("CMS Tiles", False, f"Expected dict with 'tiles' key, got: {data}")
+                    return False
+            except:
+                self.log_test("CMS Tiles", False, f"Invalid JSON response: {response.text}")
+                return False
+        else:
+            self.log_test("CMS Tiles", False, f"Expected 200, got {response.status_code}: {response.text}")
+            return False
+
+    def test_cms_public_page(self):
+        """Test public CMS page endpoint (should 404 if not found)"""
+        print("\n🔍 Testing CMS Public Page...")
+        
+        # Test with a non-existent slug (should 404)
+        response = self.make_request('GET', '/cms-tiles/public/page/test-slug')
+        
+        if response is None:
+            self.log_test("CMS Public Page (404)", False, "Request failed")
+            return False
+            
+        if response.status_code == 404:
+            self.log_test("CMS Public Page (404)", True, "Correctly returns 404 for non-existent page")
+            return True
+        elif response.status_code == 200:
+            try:
+                data = response.json()
+                self.log_test("CMS Public Page (found)", True, f"Found public page: {data.get('name', 'Unknown')}")
                 return True
-            else:
-                self.log_test("Favicon SVG Serving", False, f"Wrong content type: {response.headers.get('content-type')}")
+            except:
+                self.log_test("CMS Public Page (found)", False, f"Invalid JSON response: {response.text}")
                 return False
         else:
-            self.log_test("Favicon SVG Serving", False, f"Expected 200, got {response.status_code}")
+            self.log_test("CMS Public Page", False, f"Unexpected status code: {response.status_code}")
             return False
 
-    def test_copy_url_functionality(self):
-        """Test that ad simulations copy URL returns embed format with /api/track/"""
+    def test_analytics_training(self):
+        """Test analytics training endpoint"""
+        print("\n🔍 Testing Analytics Training...")
         if not self.token:
-            self.log_test("Copy URL Functionality", False, "No auth token available")
+            self.log_test("Analytics Training", False, "No auth token available")
             return False
-            
-        # Try to get ad campaigns to test copy URL functionality
-        response = self.make_request('GET', '/ads/campaigns')
+        
+        response = self.make_request('GET', '/analytics/training')
         
         if response is None:
-            self.log_test("Copy URL Functionality", False, "Request failed")
+            self.log_test("Analytics Training", False, "Request failed")
             return False
             
         if response.status_code == 200:
-            # The copy URL functionality is frontend-based but should use /api/track/ format
-            # We can verify the backend supports the tracking endpoints
-            self.log_test("Copy URL Functionality", True, "Ad campaigns endpoint accessible for copy URL feature")
-            return True
+            try:
+                data = response.json()
+                self.log_test("Analytics Training", True, f"Got training analytics: {type(data)}")
+                return True
+            except:
+                self.log_test("Analytics Training", False, f"Invalid JSON response: {response.text}")
+                return False
         else:
-            self.log_test("Copy URL Functionality", False, f"Ad campaigns endpoint failed: {response.status_code}")
+            self.log_test("Analytics Training", False, f"Expected 200, got {response.status_code}: {response.text}")
+            return False
+
+    def test_security_dashboard(self):
+        """Test security dashboard endpoint"""
+        print("\n🔍 Testing Security Dashboard...")
+        if not self.token:
+            self.log_test("Security Dashboard", False, "No auth token available")
+            return False
+        
+        response = self.make_request('GET', '/security/dashboard')
+        
+        if response is None:
+            self.log_test("Security Dashboard", False, "Request failed")
+            return False
+            
+        if response.status_code == 200:
+            try:
+                data = response.json()
+                self.log_test("Security Dashboard", True, f"Got security dashboard: {type(data)}")
+                return True
+            except:
+                self.log_test("Security Dashboard", False, f"Invalid JSON response: {response.text}")
+                return False
+        else:
+            self.log_test("Security Dashboard", False, f"Expected 200, got {response.status_code}: {response.text}")
+            return False
+
+    def test_audit_logs(self):
+        """Test audit logs endpoint"""
+        print("\n🔍 Testing Audit Logs...")
+        if not self.token:
+            self.log_test("Audit Logs", False, "No auth token available")
+            return False
+        
+        response = self.make_request('GET', '/security/audit-logs')
+        
+        if response is None:
+            self.log_test("Audit Logs", False, "Request failed")
+            return False
+            
+        if response.status_code == 200:
+            try:
+                data = response.json()
+                if isinstance(data, list):
+                    self.log_test("Audit Logs", True, f"Got {len(data)} audit logs")
+                    return True
+                elif isinstance(data, dict) and 'logs' in data:
+                    logs = data['logs']
+                    self.log_test("Audit Logs", True, f"Got {len(logs)} audit logs")
+                    return True
+                else:
+                    self.log_test("Audit Logs", True, f"Got audit logs response: {type(data)}")
+                    return True
+            except:
+                self.log_test("Audit Logs", False, f"Invalid JSON response: {response.text}")
+                return False
+        else:
+            self.log_test("Audit Logs", False, f"Expected 200, got {response.status_code}: {response.text}")
+            return False
+
+    def test_activity_logs(self):
+        """Test activity logs endpoint"""
+        print("\n🔍 Testing Activity Logs...")
+        if not self.token:
+            self.log_test("Activity Logs", False, "No auth token available")
+            return False
+        
+        response = self.make_request('GET', '/activity-logs')
+        
+        if response is None:
+            self.log_test("Activity Logs", False, "Request failed")
+            return False
+            
+        if response.status_code == 200:
+            try:
+                data = response.json()
+                if isinstance(data, list):
+                    self.log_test("Activity Logs", True, f"Got {len(data)} activity logs")
+                    return True
+                elif isinstance(data, dict) and 'logs' in data:
+                    logs = data['logs']
+                    self.log_test("Activity Logs", True, f"Got {len(logs)} activity logs")
+                    return True
+                else:
+                    self.log_test("Activity Logs", True, f"Got activity logs response: {type(data)}")
+                    return True
+            except:
+                self.log_test("Activity Logs", False, f"Invalid JSON response: {response.text}")
+                return False
+        else:
+            self.log_test("Activity Logs", False, f"Expected 200, got {response.status_code}: {response.text}")
             return False
 
     def run_all_tests(self):
         """Run all backend tests"""
-        print("🚀 Starting VasilisNetShield Backend Tests")
-        print("=" * 50)
+        print("🚀 Starting VasilisNetShield Backend API Tests")
+        print("Testing endpoints from review request")
+        print("=" * 70)
         
-        # Test 1: Health check
-        self.test_health_check()
+        # Test 1: Login with provided credentials
+        if not self.test_login():
+            print("❌ Cannot continue without login")
+            return False
         
-        # Test 2: User registration (creates auth token)  
-        self.test_user_registration()
+        # Test 2: Dashboard stats (with and without org_id)
+        self.test_dashboard_stats()
         
-        # Test 3: Training module creation with scenarios field
-        self.test_create_training_module_with_scenarios()
+        # Test 3: Organizations
+        self.test_organizations()
         
-        # Test 4: Phishing tracking route
-        self.test_phishing_tracking_route()
+        # Test 4: CMS tiles
+        self.test_cms_tiles()
         
-        # Test 5: Ad tracking route  
-        self.test_ad_tracking_route()
+        # Test 5: CMS public page (should 404 for test-slug)
+        self.test_cms_public_page()
         
-        # Test 6: Phishing stats endpoint
-        self.test_phishing_stats_endpoint()
+        # Test 6: Analytics training
+        self.test_analytics_training()
         
-        # Test 7: Favicon serving
-        self.test_favicon_serving()
+        # Test 7: Security dashboard
+        self.test_security_dashboard()
         
-        # Test 8: Copy URL functionality support
-        self.test_copy_url_functionality()
+        # Test 8: Audit logs
+        self.test_audit_logs()
         
-        print("\n" + "=" * 50)
+        # Test 9: Activity logs
+        self.test_activity_logs()
+        
+        print("\n" + "=" * 70)
         print(f"📊 Test Results: {self.tests_passed}/{self.tests_run} passed")
         
         if self.tests_passed == self.tests_run:

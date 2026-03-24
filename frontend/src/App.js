@@ -304,6 +304,12 @@ const SystemEmailTemplates = React.lazy(() => import('./pages/SystemEmailTemplat
 const AdvancedAnalytics = React.lazy(() => import('./pages/AdvancedAnalytics'));
 const CertificateTemplates = React.lazy(() => import('./pages/CertificateTemplates'));
 const LandingPageEditor = React.lazy(() => import('./pages/LandingPageEditor'));
+// Hub pages - merged views
+const AnalyticsHub = React.lazy(() => import('./pages/AnalyticsHub'));
+const SecurityHub = React.lazy(() => import('./pages/SecurityHub'));
+const CertificatesHub = React.lazy(() => import('./pages/CertificatesHub'));
+// Public CMS Page renderer
+const PublicCmsPage = React.lazy(() => import('./pages/PublicCmsPage'));
 const Inquiries = React.lazy(() => import('./pages/Inquiries'));
 const AdTracker = React.lazy(() => import('./pages/AdTracker'));
 const BlogListPage = React.lazy(() => import('./pages/Blog').then(m => ({ default: m.BlogList })));
@@ -433,16 +439,26 @@ const LoadingFallback = () => (
 
 // Ad Tracker Wrapper - routes campaign IDs to AdTracker
 // Dynamic route handler - checks for CMS tiles first, then ad campaigns
-// If neither, redirects to home
+// If neither, redirects to home. Public CMS pages render without auth.
 const DynamicRouteHandler = () => {
   const params = useParams();
   const slug = params.slug;
-  const [routeType, setRouteType] = useState(null); // 'cms', 'ad', 'not_found'
+  const [routeType, setRouteType] = useState(null); // 'cms_public', 'cms', 'ad', 'not_found'
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkRoute = async () => {
-      // First, check if this is a valid CMS tile
+      // First, check if this is a public CMS page (no auth needed)
+      try {
+        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/cms-tiles/public/page/${slug}`);
+        if (res.ok) {
+          setRouteType('cms_public');
+          setLoading(false);
+          return;
+        }
+      } catch (e) { /* not a public page */ }
+
+      // Next, check if this is a CMS tile (may need auth)
       try {
         const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/cms-tiles/${slug}`);
         if (res.ok) {
@@ -450,9 +466,7 @@ const DynamicRouteHandler = () => {
           setLoading(false);
           return;
         }
-      } catch (e) {
-        // Not a CMS tile, continue checking
-      }
+      } catch (e) { /* not a CMS tile */ }
 
       // Check if this looks like a valid campaign ID
       if (slug && (
@@ -479,6 +493,10 @@ const DynamicRouteHandler = () => {
         <div className="w-8 h-8 border-2 border-[#D4A836] border-t-transparent rounded-full animate-spin" />
       </div>
     );
+  }
+
+  if (routeType === 'cms_public') {
+    return <PublicCmsPage />;
   }
 
   if (routeType === 'cms') {
@@ -578,7 +596,7 @@ const AppRouter = () => {
           path="/analytics"
           element={
             <ProtectedRoute adminOnly>
-              <Analytics />
+              <AnalyticsHub />
             </ProtectedRoute>
           }
         />
@@ -638,7 +656,7 @@ const AppRouter = () => {
           path="/certificates"
           element={
             <ProtectedRoute>
-              <Certificates />
+              <CertificatesHub />
             </ProtectedRoute>
           }
         />
@@ -702,35 +720,19 @@ const AppRouter = () => {
         />
         <Route
           path="/audit-logs"
-          element={
-            <ProtectedRoute adminOnly>
-              <AuditLogs />
-            </ProtectedRoute>
-          }
+          element={<Navigate to="/security-hub?tab=audit" replace />}
         />
         <Route
           path="/activity-logs"
-          element={
-            <ProtectedRoute adminOnly>
-              <ActivityLogs />
-            </ProtectedRoute>
-          }
+          element={<Navigate to="/security-hub?tab=activity" replace />}
         />
         <Route
           path="/password-policy"
-          element={
-            <ProtectedRoute adminOnly>
-              <PasswordPolicyPage />
-            </ProtectedRoute>
-          }
+          element={<Navigate to="/security-hub?tab=password" replace />}
         />
         <Route
           path="/security-settings"
-          element={
-            <ProtectedRoute adminOnly>
-              <SecuritySettings />
-            </ProtectedRoute>
-          }
+          element={<Navigate to="/security-hub?tab=settings" replace />}
         />
         <Route
           path="/my-security"
@@ -766,9 +768,13 @@ const AppRouter = () => {
         />
         <Route
           path="/security"
+          element={<Navigate to="/security-hub" replace />}
+        />
+        <Route
+          path="/security-hub"
           element={
             <ProtectedRoute adminOnly>
-              <SecurityDashboard />
+              <SecurityHub />
             </ProtectedRoute>
           }
         />
@@ -790,11 +796,7 @@ const AppRouter = () => {
         />
         <Route
           path="/advanced-analytics"
-          element={
-            <ProtectedRoute adminOnly>
-              <AdvancedAnalytics />
-            </ProtectedRoute>
-          }
+          element={<Navigate to="/analytics?tab=advanced" replace />}
         />
         <Route
           path="/vulnerable-users"
@@ -858,11 +860,7 @@ const AppRouter = () => {
         />
         <Route
           path="/certificate-templates"
-          element={
-            <ProtectedRoute adminOnly>
-              <CertificateTemplates />
-            </ProtectedRoute>
-          }
+          element={<Navigate to="/certificates?tab=templates" replace />}
         />
         <Route
           path="/landing-editor"

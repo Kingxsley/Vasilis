@@ -2,7 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { useAuth } from '../App';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Building2, Users, Target, BookOpen, TrendingUp, Activity, Award, Shield, QrCode, Usb, AlertTriangle, Mail, FileWarning, Lock, Eye } from 'lucide-react';
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '../components/ui/select';
+import { Building2, Users, Target, BookOpen, TrendingUp, Activity, Award, Shield, QrCode, Usb, AlertTriangle, Mail, FileWarning, Lock, Eye, RefreshCw } from 'lucide-react';
 import axios from 'axios';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -45,40 +48,43 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [userStats, setUserStats] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState(null);
+  const [organizations, setOrganizations] = useState([]);
+  const [selectedOrg, setSelectedOrg] = useState('all');
+
+  useEffect(() => {
+    fetchOrganizations();
+  }, []);
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [selectedOrg]);
+
+  const fetchOrganizations = async () => {
+    try {
+      const res = await axios.get(`${API}/organizations`, { headers: { Authorization: `Bearer ${token}` } });
+      setOrganizations(res.data);
+    } catch (e) { console.error(e); }
+  };
 
   const fetchDashboardData = async () => {
     try {
+      const orgParam = selectedOrg !== 'all' ? selectedOrg : null;
+      const orgQuery = orgParam ? `?organization_id=${orgParam}` : '';
+      const orgQueryAmp = orgParam ? `&organization_id=${orgParam}` : '';
+      
       const [statsRes, analyticsRes, userAnalyticsRes, onlineUsersRes] = await Promise.all([
-        axios.get(`${API}/dashboard/stats`, {
+        axios.get(`${API}/dashboard/stats${orgQuery}`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        axios.get(`${API}/analytics/training`, {
+        axios.get(`${API}/analytics/training${orgQuery}`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        axios.get(
-          `${API}/analytics/users${
-            user?.role !== 'super_admin' && user?.organization_id
-              ? `?organization_id=${user.organization_id}`
-              : ''
-          }`,
-          {
-            headers: { Authorization: `Bearer ${token}` }
-          }
-        ),
-        axios.get(
-          `${API}/analytics/online-users${
-            user?.role !== 'super_admin' && user?.organization_id
-              ? `?organization_id=${user.organization_id}`
-              : ''
-          }`,
-          {
-            headers: { Authorization: `Bearer ${token}` }
-          }
-        ).catch(() => ({ data: { online_count: 0, online_users: [] } }))
+        axios.get(`${API}/analytics/users${orgQuery || (user?.role !== 'super_admin' && user?.organization_id ? `?organization_id=${user.organization_id}` : '')}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${API}/analytics/online-users${orgQuery || (user?.role !== 'super_admin' && user?.organization_id ? `?organization_id=${user.organization_id}` : '')}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }).catch(() => ({ data: { online_count: 0, online_users: [] } }))
       ]);
       setStats(statsRes.data);
       setRecentSessions(analyticsRes.data.recent_sessions || []);
@@ -141,11 +147,31 @@ export default function Dashboard() {
     <DashboardLayout>
       <div className="p-6 lg:p-8" data-testid="dashboard-page">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Chivo, sans-serif' }}>
-            Welcome back, {user?.name?.split(' ')[0]}
-          </h1>
-          <p className="text-gray-400">Here's what's happening with your security training</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Chivo, sans-serif' }}>
+              Welcome back, {user?.name?.split(' ')[0]}
+            </h1>
+            <p className="text-gray-400">Here's what's happening with your security training</p>
+          </div>
+          {user?.role === 'super_admin' && organizations.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Select value={selectedOrg} onValueChange={setSelectedOrg}>
+                <SelectTrigger className="w-[220px] bg-[#161B22] border-[#30363D]">
+                  <SelectValue placeholder="All Organizations" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#161B22] border-[#30363D]">
+                  <SelectItem value="all">All Organizations</SelectItem>
+                  {organizations.map(org => (
+                    <SelectItem key={org.organization_id} value={org.organization_id}>{org.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <button onClick={fetchDashboardData} className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5">
+                <RefreshCw className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Stats Grid */}

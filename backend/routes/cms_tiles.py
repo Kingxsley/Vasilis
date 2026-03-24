@@ -105,6 +105,9 @@ class TileCreate(BaseModel):
     route_type: str = "custom"  # 'internal', 'external', 'custom'
     external_url: Optional[str] = None
     custom_content: Optional[str] = None  # HTML content for custom pages
+    visibility: str = "private"  # 'draft', 'private', 'public'
+    meta_title: Optional[str] = None
+    meta_description: Optional[str] = None
 
 
 class TileUpdate(BaseModel):
@@ -118,6 +121,9 @@ class TileUpdate(BaseModel):
     external_url: Optional[str] = None
     custom_content: Optional[str] = None
     blocks: Optional[list] = None
+    visibility: Optional[str] = None  # 'draft', 'private', 'public'
+    meta_title: Optional[str] = None
+    meta_description: Optional[str] = None
 
 
 @router.get("")
@@ -226,8 +232,12 @@ async def get_tile_by_slug(slug: str, request: Request):
     if not tile:
         raise HTTPException(status_code=404, detail="Tile not found")
     
-    # If unpublished, return 404 for public access
-    if not tile.get("published", False):
+    # Public visibility pages are accessible without auth
+    if tile.get("visibility") == "public":
+        return tile
+    
+    # If unpublished or not public, require auth
+    if not tile.get("published", False) or tile.get("visibility", "private") != "public":
         # Check if user is admin
         try:
             user = await get_current_user(request)
@@ -237,6 +247,21 @@ async def get_tile_by_slug(slug: str, request: Request):
             raise
         except Exception:
             raise HTTPException(status_code=404, detail="Page not found")
+    
+    return tile
+
+
+@router.get("/public/page/{slug}")
+async def get_public_page(slug: str):
+    """Get a CMS page that is marked as public - no auth required. For SEO-friendly public rendering."""
+    db = get_db()
+    
+    tile = await db.cms_tiles.find_one(
+        {"slug": slug, "published": True, "visibility": "public"}, 
+        {"_id": 0}
+    )
+    if not tile:
+        raise HTTPException(status_code=404, detail="Page not found")
     
     return tile
 
@@ -269,6 +294,9 @@ async def create_tile(data: TileCreate, request: Request):
         "route_type": data.route_type,
         "external_url": data.external_url,
         "custom_content": data.custom_content,
+        "visibility": data.visibility or "private",
+        "meta_title": data.meta_title,
+        "meta_description": data.meta_description,
         "created_by": user["user_id"],
         "created_at": datetime.now(timezone.utc).isoformat()
     }
