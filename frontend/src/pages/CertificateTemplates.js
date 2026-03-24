@@ -757,8 +757,11 @@ export default function CertificateTemplates({ embedded = false }) {
       console.error('Save template error:', err);
       if (err.response?.status === 413) {
         toast.error('Template too large. Please use smaller images or remove some elements.');
+      } else if (err.response?.status === 401) {
+        toast.error('Session expired. Please refresh and login again.');
       } else {
-        toast.error('Failed to save template');
+        const errorMsg = err.response?.data?.detail || err.message || 'Unknown error';
+        toast.error(`Failed to save: ${errorMsg}`);
       }
     } finally {
       setSaving(false);
@@ -928,6 +931,8 @@ export default function CertificateTemplates({ embedded = false }) {
     const previewPDF = async () => {
       if (!editingTemplate) return;
       try {
+        toast.info('Generating preview...');
+        
         // First save the template with compressed images
         const compressedElements = await compressElementImages(elements);
         let compressedBgImage = editingTemplate.background_image;
@@ -946,14 +951,30 @@ export default function CertificateTemplates({ embedded = false }) {
           elements: compressedElements
         }, { headers });
         
-        // Then open preview in new tab
-        window.open(`${API}/certificate-templates/${editingTemplate.template_id}/preview`, '_blank');
+        // Fetch PDF as blob with auth header
+        const response = await axios.get(
+          `${API}/certificate-templates/${editingTemplate.template_id}/preview`,
+          { 
+            headers,
+            responseType: 'blob'
+          }
+        );
+        
+        // Create blob URL and open in new tab
+        const blob = new Blob([response.data], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        window.open(url, '_blank');
+        
+        // Cleanup after a delay
+        setTimeout(() => window.URL.revokeObjectURL(url), 10000);
+        
+        toast.success('Preview generated');
       } catch (err) {
         console.error('Preview error:', err);
         if (err.response?.status === 413) {
           toast.error('Template too large. Please use smaller images.');
         } else {
-          toast.error('Failed to generate preview');
+          toast.error('Failed to generate preview: ' + (err.response?.data?.detail || err.message));
         }
       }
     };

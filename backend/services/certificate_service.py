@@ -574,6 +574,11 @@ def render_image_element(c, content: str, x: float, y_bottom: float, width: floa
         else:
             image_data_b64 = content
         
+        # Fix base64 padding if needed
+        padding = len(image_data_b64) % 4
+        if padding:
+            image_data_b64 += '=' * (4 - padding)
+        
         img_data = base64.b64decode(image_data_b64)
         img_reader = ImageReader(io.BytesIO(img_data))
     except Exception as e:
