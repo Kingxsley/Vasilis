@@ -82,6 +82,15 @@ export default function UsersPage() {
     }
   }, [location.state]);
 
+  // Handle search query parameter from URL
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const searchParam = params.get('search');
+    if (searchParam) {
+      setSearch(searchParam);
+    }
+  }, [location.search]);
+
   useEffect(() => {
     fetchData();
   }, []);

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { 
   AlertTriangle, 
@@ -26,7 +27,8 @@ import {
   ArrowUpDown,
   Eye,
   UserX,
-  Target
+  Target,
+  GraduationCap
 } from 'lucide-react';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -100,6 +102,7 @@ const RiskIndicator = ({ level }) => {
 };
 
 export default function VulnerableUsers() {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState({ users: [], stats: {}, total: 0 });
   const [days, setDays] = useState(30);
@@ -110,6 +113,10 @@ export default function VulnerableUsers() {
   const [sortField, setSortField] = useState('risk_level');
   const [sortDirection, setSortDirection] = useState('desc');
   const [expandedUser, setExpandedUser] = useState(null);
+  const [showTrainingModal, setShowTrainingModal] = useState(false);
+  const [selectedUserForTraining, setSelectedUserForTraining] = useState(null);
+  const [trainingModules, setTrainingModules] = useState([]);
+  const [assigningTraining, setAssigningTraining] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -153,7 +160,70 @@ export default function VulnerableUsers() {
   useEffect(() => {
     fetchData();
     fetchOrganizations();
+    fetchTrainingModules();
   }, [fetchData]);
+
+  // Fetch training modules for assignment
+  const fetchTrainingModules = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/api/training/modules`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const modules = await response.json();
+        setTrainingModules(modules);
+      }
+    } catch (error) {
+      console.error('Error fetching training modules:', error);
+    }
+  };
+
+  // View user profile - navigate to Users page with search filter
+  const viewUserProfile = (user) => {
+    // Navigate to users page with search query for this user
+    navigate(`/users?search=${encodeURIComponent(user.user_email)}`);
+  };
+
+  // Open training assignment modal
+  const openTrainingModal = (user) => {
+    setSelectedUserForTraining(user);
+    setShowTrainingModal(true);
+  };
+
+  // Assign training to user
+  const assignTraining = async (moduleId) => {
+    if (!selectedUserForTraining || !moduleId) return;
+    setAssigningTraining(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/api/training/reassign`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          user_ids: [selectedUserForTraining.user_id],
+          module_ids: [moduleId]
+        })
+      });
+      
+      if (response.ok) {
+        toast.success(`Training assigned to ${selectedUserForTraining.user_name}`);
+        setShowTrainingModal(false);
+        setSelectedUserForTraining(null);
+      } else {
+        const err = await response.json();
+        toast.error(err.detail || 'Failed to assign training');
+      }
+    } catch (error) {
+      console.error('Error assigning training:', error);
+      toast.error('Failed to assign training');
+    } finally {
+      setAssigningTraining(false);
+    }
+  };
 
   // Filter and sort users
   const filteredUsers = useMemo(() => {
@@ -605,11 +675,28 @@ export default function VulnerableUsers() {
                               <div>
                                 <p className="text-xs text-gray-500 mb-1">Actions</p>
                                 <div className="flex gap-2">
-                                  <Button size="sm" variant="outline" className="h-7 text-xs border-[#30363D]">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    className="h-7 text-xs border-[#30363D]"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      viewUserProfile(user);
+                                    }}
+                                  >
                                     <Eye className="h-3 w-3 mr-1" />
                                     View Profile
                                   </Button>
-                                  <Button size="sm" variant="outline" className="h-7 text-xs border-[#D4A836]/30 text-[#D4A836]">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    className="h-7 text-xs border-[#D4A836]/30 text-[#D4A836]"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      openTrainingModal(user);
+                                    }}
+                                  >
+                                    <GraduationCap className="h-3 w-3 mr-1" />
                                     Assign Training
                                   </Button>
                                 </div>
@@ -645,6 +732,63 @@ export default function VulnerableUsers() {
           )}
         </CardContent>
       </Card>
+
+      {/* Training Assignment Modal */}
+      {showTrainingModal && selectedUserForTraining && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowTrainingModal(false)}>
+          <div className="bg-[#161B22] rounded-lg border border-[#30363D] w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold text-white mb-2">Assign Training</h3>
+            <p className="text-sm text-gray-400 mb-4">
+              Assign remedial training to <span className="text-[#D4A836]">{selectedUserForTraining.user_name}</span>
+            </p>
+            
+            {trainingModules.length > 0 ? (
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {trainingModules.map((module) => (
+                  <button
+                    key={module.module_id}
+                    onClick={() => assignTraining(module.module_id)}
+                    disabled={assigningTraining}
+                    className="w-full text-left p-3 rounded-lg border border-[#30363D] hover:border-[#D4A836]/50 hover:bg-[#D4A836]/5 transition-colors"
+                  >
+                    <p className="font-medium text-white text-sm">{module.name}</p>
+                    <p className="text-xs text-gray-500">{module.description || 'Security training module'}</p>
+                    <p className="text-xs text-gray-600 mt-1">{module.duration_minutes || 30} minutes • {module.difficulty || 'intermediate'}</p>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <GraduationCap className="h-12 w-12 mx-auto mb-3 text-gray-600" />
+                <p className="text-gray-400">No training modules available</p>
+                <p className="text-xs text-gray-500 mt-1">Create training modules in Module Designer</p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-3 border-[#D4A836]/30 text-[#D4A836]"
+                  onClick={() => {
+                    setShowTrainingModal(false);
+                    navigate('/training/modules');
+                  }}
+                >
+                  Go to Module Designer
+                </Button>
+              </div>
+            )}
+            
+            <div className="flex justify-end mt-4">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setShowTrainingModal(false)}
+                className="border-[#30363D]"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
     </DashboardLayout>
   );
