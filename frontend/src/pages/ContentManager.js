@@ -150,13 +150,34 @@ function PagesTab({ token, user }) {
   };
 
   const deleteTile = async (tileId) => {
-    if (!window.confirm('Are you sure you want to delete this page?')) return;
+    if (!window.confirm('Are you sure you want to delete this page? This cannot be undone.')) return;
     try {
       await axios.delete(`${API}/cms-tiles/${tileId}`, { headers });
       toast.success('Page deleted');
       fetchTiles();
     } catch (err) {
-      toast.error('Failed to delete page');
+      toast.error(err.response?.data?.detail || 'Failed to delete page');
+    }
+  };
+
+  const convertToCustom = async (tile) => {
+    if (!window.confirm(`Convert "${tile.name}" to a custom page? This will allow you to delete it and change its visibility.`)) return;
+    try {
+      await axios.patch(`${API}/cms-tiles/${tile.tile_id}/convert-to-custom`, {}, { headers });
+      toast.success(`"${tile.name}" converted to custom page`);
+      fetchTiles();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to convert page');
+    }
+  };
+
+  const changeVisibility = async (tile, visibility) => {
+    try {
+      await axios.patch(`${API}/cms-tiles/${tile.tile_id}`, { visibility }, { headers });
+      toast.success(`Visibility changed to ${visibility}`);
+      fetchTiles();
+    } catch (err) {
+      toast.error('Failed to change visibility');
     }
   };
 
@@ -268,38 +289,59 @@ function PagesTab({ token, user }) {
                         <p className="text-xs text-gray-500">/{tile.slug}</p>
                       </div>
                     </div>
-                    <Badge className={tile.published ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}>
-                      {tile.published ? 'Published' : 'Draft'}
-                    </Badge>
-                    {tile.visibility && (
-                      <Badge className={tile.visibility === 'public' ? 'bg-blue-500/20 text-blue-400 ml-1' : tile.visibility === 'draft' ? 'bg-yellow-500/20 text-yellow-400 ml-1' : 'bg-gray-500/20 text-gray-400 ml-1'}>
+                    <div className="flex items-center gap-1 flex-wrap justify-end">
+                      <Badge className={tile.published ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}>
+                        {tile.published ? 'Published' : 'Unpublished'}
+                      </Badge>
+                      <Badge className={
+                        tile.visibility === 'public' ? 'bg-blue-500/20 text-blue-400' :
+                        tile.visibility === 'draft' ? 'bg-yellow-500/20 text-yellow-400' :
+                        'bg-gray-500/20 text-gray-400'
+                      }>
                         {tile.visibility === 'public' ? 'Public' : tile.visibility === 'draft' ? 'Draft' : 'Private'}
                       </Badge>
-                    )}
+                      {tile.is_system && (
+                        <Badge className="bg-orange-500/20 text-orange-400">System</Badge>
+                      )}
+                    </div>
                   </div>
                   
                   <p className="text-sm text-gray-400 mb-3 line-clamp-2">{tile.description || 'No description'}</p>
                   
-                  {tile.is_system ? (
-                    <p className="text-xs text-gray-500">Internal</p>
-                  ) : (
-                    <p className="text-xs text-gray-500">{tile.route_type === 'external' ? 'External Link' : 'Custom Page'}</p>
-                  )}
+                  <p className="text-xs text-gray-500">
+                    {tile.is_system ? 'System Page' : tile.route_type === 'external' ? 'External Link' : 'Custom Page'}
+                  </p>
 
-                  <div className="flex items-center justify-end gap-1 mt-3 pt-3 border-t border-[#30363D]">
-                    {!tile.is_system && (
-                      <>
-                        <Button size="sm" variant="ghost" onClick={() => togglePublish(tile)} className="text-gray-400 hover:text-[#E8DDB5]">
-                          {tile.published ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  <div className="flex items-center justify-between gap-1 mt-3 pt-3 border-t border-[#30363D]">
+                    <div className="flex items-center gap-1">
+                      {/* Visibility quick-toggle */}
+                      <Select value={tile.visibility || 'private'} onValueChange={(v) => changeVisibility(tile, v)}>
+                        <SelectTrigger className="h-8 w-[100px] bg-[#0D1117] border-[#30363D] text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#161B22] border-[#30363D]">
+                          <SelectItem value="draft" className="text-xs">Draft</SelectItem>
+                          <SelectItem value="private" className="text-xs">Private</SelectItem>
+                          <SelectItem value="public" className="text-xs">Public</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {tile.is_system && (
+                        <Button size="sm" variant="ghost" onClick={() => convertToCustom(tile)} className="text-xs text-orange-400 hover:text-orange-300 hover:bg-orange-500/10" title="Convert to custom page">
+                          <RefreshCw className="w-3.5 h-3.5 mr-1" />Convert
                         </Button>
-                        <Button size="sm" variant="ghost" onClick={() => { setEditingTile(tile); setView('edit'); }} className="text-gray-400 hover:text-[#E8DDB5]">
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => deleteTile(tile.tile_id)} className="text-gray-400 hover:text-red-400">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </>
-                    )}
+                      )}
+                      <Button size="sm" variant="ghost" onClick={() => togglePublish(tile)} className="text-gray-400 hover:text-[#E8DDB5]" title={tile.published ? 'Unpublish' : 'Publish'}>
+                        {tile.published ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => { setEditingTile(tile); setView('edit'); }} className="text-gray-400 hover:text-[#E8DDB5]" title="Edit">
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => deleteTile(tile.tile_id)} className="text-gray-400 hover:text-red-400" title="Delete">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

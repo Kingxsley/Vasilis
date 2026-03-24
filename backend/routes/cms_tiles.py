@@ -343,6 +343,12 @@ async def update_tile(tile_id: str, data: TileUpdate, request: Request):
         update_data["custom_content"] = data.custom_content
     if data.blocks is not None:
         update_data["blocks"] = data.blocks
+    if data.visibility is not None:
+        update_data["visibility"] = data.visibility
+    if data.meta_title is not None:
+        update_data["meta_title"] = data.meta_title
+    if data.meta_description is not None:
+        update_data["meta_description"] = data.meta_description
     
     if update_data:
         update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
@@ -378,7 +384,7 @@ async def toggle_tile_publish(tile_id: str, request: Request):
 
 @router.delete("/{tile_id}")
 async def delete_tile(tile_id: str, request: Request):
-    """Delete a custom CMS tile (system tiles cannot be deleted)"""
+    """Delete a CMS tile. All tiles (including former system tiles) can be deleted."""
     await require_super_admin(request)
     db = get_db()
     
@@ -386,12 +392,33 @@ async def delete_tile(tile_id: str, request: Request):
     if not existing:
         raise HTTPException(status_code=404, detail="Tile not found")
     
-    if existing.get("is_system", False):
-        raise HTTPException(status_code=400, detail="System tiles cannot be deleted. You can unpublish them instead.")
-    
     await db.cms_tiles.delete_one({"tile_id": tile_id})
     
     return {"message": "Tile deleted", "tile_id": tile_id}
+
+
+@router.patch("/{tile_id}/convert-to-custom")
+async def convert_to_custom(tile_id: str, request: Request):
+    """Convert a system tile to a custom page. This allows deletion and full editing."""
+    await require_super_admin(request)
+    db = get_db()
+    
+    existing = await db.cms_tiles.find_one({"tile_id": tile_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Tile not found")
+    
+    await db.cms_tiles.update_one(
+        {"tile_id": tile_id},
+        {"$set": {
+            "is_system": False,
+            "route_type": "custom",
+            "visibility": existing.get("visibility") or "private",
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    updated = await db.cms_tiles.find_one({"tile_id": tile_id}, {"_id": 0})
+    return updated
 
 
 @router.post("/reorder")
