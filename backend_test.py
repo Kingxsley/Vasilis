@@ -354,6 +354,60 @@ class VasilisNetShieldTester:
             self.log_test("Activity Logs", False, f"Expected 200, got {response.status_code}: {response.text}")
             return False
 
+    def test_users_list(self):
+        """Test users list endpoint with limit parameter"""
+        print("\n🔍 Testing Users List...")
+        if not self.token:
+            self.log_test("Users List", False, "No auth token available")
+            return False
+        
+        response = self.make_request('GET', '/users?limit=10')
+        
+        if response is None:
+            self.log_test("Users List", False, "Request failed")
+            return False
+            
+        if response.status_code == 200:
+            try:
+                data = response.json()
+                if isinstance(data, list):
+                    self.log_test("Users List", True, f"Got {len(data)} users")
+                    return True
+                else:
+                    self.log_test("Users List", False, f"Expected list, got: {type(data)}")
+                    return False
+            except:
+                self.log_test("Users List", False, f"Invalid JSON response: {response.text}")
+                return False
+        else:
+            self.log_test("Users List", False, f"Expected 200, got {response.status_code}: {response.text}")
+            return False
+
+    def test_password_policy(self):
+        """Test password policy endpoint"""
+        print("\n🔍 Testing Password Policy...")
+        if not self.token:
+            self.log_test("Password Policy", False, "No auth token available")
+            return False
+        
+        response = self.make_request('GET', '/settings/password-policy')
+        
+        if response is None:
+            self.log_test("Password Policy", False, "Request failed")
+            return False
+            
+        if response.status_code == 200:
+            try:
+                data = response.json()
+                self.log_test("Password Policy", True, f"Got password policy: {type(data)}")
+                return True
+            except:
+                self.log_test("Password Policy", False, f"Invalid JSON response: {response.text}")
+                return False
+        else:
+            self.log_test("Password Policy", False, f"Expected 200, got {response.status_code}: {response.text}")
+            return False
+
     def run_all_tests(self):
         """Run all backend tests"""
         print("🚀 Starting VasilisNetShield Backend API Tests")
@@ -388,6 +442,12 @@ class VasilisNetShieldTester:
         
         # Test 9: Activity logs
         self.test_activity_logs()
+        
+        # Test 10: Users list with limit
+        self.test_users_list()
+        
+        # Test 11: Password policy
+        self.test_password_policy()
         
         print("\n" + "=" * 70)
         print(f"📊 Test Results: {self.tests_passed}/{self.tests_run} passed")

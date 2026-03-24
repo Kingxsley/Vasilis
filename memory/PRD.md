@@ -15,6 +15,42 @@ A comprehensive security awareness and training platform that helps organization
 - **Database**: MongoDB Atlas
 - **Integrations**: SendGrid (email), Discord (webhooks), ReportLab (PDF generation)
 
+
+## Refactoring & Modularization (Latest)
+
+### Navigation Simplification
+- Reduced sidebar from **9 groups / 30+ items** to **8 groups / ~20 items**
+- Groups: Dashboard, Users & Orgs, Simulations, Training, Content, Analytics & Reports, Administration, Account
+- Merged overlapping pages into hub views with tabs
+
+### Page Merging (Hub Pages)
+- **AnalyticsHub** (`/analytics`) - Merged Analytics + Advanced Analytics with org filtering tabs
+- **SecurityHub** (`/security-hub`) - Merged Security Dashboard + Settings + Password Policy + Audit Logs + Activity Logs (5 tabs)
+- **CertificatesHub** (`/certificates`) - Merged Certificates + Certificate Templates (tabbed)
+- Old routes redirect to new hub pages automatically
+
+### CMS Public Visibility
+- Added `visibility` field to CMS tiles: draft, private, public
+- Added `meta_title` and `meta_description` for SEO
+- Public pages render at `/{slug}` without authentication
+- New `/api/cms-tiles/public/page/{slug}` endpoint (no auth)
+- Visibility controls in Content Manager page editor
+
+### Dashboard & Analytics Org Filtering
+- Super admins can filter Dashboard and Analytics by organization
+- Organization selector dropdown on both pages
+
+### Image Optimization
+- `OptimizedImage` component with IntersectionObserver lazy loading
+- Skeleton/blur placeholders during load
+- Added `loading="lazy"` to LandingPage images
+
+### Backend Modularization
+- Extracted 250+ lines of Pydantic models to `/backend/models/schemas.py`
+- Clean separation of data models from route logic
+- server.py reduced from 4164 to 3915 lines
+
+
 ## Core Features Implemented
 
 ### Authentication & User Management

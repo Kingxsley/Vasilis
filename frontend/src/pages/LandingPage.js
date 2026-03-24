@@ -495,6 +495,8 @@ export default function LandingPage() {
                     src={pageContent.platform_image} 
                     alt="Platform" 
                     className="max-w-full max-h-full object-contain drop-shadow-2xl platform-glow"
+                    loading="lazy"
+                    decoding="async"
                   />
                 ) : branding?.logo_url ? (
                   <img 
@@ -658,7 +660,7 @@ export default function LandingPage() {
                 <div key={idx} className="text-center">
                   <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-[#D4A836]/20 flex items-center justify-center overflow-hidden">
                     {member.image_url ? (
-                      <img src={member.image_url} alt={member.name} className="w-full h-full object-cover" />
+                      <img src={member.image_url} alt={member.name} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                     ) : (
                       <span className="text-3xl text-[#D4A836] font-bold">{member.name?.[0]}</span>
                     )}

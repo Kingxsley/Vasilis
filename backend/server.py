@@ -126,252 +126,19 @@ security = HTTPBearer(auto_error=False)
 
 # ============== MODELS ==============
 
-class UserRole:
-    SUPER_ADMIN = "super_admin"
-    ORG_ADMIN = "org_admin"
-    TRAINEE = "trainee"
-
-# Auth Models
-class UserRegister(BaseModel):
-    email: EmailStr
-    password: str
-    name: str
-    
-    @field_validator('password')
-    @classmethod
-    def validate_password(cls, v):
-        is_valid, error = PasswordPolicy.validate(v)
-        if not is_valid:
-            raise ValueError(error)
-        return v
-    
-    @field_validator('name')
-    @classmethod
-    def sanitize_name(cls, v):
-        return sanitize_string(v, max_length=100)
-
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
-    # Optional two-factor authentication code. Required for admins with 2FA enabled.
-    two_factor_code: Optional[str] = None
-
-class UserResponse(BaseModel):
-    user_id: str
-    email: str
-    name: str
-    role: str
-    organization_id: Optional[str] = None
-    picture: Optional[str] = None
-    created_at: datetime
-
-class TokenResponse(BaseModel):
-    token: str
-    user: UserResponse
-    requires_2fa_verification: Optional[bool] = False
-    two_factor_enabled: Optional[bool] = False
-
-# Two-Factor Auth models
-class TwoFactorSetupResponse(BaseModel):
-    secret: str
-    otp_auth_url: str
-
-class TwoFactorVerifyRequest(BaseModel):
-    code: str
-
-# Organization Models
-class OrganizationCreate(BaseModel):
-    name: str
-    domain: Optional[str] = None
-    description: Optional[str] = None
-    # Optional certificate template to assign by default when creating a new organization.
-    certificate_template_id: Optional[str] = None
-
-class OrganizationUpdate(BaseModel):
-    name: Optional[str] = None
-    domain: Optional[str] = None
-    description: Optional[str] = None
-    is_active: Optional[bool] = None
-    # Allow administrators to specify a default certificate template for the organization.
-    # When set, this template will be used when generating completion
-    # certificates for users belonging to the organization. If omitted,
-    # the system will fall back to a module-level template or the global
-    # default.
-    certificate_template_id: Optional[str] = None
-    # Discord webhook URL for organization-specific notifications
-    discord_webhook_url: Optional[str] = None
-
-class OrganizationResponse(BaseModel):
-    organization_id: str
-    name: str
-    domain: Optional[str] = None
-    description: Optional[str] = None
-    is_active: bool
-    created_at: datetime
-    user_count: int = 0
-    # The certificate template assigned to this organization.  When present,
-    # certificates generated for users in the organization will be rendered
-    # using this template.  If null, the platform will choose a module-level
-    # template or use the global default.
-    certificate_template_id: Optional[str] = None
-    # Discord webhook URL for organization notifications
-    discord_webhook_url: Optional[str] = None
-
-# Campaign Models
-class CampaignCreate(BaseModel):
-    name: str
-    organization_id: str
-    campaign_type: str  # phishing, ads, social_engineering
-    description: Optional[str] = None
-    start_date: Optional[datetime] = None
-    end_date: Optional[datetime] = None
-
-class CampaignUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    status: Optional[str] = None
-    start_date: Optional[datetime] = None
-    end_date: Optional[datetime] = None
-
-class CampaignResponse(BaseModel):
-    campaign_id: str
-    name: str
-    organization_id: str
-    campaign_type: str
-    description: Optional[str] = None
-    status: str
-    start_date: Optional[datetime] = None
-    end_date: Optional[datetime] = None
-    created_at: datetime
-
-# Training Models
-class TrainingModuleResponse(BaseModel):
-    module_id: str
-    name: str
-    module_type: str
-    description: str
-    difficulty: str
-    duration_minutes: int
-    scenarios_count: int = 0
-    scenarios: Optional[List[str]] = None
-    questions: Optional[List[dict]] = None
-    questions_per_session: Optional[int] = None
-    pass_percentage: Optional[int] = 70  # Minimum percentage required to pass
-    certificate_template_id: Optional[str] = None
-    is_active: bool = True
-
-class TrainingSessionCreate(BaseModel):
-    module_id: str
-    campaign_id: Optional[str] = None
-
-class TrainingSessionResponse(BaseModel):
-    session_id: str
-    user_id: str
-    module_id: str
-    campaign_id: Optional[str] = None
-    status: str
-    score: int
-    total_questions: int
-    correct_answers: int
-    current_scenario_index: int = 0
-    answers: Optional[List[dict]] = None
-    started_at: datetime
-    completed_at: Optional[datetime] = None
-
-# --- Additional models for module management and reassigning training ---
-class TrainingModuleCreate(BaseModel):
-    name: str
-    module_type: str
-    description: str
-    difficulty: str
-    duration_minutes: int
-    scenarios_count: int = 0
-    scenarios: Optional[List[str]] = None
-    questions: Optional[List[dict]] = None
-    questions_per_session: Optional[int] = None  # Number of questions to show per session (random selection)
-    pass_percentage: Optional[int] = 70  # Minimum percentage required to pass (default 70%)
-    certificate_template_id: Optional[str] = None
-    is_active: bool = True
-
-class TrainingModuleUpdate(BaseModel):
-    name: Optional[str] = None
-    module_type: Optional[str] = None
-    description: Optional[str] = None
-    difficulty: Optional[str] = None
-    duration_minutes: Optional[int] = None
-    scenarios_count: Optional[int] = None
-    scenarios: Optional[List[str]] = None
-    questions: Optional[List[dict]] = None
-    questions_per_session: Optional[int] = None
-    pass_percentage: Optional[int] = None  # Minimum percentage required to pass
-    certificate_template_id: Optional[str] = None
-    is_active: Optional[bool] = None
-
-class TrainingReassignRequest(BaseModel):
-    """
-    Payload for reassigning one or more training modules to multiple users.
-    When `module_ids` is empty or omitted, all active modules will be
-    reassigned.  This is primarily used by super admins or organization
-    admins to assign remedial training after phishing campaign clicks.
-    """
-    user_ids: List[str]
-    module_ids: Optional[List[str]] = None
-
-class ScenarioResponse(BaseModel):
-    scenario_id: str
-    module_id: str
-    scenario_type: str
-    title: str
-    content: dict
-    correct_answer: str
-    explanation: str
-    difficulty: str
-
-class SubmitAnswerRequest(BaseModel):
-    scenario_id: str
-    answer: str
-
-class SubmitAnswerResponse(BaseModel):
-    correct: bool
-    correct_answer: str
-    explanation: str
-    score: int
-
-# AI Models
-class AIGenerateRequest(BaseModel):
-    scenario_type: str  # phishing_email, malicious_ad, social_engineering
-    difficulty: str  # easy, medium, hard
-    context: Optional[str] = None
-
-class AIGenerateResponse(BaseModel):
-    content: dict
-    correct_answer: str
-    explanation: str
-
-# User Management Models
-class UserCreate(BaseModel):
-    email: EmailStr
-    password: str
-    name: str
-    role: str = UserRole.TRAINEE
-    organization_id: Optional[str] = None
-
-class UserUpdate(BaseModel):
-    name: Optional[str] = None
-    role: Optional[str] = None
-    organization_id: Optional[str] = None
-    is_active: Optional[bool] = None
-
-# Analytics Models
-class DashboardStats(BaseModel):
-    total_organizations: int
-    total_users: int
-    total_campaigns: int
-    active_campaigns: int
-    total_training_sessions: int
-    average_score: float
-    total_scenarios: int = 0
-    scenario_types: dict = {}
+from models.schemas import (
+    UserRole, UserRegister, UserLogin, UserResponse, TokenResponse,
+    TwoFactorSetupResponse, TwoFactorVerifyRequest,
+    OrganizationCreate, OrganizationUpdate, OrganizationResponse,
+    CampaignCreate, CampaignUpdate, CampaignResponse,
+    TrainingModuleResponse, TrainingSessionCreate, TrainingSessionResponse,
+    TrainingModuleCreate, TrainingModuleUpdate, TrainingReassignRequest,
+    ScenarioResponse, SubmitAnswerRequest, SubmitAnswerResponse,
+    AIGenerateRequest, AIGenerateResponse,
+    UserCreate, UserUpdate, DashboardStats,
+    ForgotPasswordRequest, ResetPasswordRequest, RefreshTokenRequest,
+    sanitize_string,
+)
 
 # ============== HELPERS ==============
 
@@ -673,8 +440,7 @@ async def login(data: UserLogin, request: Request):
     )
 
 
-class RefreshTokenRequest(BaseModel):
-    refresh_token: str
+# RefreshTokenRequest is imported from models.schemas
 
 
 @auth_router.post("/refresh")
@@ -861,21 +627,7 @@ async def logout(request: Request, response: Response):
     response.delete_cookie(key="session_token", path="/")
     return {"message": "Logged out successfully"}
 
-# Forgot Password Models
-class ForgotPasswordRequest(BaseModel):
-    email: EmailStr
-
-class ResetPasswordRequest(BaseModel):
-    token: str
-    new_password: str
-    
-    @field_validator('new_password')
-    @classmethod
-    def validate_password(cls, v):
-        is_valid, error = PasswordPolicy.validate(v)
-        if not is_valid:
-            raise ValueError(error)
-        return v
+# ForgotPasswordRequest and ResetPasswordRequest are imported from models.schemas
 
 @auth_router.post("/forgot-password")
 async def forgot_password(data: ForgotPasswordRequest, request: Request):
