@@ -892,3 +892,79 @@ JWT_SECRET=<secure-random-string>
 - `/app/backend/routes/certificate_templates.py` - Updated 8 preset templates with {training_name}
 - `/app/backend/services/certificate_service.py` - Added training_name to extended_placeholders
 - `/app/frontend/src/pages/CertificateTemplates.js` - Added placeholder documentation hints
+
+---
+
+## Session Changes (March 2026) - Certificate Template Editor Audit & Fix
+
+### P0 - Major Fix: Certificate Template Editor Preview/Live Mismatch
+
+**User Problem:** The certificate template editor preview and the final saved live certificate looked different after saving.
+
+### Root Cause Analysis:
+
+| Issue | Frontend (HTML/CSS Preview) | Backend (ReportLab PDF) |
+|-------|----------------------------|-------------------------|
+| **Y Coordinate System** | `top: y%` (CSS top-down) | Was using wrong conversion formula |
+| **Text Vertical Position** | CSS centers text naturally in div | Had arbitrary offset calculation |
+| **Border Styles** | CSS `border-8 border-double` | Simple rect with hardcoded colors |
+| **Font Mapping** | Uses actual fonts (Georgia, Arial) | Limited ReportLab font mapping |
+| **Text Wrapping** | CSS `white-space: pre-wrap` auto-wraps | Single `drawString` - NO wrapping |
+| **Line Height** | CSS `line-height: 1.3` | No line height support |
+| **Footer Injection** | Not present | ALWAYS added duplicate `Certificate ID` |
+| **Payload Size** | No limit | 413 errors on Vercel (>4.5MB) |
+
+### Implemented Fixes:
+
+1. **Coordinate System Fix** (`certificate_service.py`):
+   - Y now correctly converts from top-based % to bottom-based ReportLab
+   - Formula: `y_top = page_height - (y_pct * page_height)`
+
+2. **Text Wrapping** (`certificate_service.py`):
+   - New `wrap_text()` function properly wraps long text to fit element width
+   - Supports multi-line text with explicit newlines
+   - Honors `lineHeight` style property (default 1.3)
+
+3. **Border Styles** (`certificate_service.py`):
+   - `draw_border()` function matches frontend CSS exactly:
+     - `classic`: Double gold border
+     - `modern`: Thin gray border
+     - `corporate`: Medium blue border
+     - `ornate`: Double brown border with corner decorations
+
+4. **Footer Control** (`certificate_service.py`):
+   - Added `include_footer` parameter (default `False`)
+   - Prevents duplicate certificate_id when template already has it
+
+5. **Image Compression** (`CertificateTemplates.js`):
+   - New `compressImage()` utility resizes and compresses images
+   - `compressElementImages()` compresses all element images before save
+   - Prevents 413 payload size errors on Vercel
+
+6. **Preview PDF Endpoint** (`certificate_templates.py`):
+   - `GET /api/certificate-templates/{id}/preview` - Generates actual PDF preview
+   - `POST /api/certificate-templates/{id}/preview` - Preview with custom placeholders
+   - Editor now has "Preview PDF" button to verify before saving
+
+7. **Template Update Endpoint** (`certificate_templates.py`):
+   - `POST /api/certificate-templates/update-presets` - Updates existing templates with elements
+   - Fixed issue where templates had 0 elements
+
+### Testing Results (Iteration 19):
+- 100% backend pass rate (29/29 tests)
+- All 8 preset templates have elements ✅
+- Preview endpoints working ✅
+- Border styles rendering correctly ✅
+- Landscape and portrait orientations ✅
+- Placeholder replacement working ✅
+- Text wrapping working ✅
+
+### Files Modified:
+- `/app/backend/services/certificate_service.py` - Complete rewrite with proper coordinate conversion, text wrapping, border styles
+- `/app/backend/routes/certificate_templates.py` - Added preview endpoints, update-presets endpoint
+- `/app/frontend/src/pages/CertificateTemplates.js` - Added image compression, Preview PDF button
+
+### Remaining Limitations:
+- Font mapping limited to Helvetica, Times-Roman, Courier (ReportLab limitation)
+- Complex CSS effects (shadows, gradients) not supported in PDF
+- Background images should be kept under 1MB for best performance

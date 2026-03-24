@@ -535,6 +535,44 @@ async def seed_preset_templates(request: Request):
     }
 
 
+@router.post("/update-presets")
+async def update_preset_templates(request: Request):
+    """Update existing preset templates with their element definitions (useful for fixing templates without elements)"""
+    user = await require_admin(request)
+    db = get_db()
+    
+    # Mapping of template names to their element functions
+    template_elements = {
+        "Classic Professional": get_default_elements(),
+        "Modern Minimal": get_modern_elements(),
+        "Corporate Blue": get_corporate_elements(),
+        "Executive Gold": get_executive_gold_elements(),
+        "Cyber Shield": get_cyber_shield_elements(),
+        "Official Compliance": get_compliance_elements(),
+        "Tech Academy": get_tech_academy_elements(),
+        "Elegant Serif": get_elegant_serif_elements(),
+    }
+    
+    updated = []
+    for name, elements in template_elements.items():
+        result = await db.certificate_templates.update_one(
+            {"name": name},
+            {
+                "$set": {
+                    "elements": elements,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }
+            }
+        )
+        if result.modified_count > 0:
+            updated.append(name)
+    
+    return {
+        "message": f"Updated {len(updated)} templates with elements",
+        "templates": updated
+    }
+
+
 def get_default_elements():
     """Default classic certificate elements"""
     return [
