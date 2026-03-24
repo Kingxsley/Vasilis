@@ -301,6 +301,7 @@ def generate_certificate_from_template(template: dict, placeholders: dict) -> by
                 "email": placeholders.get("user_email", ""),
                 "modules": placeholders.get("modules_completed", ""),
                 "organization": placeholders.get("organization_name", ""),
+                "training_name": placeholders.get("training_name", placeholders.get("modules_completed", "")),
             }
             
             # If placeholder specified (e.g., "{user_name}"), get from placeholders first

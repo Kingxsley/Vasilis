@@ -202,33 +202,35 @@ const CertificateCanvas = ({ template, elements, selectedElement, onSelectElemen
   };
 
   return (
-    <div className="relative w-full overflow-auto bg-gray-800/50 rounded-lg p-4">
-      <div className="text-xs text-gray-500 mb-2 text-right">{isLandscape ? 'Landscape' : 'Portrait'} A4 • {Math.round(displayWidth)}×{Math.round(displayHeight)}px</div>
-      <div
-        ref={canvasRef}
-        className={`relative mx-auto shadow-2xl ${getBorderStyle()}`}
-        style={{
-          width: `${displayWidth}px`,
-          height: `${displayHeight}px`,
-          backgroundColor: template?.background_color || '#ffffff',
-          backgroundImage: template?.background_image ? `url(${template.background_image})` : 'none',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-        onClick={(e) => {
-          if (e.target === e.currentTarget) onSelectElement(null);
-        }}
-      >
-        {elements.map((element) => (
-          <DraggableElement
-            key={element.id}
-            element={element}
-            isSelected={selectedElement === element.id}
-            onSelect={onSelectElement}
-            onDrag={handleDrag}
-            scale={displayWidth}
-          />
-        ))}
+    <div className="relative w-full h-full flex flex-col bg-gray-800/30 rounded-lg p-3">
+      <div className="text-[10px] text-gray-500 mb-1.5 text-right">{isLandscape ? 'Landscape' : 'Portrait'} A4 • {Math.round(displayWidth)}×{Math.round(displayHeight)}px</div>
+      <div className="flex-1 flex items-center justify-center overflow-auto">
+        <div
+          ref={canvasRef}
+          className={`relative shadow-2xl ${getBorderStyle()}`}
+          style={{
+            width: `${displayWidth}px`,
+            height: `${displayHeight}px`,
+            backgroundColor: template?.background_color || '#ffffff',
+            backgroundImage: template?.background_image ? `url(${template.background_image})` : 'none',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) onSelectElement(null);
+          }}
+        >
+          {elements.map((element) => (
+            <DraggableElement
+              key={element.id}
+              element={element}
+              isSelected={selectedElement === element.id}
+              onSelect={onSelectElement}
+              onDrag={handleDrag}
+              scale={displayWidth}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -266,6 +268,7 @@ const ElementProperties = ({ element, onUpdate, onDelete, signatures, certifying
               className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]"
               placeholder={element.placeholder || 'Enter text'}
             />
+            <p className="text-[10px] text-gray-500 mt-1">Use {'{training_name}'} for dynamic training module name</p>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
@@ -375,7 +378,7 @@ const ElementProperties = ({ element, onUpdate, onDelete, signatures, certifying
                 />
               </div>
             )}
-            <p className="text-xs text-gray-500">Use {'{company_logo}'} for dynamic company logo</p>
+            <p className="text-xs text-gray-500">Available placeholders: {'{user_name}'}, {'{training_name}'}, {'{score}'}, {'{date}'}, {'{certificate_id}'}</p>
           </div>
         </div>
       )}
@@ -841,128 +844,132 @@ export default function CertificateTemplates({ embedded = false }) {
 
   // Editor view
   if (showEditor && editingTemplate) {
-    return (
-      <DashboardLayout>
-        <div className="p-4 lg:p-6" data-testid="certificate-editor">
-          {/* Editor Header */}
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-xl font-bold text-[#E8DDB5]">{editingTemplate.name}</h1>
-              <p className="text-sm text-gray-500">Drag elements to position them</p>
+    const selectedEl = elements.find(e => e.id === selectedElement);
+    
+    const editorContent = (
+        <div className="p-3 lg:p-4 h-[calc(100vh-64px)] flex flex-col" data-testid="certificate-editor">
+          {/* Editor Header - compact */}
+          <div className="flex items-center justify-between mb-3 flex-shrink-0">
+            <div className="flex items-center gap-3">
+              <h1 className="text-lg font-bold text-[#E8DDB5]">{editingTemplate.name}</h1>
+              <span className="text-xs text-gray-500 hidden sm:inline">Click elements to edit • Drag to reposition</span>
             </div>
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={closeEditor}
-                className="border-[#D4A836]/30 text-[#E8DDB5]"
-              >
+              <Button variant="outline" size="sm" onClick={closeEditor} className="border-[#D4A836]/30 text-[#E8DDB5] h-8">
                 Cancel
               </Button>
-              <Button
-                onClick={saveTemplate}
-                disabled={saving}
-                className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
-              >
-                {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-                Save Template
+              <Button size="sm" onClick={saveTemplate} disabled={saving} className="bg-[#D4A836] hover:bg-[#C49A30] text-black h-8">
+                {saving ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <Save className="w-3.5 h-3.5 mr-1.5" />}
+                Save
               </Button>
             </div>
           </div>
 
-          <div className="grid lg:grid-cols-5 gap-4">
-            {/* Toolbox */}
-            <Card className="bg-[#161B22] border-[#30363D]">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-[#E8DDB5] text-sm">Add Elements</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button
-                  variant="outline"
-                  className="w-full justify-start border-[#D4A836]/30 text-[#E8DDB5]"
-                  onClick={() => addElement('text')}
-                >
-                  <Type className="w-4 h-4 mr-2" /> Text
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start border-[#D4A836]/30 text-[#E8DDB5]"
-                  onClick={() => addElement('logo')}
-                >
-                  <Image className="w-4 h-4 mr-2" /> Logo/Image
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start border-[#D4A836]/30 text-[#E8DDB5]"
-                  onClick={() => addElement('signature')}
-                >
-                  <PenTool className="w-4 h-4 mr-2" /> Signature
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start border-[#D4A836]/30 text-[#E8DDB5]"
-                  onClick={() => addElement('certifying_body')}
-                >
-                  <Building2 className="w-4 h-4 mr-2" /> Certifying Body
-                </Button>
-              </CardContent>
-              
-              <CardHeader className="pb-2 pt-4 border-t border-[#30363D]">
-                <CardTitle className="text-[#E8DDB5] text-sm">Template Settings</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <Label className="text-gray-400 text-xs">Background Color</Label>
-                  <div className="flex gap-2 mt-1">
-                    <input
-                      type="color"
-                      value={editingTemplate.background_color || '#ffffff'}
-                      onChange={(e) => setEditingTemplate({ ...editingTemplate, background_color: e.target.value })}
-                      className="w-8 h-8 rounded cursor-pointer"
-                    />
-                    <Input
-                      value={editingTemplate.background_color || '#ffffff'}
-                      onChange={(e) => setEditingTemplate({ ...editingTemplate, background_color: e.target.value })}
-                      className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5] h-8 text-xs"
-                    />
+          {/* Main editor area - fills remaining height */}
+          <div className="flex gap-3 flex-1 min-h-0">
+            
+            {/* Left toolbar - narrow, compact */}
+            <div className="w-[180px] flex-shrink-0 flex flex-col gap-2 overflow-y-auto">
+              {/* Add Elements - icon grid */}
+              <div className="bg-[#161B22] border border-[#30363D] rounded-lg p-3">
+                <p className="text-xs font-medium text-gray-400 mb-2">Add Elements</p>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {[
+                    { type: 'text', icon: Type, label: 'Text' },
+                    { type: 'logo', icon: Image, label: 'Logo' },
+                    { type: 'signature', icon: PenTool, label: 'Sign' },
+                    { type: 'certifying_body', icon: Building2, label: 'Body' },
+                  ].map(({ type, icon: Icon, label }) => (
+                    <button
+                      key={type}
+                      onClick={() => addElement(type)}
+                      className="flex flex-col items-center gap-1 p-2 rounded-md border border-[#30363D] hover:border-[#D4A836]/50 hover:bg-[#D4A836]/5 transition-colors text-gray-400 hover:text-[#E8DDB5]"
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span className="text-[10px]">{label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Template Settings - compact */}
+              <div className="bg-[#161B22] border border-[#30363D] rounded-lg p-3">
+                <p className="text-xs font-medium text-gray-400 mb-2">Settings</p>
+                <div className="space-y-2.5">
+                  <div>
+                    <label className="text-[10px] text-gray-500 block mb-1">Background</label>
+                    <div className="flex gap-1.5">
+                      <input
+                        type="color"
+                        value={editingTemplate.background_color || '#ffffff'}
+                        onChange={(e) => setEditingTemplate({ ...editingTemplate, background_color: e.target.value })}
+                        className="w-7 h-7 rounded cursor-pointer border border-[#30363D] flex-shrink-0"
+                      />
+                      <Input
+                        value={editingTemplate.background_color || '#ffffff'}
+                        onChange={(e) => setEditingTemplate({ ...editingTemplate, background_color: e.target.value })}
+                        className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5] h-7 text-xs px-2"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-gray-500 block mb-1">Border</label>
+                    <Select
+                      value={editingTemplate.border_style || 'classic'}
+                      onValueChange={(v) => setEditingTemplate({ ...editingTemplate, border_style: v })}
+                    >
+                      <SelectTrigger className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5] h-7 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-[#161B22] border-[#30363D]">
+                        <SelectItem value="classic">Classic</SelectItem>
+                        <SelectItem value="modern">Modern</SelectItem>
+                        <SelectItem value="corporate">Corporate</SelectItem>
+                        <SelectItem value="ornate">Ornate</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-gray-500 block mb-1">Orientation</label>
+                    <Select
+                      value={editingTemplate.orientation || 'landscape'}
+                      onValueChange={(v) => setEditingTemplate({ ...editingTemplate, orientation: v })}
+                    >
+                      <SelectTrigger className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5] h-7 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-[#161B22] border-[#30363D]">
+                        <SelectItem value="landscape">Landscape</SelectItem>
+                        <SelectItem value="portrait">Portrait</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
-                <div>
-                  <Label className="text-gray-400 text-xs">Border Style</Label>
-                  <Select
-                    value={editingTemplate.border_style || 'classic'}
-                    onValueChange={(v) => setEditingTemplate({ ...editingTemplate, border_style: v })}
-                  >
-                    <SelectTrigger className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5] h-8">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-[#161B22] border-[#30363D]">
-                      <SelectItem value="classic">Classic</SelectItem>
-                      <SelectItem value="modern">Modern</SelectItem>
-                      <SelectItem value="corporate">Corporate</SelectItem>
-                      <SelectItem value="ornate">Ornate</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="text-gray-400 text-xs">Orientation</Label>
-                  <Select
-                    value={editingTemplate.orientation || 'landscape'}
-                    onValueChange={(v) => setEditingTemplate({ ...editingTemplate, orientation: v })}
-                  >
-                    <SelectTrigger className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5] h-8">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-[#161B22] border-[#30363D]">
-                      <SelectItem value="landscape">Landscape</SelectItem>
-                      <SelectItem value="portrait">Portrait</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
+              </div>
 
-            {/* Canvas */}
-            <div className="lg:col-span-3">
+              {/* Elements list */}
+              <div className="bg-[#161B22] border border-[#30363D] rounded-lg p-3 flex-1 min-h-0 overflow-y-auto">
+                <p className="text-xs font-medium text-gray-400 mb-2">Layers ({elements.length})</p>
+                <div className="space-y-1">
+                  {elements.map((el) => (
+                    <button
+                      key={el.id}
+                      onClick={() => setSelectedElement(el.id)}
+                      className={`w-full text-left px-2 py-1.5 rounded text-xs truncate transition-colors ${
+                        selectedElement === el.id 
+                          ? 'bg-[#D4A836]/20 text-[#E8DDB5] border border-[#D4A836]/30' 
+                          : 'text-gray-400 hover:bg-white/5 border border-transparent'
+                      }`}
+                    >
+                      {el.type === 'text' ? (el.content || el.placeholder || 'Text').slice(0, 20) : el.type}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Canvas - takes all remaining space */}
+            <div className="flex-1 min-w-0">
               <CertificateCanvas
                 template={editingTemplate}
                 elements={elements}
@@ -972,25 +979,43 @@ export default function CertificateTemplates({ embedded = false }) {
               />
             </div>
 
-            {/* Properties Panel */}
-            <Card className="bg-[#161B22] border-[#30363D]">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-[#E8DDB5] text-sm">Properties</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <ElementProperties
-                  element={elements.find(e => e.id === selectedElement)}
-                  onUpdate={updateElement}
-                  onDelete={deleteElement}
-                  signatures={signatures}
-                  certifyingBodies={certifyingBodies}
-                />
-              </CardContent>
-            </Card>
+            {/* Right panel - Properties */}
+            <div className={`flex-shrink-0 transition-all duration-200 overflow-y-auto ${selectedEl ? 'w-[240px]' : 'w-[180px]'}`}>
+              <div className="bg-[#161B22] border border-[#30363D] rounded-lg p-3 h-full">
+                {selectedEl ? (
+                  <>
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-xs font-medium text-[#E8DDB5]">
+                        {selectedEl.type.charAt(0).toUpperCase() + selectedEl.type.slice(1).replace('_', ' ')}
+                      </p>
+                      <button
+                        onClick={() => setSelectedElement(null)}
+                        className="text-gray-500 hover:text-gray-300 text-xs"
+                      >✕</button>
+                    </div>
+                    <ElementProperties
+                      element={selectedEl}
+                      onUpdate={updateElement}
+                      onDelete={deleteElement}
+                      signatures={signatures}
+                      certifyingBodies={certifyingBodies}
+                    />
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full text-center py-8">
+                    <Type className="w-8 h-8 text-gray-600 mb-3" />
+                    <p className="text-xs text-gray-500">Click an element<br />on the canvas<br />to edit it</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
-      </DashboardLayout>
     );
+
+    // When embedded, return editor content directly (no double DashboardLayout)
+    if (embedded) return editorContent;
+    return <DashboardLayout>{editorContent}</DashboardLayout>;
   }
 
   // Main view

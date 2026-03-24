@@ -142,10 +142,14 @@ async def generate_user_certificate(user_id: str, request: Request):
     logger.info(f"Certificate for user {user_id}: template_source={template_source}, template_id={template_doc.get('template_id') if template_doc else None}")
 
     # Prepare placeholders for dynamic rendering
+    # For training_name: if single module, use that name; otherwise join all module names
+    training_name = modules_completed[0] if len(modules_completed) == 1 else " & ".join(modules_completed)
+    
     placeholders = {
         "user_name": user.get("name", "Unknown"),
         "user_email": user.get("email", ""),
         "modules_completed": " • ".join(modules_completed),
+        "training_name": training_name,
         "average_score": f"{avg_score:.1f}%",
         "average_score_value": avg_score,
         "completion_date": latest_completion.strftime("%B %d, %Y"),
@@ -313,6 +317,7 @@ async def generate_user_module_certificate(user_id: str, module_id: str, request
         "user_email": user_doc.get("email", ""),
         "modules_completed": module_name,
         "modules_completed_list": module_name,
+        "training_name": module_name,
         "average_score": f"{score:.1f}%",
         "average_score_value": score,
         "completion_date": completion_dt.strftime("%B %d, %Y"),

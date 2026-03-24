@@ -1,0 +1,69 @@
+{
+  "summary": "Iteration 18 - Certificate Training Name Placeholder Feature Testing. Verified that {training_name} placeholder is properly populated in certificates. All 15 backend tests passed after re-seeding preset templates.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "issue": "Preset templates in database had old placeholder text without {training_name}",
+        "resolution": "Re-seeded templates via POST /api/certificate-templates/seed-presets to update with new placeholder",
+        "note": "This was a data issue, not a code issue - templates were seeded before the feature was implemented"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_certificate_training_name.py",
+    "/app/test_reports/pytest/pytest_results_18.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Code implementation is correct - {training_name} placeholder is properly added in certificates.py (lines 146, 320) and certificate_service.py (line 304)",
+    "All 8 preset templates in certificate_templates.py correctly use {training_name} placeholder",
+    "Multi-module certificates correctly join module names with ' & '"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_certificate_training_name.py"
+  ],
+  "success_rate": {
+    "backend": "100% (15/15)"
+  },
+  "seed_data_creation": "Added second training session (sess_test_002) for mod_social_engineering to test multi-module certificate scenario. Re-seeded 8 preset certificate templates with updated {training_name} placeholder.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Certificate training name feature is fully working. Test user (a2be3723-95b8-4f00-bf33-583d8b46463a) now has 2 completed training sessions: mod_phishing_email (85%) and mod_social_engineering (90%). Preset templates have been re-seeded with {training_name} placeholder.",
+  "tests_verified": {
+    "backend": {
+      "certificate_generation": {
+        "user_certificate_pdf": "PASS - /api/certificates/user/{user_id} returns valid PDF",
+        "module_certificate_pdf": "PASS - /api/certificates/user/{user_id}/module/{module_id} returns valid PDF",
+        "certificate_eligibility": "PASS - /api/certificates/user/{user_id}/check returns eligibility status",
+        "certificate_verification": "PASS - /api/certificates/verify/{cert_id} verifies generated certificates"
+      },
+      "training_name_placeholder": {
+        "single_module_name": "PASS - Certificate shows 'Phishing Email Detection' for single module",
+        "multi_module_names": "PASS - Certificate shows 'Phishing Email Detection & Social Engineering Defense' for multiple modules",
+        "filename_contains_module": "PASS - Certificate filename includes module name (e.g., Phishing_Email_Detection)"
+      },
+      "template_placeholders": {
+        "default_template": "PASS - Default template has {training_name} placeholder in completion_text element",
+        "all_preset_templates": "PASS - All 8 preset templates use {training_name} placeholder"
+      },
+      "error_handling": {
+        "non_completed_module": "PASS - Returns 400 for module not completed by user",
+        "non_existent_user": "PASS - Returns 403/404 for non-existent user"
+      }
+    }
+  },
+  "features_confirmed_working": [
+    "Single module certificate displays specific module name (e.g., 'Phishing Email Detection')",
+    "Multi-module certificate joins module names with ' & '",
+    "Module-specific certificate endpoint /api/certificates/user/{user_id}/module/{module_id}",
+    "Certificate filename includes module name",
+    "All 8 preset templates use {training_name} placeholder",
+    "Certificate verification endpoint works correctly"
+  ]
+}

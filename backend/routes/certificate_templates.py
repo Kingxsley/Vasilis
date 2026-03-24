@@ -537,7 +537,7 @@ def get_default_elements():
             "y": 54,
             "width": 80,
             "height": 4,
-            "content": "for successfully completing the security training program",
+            "placeholder": "for successfully completing the {training_name} training",
             "style": {
                 "fontSize": "12px",
                 "textAlign": "center",
@@ -666,7 +666,7 @@ def get_modern_elements():
             "y": 56,
             "width": 80,
             "height": 6,
-            "content": "has successfully completed the Cybersecurity Awareness Training",
+            "placeholder": "has successfully completed the {training_name} training",
             "style": {
                 "fontSize": "14px",
                 "textAlign": "center",
@@ -777,7 +777,7 @@ def get_corporate_elements():
             "y": 48,
             "width": 80,
             "height": 10,
-            "content": "Has successfully demonstrated proficiency in\nCybersecurity Awareness Training",
+            "placeholder": "Has successfully demonstrated proficiency in\nthe {training_name} training program",
             "style": {
                 "fontSize": "14px",
                 "textAlign": "center",
@@ -922,7 +922,7 @@ def get_executive_gold_elements():
             "id": "body_text",
             "type": "text",
             "x": 12, "y": 55, "width": 76, "height": 8,
-            "content": "In recognition of outstanding commitment to organizational cybersecurity\nand successful completion of all required training modules",
+            "placeholder": "In recognition of outstanding commitment to organizational cybersecurity\nand successful completion of the {training_name} training",
             "style": {"fontSize": "12px", "textAlign": "center", "color": "#444444", "lineHeight": "1.6"}
         },
         {
@@ -1026,7 +1026,7 @@ def get_cyber_shield_elements():
             "id": "completion_text",
             "type": "text",
             "x": 10, "y": 56, "width": 80, "height": 8,
-            "content": "Has demonstrated advanced proficiency in identifying and\nmitigating cybersecurity threats across all attack vectors",
+            "placeholder": "Has demonstrated advanced proficiency in the {training_name}\ntraining and identifying cybersecurity threats across all attack vectors",
             "style": {"fontSize": "11px", "textAlign": "center", "color": "#AAAAAA", "lineHeight": "1.6"}
         },
         {
@@ -1130,7 +1130,7 @@ def get_compliance_elements():
             "id": "body_text",
             "type": "text",
             "x": 8, "y": 40, "width": 84, "height": 12,
-            "content": "has fulfilled all requirements and successfully completed the\norganization's mandatory cybersecurity compliance training program,\ndemonstrating knowledge of data protection, threat identification,\nand security best practices.",
+            "placeholder": "has fulfilled all requirements and successfully completed the\n{training_name} compliance training program,\ndemonstrating knowledge of data protection, threat identification,\nand security best practices.",
             "style": {"fontSize": "11px", "textAlign": "center", "color": "#444444", "lineHeight": "1.7"}
         },
         {
@@ -1248,7 +1248,7 @@ def get_tech_academy_elements():
             "id": "description",
             "type": "text",
             "x": 12, "y": 55, "width": 76, "height": 8,
-            "content": "For demonstrating practical knowledge in identifying security vulnerabilities,\nmanaging incident response, and implementing defensive strategies.",
+            "placeholder": "For successfully completing the {training_name} training program\nand demonstrating practical knowledge in security best practices.",
             "style": {"fontSize": "11px", "textAlign": "center", "color": "#555555", "lineHeight": "1.6"}
         },
         {
@@ -1338,7 +1338,7 @@ def get_elegant_serif_elements():
             "id": "body_text",
             "type": "text",
             "x": 12, "y": 49, "width": 76, "height": 10,
-            "content": "has completed with distinction the comprehensive\nCybersecurity Awareness Training Programme\nand has met all requirements for certification.",
+            "placeholder": "has completed with distinction the comprehensive\n{training_name} Training Programme\nand has met all requirements for certification.",
             "style": {"fontSize": "12px", "textAlign": "center", "color": "#555555", "fontFamily": "Georgia, serif", "lineHeight": "1.8"}
         },
         {
