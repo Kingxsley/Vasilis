@@ -373,6 +373,71 @@ async def seed_preset_templates(request: Request):
             "created_by": user["user_id"],
             "created_at": datetime.now(timezone.utc).isoformat(),
             "updated_at": datetime.now(timezone.utc).isoformat()
+        },
+        {
+            "template_id": f"certtmpl_{uuid.uuid4().hex[:12]}",
+            "name": "Executive Gold",
+            "description": "Premium gold-accented award certificate",
+            "background_color": "#FFFDF5",
+            "border_style": "ornate",
+            "orientation": "landscape",
+            "elements": get_executive_gold_elements(),
+            "is_default": False,
+            "created_by": user["user_id"],
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        },
+        {
+            "template_id": f"certtmpl_{uuid.uuid4().hex[:12]}",
+            "name": "Cyber Shield",
+            "description": "Dark cybersecurity-themed certificate",
+            "background_color": "#0D1117",
+            "border_style": "modern",
+            "orientation": "landscape",
+            "elements": get_cyber_shield_elements(),
+            "is_default": False,
+            "created_by": user["user_id"],
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        },
+        {
+            "template_id": f"certtmpl_{uuid.uuid4().hex[:12]}",
+            "name": "Official Compliance",
+            "description": "Formal compliance and regulatory style",
+            "background_color": "#FAFBFC",
+            "border_style": "corporate",
+            "orientation": "portrait",
+            "elements": get_compliance_elements(),
+            "is_default": False,
+            "created_by": user["user_id"],
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        },
+        {
+            "template_id": f"certtmpl_{uuid.uuid4().hex[:12]}",
+            "name": "Tech Academy",
+            "description": "Modern tech-style training certificate",
+            "background_color": "#F0F4FF",
+            "border_style": "modern",
+            "orientation": "landscape",
+            "elements": get_tech_academy_elements(),
+            "is_default": False,
+            "created_by": user["user_id"],
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        },
+        {
+            "template_id": f"certtmpl_{uuid.uuid4().hex[:12]}",
+            "name": "Elegant Serif",
+            "description": "Timeless elegant design with serif typography",
+            "background_color": "#FDF8F0",
+            "border_style": "classic",
+            "orientation": "landscape",
+            "elements": get_elegant_serif_elements(),
+            "is_default": False,
+            "created_by": user["user_id"],
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
         }
     ]
     
@@ -796,5 +861,533 @@ def get_corporate_elements():
                 "textAlign": "center",
                 "color": "#999999"
             }
+        }
+    ]
+
+
+
+def get_executive_gold_elements():
+    """Executive Gold - premium award certificate"""
+    return [
+        {
+            "id": "company_logo",
+            "type": "logo",
+            "x": 42, "y": 3, "width": 16, "height": 10,
+            "placeholder": "{company_logo}",
+            "style": {}
+        },
+        {
+            "id": "ornament_top",
+            "type": "text",
+            "x": 30, "y": 14, "width": 40, "height": 3,
+            "content": "✦  ✦  ✦",
+            "style": {"fontSize": "18px", "textAlign": "center", "color": "#C5960C"}
+        },
+        {
+            "id": "title",
+            "type": "text",
+            "x": 5, "y": 18, "width": 90, "height": 10,
+            "content": "CERTIFICATE OF EXCELLENCE",
+            "style": {"fontSize": "34px", "fontWeight": "bold", "textAlign": "center", "color": "#8B6914", "fontFamily": "Georgia, serif", "letterSpacing": "6px"}
+        },
+        {
+            "id": "subtitle",
+            "type": "text",
+            "x": 15, "y": 29, "width": 70, "height": 5,
+            "content": "Security Awareness Program",
+            "style": {"fontSize": "16px", "textAlign": "center", "color": "#996515", "fontFamily": "Georgia, serif"}
+        },
+        {
+            "id": "presented_line",
+            "type": "text",
+            "x": 25, "y": 36, "width": 50, "height": 4,
+            "content": "Proudly Presented To",
+            "style": {"fontSize": "13px", "textAlign": "center", "color": "#666666", "fontFamily": "Georgia, serif"}
+        },
+        {
+            "id": "user_name",
+            "type": "text",
+            "x": 10, "y": 41, "width": 80, "height": 10,
+            "placeholder": "{user_name}",
+            "style": {"fontSize": "34px", "fontWeight": "bold", "textAlign": "center", "color": "#1a1a1a", "fontFamily": "Georgia, serif"}
+        },
+        {
+            "id": "divider",
+            "type": "text",
+            "x": 25, "y": 52, "width": 50, "height": 2,
+            "content": "━━━━━━━━━━━━━━━━━━━━━━",
+            "style": {"fontSize": "12px", "textAlign": "center", "color": "#C5960C"}
+        },
+        {
+            "id": "body_text",
+            "type": "text",
+            "x": 12, "y": 55, "width": 76, "height": 8,
+            "content": "In recognition of outstanding commitment to organizational cybersecurity\nand successful completion of all required training modules",
+            "style": {"fontSize": "12px", "textAlign": "center", "color": "#444444", "lineHeight": "1.6"}
+        },
+        {
+            "id": "score",
+            "type": "text",
+            "x": 30, "y": 65, "width": 40, "height": 5,
+            "placeholder": "Final Score: {score}%",
+            "style": {"fontSize": "16px", "fontWeight": "bold", "textAlign": "center", "color": "#8B6914"}
+        },
+        {
+            "id": "date",
+            "type": "text",
+            "x": 30, "y": 71, "width": 40, "height": 4,
+            "placeholder": "Awarded: {date}",
+            "style": {"fontSize": "11px", "textAlign": "center", "color": "#888888"}
+        },
+        {
+            "id": "signature_left",
+            "type": "signature",
+            "x": 10, "y": 78, "width": 25, "height": 14,
+            "placeholder": "{signature_1}",
+            "style": {"title": "Chief Executive Officer"}
+        },
+        {
+            "id": "certifying_body",
+            "type": "certifying_body",
+            "x": 37, "y": 78, "width": 26, "height": 14,
+            "placeholder": "{certifying_body}",
+            "style": {"title": ""}
+        },
+        {
+            "id": "signature_right",
+            "type": "signature",
+            "x": 65, "y": 78, "width": 25, "height": 14,
+            "placeholder": "{signature_2}",
+            "style": {"title": "Training Director"}
+        },
+        {
+            "id": "certificate_id",
+            "type": "text",
+            "x": 25, "y": 95, "width": 50, "height": 3,
+            "placeholder": "Credential No. {certificate_id}",
+            "style": {"fontSize": "8px", "textAlign": "center", "color": "#aaaaaa"}
+        }
+    ]
+
+
+def get_cyber_shield_elements():
+    """Cyber Shield - dark cybersecurity-themed"""
+    return [
+        {
+            "id": "company_logo",
+            "type": "logo",
+            "x": 42, "y": 3, "width": 16, "height": 10,
+            "placeholder": "{company_logo}",
+            "style": {}
+        },
+        {
+            "id": "badge_text",
+            "type": "text",
+            "x": 20, "y": 14, "width": 60, "height": 4,
+            "content": "🛡️  CYBERSECURITY DIVISION  🛡️",
+            "style": {"fontSize": "12px", "textAlign": "center", "color": "#D4A836", "letterSpacing": "3px"}
+        },
+        {
+            "id": "title",
+            "type": "text",
+            "x": 5, "y": 20, "width": 90, "height": 10,
+            "content": "SECURITY CLEARANCE CERTIFICATE",
+            "style": {"fontSize": "28px", "fontWeight": "bold", "textAlign": "center", "color": "#E8DDB5", "fontFamily": "Courier New, monospace", "letterSpacing": "3px"}
+        },
+        {
+            "id": "subtitle",
+            "type": "text",
+            "x": 20, "y": 31, "width": 60, "height": 4,
+            "content": "Threat Awareness & Response Training",
+            "style": {"fontSize": "14px", "textAlign": "center", "color": "#6B9BD2"}
+        },
+        {
+            "id": "divider",
+            "type": "text",
+            "x": 10, "y": 36, "width": 80, "height": 2,
+            "content": "▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬",
+            "style": {"fontSize": "10px", "textAlign": "center", "color": "#2979FF"}
+        },
+        {
+            "id": "granted_to",
+            "type": "text",
+            "x": 25, "y": 39, "width": 50, "height": 4,
+            "content": "GRANTED TO",
+            "style": {"fontSize": "11px", "textAlign": "center", "color": "#888888", "letterSpacing": "4px"}
+        },
+        {
+            "id": "user_name",
+            "type": "text",
+            "x": 10, "y": 44, "width": 80, "height": 10,
+            "placeholder": "{user_name}",
+            "style": {"fontSize": "32px", "fontWeight": "bold", "textAlign": "center", "color": "#FFFFFF", "fontFamily": "Courier New, monospace"}
+        },
+        {
+            "id": "completion_text",
+            "type": "text",
+            "x": 10, "y": 56, "width": 80, "height": 8,
+            "content": "Has demonstrated advanced proficiency in identifying and\nmitigating cybersecurity threats across all attack vectors",
+            "style": {"fontSize": "11px", "textAlign": "center", "color": "#AAAAAA", "lineHeight": "1.6"}
+        },
+        {
+            "id": "score",
+            "type": "text",
+            "x": 30, "y": 66, "width": 40, "height": 5,
+            "placeholder": "THREAT SCORE: {score}%",
+            "style": {"fontSize": "16px", "fontWeight": "bold", "textAlign": "center", "color": "#00E676", "fontFamily": "Courier New, monospace"}
+        },
+        {
+            "id": "date",
+            "type": "text",
+            "x": 30, "y": 72, "width": 40, "height": 4,
+            "placeholder": "Issued: {date}",
+            "style": {"fontSize": "10px", "textAlign": "center", "color": "#666666"}
+        },
+        {
+            "id": "signature_left",
+            "type": "signature",
+            "x": 12, "y": 79, "width": 25, "height": 14,
+            "placeholder": "{signature_1}",
+            "style": {"title": "Security Director"}
+        },
+        {
+            "id": "certifying_body",
+            "type": "certifying_body",
+            "x": 38, "y": 79, "width": 24, "height": 14,
+            "placeholder": "{certifying_body}",
+            "style": {"title": ""}
+        },
+        {
+            "id": "signature_right",
+            "type": "signature",
+            "x": 63, "y": 79, "width": 25, "height": 14,
+            "placeholder": "{signature_2}",
+            "style": {"title": "CISO"}
+        },
+        {
+            "id": "certificate_id",
+            "type": "text",
+            "x": 15, "y": 95, "width": 70, "height": 3,
+            "placeholder": "CERT-ID: {certificate_id}",
+            "style": {"fontSize": "9px", "textAlign": "center", "color": "#555555", "fontFamily": "Courier New, monospace"}
+        }
+    ]
+
+
+def get_compliance_elements():
+    """Official Compliance - formal portrait certificate"""
+    return [
+        {
+            "id": "company_logo",
+            "type": "logo",
+            "x": 38, "y": 2, "width": 24, "height": 8,
+            "placeholder": "{company_logo}",
+            "style": {}
+        },
+        {
+            "id": "header_line",
+            "type": "text",
+            "x": 10, "y": 11, "width": 80, "height": 3,
+            "content": "OFFICIAL DOCUMENT",
+            "style": {"fontSize": "10px", "textAlign": "center", "color": "#999999", "letterSpacing": "5px"}
+        },
+        {
+            "id": "title",
+            "type": "text",
+            "x": 5, "y": 15, "width": 90, "height": 6,
+            "content": "CERTIFICATE OF COMPLIANCE",
+            "style": {"fontSize": "26px", "fontWeight": "bold", "textAlign": "center", "color": "#1F4E79", "letterSpacing": "3px"}
+        },
+        {
+            "id": "regulation",
+            "type": "text",
+            "x": 15, "y": 22, "width": 70, "height": 3,
+            "content": "Information Security Awareness Standard",
+            "style": {"fontSize": "13px", "textAlign": "center", "color": "#D4A836"}
+        },
+        {
+            "id": "divider1",
+            "type": "text",
+            "x": 20, "y": 26, "width": 60, "height": 2,
+            "content": "━━━━━━━━━━━━━━━━━━━━━━━━",
+            "style": {"fontSize": "10px", "textAlign": "center", "color": "#CCCCCC"}
+        },
+        {
+            "id": "certify_text",
+            "type": "text",
+            "x": 10, "y": 29, "width": 80, "height": 3,
+            "content": "This is to certify that",
+            "style": {"fontSize": "12px", "textAlign": "center", "color": "#666666"}
+        },
+        {
+            "id": "user_name",
+            "type": "text",
+            "x": 10, "y": 33, "width": 80, "height": 6,
+            "placeholder": "{user_name}",
+            "style": {"fontSize": "28px", "fontWeight": "bold", "textAlign": "center", "color": "#1a1a1a", "fontFamily": "Georgia, serif"}
+        },
+        {
+            "id": "body_text",
+            "type": "text",
+            "x": 8, "y": 40, "width": 84, "height": 12,
+            "content": "has fulfilled all requirements and successfully completed the\norganization's mandatory cybersecurity compliance training program,\ndemonstrating knowledge of data protection, threat identification,\nand security best practices.",
+            "style": {"fontSize": "11px", "textAlign": "center", "color": "#444444", "lineHeight": "1.7"}
+        },
+        {
+            "id": "score",
+            "type": "text",
+            "x": 25, "y": 54, "width": 50, "height": 4,
+            "placeholder": "Assessment Result: {score}% — PASSED",
+            "style": {"fontSize": "13px", "fontWeight": "bold", "textAlign": "center", "color": "#1F4E79"}
+        },
+        {
+            "id": "divider2",
+            "type": "text",
+            "x": 20, "y": 59, "width": 60, "height": 2,
+            "content": "━━━━━━━━━━━━━━━━━━━━━━━━",
+            "style": {"fontSize": "10px", "textAlign": "center", "color": "#CCCCCC"}
+        },
+        {
+            "id": "date",
+            "type": "text",
+            "x": 25, "y": 62, "width": 50, "height": 3,
+            "placeholder": "Date of Certification: {date}",
+            "style": {"fontSize": "11px", "textAlign": "center", "color": "#666666"}
+        },
+        {
+            "id": "validity",
+            "type": "text",
+            "x": 25, "y": 66, "width": 50, "height": 3,
+            "content": "Valid for 12 months from date of issue",
+            "style": {"fontSize": "10px", "textAlign": "center", "color": "#999999"}
+        },
+        {
+            "id": "signature_left",
+            "type": "signature",
+            "x": 10, "y": 72, "width": 35, "height": 12,
+            "placeholder": "{signature_1}",
+            "style": {"title": "Compliance Officer"}
+        },
+        {
+            "id": "signature_right",
+            "type": "signature",
+            "x": 55, "y": 72, "width": 35, "height": 12,
+            "placeholder": "{signature_2}",
+            "style": {"title": "Department Head"}
+        },
+        {
+            "id": "certifying_body",
+            "type": "certifying_body",
+            "x": 30, "y": 86, "width": 40, "height": 8,
+            "placeholder": "{certifying_body}",
+            "style": {"title": ""}
+        },
+        {
+            "id": "certificate_id",
+            "type": "text",
+            "x": 10, "y": 96, "width": 80, "height": 2,
+            "placeholder": "Reference: {certificate_id}",
+            "style": {"fontSize": "8px", "textAlign": "center", "color": "#BBBBBB"}
+        }
+    ]
+
+
+def get_tech_academy_elements():
+    """Tech Academy - modern tech training certificate"""
+    return [
+        {
+            "id": "company_logo",
+            "type": "logo",
+            "x": 3, "y": 4, "width": 14, "height": 10,
+            "placeholder": "{company_logo}",
+            "style": {}
+        },
+        {
+            "id": "badge",
+            "type": "text",
+            "x": 60, "y": 4, "width": 35, "height": 4,
+            "content": "SECURITY ACADEMY",
+            "style": {"fontSize": "11px", "textAlign": "right", "color": "#6366F1", "letterSpacing": "3px"}
+        },
+        {
+            "id": "accent_line",
+            "type": "text",
+            "x": 3, "y": 16, "width": 94, "height": 2,
+            "content": "▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰",
+            "style": {"fontSize": "8px", "textAlign": "center", "color": "#6366F1"}
+        },
+        {
+            "id": "title",
+            "type": "text",
+            "x": 5, "y": 20, "width": 90, "height": 10,
+            "content": "TRAINING CERTIFICATE",
+            "style": {"fontSize": "32px", "fontWeight": "bold", "textAlign": "center", "color": "#1E1B4B", "fontFamily": "Helvetica, Arial, sans-serif", "letterSpacing": "4px"}
+        },
+        {
+            "id": "course",
+            "type": "text",
+            "x": 15, "y": 31, "width": 70, "height": 5,
+            "content": "Cybersecurity Fundamentals & Threat Response",
+            "style": {"fontSize": "15px", "textAlign": "center", "color": "#6366F1"}
+        },
+        {
+            "id": "awarded_to",
+            "type": "text",
+            "x": 30, "y": 39, "width": 40, "height": 3,
+            "content": "Awarded to",
+            "style": {"fontSize": "12px", "textAlign": "center", "color": "#888888"}
+        },
+        {
+            "id": "user_name",
+            "type": "text",
+            "x": 10, "y": 43, "width": 80, "height": 10,
+            "placeholder": "{user_name}",
+            "style": {"fontSize": "30px", "fontWeight": "700", "textAlign": "center", "color": "#1E1B4B", "fontFamily": "Helvetica, Arial, sans-serif"}
+        },
+        {
+            "id": "description",
+            "type": "text",
+            "x": 12, "y": 55, "width": 76, "height": 8,
+            "content": "For demonstrating practical knowledge in identifying security vulnerabilities,\nmanaging incident response, and implementing defensive strategies.",
+            "style": {"fontSize": "11px", "textAlign": "center", "color": "#555555", "lineHeight": "1.6"}
+        },
+        {
+            "id": "stats_row",
+            "type": "text",
+            "x": 15, "y": 65, "width": 70, "height": 5,
+            "placeholder": "Score: {score}%  |  Date: {date}",
+            "style": {"fontSize": "13px", "fontWeight": "600", "textAlign": "center", "color": "#6366F1", "fontFamily": "Courier New, monospace"}
+        },
+        {
+            "id": "signature_left",
+            "type": "signature",
+            "x": 10, "y": 76, "width": 25, "height": 16,
+            "placeholder": "{signature_1}",
+            "style": {"title": "Lead Instructor"}
+        },
+        {
+            "id": "certifying_body",
+            "type": "certifying_body",
+            "x": 38, "y": 76, "width": 24, "height": 16,
+            "placeholder": "{certifying_body}",
+            "style": {"title": ""}
+        },
+        {
+            "id": "signature_right",
+            "type": "signature",
+            "x": 65, "y": 76, "width": 25, "height": 16,
+            "placeholder": "{signature_2}",
+            "style": {"title": "Academy Director"}
+        },
+        {
+            "id": "certificate_id",
+            "type": "text",
+            "x": 20, "y": 95, "width": 60, "height": 3,
+            "placeholder": "CERT/{certificate_id}",
+            "style": {"fontSize": "9px", "textAlign": "center", "color": "#AAAAAA", "fontFamily": "Courier New, monospace"}
+        }
+    ]
+
+
+def get_elegant_serif_elements():
+    """Elegant Serif - timeless typographic certificate"""
+    return [
+        {
+            "id": "company_logo",
+            "type": "logo",
+            "x": 42, "y": 3, "width": 16, "height": 9,
+            "placeholder": "{company_logo}",
+            "style": {}
+        },
+        {
+            "id": "ornament",
+            "type": "text",
+            "x": 25, "y": 13, "width": 50, "height": 3,
+            "content": "❧  ❧  ❧",
+            "style": {"fontSize": "16px", "textAlign": "center", "color": "#8B4513"}
+        },
+        {
+            "id": "title",
+            "type": "text",
+            "x": 5, "y": 17, "width": 90, "height": 10,
+            "content": "Certificate of Completion",
+            "style": {"fontSize": "36px", "fontWeight": "normal", "textAlign": "center", "color": "#2C1810", "fontFamily": "Georgia, serif"}
+        },
+        {
+            "id": "divider",
+            "type": "text",
+            "x": 30, "y": 28, "width": 40, "height": 2,
+            "content": "—  ✤  —",
+            "style": {"fontSize": "14px", "textAlign": "center", "color": "#8B4513"}
+        },
+        {
+            "id": "presented_to",
+            "type": "text",
+            "x": 20, "y": 32, "width": 60, "height": 4,
+            "content": "This document certifies that",
+            "style": {"fontSize": "13px", "textAlign": "center", "color": "#666666", "fontFamily": "Georgia, serif"}
+        },
+        {
+            "id": "user_name",
+            "type": "text",
+            "x": 10, "y": 37, "width": 80, "height": 10,
+            "placeholder": "{user_name}",
+            "style": {"fontSize": "34px", "fontWeight": "bold", "textAlign": "center", "color": "#2C1810", "fontFamily": "Georgia, serif"}
+        },
+        {
+            "id": "body_text",
+            "type": "text",
+            "x": 12, "y": 49, "width": 76, "height": 10,
+            "content": "has completed with distinction the comprehensive\nCybersecurity Awareness Training Programme\nand has met all requirements for certification.",
+            "style": {"fontSize": "12px", "textAlign": "center", "color": "#555555", "fontFamily": "Georgia, serif", "lineHeight": "1.8"}
+        },
+        {
+            "id": "score",
+            "type": "text",
+            "x": 30, "y": 61, "width": 40, "height": 5,
+            "placeholder": "With a score of {score}%",
+            "style": {"fontSize": "14px", "fontWeight": "bold", "textAlign": "center", "color": "#8B4513", "fontFamily": "Georgia, serif"}
+        },
+        {
+            "id": "date",
+            "type": "text",
+            "x": 30, "y": 67, "width": 40, "height": 4,
+            "placeholder": "Given this day, {date}",
+            "style": {"fontSize": "11px", "textAlign": "center", "color": "#888888", "fontFamily": "Georgia, serif"}
+        },
+        {
+            "id": "signature_left",
+            "type": "signature",
+            "x": 10, "y": 75, "width": 25, "height": 16,
+            "placeholder": "{signature_1}",
+            "style": {"title": "Programme Director"}
+        },
+        {
+            "id": "certifying_body",
+            "type": "certifying_body",
+            "x": 38, "y": 75, "width": 24, "height": 16,
+            "placeholder": "{certifying_body}",
+            "style": {"title": ""}
+        },
+        {
+            "id": "signature_right",
+            "type": "signature",
+            "x": 65, "y": 75, "width": 25, "height": 16,
+            "placeholder": "{signature_2}",
+            "style": {"title": "Head of Training"}
+        },
+        {
+            "id": "ornament_bottom",
+            "type": "text",
+            "x": 25, "y": 93, "width": 50, "height": 2,
+            "content": "❧  ❧  ❧",
+            "style": {"fontSize": "14px", "textAlign": "center", "color": "#8B4513"}
+        },
+        {
+            "id": "certificate_id",
+            "type": "text",
+            "x": 25, "y": 96, "width": 50, "height": 2,
+            "placeholder": "Ref: {certificate_id}",
+            "style": {"fontSize": "8px", "textAlign": "center", "color": "#BBBBBB", "fontFamily": "Georgia, serif"}
         }
     ]
