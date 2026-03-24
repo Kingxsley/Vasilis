@@ -855,3 +855,40 @@ JWT_SECRET=<secure-random-string>
 
 ### Files Modified:
 - `/app/frontend/src/pages/LandingPage.js` - Optimized Logo and navigation loading
+
+---
+
+## Session Changes (March 2026) - Dynamic Training Names on Certificates
+
+### P0 - Feature: Dynamic Training Module Names on Certificates
+**User Request:** Certificates should carry the specific training module name dynamically. E.g., "has completed the Phishing Email Detection training" instead of generic text.
+
+**Implementation:**
+1. **New `{training_name}` Placeholder** - Added to certificate rendering system:
+   - Single module: Shows exact module name (e.g., "Phishing Email Detection")
+   - Multiple modules: Joins with " & " (e.g., "Phishing Email Detection & Social Engineering Defense")
+
+2. **Backend Changes:**
+   - `/app/backend/routes/certificates.py` (Lines 144-160): Added `training_name` to placeholders dict
+   - `/app/backend/routes/certificates.py` (Lines 311-322): Module-specific route passes `training_name`
+   - `/app/backend/services/certificate_service.py` (Line 305): Added `training_name` to extended_placeholders
+
+3. **Template Updates:**
+   - All 8 preset templates updated to use `{training_name}` placeholder in completion text
+   - Templates: Classic Professional, Modern Minimal, Corporate Blue, Executive Gold, Cyber Shield, Official Compliance, Tech Academy, Elegant Serif
+
+4. **Frontend Enhancement:**
+   - Added placeholder documentation hint in text element editor: "Use {training_name} for dynamic training module name"
+
+**Testing Results (Iteration 18):**
+- 100% backend pass rate (15/15 tests)
+- Single module certificate: Shows "Phishing Email Detection" ✅
+- Multi-module certificate: Shows "Phishing Email Detection & Social Engineering Defense" ✅
+- PDF filename includes module name ✅
+- All preset templates verified ✅
+
+### Files Modified:
+- `/app/backend/routes/certificates.py` - Added training_name placeholder
+- `/app/backend/routes/certificate_templates.py` - Updated 8 preset templates with {training_name}
+- `/app/backend/services/certificate_service.py` - Added training_name to extended_placeholders
+- `/app/frontend/src/pages/CertificateTemplates.js` - Added placeholder documentation hints
