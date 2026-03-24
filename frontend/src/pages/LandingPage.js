@@ -162,13 +162,47 @@ export default function LandingPage() {
   const statsSection = findSection('stats');
   const statsContent = statsSection?.content || null;
 
-  // Navigation - CMS tiles only (no hardcoded pages)
-  // Show nav items as soon as cmsTiles loads, don't wait for other data
-  const visibleNavItems = cmsTiles.filter(t => !t.is_system).map(tile => ({
-    to: tile.route_type === 'external' ? tile.external_url : `/${tile.slug}`,
-    label: tile.name,
-    external: tile.route_type === 'external'
-  }));
+  // Navigation - Build ordered menu items from branding settings + CMS tiles
+  // All items load at once, static display (not collapsible)
+  const getOrderedNavItems = () => {
+    // System pages with their visibility from branding
+    const systemPages = [
+      { id: 'blog', to: '/blog', label: 'Blog', visible: branding?.show_blog },
+      { id: 'videos', to: '/videos', label: 'Videos', visible: branding?.show_videos },
+      { id: 'news', to: '/news', label: 'News', visible: branding?.show_news !== false },
+      { id: 'about', to: '/about', label: 'About', visible: branding?.show_about },
+    ];
+    
+    // CMS tiles (custom pages)
+    const tilePages = cmsTiles.filter(t => !t.is_system).map(tile => ({
+      id: `tile_${tile.tile_id}`,
+      to: tile.route_type === 'external' ? tile.external_url : `/${tile.slug}`,
+      label: tile.name,
+      visible: tile.published,
+      external: tile.route_type === 'external'
+    }));
+    
+    // Combine all pages
+    const allPages = [...systemPages, ...tilePages];
+    
+    // Apply saved order from branding
+    const savedOrder = branding?.nav_menu_order || [];
+    if (savedOrder.length > 0) {
+      allPages.sort((a, b) => {
+        const aIndex = savedOrder.indexOf(a.id);
+        const bIndex = savedOrder.indexOf(b.id);
+        if (aIndex === -1 && bIndex === -1) return 0;
+        if (aIndex === -1) return 1;
+        if (bIndex === -1) return -1;
+        return aIndex - bIndex;
+      });
+    }
+    
+    // Return only visible pages
+    return allPages.filter(p => p.visible);
+  };
+  
+  const navItems = getOrderedNavItems();
 
   return (
     <div className="min-h-screen">
@@ -178,29 +212,29 @@ export default function LandingPage() {
           <div className="flex items-center justify-between h-16">
             <Logo branding={branding} />
             
-            {/* Desktop Navigation - CMS Tiles Only */}
+            {/* Desktop Navigation - Static ordered menu */}
             <div className="hidden md:flex items-center gap-6">
-              {/* CMS Tiles (non-system only) - show immediately when available */}
-              {cmsTiles.filter(t => !t.is_system).map(tile => (
-                tile.route_type === 'external' ? (
+              {/* All nav items in saved order */}
+              {navItems.map(item => (
+                item.external ? (
                   <a 
-                    key={tile.tile_id}
-                    href={tile.external_url}
+                    key={item.id}
+                    href={item.to}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-gray-400 hover:text-[#E8DDB5] transition-colors" 
                     style={{ '--hover-color': textColor }}
                   >
-                    {tile.name}
+                    {item.label}
                   </a>
                 ) : (
                   <Link 
-                    key={tile.tile_id}
-                    to={`/${tile.slug}`}
+                    key={item.id}
+                    to={item.to}
                     className="text-gray-400 hover:text-[#E8DDB5] transition-colors" 
                     style={{ '--hover-color': textColor }}
                   >
-                    {tile.name}
+                    {item.label}
                   </Link>
                 )
               ))}
@@ -224,7 +258,7 @@ export default function LandingPage() {
                   Get Started
                 </Button>
               </Link>
-              {visibleNavItems.length > 0 && (
+              {navItems.length > 0 && (
                 <button
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                   className="p-2 text-gray-400 hover:text-[#E8DDB5]"
@@ -240,15 +274,28 @@ export default function LandingPage() {
           {mobileMenuOpen && (
             <div className="md:hidden py-4 border-t border-[#D4A836]/20 animate-slide-up">
               <div className="flex flex-col gap-2">
-                {visibleNavItems.map((item) => (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="px-4 py-2 text-gray-400 hover:text-[#E8DDB5] hover:bg-white/5 rounded-lg transition-colors"
-                  >
-                    {item.label}
-                  </Link>
+                {navItems.map((item) => (
+                  item.external ? (
+                    <a
+                      key={item.id}
+                      href={item.to}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="px-4 py-2 text-gray-400 hover:text-[#E8DDB5] hover:bg-white/5 rounded-lg transition-colors"
+                    >
+                      {item.label}
+                    </a>
+                  ) : (
+                    <Link
+                      key={item.id}
+                      to={item.to}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="px-4 py-2 text-gray-400 hover:text-[#E8DDB5] hover:bg-white/5 rounded-lg transition-colors"
+                    >
+                      {item.label}
+                    </Link>
+                  )
                 ))}
                 <Link 
                   to="/auth" 

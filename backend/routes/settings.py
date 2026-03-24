@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Request, UploadFile, File, Form
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime, timezone
 import base64
 import io
@@ -99,6 +99,8 @@ class BrandingSettings(BaseModel):
     social_youtube: Optional[str] = None
     # Discord webhook for super admin notifications
     discord_webhook_url: Optional[str] = None
+    # Navigation menu order - list of menu item IDs in display order
+    nav_menu_order: Optional[List[str]] = None
 
 
 class BrandingUpdate(BaseModel):
@@ -122,6 +124,8 @@ class BrandingUpdate(BaseModel):
     social_youtube: Optional[str] = None
     # Discord webhook for super admin notifications
     discord_webhook_url: Optional[str] = None
+    # Navigation menu order - list of menu item IDs in display order
+    nav_menu_order: Optional[List[str]] = None
 
 
 # ============== ROUTES ==============
@@ -153,7 +157,8 @@ async def get_branding():
                 "social_twitter": None,
                 "social_linkedin": None,
                 "social_instagram": None,
-                "social_youtube": None
+                "social_youtube": None,
+                "nav_menu_order": []
             }
         
         settings = await db.settings.find_one({"type": "branding"}, {"_id": 0})
@@ -179,7 +184,8 @@ async def get_branding():
                 "social_twitter": None,
                 "social_linkedin": None,
                 "social_instagram": None,
-                "social_youtube": None
+                "social_youtube": None,
+                "nav_menu_order": []
             }
         
         return {
@@ -202,7 +208,8 @@ async def get_branding():
             "social_linkedin": settings.get("social_linkedin"),
             "social_instagram": settings.get("social_instagram"),
             "social_youtube": settings.get("social_youtube"),
-            "discord_webhook_url": settings.get("discord_webhook_url")
+            "discord_webhook_url": settings.get("discord_webhook_url"),
+            "nav_menu_order": settings.get("nav_menu_order", [])
         }
     except Exception as e:
         # On any error, return defaults instead of 500
@@ -227,7 +234,8 @@ async def get_branding():
             "social_twitter": None,
             "social_linkedin": None,
             "social_instagram": None,
-            "social_youtube": None
+            "social_youtube": None,
+            "nav_menu_order": []
         }
 
 

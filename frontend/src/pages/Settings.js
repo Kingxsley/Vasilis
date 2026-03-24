@@ -6,7 +6,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Switch } from '../components/ui/switch';
-import { Upload, Trash2, Loader2, Globe, Palette, Menu, Eye, EyeOff, Clock, Key, Image, FileText, LayoutGrid } from 'lucide-react';
+import { Upload, Trash2, Loader2, Globe, Palette, Menu, Eye, EyeOff, Clock, Key, Image, FileText, LayoutGrid, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../App';
 
@@ -34,9 +34,11 @@ export default function Settings() {
     social_linkedin: '',
     social_instagram: '',
     social_youtube: '',
-    discord_webhook_url: ''
+    discord_webhook_url: '',
+    nav_menu_order: []
   });
   const [cmsTiles, setCmsTiles] = useState([]);
+  const [orderedMenuItems, setOrderedMenuItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -123,6 +125,8 @@ export default function Settings() {
     try {
       const response = await axios.get(`${API}/settings/branding`);
       setBranding(response.data);
+      // Build ordered menu items once branding and tiles are loaded
+      buildOrderedMenuItems(response.data.nav_menu_order || []);
     } catch (error) {
       console.error('Failed to load branding:', error);
     } finally {
@@ -130,9 +134,73 @@ export default function Settings() {
     }
   };
 
+  // Build ordered menu items list combining system pages and CMS tiles
+  const buildOrderedMenuItems = (savedOrder) => {
+    // Default menu items (system pages)
+    const systemItems = [
+      { id: 'blog', label: 'Blog', type: 'system', visible: branding.show_blog },
+      { id: 'videos', label: 'Videos', type: 'system', visible: branding.show_videos },
+      { id: 'news', label: 'News', type: 'system', visible: branding.show_news },
+      { id: 'about', label: 'About', type: 'system', visible: branding.show_about },
+    ];
+    
+    // CMS tiles (custom pages)
+    const tileItems = cmsTiles.filter(t => !t.is_system).map(tile => ({
+      id: `tile_${tile.tile_id}`,
+      label: tile.name,
+      type: 'cms',
+      visible: tile.published,
+      tile_id: tile.tile_id
+    }));
+    
+    // Combine all items
+    const allItems = [...systemItems, ...tileItems];
+    
+    // Sort by saved order if available
+    if (savedOrder && savedOrder.length > 0) {
+      allItems.sort((a, b) => {
+        const aIndex = savedOrder.indexOf(a.id);
+        const bIndex = savedOrder.indexOf(b.id);
+        // Items not in savedOrder go to the end
+        if (aIndex === -1 && bIndex === -1) return 0;
+        if (aIndex === -1) return 1;
+        if (bIndex === -1) return -1;
+        return aIndex - bIndex;
+      });
+    }
+    
+    setOrderedMenuItems(allItems);
+  };
+
+  // Update ordered menu items when cms tiles or branding changes
+  useEffect(() => {
+    if (!loading && cmsTiles.length >= 0) {
+      buildOrderedMenuItems(branding.nav_menu_order || []);
+    }
+  }, [cmsTiles, branding.show_blog, branding.show_videos, branding.show_news, branding.show_about]);
+
+  // Move menu item up/down
+  const moveMenuItem = (index, direction) => {
+    const newItems = [...orderedMenuItems];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    
+    if (targetIndex < 0 || targetIndex >= newItems.length) return;
+    
+    // Swap items
+    [newItems[index], newItems[targetIndex]] = [newItems[targetIndex], newItems[index]];
+    setOrderedMenuItems(newItems);
+    
+    // Update branding with new order
+    const newOrder = newItems.map(item => item.id);
+    setBranding(prev => ({ ...prev, nav_menu_order: newOrder }));
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
+      // Get current menu order
+      const menuOrder = orderedMenuItems.map(item => item.id);
+      
       await axios.patch(`${API}/settings/branding`, {
         company_name: branding.company_name,
         tagline: branding.tagline,
@@ -151,7 +219,8 @@ export default function Settings() {
         social_linkedin: branding.social_linkedin,
         social_instagram: branding.social_instagram,
         social_youtube: branding.social_youtube,
-        discord_webhook_url: branding.discord_webhook_url
+        discord_webhook_url: branding.discord_webhook_url,
+        nav_menu_order: menuOrder
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -566,82 +635,97 @@ export default function Settings() {
                 <Menu className="w-5 h-5" />
                 Navigation Menu
               </CardTitle>
-              <CardDescription>Choose which pages to show in the navigation bar</CardDescription>
+              <CardDescription>Arrange menu order and toggle visibility. Changes apply after saving.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div 
-                  className={`p-4 rounded-lg border cursor-pointer transition-all ${branding.show_blog ? 'border-[#D4A836] bg-[#D4A836]/10' : 'border-gray-600 bg-[#1a1a24]'}`}
-                  onClick={() => setBranding({ ...branding, show_blog: !branding.show_blog })}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-[#E8DDB5]">Blog</span>
-                    {branding.show_blog ? <Eye className="w-4 h-4 text-[#D4A836]" /> : <EyeOff className="w-4 h-4 text-gray-500" />}
-                  </div>
-                  <p className="text-xs text-gray-500">{branding.show_blog ? 'Visible' : 'Hidden'}</p>
+              {/* Menu Order Section */}
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <GripVertical className="w-4 h-4 text-[#D4A836]" />
+                  <h3 className="font-medium text-[#E8DDB5] text-sm">Menu Order & Visibility</h3>
                 </div>
-
-                <div 
-                  className={`p-4 rounded-lg border cursor-pointer transition-all ${branding.show_videos ? 'border-[#D4A836] bg-[#D4A836]/10' : 'border-gray-600 bg-[#1a1a24]'}`}
-                  onClick={() => setBranding({ ...branding, show_videos: !branding.show_videos })}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-[#E8DDB5]">Videos</span>
-                    {branding.show_videos ? <Eye className="w-4 h-4 text-[#D4A836]" /> : <EyeOff className="w-4 h-4 text-gray-500" />}
-                  </div>
-                  <p className="text-xs text-gray-500">{branding.show_videos ? 'Visible' : 'Hidden'}</p>
-                </div>
-
-                <div 
-                  className={`p-4 rounded-lg border cursor-pointer transition-all ${branding.show_news !== false ? 'border-[#D4A836] bg-[#D4A836]/10' : 'border-gray-600 bg-[#1a1a24]'}`}
-                  onClick={() => setBranding({ ...branding, show_news: !branding.show_news })}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-[#E8DDB5]">News</span>
-                    {branding.show_news !== false ? <Eye className="w-4 h-4 text-[#D4A836]" /> : <EyeOff className="w-4 h-4 text-gray-500" />}
-                  </div>
-                  <p className="text-xs text-gray-500">{branding.show_news !== false ? 'Visible' : 'Hidden'}</p>
-                </div>
-
-                <div 
-                  className={`p-4 rounded-lg border cursor-pointer transition-all ${branding.show_about ? 'border-[#D4A836] bg-[#D4A836]/10' : 'border-gray-600 bg-[#1a1a24]'}`}
-                  onClick={() => setBranding({ ...branding, show_about: !branding.show_about })}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-[#E8DDB5]">About</span>
-                    {branding.show_about ? <Eye className="w-4 h-4 text-[#D4A836]" /> : <EyeOff className="w-4 h-4 text-gray-500" />}
-                  </div>
-                  <p className="text-xs text-gray-500">{branding.show_about ? 'Visible' : 'Hidden'}</p>
-                </div>
-              </div>
-              
-              {/* CMS Tiles Visibility */}
-              {cmsTiles.filter(t => !t.is_system).length > 0 && (
-                <div className="mt-6 pt-6 border-t border-[#D4A836]/20">
-                  <div className="flex items-center gap-2 mb-4">
-                    <LayoutGrid className="w-5 h-5 text-[#D4A836]" />
-                    <h3 className="font-medium text-[#E8DDB5]">Custom CMS Pages</h3>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {cmsTiles.filter(t => !t.is_system).map(tile => (
+                <div className="space-y-2">
+                  {orderedMenuItems.map((item, index) => {
+                    // Get visibility state
+                    const isVisible = item.type === 'system' 
+                      ? (item.id === 'blog' ? branding.show_blog :
+                         item.id === 'videos' ? branding.show_videos :
+                         item.id === 'news' ? branding.show_news !== false :
+                         item.id === 'about' ? branding.show_about : true)
+                      : item.visible;
+                    
+                    return (
                       <div 
-                        key={tile.tile_id}
-                        className={`p-4 rounded-lg border cursor-pointer transition-all ${tile.published ? 'border-[#D4A836] bg-[#D4A836]/10' : 'border-gray-600 bg-[#1a1a24]'}`}
-                        onClick={() => toggleTileVisibility(tile)}
+                        key={item.id}
+                        className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
+                          isVisible 
+                            ? 'border-[#D4A836]/50 bg-[#D4A836]/5' 
+                            : 'border-gray-700 bg-[#1a1a24] opacity-60'
+                        }`}
                       >
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-medium text-[#E8DDB5] text-sm truncate">{tile.name}</span>
-                          {tile.published ? <Eye className="w-4 h-4 text-[#D4A836]" /> : <EyeOff className="w-4 h-4 text-gray-500" />}
+                        {/* Order controls */}
+                        <div className="flex flex-col gap-0.5">
+                          <button
+                            onClick={() => moveMenuItem(index, 'up')}
+                            disabled={index === 0}
+                            className={`p-1 rounded hover:bg-[#D4A836]/20 transition-colors ${
+                              index === 0 ? 'opacity-30 cursor-not-allowed' : 'text-gray-400 hover:text-[#D4A836]'
+                            }`}
+                          >
+                            <ArrowUp className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={() => moveMenuItem(index, 'down')}
+                            disabled={index === orderedMenuItems.length - 1}
+                            className={`p-1 rounded hover:bg-[#D4A836]/20 transition-colors ${
+                              index === orderedMenuItems.length - 1 ? 'opacity-30 cursor-not-allowed' : 'text-gray-400 hover:text-[#D4A836]'
+                            }`}
+                          >
+                            <ArrowDown className="w-3 h-3" />
+                          </button>
                         </div>
-                        <p className="text-xs text-gray-500">{tile.published ? 'Visible' : 'Hidden'}</p>
+                        
+                        {/* Position number */}
+                        <span className="text-xs text-gray-500 w-4 text-center">{index + 1}</span>
+                        
+                        {/* Item label */}
+                        <span className={`flex-1 font-medium text-sm ${isVisible ? 'text-[#E8DDB5]' : 'text-gray-500'}`}>
+                          {item.label}
+                        </span>
+                        
+                        {/* Type badge */}
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded ${
+                          item.type === 'system' ? 'bg-blue-500/20 text-blue-400' : 'bg-purple-500/20 text-purple-400'
+                        }`}>
+                          {item.type === 'system' ? 'System' : 'CMS'}
+                        </span>
+                        
+                        {/* Visibility toggle */}
+                        <button
+                          onClick={() => {
+                            if (item.type === 'system') {
+                              const key = `show_${item.id}`;
+                              setBranding(prev => ({ ...prev, [key]: !isVisible }));
+                            } else {
+                              // Toggle CMS tile visibility
+                              const tile = cmsTiles.find(t => `tile_${t.tile_id}` === item.id);
+                              if (tile) toggleTileVisibility(tile);
+                            }
+                          }}
+                          className={`p-1.5 rounded transition-colors ${
+                            isVisible 
+                              ? 'text-[#D4A836] hover:bg-[#D4A836]/20' 
+                              : 'text-gray-500 hover:bg-gray-700'
+                          }`}
+                        >
+                          {isVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                        </button>
                       </div>
-                    ))}
-                  </div>
-                  <p className="text-xs text-gray-500 mt-3">These are custom pages created in CMS Pages</p>
+                    );
+                  })}
                 </div>
-              )}
-              
-              <p className="text-xs text-gray-500 mt-4">Click on a page to toggle its visibility in the navigation bar</p>
+                <p className="text-xs text-gray-500 mt-3">Use arrows to reorder. Click eye icon to toggle visibility.</p>
+              </div>
             </CardContent>
           </Card>
 
