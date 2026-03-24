@@ -69,29 +69,38 @@ const DraggableElement = ({ element, isSelected, onSelect, onDrag, onResize, sca
     }
   }, [isDragging, handleMouseMove, handleMouseUp]);
 
+  // Scale factor for fonts: preview canvas is ~700px wide for an 842pt landscape A4
+  // so 1pt ≈ 0.83px at full scale. We use scale to adapt.
+  const fontScale = scale / 842;
+
   const getElementContent = () => {
     const style = element.style || {};
     
     switch (element.type) {
-      case 'text':
+      case 'text': {
+        const rawSize = parseInt(style.fontSize) || 14;
+        const scaledSize = Math.max(8, rawSize * fontScale);
         return (
           <div style={{
-            fontSize: style.fontSize || '14px',
+            fontSize: `${scaledSize}px`,
             fontWeight: style.fontWeight || 'normal',
             textAlign: style.textAlign || 'left',
             color: style.color || '#333',
             fontFamily: style.fontFamily || 'inherit',
-            whiteSpace: 'pre-wrap'
+            whiteSpace: 'pre-wrap',
+            lineHeight: 1.3,
+            overflow: 'hidden',
           }}>
             {element.content || element.placeholder || 'Text'}
           </div>
         );
+      }
       case 'logo':
       case 'image':
         return element.content ? (
-          <img src={element.content} alt="Logo" className="w-full h-full object-contain" />
+          <img src={element.content} alt="Logo" className="w-full h-full object-contain" draggable={false} />
         ) : (
-          <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 text-xs">
+          <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 rounded border-2 border-dashed border-gray-300" style={{ fontSize: `${Math.max(9, 12 * fontScale)}px` }}>
             {element.placeholder || 'Logo'}
           </div>
         );
@@ -99,22 +108,22 @@ const DraggableElement = ({ element, isSelected, onSelect, onDrag, onResize, sca
         return (
           <div className="flex flex-col items-center h-full justify-end">
             {element.content ? (
-              <img src={element.content} alt="Signature" className="max-h-8 object-contain mb-1" />
+              <img src={element.content} alt="Signature" className="w-full flex-1 object-contain" draggable={false} style={{ maxHeight: '75%' }} />
             ) : (
-              <div className="border-b border-gray-400 w-full mb-1" />
+              <div className="border-b-2 border-gray-400 w-full mb-1 flex-1 flex items-end"><div className="w-full border-b-2 border-gray-400" /></div>
             )}
-            <span className="text-xs text-gray-500">{style.title || 'Signature'}</span>
+            <span className="text-gray-600 mt-1 font-medium" style={{ fontSize: `${Math.max(8, 10 * fontScale)}px` }}>{style.title || 'Signature'}</span>
           </div>
         );
       case 'certifying_body':
         return (
           <div className="flex flex-col items-center h-full justify-center">
             {element.content ? (
-              <img src={element.content} alt="Certifying Body" className="max-h-10 object-contain mb-1" />
+              <img src={element.content} alt="Certifying Body" className="w-full flex-1 object-contain" draggable={false} style={{ maxHeight: '70%' }} />
             ) : (
-              <Building2 className="w-8 h-8 text-gray-400 mb-1" />
+              <Building2 className="text-gray-400 mb-1" style={{ width: `${Math.max(16, 32 * fontScale)}px`, height: `${Math.max(16, 32 * fontScale)}px` }} />
             )}
-            <span className="text-xs text-gray-500">Certifying Body</span>
+            <span className="text-gray-500 mt-1" style={{ fontSize: `${Math.max(7, 9 * fontScale)}px` }}>Certifying Body</span>
           </div>
         );
       default:
@@ -125,7 +134,7 @@ const DraggableElement = ({ element, isSelected, onSelect, onDrag, onResize, sca
   return (
     <div
       ref={elementRef}
-      className={`absolute cursor-move ${isSelected ? 'ring-2 ring-blue-500 ring-offset-1' : ''}`}
+      className={`absolute cursor-move transition-shadow ${isSelected ? 'ring-2 ring-blue-500 ring-offset-1 shadow-lg z-10' : 'hover:ring-1 hover:ring-blue-300'}`}
       style={{
         left: `${element.x}%`,
         top: `${element.y}%`,
@@ -140,9 +149,12 @@ const DraggableElement = ({ element, isSelected, onSelect, onDrag, onResize, sca
         {getElementContent()}
       </div>
       {isSelected && (
-        <div className="absolute -top-2 -left-2 bg-blue-500 text-white rounded-full p-1">
-          <GripVertical className="w-3 h-3" />
-        </div>
+        <>
+          <div className="absolute -top-2 -left-2 bg-blue-500 text-white rounded-full p-1 shadow">
+            <GripVertical className="w-3 h-3" />
+          </div>
+          <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-500 rounded-sm cursor-se-resize resize-handle" />
+        </>
       )}
     </div>
   );
@@ -151,22 +163,28 @@ const DraggableElement = ({ element, isSelected, onSelect, onDrag, onResize, sca
 // Certificate preview canvas
 const CertificateCanvas = ({ template, elements, selectedElement, onSelectElement, onUpdateElement }) => {
   const canvasRef = useRef(null);
-  const [scale, setScale] = useState(1);
+  const [canvasPixelWidth, setCanvasPixelWidth] = useState(700);
 
   useEffect(() => {
-    if (canvasRef.current) {
-      const containerWidth = canvasRef.current.parentElement?.offsetWidth || 800;
-      const aspectRatio = template?.orientation === 'portrait' ? 0.707 : 1.414; // A4 ratios
-      setScale(containerWidth / (template?.orientation === 'portrait' ? 595 : 842)); // A4 size in points
-    }
-  }, [template?.orientation]);
+    const updateSize = () => {
+      if (canvasRef.current?.parentElement) {
+        const containerWidth = canvasRef.current.parentElement.offsetWidth - 32; // padding
+        setCanvasPixelWidth(Math.max(500, Math.min(containerWidth, 900)));
+      }
+    };
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
 
   const handleDrag = (elementId, newX, newY) => {
     onUpdateElement(elementId, { x: newX, y: newY });
   };
 
-  const canvasWidth = template?.orientation === 'portrait' ? 595 : 842;
-  const canvasHeight = template?.orientation === 'portrait' ? 842 : 595;
+  const isLandscape = template?.orientation !== 'portrait';
+  const aspectRatio = isLandscape ? (842 / 595) : (595 / 842);
+  const displayWidth = canvasPixelWidth;
+  const displayHeight = displayWidth / aspectRatio;
 
   const getBorderStyle = () => {
     switch (template?.border_style) {
@@ -184,17 +202,18 @@ const CertificateCanvas = ({ template, elements, selectedElement, onSelectElemen
   };
 
   return (
-    <div className="relative w-full overflow-hidden bg-gray-100 rounded-lg p-4">
+    <div className="relative w-full overflow-auto bg-gray-800/50 rounded-lg p-4">
+      <div className="text-xs text-gray-500 mb-2 text-right">{isLandscape ? 'Landscape' : 'Portrait'} A4 • {Math.round(displayWidth)}×{Math.round(displayHeight)}px</div>
       <div
         ref={canvasRef}
-        className={`relative mx-auto shadow-xl ${getBorderStyle()}`}
+        className={`relative mx-auto shadow-2xl ${getBorderStyle()}`}
         style={{
-          width: `${canvasWidth * scale}px`,
-          height: `${canvasHeight * scale}px`,
+          width: `${displayWidth}px`,
+          height: `${displayHeight}px`,
           backgroundColor: template?.background_color || '#ffffff',
           backgroundImage: template?.background_image ? `url(${template.background_image})` : 'none',
           backgroundSize: 'cover',
-          backgroundPosition: 'center'
+          backgroundPosition: 'center',
         }}
         onClick={(e) => {
           if (e.target === e.currentTarget) onSelectElement(null);
@@ -207,7 +226,7 @@ const CertificateCanvas = ({ template, elements, selectedElement, onSelectElemen
             isSelected={selectedElement === element.id}
             onSelect={onSelectElement}
             onDrag={handleDrag}
-            scale={canvasWidth * scale}
+            scale={displayWidth}
           />
         ))}
       </div>
@@ -364,7 +383,7 @@ const ElementProperties = ({ element, onUpdate, onDelete, signatures, certifying
       {element.type === 'signature' && (
         <>
           <div>
-            <Label className="text-gray-400">Title</Label>
+            <Label className="text-gray-400">Title / Role</Label>
             <Input
               value={style.title || ''}
               onChange={(e) => onUpdate(element.id, { style: { ...style, title: e.target.value } })}
@@ -382,7 +401,7 @@ const ElementProperties = ({ element, onUpdate, onDelete, signatures, certifying
                   if (sig) {
                     onUpdate(element.id, { 
                       content: sig.signature_data,
-                      style: { ...style, title: sig.title }
+                      style: { ...style, title: sig.title || style.title }
                     });
                   }
                 }}
@@ -400,33 +419,91 @@ const ElementProperties = ({ element, onUpdate, onDelete, signatures, certifying
               </Select>
             </div>
           )}
+          <div>
+            <Label className="text-gray-400 text-xs">Or Upload Signature Image</Label>
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (event) => onUpdate(element.id, { content: event.target.result });
+                  reader.readAsDataURL(file);
+                }
+              }}
+              className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5] text-xs"
+            />
+          </div>
+          {element.content && (
+            <div className="p-2 bg-white rounded border border-[#30363D]">
+              <img src={element.content} alt="Signature" className="max-h-16 object-contain mx-auto" />
+            </div>
+          )}
         </>
       )}
 
-      {element.type === 'certifying_body' && certifyingBodies.length > 0 && (
-        <div>
-          <Label className="text-gray-400">Select Certifying Body</Label>
-          <Select
-            value=""
-            onValueChange={(v) => {
-              const body = certifyingBodies.find(b => b.body_id === v);
-              if (body) {
-                onUpdate(element.id, { content: body.logo_data });
-              }
-            }}
-          >
-            <SelectTrigger className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]">
-              <SelectValue placeholder="Choose certifying body" />
-            </SelectTrigger>
-            <SelectContent className="bg-[#161B22] border-[#30363D]">
-              {certifyingBodies.map(body => (
-                <SelectItem key={body.body_id} value={body.body_id}>
-                  {body.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      {element.type === 'certifying_body' && (
+        <>
+          <div>
+            <Label className="text-gray-400">Body Name</Label>
+            <Input
+              value={style.title || ''}
+              onChange={(e) => onUpdate(element.id, { style: { ...style, title: e.target.value } })}
+              className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]"
+              placeholder="e.g., VasilisNetShield"
+            />
+          </div>
+          {certifyingBodies.length > 0 && (
+            <div>
+              <Label className="text-gray-400">Select Certifying Body</Label>
+              <Select
+                value=""
+                onValueChange={(v) => {
+                  const body = certifyingBodies.find(b => b.body_id === v);
+                  if (body) {
+                    onUpdate(element.id, { 
+                      content: body.logo_data,
+                      style: { ...style, title: body.name || style.title }
+                    });
+                  }
+                }}
+              >
+                <SelectTrigger className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]">
+                  <SelectValue placeholder="Choose certifying body" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#161B22] border-[#30363D]">
+                  {certifyingBodies.map(body => (
+                    <SelectItem key={body.body_id} value={body.body_id}>
+                      {body.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          <div>
+            <Label className="text-gray-400 text-xs">Or Upload Logo</Label>
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (event) => onUpdate(element.id, { content: event.target.result });
+                  reader.readAsDataURL(file);
+                }
+              }}
+              className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5] text-xs"
+            />
+          </div>
+          {element.content && (
+            <div className="p-2 bg-white rounded border border-[#30363D]">
+              <img src={element.content} alt="Certifying Body" className="max-h-16 object-contain mx-auto" />
+            </div>
+          )}
+        </>
       )}
 
       {/* Position controls */}
@@ -659,16 +736,24 @@ export default function CertificateTemplates({ embedded = false }) {
   };
 
   const addElement = (type) => {
+    const defaults = {
+      text:            { x: 15, y: 25, width: 70, height: 8, style: { fontSize: '24px', textAlign: 'center', color: '#333333', fontWeight: 'bold' } },
+      logo:            { x: 38, y: 3,  width: 24, height: 14, style: {} },
+      image:           { x: 30, y: 10, width: 40, height: 20, style: {} },
+      signature:       { x: 15, y: 72, width: 30, height: 18, style: { title: 'Authorized Signatory' } },
+      certifying_body: { x: 55, y: 72, width: 30, height: 18, style: {} },
+    };
+    const d = defaults[type] || defaults.text;
     const newElement = {
       id: `elem_${Date.now()}`,
       type,
-      x: 30,
-      y: 40,
-      width: type === 'text' ? 40 : 15,
-      height: type === 'text' ? 6 : 10,
+      x: d.x,
+      y: d.y,
+      width: d.width,
+      height: d.height,
       content: '',
       placeholder: type === 'text' ? 'New Text' : `{${type}}`,
-      style: type === 'text' ? { fontSize: '14px', textAlign: 'center', color: '#333333' } : {}
+      style: d.style,
     };
     setElements([...elements, newElement]);
     setSelectedElement(newElement.id);
@@ -784,7 +869,7 @@ export default function CertificateTemplates({ embedded = false }) {
             </div>
           </div>
 
-          <div className="grid lg:grid-cols-4 gap-4">
+          <div className="grid lg:grid-cols-5 gap-4">
             {/* Toolbox */}
             <Card className="bg-[#161B22] border-[#30363D]">
               <CardHeader className="pb-2">
@@ -877,7 +962,7 @@ export default function CertificateTemplates({ embedded = false }) {
             </Card>
 
             {/* Canvas */}
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-3">
               <CertificateCanvas
                 template={editingTemplate}
                 elements={elements}

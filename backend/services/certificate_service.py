@@ -324,7 +324,13 @@ def generate_certificate_from_template(template: dict, placeholders: dict) -> by
 
             style = elem.get("style", {}) or {}
 
-            if elem_type in ["text", "certifying_body"]:
+            # Determine if this element has image content (base64 or data URI)
+            content_is_image = isinstance(content, str) and (
+                content.startswith("data:image") or 
+                (len(content) > 200 and not content.startswith("http") and not any(c in content for c in [' ', '\n']))
+            )
+
+            if elem_type in ["text"] or (elem_type == "certifying_body" and not content_is_image):
                 # Draw text
                 text = str(content or "")
                 
@@ -384,7 +390,7 @@ def generate_certificate_from_template(template: dict, placeholders: dict) -> by
                 else:
                     c.drawString(x, text_y, text)
 
-            elif elem_type in ["image", "logo", "signature"]:
+            elif elem_type in ["image", "logo", "signature"] or (elem_type == "certifying_body" and content_is_image):
                 # Determine image data.  Use content or placeholder to fetch base64
                 image_data_b64 = None
                 if content:
@@ -421,6 +427,13 @@ def generate_certificate_from_template(template: dict, placeholders: dict) -> by
                             c.drawImage(img_reader, x + dx, y - height + dy, width=target_w, height=target_h, preserveAspectRatio=True, mask='auto')
                         else:
                             c.drawImage(img_reader, x, y - height, width=width, height=height, mask='auto')
+                        
+                        # Draw title below signature/certifying body images
+                        sig_title = style.get("title", "")
+                        if sig_title and elem_type in ["signature", "certifying_body"]:
+                            c.setFont("Helvetica", 9)
+                            c.setFillColor(colors.HexColor('#555555'))
+                            c.drawCentredString(x + width / 2, y - height - 14, sig_title)
                     except Exception:
                         pass
 
