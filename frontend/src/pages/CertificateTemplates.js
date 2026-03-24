@@ -24,7 +24,7 @@ import {
 } from '../components/ui/select';
 import { 
   Award, Plus, Eye, Trash2, Loader2, RefreshCw, 
-  Type, Image, PenTool, Building2, GripVertical,
+  Type, Image as ImageIcon, PenTool, Building2, GripVertical,
   Save, Upload, Layout, Palette, Settings2, Copy, Check
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -1013,7 +1013,7 @@ export default function CertificateTemplates({ embedded = false }) {
                 <div className="grid grid-cols-2 gap-1.5">
                   {[
                     { type: 'text', icon: Type, label: 'Text' },
-                    { type: 'logo', icon: Image, label: 'Logo' },
+                    { type: 'logo', icon: ImageIcon, label: 'Logo' },
                     { type: 'signature', icon: PenTool, label: 'Sign' },
                     { type: 'certifying_body', icon: Building2, label: 'Body' },
                   ].map(({ type, icon: Icon, label }) => (
@@ -1188,7 +1188,7 @@ export default function CertificateTemplates({ embedded = false }) {
               value="assets"
               className="data-[state=active]:bg-[#D4A836]/20 data-[state=active]:text-[#D4A836]"
             >
-              <Image className="w-4 h-4 mr-2" />
+              <ImageIcon className="w-4 h-4 mr-2" />
               Assets
             </TabsTrigger>
           </TabsList>
