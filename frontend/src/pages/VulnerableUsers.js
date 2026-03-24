@@ -1,5 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { 
   AlertTriangle, 
   Download, 
@@ -11,6 +10,7 @@ import {
   ShieldX,
   ShieldCheck,
   ChevronDown,
+  ChevronUp,
   FileJson,
   FileSpreadsheet,
   FileText,
@@ -18,11 +18,19 @@ import {
   Clock,
   Mail,
   MousePointerClick,
-  KeyRound
+  KeyRound,
+  Search,
+  TrendingUp,
+  TrendingDown,
+  ArrowUpDown,
+  Eye,
+  UserX,
+  Target
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
+import { Input } from '../components/ui/input';
 import {
   Select,
   SelectContent,
@@ -48,14 +56,59 @@ import { toast } from 'sonner';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
+// Compact stat card component
+const StatCard = ({ icon: Icon, label, value, subtext, color, trend }) => (
+  <div className="bg-[#161B22] rounded-lg p-4 border border-[#30363D] hover:border-[#D4A836]/30 transition-colors">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <div className={`p-2 rounded-lg ${color}`}>
+          <Icon className="h-4 w-4" />
+        </div>
+        <div>
+          <p className="text-2xl font-bold text-white">{value}</p>
+          <p className="text-xs text-gray-500">{label}</p>
+        </div>
+      </div>
+      {trend !== undefined && (
+        <div className={`flex items-center gap-1 text-xs ${trend >= 0 ? 'text-red-400' : 'text-green-400'}`}>
+          {trend >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+          {Math.abs(trend)}%
+        </div>
+      )}
+    </div>
+    {subtext && <p className="text-[10px] text-gray-600 mt-1 pl-11">{subtext}</p>}
+  </div>
+);
+
+// Risk level indicator
+const RiskIndicator = ({ level }) => {
+  const config = {
+    critical: { bg: 'bg-red-500', text: 'text-red-400', label: 'CRITICAL' },
+    high: { bg: 'bg-orange-500', text: 'text-orange-400', label: 'HIGH' },
+    medium: { bg: 'bg-yellow-500', text: 'text-yellow-400', label: 'MEDIUM' },
+    low: { bg: 'bg-green-500', text: 'text-green-400', label: 'LOW' }
+  };
+  const c = config[level] || config.low;
+  
+  return (
+    <div className="flex items-center gap-2">
+      <div className={`w-2 h-2 rounded-full ${c.bg}`} />
+      <span className={`text-xs font-medium ${c.text}`}>{c.label}</span>
+    </div>
+  );
+};
+
 export default function VulnerableUsers() {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState({ users: [], stats: {}, total: 0 });
   const [days, setDays] = useState(30);
   const [riskLevel, setRiskLevel] = useState('all');
   const [organizationId, setOrganizationId] = useState('all');
   const [organizations, setOrganizations] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortField, setSortField] = useState('risk_level');
+  const [sortDirection, setSortDirection] = useState('desc');
+  const [expandedUser, setExpandedUser] = useState(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -101,6 +154,46 @@ export default function VulnerableUsers() {
     fetchOrganizations();
   }, [fetchData]);
 
+  // Filter and sort users
+  const filteredUsers = useMemo(() => {
+    let users = [...(data.users || [])];
+    
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      users = users.filter(u => 
+        u.user_name?.toLowerCase().includes(query) ||
+        u.user_email?.toLowerCase().includes(query) ||
+        u.organization_name?.toLowerCase().includes(query)
+      );
+    }
+    
+    // Sort
+    const riskOrder = { critical: 4, high: 3, medium: 2, low: 1 };
+    users.sort((a, b) => {
+      let comparison = 0;
+      switch (sortField) {
+        case 'risk_level':
+          comparison = (riskOrder[a.risk_level] || 0) - (riskOrder[b.risk_level] || 0);
+          break;
+        case 'clicks':
+          comparison = (a.clicks || 0) - (b.clicks || 0);
+          break;
+        case 'credentials':
+          comparison = (a.credential_submissions || 0) - (b.credential_submissions || 0);
+          break;
+        case 'last_failure':
+          comparison = new Date(a.last_failure || 0) - new Date(b.last_failure || 0);
+          break;
+        default:
+          comparison = 0;
+      }
+      return sortDirection === 'desc' ? -comparison : comparison;
+    });
+    
+    return users;
+  }, [data.users, searchQuery, sortField, sortDirection]);
+
   const exportData = async (format) => {
     try {
       const token = localStorage.getItem('token');
@@ -126,14 +219,11 @@ export default function VulnerableUsers() {
       } else if (format === 'pdf') {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
-        // Open in new tab for print-to-PDF
         const newWindow = window.open(url, '_blank');
         if (newWindow) {
-          newWindow.onload = () => {
-            newWindow.print();
-          };
+          newWindow.onload = () => newWindow.print();
         }
-        toast.info('PDF report opened - use Print dialog to save as PDF');
+        toast.info('PDF report opened - use Print dialog to save');
       } else {
         const jsonData = await response.json();
         const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
@@ -154,111 +244,110 @@ export default function VulnerableUsers() {
     }
   };
 
-  const getRiskBadge = (level) => {
-    const badges = {
-      critical: { className: 'bg-red-500/20 text-red-400 border-red-500/30', icon: ShieldX },
-      high: { className: 'bg-orange-500/20 text-orange-400 border-orange-500/30', icon: ShieldAlert },
-      medium: { className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30', icon: Shield },
-      low: { className: 'bg-green-500/20 text-green-400 border-green-500/30', icon: ShieldCheck }
-    };
-    const badge = badges[level] || badges.low;
-    const Icon = badge.icon;
-    return (
-      <Badge className={`${badge.className} flex items-center gap-1`}>
-        <Icon className="h-3 w-3" />
-        {level.toUpperCase()}
-      </Badge>
-    );
+  const toggleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('desc');
+    }
   };
 
   const stats = data.stats || {};
+  const totalRisks = (stats.critical || 0) + (stats.high || 0) + (stats.medium || 0) + (stats.low || 0);
 
   return (
-    <div className="space-y-6" data-testid="vulnerable-users-page">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-white flex items-center gap-2">
-            <AlertTriangle className="h-8 w-8 text-red-500" />
-            Vulnerable Users
-          </h1>
-          <p className="text-gray-400 mt-1">
-            Track users who clicked phishing links or submitted credentials
-          </p>
+    <div className="space-y-4" data-testid="vulnerable-users-page">
+      {/* Compact Header */}
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-red-500/10 rounded-lg">
+            <AlertTriangle className="h-6 w-6 text-red-500" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-white">Vulnerable Users</h1>
+            <p className="text-xs text-gray-500">Track phishing link clicks & credential submissions</p>
+          </div>
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
           <Button 
-            variant="outline" 
+            variant="ghost" 
+            size="sm"
             onClick={fetchData}
             disabled={loading}
-            data-testid="refresh-btn"
+            className="text-gray-400 hover:text-white"
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" data-testid="export-btn">
-                <Download className="h-4 w-4 mr-2" />
+              <Button variant="outline" size="sm" className="border-[#30363D]">
+                <Download className="h-4 w-4 mr-1" />
                 Export
-                <ChevronDown className="h-4 w-4 ml-2" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => exportData('csv')} data-testid="export-csv">
-                <FileSpreadsheet className="h-4 w-4 mr-2" />
-                Export as CSV
+            <DropdownMenuContent align="end" className="bg-[#161B22] border-[#30363D]">
+              <DropdownMenuItem onClick={() => exportData('csv')} className="text-gray-300 hover:text-white">
+                <FileSpreadsheet className="h-4 w-4 mr-2" /> CSV
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => exportData('json')} data-testid="export-json">
-                <FileJson className="h-4 w-4 mr-2" />
-                Export as JSON
+              <DropdownMenuItem onClick={() => exportData('json')} className="text-gray-300 hover:text-white">
+                <FileJson className="h-4 w-4 mr-2" /> JSON
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => exportData('pdf')} data-testid="export-pdf">
-                <FileText className="h-4 w-4 mr-2" />
-                Export as PDF
+              <DropdownMenuItem onClick={() => exportData('pdf')} className="text-gray-300 hover:text-white">
+                <FileText className="h-4 w-4 mr-2" /> PDF
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-4">
+      {/* Combined Filters & Search Row */}
+      <div className="flex flex-wrap items-center gap-2 p-3 bg-[#0D1117] rounded-lg border border-[#30363D]">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+          <Input
+            placeholder="Search by name, email, or organization..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 bg-[#161B22] border-[#30363D] h-9 text-sm"
+          />
+        </div>
+        
         <Select value={days.toString()} onValueChange={(v) => setDays(parseInt(v))}>
-          <SelectTrigger className="w-[180px]" data-testid="days-filter">
-            <Clock className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Time Period" />
+          <SelectTrigger className="w-[130px] h-9 bg-[#161B22] border-[#30363D]">
+            <Clock className="h-3 w-3 mr-1 text-gray-500" />
+            <SelectValue />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="7">Last 7 days</SelectItem>
-            <SelectItem value="30">Last 30 days</SelectItem>
-            <SelectItem value="90">Last 90 days</SelectItem>
-            <SelectItem value="365">Last year</SelectItem>
+          <SelectContent className="bg-[#161B22] border-[#30363D]">
+            <SelectItem value="7">7 days</SelectItem>
+            <SelectItem value="30">30 days</SelectItem>
+            <SelectItem value="90">90 days</SelectItem>
+            <SelectItem value="365">1 year</SelectItem>
           </SelectContent>
         </Select>
 
         <Select value={riskLevel} onValueChange={setRiskLevel}>
-          <SelectTrigger className="w-[180px]" data-testid="risk-filter">
-            <Filter className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Risk Level" />
+          <SelectTrigger className="w-[140px] h-9 bg-[#161B22] border-[#30363D]">
+            <Filter className="h-3 w-3 mr-1 text-gray-500" />
+            <SelectValue />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Risk Levels</SelectItem>
-            <SelectItem value="submitted">Submitted Credentials</SelectItem>
-            <SelectItem value="repeated">Repeat Offenders</SelectItem>
-            <SelectItem value="clicked">Clicked Links</SelectItem>
+          <SelectContent className="bg-[#161B22] border-[#30363D]">
+            <SelectItem value="all">All Risks</SelectItem>
+            <SelectItem value="submitted">Credentials</SelectItem>
+            <SelectItem value="repeated">Repeat</SelectItem>
+            <SelectItem value="clicked">Clicked</SelectItem>
           </SelectContent>
         </Select>
 
         <Select value={organizationId} onValueChange={setOrganizationId}>
-          <SelectTrigger className="w-[200px]" data-testid="org-filter">
-            <Building className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Organization" />
+          <SelectTrigger className="w-[160px] h-9 bg-[#161B22] border-[#30363D]">
+            <Building className="h-3 w-3 mr-1 text-gray-500" />
+            <SelectValue />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Organizations</SelectItem>
+          <SelectContent className="bg-[#161B22] border-[#30363D]">
+            <SelectItem value="all">All Orgs</SelectItem>
             {organizations.map(org => (
               <SelectItem key={org.organization_id} value={org.organization_id}>
                 {org.name}
@@ -268,184 +357,288 @@ export default function VulnerableUsers() {
         </Select>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-[#161B22] border-red-500/30">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400 flex items-center gap-2">
-              <ShieldX className="h-4 w-4 text-red-500" />
-              Critical Risk
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-red-400">{stats.critical || 0}</div>
-            <p className="text-xs text-gray-500">Submitted credentials</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-[#161B22] border-orange-500/30">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400 flex items-center gap-2">
-              <ShieldAlert className="h-4 w-4 text-orange-500" />
-              High Risk
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-orange-400">{stats.high || 0}</div>
-            <p className="text-xs text-gray-500">3+ link clicks</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-[#161B22] border-yellow-500/30">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400 flex items-center gap-2">
-              <Shield className="h-4 w-4 text-yellow-500" />
-              Medium Risk
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-yellow-400">{stats.medium || 0}</div>
-            <p className="text-xs text-gray-500">2 link clicks</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-[#161B22] border-green-500/30">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400 flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-green-500" />
-              Low Risk
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-green-400">{stats.low || 0}</div>
-            <p className="text-xs text-gray-500">1 link click</p>
-          </CardContent>
-        </Card>
+      {/* Stats Grid - Compact 2 rows */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+        {/* Risk breakdown */}
+        <StatCard 
+          icon={ShieldX} 
+          label="Critical" 
+          value={stats.critical || 0}
+          color="bg-red-500/20 text-red-400"
+        />
+        <StatCard 
+          icon={ShieldAlert} 
+          label="High" 
+          value={stats.high || 0}
+          color="bg-orange-500/20 text-orange-400"
+        />
+        <StatCard 
+          icon={Shield} 
+          label="Medium" 
+          value={stats.medium || 0}
+          color="bg-yellow-500/20 text-yellow-400"
+        />
+        <StatCard 
+          icon={ShieldCheck} 
+          label="Low" 
+          value={stats.low || 0}
+          color="bg-green-500/20 text-green-400"
+        />
+        {/* Summary stats */}
+        <StatCard 
+          icon={UserX} 
+          label="Total At Risk" 
+          value={data.total || 0}
+          color="bg-blue-500/20 text-blue-400"
+        />
+        <StatCard 
+          icon={MousePointerClick} 
+          label="Total Clicks" 
+          value={stats.total_clicks || 0}
+          color="bg-purple-500/20 text-purple-400"
+        />
+        <StatCard 
+          icon={KeyRound} 
+          label="Credentials" 
+          value={stats.total_credential_submissions || 0}
+          color="bg-pink-500/20 text-pink-400"
+        />
       </div>
 
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-[#161B22] border-[#30363D]">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">Total Vulnerable Users</p>
-                <p className="text-2xl font-bold text-white">{data.total || 0}</p>
-              </div>
-              <Users className="h-8 w-8 text-blue-500" />
+      {/* Risk Distribution Bar */}
+      {totalRisks > 0 && (
+        <div className="bg-[#161B22] rounded-lg p-3 border border-[#30363D]">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-gray-400">Risk Distribution</span>
+            <span className="text-xs text-gray-500">{totalRisks} users</span>
+          </div>
+          <div className="h-2 bg-[#0D1117] rounded-full overflow-hidden flex">
+            {stats.critical > 0 && (
+              <div 
+                className="bg-red-500 h-full transition-all" 
+                style={{ width: `${(stats.critical / totalRisks) * 100}%` }}
+                title={`Critical: ${stats.critical}`}
+              />
+            )}
+            {stats.high > 0 && (
+              <div 
+                className="bg-orange-500 h-full transition-all" 
+                style={{ width: `${(stats.high / totalRisks) * 100}%` }}
+                title={`High: ${stats.high}`}
+              />
+            )}
+            {stats.medium > 0 && (
+              <div 
+                className="bg-yellow-500 h-full transition-all" 
+                style={{ width: `${(stats.medium / totalRisks) * 100}%` }}
+                title={`Medium: ${stats.medium}`}
+              />
+            )}
+            {stats.low > 0 && (
+              <div 
+                className="bg-green-500 h-full transition-all" 
+                style={{ width: `${(stats.low / totalRisks) * 100}%` }}
+                title={`Low: ${stats.low}`}
+              />
+            )}
+          </div>
+          <div className="flex justify-between mt-1">
+            <div className="flex gap-3">
+              <span className="text-[10px] text-red-400">{stats.critical || 0} critical</span>
+              <span className="text-[10px] text-orange-400">{stats.high || 0} high</span>
+              <span className="text-[10px] text-yellow-400">{stats.medium || 0} medium</span>
+              <span className="text-[10px] text-green-400">{stats.low || 0} low</span>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-[#161B22] border-[#30363D]">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">Total Link Clicks</p>
-                <p className="text-2xl font-bold text-white">{stats.total_clicks || 0}</p>
-              </div>
-              <MousePointerClick className="h-8 w-8 text-yellow-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-[#161B22] border-[#30363D]">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">Credential Submissions</p>
-                <p className="text-2xl font-bold text-white">{stats.total_credential_submissions || 0}</p>
-              </div>
-              <KeyRound className="h-8 w-8 text-red-500" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </div>
+      )}
 
       {/* Users Table */}
       <Card className="bg-[#161B22] border-[#30363D]">
-        <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Vulnerable Users List
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {loading ? (
-            <div className="flex justify-center py-8">
-              <RefreshCw className="h-8 w-8 animate-spin text-gray-400" />
+            <div className="flex justify-center py-12">
+              <RefreshCw className="h-8 w-8 animate-spin text-[#D4A836]" />
             </div>
-          ) : data.users.length === 0 ? (
-            <div className="text-center py-8 text-gray-400">
-              <ShieldCheck className="h-12 w-12 mx-auto mb-4 text-green-500" />
-              <p>No vulnerable users found for the selected period</p>
-              <p className="text-sm mt-2">Great job! Your users are staying vigilant.</p>
+          ) : filteredUsers.length === 0 ? (
+            <div className="text-center py-12">
+              <ShieldCheck className="h-12 w-12 mx-auto mb-3 text-green-500" />
+              <p className="text-gray-300 font-medium">No vulnerable users found</p>
+              <p className="text-xs text-gray-500 mt-1">
+                {searchQuery ? 'Try adjusting your search' : 'Great job! Your users are staying vigilant.'}
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-[#30363D]">
-                    <TableHead className="text-gray-400">User</TableHead>
-                    <TableHead className="text-gray-400">Organization</TableHead>
-                    <TableHead className="text-gray-400">Risk Level</TableHead>
-                    <TableHead className="text-gray-400 text-center">Clicks</TableHead>
-                    <TableHead className="text-gray-400 text-center">Credentials</TableHead>
-                    <TableHead className="text-gray-400">Campaigns Failed</TableHead>
-                    <TableHead className="text-gray-400">Last Failure</TableHead>
+                  <TableRow className="border-[#30363D] hover:bg-transparent">
+                    <TableHead className="text-gray-500 text-xs font-medium">USER</TableHead>
+                    <TableHead className="text-gray-500 text-xs font-medium">ORG</TableHead>
+                    <TableHead 
+                      className="text-gray-500 text-xs font-medium cursor-pointer hover:text-gray-300"
+                      onClick={() => toggleSort('risk_level')}
+                    >
+                      <div className="flex items-center gap-1">
+                        RISK
+                        <ArrowUpDown className="h-3 w-3" />
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="text-gray-500 text-xs font-medium text-center cursor-pointer hover:text-gray-300"
+                      onClick={() => toggleSort('clicks')}
+                    >
+                      <div className="flex items-center justify-center gap-1">
+                        CLICKS
+                        <ArrowUpDown className="h-3 w-3" />
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="text-gray-500 text-xs font-medium text-center cursor-pointer hover:text-gray-300"
+                      onClick={() => toggleSort('credentials')}
+                    >
+                      <div className="flex items-center justify-center gap-1">
+                        CREDS
+                        <ArrowUpDown className="h-3 w-3" />
+                      </div>
+                    </TableHead>
+                    <TableHead className="text-gray-500 text-xs font-medium">CAMPAIGNS</TableHead>
+                    <TableHead 
+                      className="text-gray-500 text-xs font-medium cursor-pointer hover:text-gray-300"
+                      onClick={() => toggleSort('last_failure')}
+                    >
+                      <div className="flex items-center gap-1">
+                        LAST FAIL
+                        <ArrowUpDown className="h-3 w-3" />
+                      </div>
+                    </TableHead>
+                    <TableHead className="w-8"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {data.users.map((user, idx) => (
-                    <TableRow key={idx} className="border-[#30363D] hover:bg-[#21262D]">
-                      <TableCell>
-                        <div>
-                          <p className="font-medium text-white">{user.user_name}</p>
-                          <p className="text-sm text-gray-400 flex items-center gap-1">
-                            <Mail className="h-3 w-3" />
-                            {user.user_email}
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-gray-300">{user.organization_name}</span>
-                      </TableCell>
-                      <TableCell>
-                        {getRiskBadge(user.risk_level)}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <span className="text-yellow-400 font-medium">{user.clicks}</span>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {user.credential_submissions > 0 ? (
-                          <span className="text-red-400 font-medium">{user.credential_submissions}</span>
-                        ) : (
-                          <span className="text-gray-500">0</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="max-w-[200px]">
-                          {user.campaigns_failed.slice(0, 2).map((campaign, i) => (
-                            <Badge key={i} variant="outline" className="mr-1 mb-1 text-xs">
-                              {campaign}
-                            </Badge>
-                          ))}
-                          {user.campaigns_failed.length > 2 && (
-                            <Badge variant="outline" className="text-xs">
-                              +{user.campaigns_failed.length - 2} more
-                            </Badge>
+                  {filteredUsers.map((user, idx) => (
+                    <React.Fragment key={idx}>
+                      <TableRow 
+                        className={`border-[#30363D] hover:bg-[#21262D] cursor-pointer transition-colors ${
+                          expandedUser === idx ? 'bg-[#21262D]' : ''
+                        }`}
+                        onClick={() => setExpandedUser(expandedUser === idx ? null : idx)}
+                      >
+                        <TableCell className="py-2">
+                          <div>
+                            <p className="font-medium text-white text-sm">{user.user_name}</p>
+                            <p className="text-xs text-gray-500">{user.user_email}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-2">
+                          <span className="text-gray-400 text-sm">{user.organization_name || '-'}</span>
+                        </TableCell>
+                        <TableCell className="py-2">
+                          <RiskIndicator level={user.risk_level} />
+                        </TableCell>
+                        <TableCell className="py-2 text-center">
+                          <span className={`font-medium text-sm ${
+                            user.clicks >= 3 ? 'text-orange-400' : 
+                            user.clicks >= 2 ? 'text-yellow-400' : 'text-gray-400'
+                          }`}>
+                            {user.clicks}
+                          </span>
+                        </TableCell>
+                        <TableCell className="py-2 text-center">
+                          {user.credential_submissions > 0 ? (
+                            <span className="text-red-400 font-medium text-sm">{user.credential_submissions}</span>
+                          ) : (
+                            <span className="text-gray-600 text-sm">0</span>
                           )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-gray-400 text-sm">
-                          {user.last_failure ? new Date(user.last_failure).toLocaleDateString() : '-'}
-                        </span>
-                      </TableCell>
-                    </TableRow>
+                        </TableCell>
+                        <TableCell className="py-2">
+                          <div className="flex items-center gap-1">
+                            <Target className="h-3 w-3 text-gray-500" />
+                            <span className="text-gray-400 text-sm">{user.campaigns_failed?.length || 0}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-2">
+                          <span className="text-gray-500 text-xs">
+                            {user.last_failure ? new Date(user.last_failure).toLocaleDateString() : '-'}
+                          </span>
+                        </TableCell>
+                        <TableCell className="py-2">
+                          {expandedUser === idx ? (
+                            <ChevronUp className="h-4 w-4 text-gray-500" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4 text-gray-500" />
+                          )}
+                        </TableCell>
+                      </TableRow>
+                      
+                      {/* Expanded Details Row */}
+                      {expandedUser === idx && (
+                        <TableRow className="bg-[#0D1117] border-[#30363D]">
+                          <TableCell colSpan={8} className="py-3">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 px-2">
+                              <div>
+                                <p className="text-xs text-gray-500 mb-1">Failed Campaigns</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {user.campaigns_failed?.length > 0 ? (
+                                    user.campaigns_failed.map((campaign, i) => (
+                                      <Badge key={i} variant="outline" className="text-xs border-[#30363D] text-gray-400">
+                                        {campaign}
+                                      </Badge>
+                                    ))
+                                  ) : (
+                                    <span className="text-xs text-gray-600">None</span>
+                                  )}
+                                </div>
+                              </div>
+                              <div>
+                                <p className="text-xs text-gray-500 mb-1">Contact</p>
+                                <a 
+                                  href={`mailto:${user.user_email}`}
+                                  className="text-xs text-[#D4A836] hover:underline flex items-center gap-1"
+                                >
+                                  <Mail className="h-3 w-3" />
+                                  {user.user_email}
+                                </a>
+                              </div>
+                              <div>
+                                <p className="text-xs text-gray-500 mb-1">Actions</p>
+                                <div className="flex gap-2">
+                                  <Button size="sm" variant="outline" className="h-7 text-xs border-[#30363D]">
+                                    <Eye className="h-3 w-3 mr-1" />
+                                    View Profile
+                                  </Button>
+                                  <Button size="sm" variant="outline" className="h-7 text-xs border-[#D4A836]/30 text-[#D4A836]">
+                                    Assign Training
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </React.Fragment>
                   ))}
                 </TableBody>
               </Table>
+            </div>
+          )}
+          
+          {/* Footer with count */}
+          {filteredUsers.length > 0 && (
+            <div className="px-4 py-2 border-t border-[#30363D] flex justify-between items-center">
+              <span className="text-xs text-gray-500">
+                Showing {filteredUsers.length} of {data.total || 0} vulnerable users
+              </span>
+              {searchQuery && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setSearchQuery('')}
+                  className="text-xs text-gray-400 h-6"
+                >
+                  Clear search
+                </Button>
+              )}
             </div>
           )}
         </CardContent>
