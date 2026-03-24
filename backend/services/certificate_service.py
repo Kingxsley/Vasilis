@@ -447,17 +447,29 @@ def render_element(c, elem: dict, page_width: float, page_height: float, placeho
     content = elem.get("content") or ""
     placeholder_key = elem.get("placeholder")
     
-    # Resolve placeholder to content
-    if placeholder_key:
-        key = placeholder_key.strip("{}")
-        if "{" in placeholder_key:
-            # Format string like "Score: {score}%"
-            try:
-                content = placeholder_key.format(**placeholders)
-            except Exception:
-                content = placeholders.get(key, placeholder_key)
-        else:
-            content = str(placeholders.get(key, ""))
+    # For image types, prioritize content (which may have been pre-populated with image data)
+    if elem_type in ["image", "logo", "signature", "certifying_body"]:
+        # Content may already be image data
+        if content and (content.startswith("data:image") or len(content) > 200):
+            pass  # Keep content as-is
+        elif placeholder_key:
+            # Try to resolve placeholder to image data
+            key = placeholder_key.strip("{}")
+            resolved = placeholders.get(key, "")
+            if resolved and (str(resolved).startswith("data:image") or len(str(resolved)) > 200):
+                content = resolved
+    else:
+        # For text elements, resolve placeholder to text
+        if placeholder_key:
+            key = placeholder_key.strip("{}")
+            if "{" in placeholder_key:
+                # Format string like "Score: {score}%"
+                try:
+                    content = placeholder_key.format(**placeholders)
+                except Exception:
+                    content = placeholders.get(key, placeholder_key)
+            else:
+                content = str(placeholders.get(key, ""))
     
     # Replace any remaining placeholders in content
     if content and isinstance(content, str) and "{" in content:
@@ -633,17 +645,20 @@ def render_image_element(c, content: str, x: float, y_bottom: float, width: floa
         c.drawCentredString(x + width / 2, title_y, title)
 
 
-def generate_certificate_preview(template: dict) -> bytes:
+def generate_certificate_preview(template: dict, assets: dict = None) -> bytes:
     """
     Generate a preview PDF of a certificate template with sample data.
     Used for the editor preview functionality.
     
     Args:
         template: Template dict
+        assets: Dict containing stored assets (signatures, certifying_bodies, logos)
         
     Returns:
         PDF bytes
     """
+    assets = assets or {}
+    
     # Sample placeholder data for preview
     sample_placeholders = {
         "user_name": "John Doe",
@@ -660,7 +675,37 @@ def generate_certificate_preview(template: dict) -> bytes:
         "name": "John Doe",
     }
     
-    return generate_certificate_from_template(template, sample_placeholders, include_footer=False)
+    # Add asset placeholders - these are the actual image data from stored assets
+    for key, value in assets.items():
+        sample_placeholders[key] = value
+    
+    # Process template elements to inject asset data
+    processed_template = dict(template)
+    processed_elements = []
+    
+    for elem in template.get("elements", []) or []:
+        elem_copy = dict(elem)
+        elem_type = elem.get("type", "text")
+        placeholder = elem.get("placeholder", "")
+        content = elem.get("content", "")
+        
+        # For image-based elements, try to resolve the asset
+        if elem_type in ["logo", "signature", "certifying_body", "image"]:
+            # Check if content is already an image (base64)
+            if content and (content.startswith("data:image") or len(content) > 200):
+                # Content is already an image, keep it
+                pass
+            elif placeholder:
+                # Try to resolve placeholder to asset
+                key = placeholder.strip("{}")
+                if key in assets:
+                    elem_copy["content"] = assets[key]
+        
+        processed_elements.append(elem_copy)
+    
+    processed_template["elements"] = processed_elements
+    
+    return generate_certificate_from_template(processed_template, sample_placeholders, include_footer=False)
 
 
 def generate_bulk_certificates(users_data: list, organization_name: str = None) -> bytes:

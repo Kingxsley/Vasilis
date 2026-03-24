@@ -229,8 +229,40 @@ async def preview_certificate_template(template_id: str, request: Request):
     if not template:
         raise HTTPException(status_code=404, detail="Template not found")
     
+    # Fetch stored assets (signatures, certifying bodies, company logo)
+    assets = {}
+    
+    # Get signatures
+    signatures = await db.certificate_signatures.find({}, {"_id": 0}).to_list(100)
+    for i, sig in enumerate(signatures):
+        sig_data = sig.get("signature_data") or sig.get("image_data") or sig.get("data")
+        if sig_data:
+            assets[f"signature_{i+1}"] = sig_data
+            # Also add by name
+            sig_name = sig.get("name", "").lower().replace(" ", "_")
+            if sig_name:
+                assets[sig_name] = sig_data
+    
+    # Get certifying bodies
+    bodies = await db.certificate_certifying_bodies.find({}, {"_id": 0}).to_list(100)
+    for i, body in enumerate(bodies):
+        body_data = body.get("logo_data") or body.get("image_data") or body.get("data")
+        if body_data:
+            assets[f"certifying_body_{i+1}"] = body_data
+            # Also add by name
+            body_name = body.get("name", "").lower().replace(" ", "_")
+            if body_name:
+                assets[body_name] = body_data
+    
+    # Get company logo from branding settings
+    branding = await db.settings.find_one({"type": "branding"}, {"_id": 0})
+    if branding and branding.get("logo_url"):
+        logo = branding.get("logo_url")
+        assets["company_logo"] = logo
+        assets["logo"] = logo
+    
     try:
-        pdf_bytes = generate_certificate_preview(template)
+        pdf_bytes = generate_certificate_preview(template, assets)
         return Response(
             content=pdf_bytes,
             media_type="application/pdf",
