@@ -676,11 +676,18 @@ export default function CertificateTemplates({ embedded = false }) {
     setSaving(true);
     try {
       await axios.patch(`${API}/certificate-templates/${editingTemplate.template_id}`, {
+        name: editingTemplate.name,
+        description: editingTemplate.description,
+        background_color: editingTemplate.background_color,
+        background_image: editingTemplate.background_image,
+        border_style: editingTemplate.border_style,
+        orientation: editingTemplate.orientation,
         elements
       }, { headers });
       toast.success('Template saved');
       fetchData();
     } catch (err) {
+      console.error('Save template error:', err);
       toast.error('Failed to save template');
     } finally {
       setSaving(false);
