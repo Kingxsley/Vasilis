@@ -351,6 +351,7 @@ const RSSFeedManager = React.lazy(() => import('./pages/RSSFeedManager'));
 const FormSubmissions = React.lazy(() => import('./pages/FormSubmissions'));
 // EventsPage for events management with calendar, RSVP, and ICS support
 const EventsPage = React.lazy(() => import('./pages/EventsPage'));
+const CertificateVerify = React.lazy(() => import('./pages/CertificateVerify'));
 
 // Auth Callback Handler
 const AuthCallback = () => {
@@ -544,6 +545,8 @@ const AppRouter = () => {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/news" element={<NewsPage />} />
         <Route path="/page/:slug" element={<CustomPage />} />
+        {/* Public certificate verification */}
+        <Route path="/verify/:certificateId" element={<CertificateVerify />} />
         <Route
           path="/dashboard"
           element={

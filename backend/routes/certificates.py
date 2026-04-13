@@ -404,7 +404,7 @@ async def generate_user_module_certificate(user_id: str, module_id: str, request
 
 @router.get("/verify/{certificate_id}")
 async def verify_certificate(certificate_id: str):
-    """Verify a certificate by its ID"""
+    """Verify a certificate by its ID — public endpoint, no auth required"""
     db = get_db()
     
     cert = await db.certificates.find_one({"certificate_id": certificate_id}, {"_id": 0})
@@ -412,14 +412,31 @@ async def verify_certificate(certificate_id: str):
     if not cert:
         raise HTTPException(status_code=404, detail="Certificate not found")
     
+    # Fetch organization name if available
+    org_name = None
+    if cert.get("organization_id"):
+        org = await db.organizations.find_one(
+            {"organization_id": cert["organization_id"]},
+            {"_id": 0, "name": 1}
+        )
+        if org:
+            org_name = org.get("name")
+
+    # Build training_name from modules_completed
+    modules = cert.get("modules_completed", [])
+    training_name = modules[0] if len(modules) == 1 else " & ".join(modules) if modules else "Training"
+
     return {
         "valid": True,
         "certificate_id": cert["certificate_id"],
         "user_name": cert.get("user_name"),
+        "user_email": cert.get("user_email"),
+        "training_name": training_name,
         "modules_completed": cert.get("modules_completed"),
         "average_score": cert.get("average_score"),
         "completion_date": cert.get("completion_date"),
-        "generated_at": cert.get("generated_at")
+        "generated_at": cert.get("generated_at"),
+        "organization_name": org_name,
     }
 
 

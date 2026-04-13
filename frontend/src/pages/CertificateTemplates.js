@@ -205,10 +205,34 @@ function CertificatePreview({ template, formData }) {
             </div>
           </div>
 
-          {/* Certificate ID */}
-          <p style={{ color: mutedColor, fontSize: 'clamp(5px, 0.7vw, 7px)' }}>
-            Certificate ID: CERT-PREVIEW-001
-          </p>
+          {/* QR Code */}
+          <div className="flex flex-col items-center">
+            <div className="bg-white p-1.5 rounded shadow-sm border border-gray-200">
+              <svg viewBox="0 0 21 21" className="w-14 h-14" fill="black" xmlns="http://www.w3.org/2000/svg">
+                <rect x="0" y="0" width="7" height="7" />
+                <rect x="1" y="1" width="5" height="5" fill="white" />
+                <rect x="2" y="2" width="3" height="3" />
+                <rect x="14" y="0" width="7" height="7" />
+                <rect x="15" y="1" width="5" height="5" fill="white" />
+                <rect x="16" y="2" width="3" height="3" />
+                <rect x="0" y="14" width="7" height="7" />
+                <rect x="1" y="15" width="5" height="5" fill="white" />
+                <rect x="2" y="16" width="3" height="3" />
+                <rect x="8" y="2" width="1" height="1" /><rect x="10" y="2" width="1" height="1" /><rect x="12" y="2" width="1" height="1" />
+                <rect x="8" y="4" width="1" height="1" /><rect x="10" y="4" width="2" height="1" />
+                <rect x="8" y="8" width="1" height="1" /><rect x="10" y="8" width="1" height="1" /><rect x="12" y="8" width="1" height="1" />
+                <rect x="8" y="10" width="1" height="1" /><rect x="10" y="10" width="1" height="1" /><rect x="14" y="10" width="1" height="1" />
+                <rect x="8" y="12" width="1" height="1" /><rect x="12" y="12" width="1" height="1" /><rect x="14" y="12" width="1" height="1" />
+                <rect x="16" y="8" width="1" height="1" /><rect x="18" y="8" width="1" height="1" />
+                <rect x="16" y="10" width="1" height="1" /><rect x="18" y="10" width="1" height="1" /><rect x="20" y="10" width="1" height="1" />
+                <rect x="16" y="14" width="1" height="1" /><rect x="18" y="14" width="1" height="1" /><rect x="20" y="14" width="1" height="1" />
+                <rect x="8" y="14" width="1" height="1" /><rect x="10" y="16" width="1" height="1" /><rect x="12" y="18" width="1" height="1" />
+              </svg>
+            </div>
+            <p style={{ color: mutedColor, fontSize: 'clamp(5px, 0.7vw, 7px)', marginTop: '2px' }}>
+              Scan to verify
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -299,7 +323,7 @@ function TemplateEditor({ template, onSave, onCancel, signatures, certifyingBodi
       { id: 'signature_left', type: 'signature', x: 5, y: isPortrait ? 72 : 78, width: 28, height: isPortrait ? 12 : 14, content: s.signature_1 || '', placeholder: '{signature_1}', style: { title: s.signature_1_title } },
       { id: 'certifying_body', type: 'certifying_body', x: isPortrait ? 33 : 37, y: isPortrait ? 72 : 78, width: isPortrait ? 34 : 26, height: isPortrait ? 12 : 14, content: s.certifying_body_logo || '', placeholder: '{certifying_body}', style: { title: s.certifying_body_name } },
       { id: 'signature_right', type: 'signature', x: 67, y: isPortrait ? 72 : 78, width: 28, height: isPortrait ? 12 : 14, content: s.signature_2 || '', placeholder: '{signature_2}', style: { title: s.signature_2_title } },
-      { id: 'certificate_id', type: 'text', x: 15, y: isPortrait ? 87 : 92, width: 70, height: 3, placeholder: 'Certificate ID: {certificate_id}', style: { fontSize: '9px', textAlign: 'center', color: '#999999' } },
+      { id: 'qr_code', type: 'qr_code', x: isPortrait ? 40 : 43, y: isPortrait ? 86 : 90, width: isPortrait ? 20 : 14, height: isPortrait ? 10 : 8, content: '', placeholder: '{certificate_id}', style: {} },
     ];
   };
 

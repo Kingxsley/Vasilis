@@ -18,6 +18,7 @@ TEXT RENDERING:
 """
 import io
 import re
+import os
 import textwrap
 from datetime import datetime, timezone
 from reportlab.lib import colors
@@ -30,8 +31,24 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 import base64
 import logging
+import qrcode
 
 logger = logging.getLogger(__name__)
+
+# Base URL for verification page — derived from environment
+FRONTEND_BASE_URL = os.environ.get("FRONTEND_URL", os.environ.get("REACT_APP_BACKEND_URL", ""))
+
+
+def generate_qr_code_image(url: str, box_size: int = 6, border: int = 1) -> io.BytesIO:
+    """Generate a QR code image as a BytesIO stream."""
+    qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_M, box_size=box_size, border=border)
+    qr.add_data(url)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    buf.seek(0)
+    return buf
 
 # Font mapping from CSS to ReportLab
 FONT_MAP = {
@@ -491,6 +508,21 @@ def render_element(c, elem: dict, page_width: float, page_height: float, placeho
         
     elif elem_type in ["image", "logo", "signature"] or (elem_type == "certifying_body" and content_is_image):
         render_image_element(c, content, x, y_bottom, width, height, style, elem_type)
+
+    elif elem_type == "qr_code":
+        # Generate QR code pointing to verification URL
+        cert_id = placeholders.get("certificate_id", "CERT-PREVIEW-001")
+        verify_url = f"{FRONTEND_BASE_URL}/verify/{cert_id}"
+        try:
+            qr_buf = generate_qr_code_image(verify_url, box_size=8, border=1)
+            qr_reader = ImageReader(qr_buf)
+            qr_size = min(width, height)
+            # Center QR code in bounding box
+            qr_x = x + (width - qr_size) / 2
+            qr_y = y_bottom + (height - qr_size) / 2
+            c.drawImage(qr_reader, qr_x, qr_y, width=qr_size, height=qr_size)
+        except Exception as e:
+            logger.warning(f"Failed to render QR code: {e}")
 
 
 def render_text_element(c, text: str, x: float, y_top: float, width: float, height: float, style: dict, placeholders: dict):
