@@ -1,32 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Award, CheckCircle2, XCircle, Calendar, Building2, Shield, Loader2 } from 'lucide-react';
+import { Award, CheckCircle2, XCircle, Calendar, Building2, Loader2 } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 export default function CertificateVerify() {
   const { certificateId } = useParams();
   const [cert, setCert] = useState(null);
+  const [branding, setBranding] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchCert = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/certificates/verify/${certificateId}`);
-        if (!res.ok) {
-          if (res.status === 404) throw new Error('not_found');
+        // Fetch both certificate and branding data
+        const [certRes, brandingRes] = await Promise.all([
+          fetch(`${BACKEND_URL}/api/certificates/verify/${certificateId}`),
+          fetch(`${BACKEND_URL}/api/settings/branding`)
+        ]);
+        
+        if (!certRes.ok) {
+          if (certRes.status === 404) throw new Error('not_found');
           throw new Error('fetch_error');
         }
-        const data = await res.json();
-        setCert(data);
+        
+        const certData = await certRes.json();
+        const brandingData = brandingRes.ok ? await brandingRes.json() : null;
+        
+        setCert(certData);
+        setBranding(brandingData);
       } catch (err) {
         setError(err.message === 'not_found' ? 'not_found' : 'error');
       } finally {
         setLoading(false);
       }
     };
-    if (certificateId) fetchCert();
+    if (certificateId) fetchData();
   }, [certificateId]);
 
   // Format date nicely
@@ -74,14 +84,17 @@ export default function CertificateVerify() {
   }
 
   // Success — verified certificate
+  const companyName = branding?.company_name || 'Vasilis NetShield';
+  const logoUrl = branding?.logo_url || '/favicon.svg';
+  
   return (
     <div className="min-h-screen bg-[#0D1117] flex flex-col">
       {/* Top bar */}
       <div className="bg-[#161B22] border-b border-[#30363D]">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 text-[#E8DDB5] font-bold text-lg">
-            <Shield className="w-5 h-5 text-[#D4A836]" />
-            Vasilis NetShield
+            <img src={logoUrl} alt="Logo" className="w-8 h-8 object-contain" />
+            {companyName}
           </Link>
           <span className="text-gray-500 text-sm">Certificate Verification</span>
         </div>
@@ -147,7 +160,7 @@ export default function CertificateVerify() {
           {/* Footer */}
           <div className="text-center mt-6">
             <p className="text-gray-600 text-xs">
-              This certificate was issued by <span className="text-gray-400">Vasilis NetShield</span> and has been verified as authentic.
+              This certificate was issued by <span className="text-gray-400">{companyName}</span> and has been verified as authentic.
             </p>
           </div>
         </div>
