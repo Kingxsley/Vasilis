@@ -299,7 +299,7 @@ function TemplateEditor({ template, onSave, onCancel, signatures, certifyingBodi
       { id: 'signature_left', type: 'signature', x: 5, y: isPortrait ? 72 : 78, width: 28, height: isPortrait ? 12 : 14, content: s.signature_1 || '', placeholder: '{signature_1}', style: { title: s.signature_1_title } },
       { id: 'certifying_body', type: 'certifying_body', x: isPortrait ? 33 : 37, y: isPortrait ? 72 : 78, width: isPortrait ? 34 : 26, height: isPortrait ? 12 : 14, content: s.certifying_body_logo || '', placeholder: '{certifying_body}', style: { title: s.certifying_body_name } },
       { id: 'signature_right', type: 'signature', x: 67, y: isPortrait ? 72 : 78, width: 28, height: isPortrait ? 12 : 14, content: s.signature_2 || '', placeholder: '{signature_2}', style: { title: s.signature_2_title } },
-      { id: 'certificate_id', type: 'text', x: 15, y: isPortrait ? 93 : 95, width: 70, height: 3, placeholder: 'Certificate ID: {certificate_id}', style: { fontSize: '9px', textAlign: 'center', color: '#999999' } },
+      { id: 'certificate_id', type: 'text', x: 15, y: isPortrait ? 87 : 92, width: 70, height: 3, placeholder: 'Certificate ID: {certificate_id}', style: { fontSize: '9px', textAlign: 'center', color: '#999999' } },
     ];
   };
 
