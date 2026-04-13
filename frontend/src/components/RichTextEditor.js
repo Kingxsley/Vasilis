@@ -3,6 +3,7 @@ import { Button } from './ui/button';
 import { Bold, Italic, Underline, List, ListOrdered, Link2, Image, Quote, Code, Heading1, Heading2, Upload, Loader2 } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
+import { sanitizeHtml } from '../utils/sanitize';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -15,19 +16,18 @@ const RichTextEditor = ({ value, onChange, placeholder = "Write your content..."
   // Set initial value only once on mount
   useEffect(() => {
     if (editorRef.current && !isInitialized.current) {
-      editorRef.current.innerHTML = value || '';
+      editorRef.current.innerHTML = sanitizeHtml(value || '');
       isInitialized.current = true;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Handle external value changes (e.g., template loading, form reset)
   useEffect(() => {
     if (editorRef.current && isInitialized.current) {
-      // Update editor when value changes externally
       const currentContent = editorRef.current.innerHTML;
-      // Only update if significantly different to avoid cursor jumping
       if (value !== currentContent) {
-        editorRef.current.innerHTML = value || '';
+        editorRef.current.innerHTML = sanitizeHtml(value || '');
       }
     }
   }, [value]);

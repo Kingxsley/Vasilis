@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate, usePa
 import { Toaster } from './components/ui/sonner';
 import { GoogleAnalytics } from './components/common/GoogleAnalytics';
 import axios from 'axios';
+import { getStoredToken, setStoredToken, clearStoredToken } from './utils/tokenStorage';
 
 // Context
 const AuthContext = createContext(null);
@@ -82,7 +83,7 @@ const useFavicon = () => {
 // Auth Provider with automatic token refresh
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [token, setToken] = useState(getStoredToken());
   const [loading, setLoading] = useState(true);
   const refreshIntervalRef = useRef(null);
 
@@ -99,7 +100,7 @@ const AuthProvider = ({ children }) => {
   // Refresh the token
   const refreshToken = async () => {
     try {
-      const currentToken = localStorage.getItem('token');
+      const currentToken = getStoredToken();
       if (!currentToken) return;
 
       const response = await axios.post(`${API}/auth/refresh`, {}, {
@@ -107,7 +108,7 @@ const AuthProvider = ({ children }) => {
       });
       
       const { token: newToken, user: userData } = response.data;
-      localStorage.setItem('token', newToken);
+      setStoredToken(newToken);
       setToken(newToken);
       setUser(userData);
       
@@ -118,7 +119,7 @@ const AuthProvider = ({ children }) => {
     } catch (err) {
       // If refresh fails, logout
       console.error('Token refresh failed:', err);
-      localStorage.removeItem('token');
+      clearStoredToken();
       setToken(null);
       setUser(null);
       return null;
@@ -188,7 +189,7 @@ const AuthProvider = ({ children }) => {
       // Try to refresh if auth check fails (might be expired token)
       const newToken = await refreshToken();
       if (!newToken) {
-        localStorage.removeItem('token');
+        clearStoredToken();
         setToken(null);
         setUser(null);
       }
@@ -215,7 +216,7 @@ const AuthProvider = ({ children }) => {
     }
     
     const { token: newToken, user: userData, requires_2fa_verification, two_factor_enabled } = response.data;
-    localStorage.setItem('token', newToken);
+    setStoredToken(newToken);
     setToken(newToken);
     setUser({
       ...userData,
@@ -234,7 +235,7 @@ const AuthProvider = ({ children }) => {
   const register = async (email, password, name) => {
     const response = await axios.post(`${API}/auth/register`, { email, password, name });
     const { token: newToken, user: userData } = response.data;
-    localStorage.setItem('token', newToken);
+    setStoredToken(newToken);
     setToken(newToken);
     setUser(userData);
     // Schedule automatic token refresh
@@ -252,7 +253,7 @@ const AuthProvider = ({ children }) => {
     } catch (err) {
       console.error('Logout error:', err);
     }
-    localStorage.removeItem('token');
+    clearStoredToken();
     setToken(null);
     setUser(null);
   };
