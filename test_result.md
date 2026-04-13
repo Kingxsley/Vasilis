@@ -181,11 +181,17 @@ frontend:
     file: "pages/CertificatesHub.js"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: true
         - agent: "main"
         - comment: "Tabbed page with My Certificates + Templates tab for super admins"
+        - working: true
+        - agent: "main"
+        - comment: "Replaced complex drag-and-drop certificate editor with simplified form-based editor with live HTML preview. Template list with org assignment indicators. Form customizes title, subtitle, body text, colors, border, orientation, logo, signatures, certifying body. Auto-generates elements array for backend PDF rendering. Organizations already have certificate_template_id assignment."
+        - working: true
+        - agent: "testing"
+        - comment: "Backend certificate template APIs fully tested and working. All 12 endpoints tested successfully: POST /api/auth/login (admin login), POST /api/certificate-templates/seed-presets (creates preset templates), GET /api/certificate-templates (lists templates with proper structure), POST /api/certificate-templates (creates new template), PATCH /api/certificate-templates/{id} (updates template with elements), GET /api/certificate-templates/{id}/preview (generates PDF preview), DELETE /api/certificate-templates/{id} (deletes template), GET /api/certificate-templates/assets/signatures (lists signatures), GET /api/certificate-templates/assets/certifying-bodies (lists certifying bodies), POST /api/organizations (creates org with certificate_template_id), GET /api/organizations (lists orgs showing certificate_template_id), PATCH /api/organizations/{id} (updates org certificate template assignment). All CRUD operations, PDF generation, and organization template assignment working correctly."
 
   - task: "Dashboard org filtering"
     implemented: true
@@ -247,14 +253,13 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "Backend modularization verification"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
+    - agent: "main"
+    - message: "Simplified certificate template editor: replaced drag-and-drop with form-based editor + live HTML preview. Backend unchanged - all template CRUD, preview PDF, org assignment APIs already working. Test: 1) POST /api/certificate-templates/seed-presets 2) GET /api/certificate-templates 3) POST /api/certificate-templates 4) PATCH /api/certificate-templates/{id} 5) GET /api/certificate-templates/{id}/preview 6) DELETE /api/certificate-templates/{id} 7) Organization cert template assignment via PATCH /api/organizations/{id} with certificate_template_id. Login: admin@vasilisnetshield.com / Admin123!"
     - agent: "testing"
-    - message: "Backend API testing completed successfully. All 9 key endpoints tested and working: POST /api/auth/login (login with token), GET /api/dashboard/stats (with/without org_id), GET /api/organizations, GET /api/cms-tiles, GET /api/cms-tiles/public/page/test-slug (404 handling), GET /api/analytics/training, GET /api/security/dashboard, GET /api/security/audit-logs, GET /api/activity-logs. CMS tiles visibility field implementation verified and working correctly."
-    - agent: "testing"
-    - message: "Post-modularization testing completed successfully. All 12 backend endpoints tested and working correctly: POST /api/auth/login, GET /api/dashboard/stats (with/without org_id), GET /api/organizations, GET /api/users?limit=10, GET /api/cms-tiles, GET /api/cms-tiles/public/page/nonexistent (404), GET /api/analytics/training, GET /api/security/dashboard, GET /api/security/audit-logs, GET /api/activity-logs, GET /api/settings/password-policy. Models successfully extracted to models/schemas.py without breaking any functionality. Backend modularization verification complete."
+    - message: "Certificate template backend testing completed successfully. All 12 endpoints tested and working: 1) POST /api/auth/login (admin login successful), 2) POST /api/certificate-templates/seed-presets (preset seeding working, 9 templates already exist), 3) GET /api/certificate-templates (returns array with template_id, name, elements), 4) POST /api/certificate-templates (creates new template successfully), 5) PATCH /api/certificate-templates/{id} (updates template with elements array), 6) GET /api/certificate-templates/{id}/preview (generates PDF preview correctly), 7) DELETE /api/certificate-templates/{id} (deletes template), 8) GET /api/certificate-templates/assets/signatures (returns signatures array), 9) GET /api/certificate-templates/assets/certifying-bodies (returns certifying bodies array), 10) POST /api/organizations (creates org with certificate_template_id assignment), 11) GET /api/organizations (shows certificate_template_id in response), 12) PATCH /api/organizations/{id} (updates org certificate template assignment). All CRUD operations, PDF generation, and organization template assignment working correctly. No issues found."
