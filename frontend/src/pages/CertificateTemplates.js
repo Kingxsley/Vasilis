@@ -175,7 +175,7 @@ function CertificatePreview({ template, formData }) {
             </p>
           </div>
 
-          {/* Signatures Row */}
+          {/* Signatures Row with QR Code */}
           <div className="w-full flex items-end justify-between px-[3%] flex-shrink-0">
             <div className="text-center flex-1">
               {formData.signature_1 ? (
@@ -186,13 +186,31 @@ function CertificatePreview({ template, formData }) {
               <p style={{ color: mutedColor, fontSize: 'clamp(5px, 0.8vw, 8px)' }}>{formData.signature_1_title || 'Program Director'}</p>
             </div>
 
-            <div className="text-center flex-1">
-              {formData.certifying_body_logo ? (
-                <img src={formData.certifying_body_logo} alt="Certifying" className="h-10 mx-auto object-contain mb-1" />
-              ) : (
-                <div className="h-10" />
-              )}
-              <p style={{ color: mutedColor, fontSize: 'clamp(5px, 0.8vw, 8px)' }}>{formData.certifying_body_name || 'Vasilis NetShield'}</p>
+            {/* QR Code — verification barcode */}
+            <div className="text-center flex-1 flex flex-col items-center">
+              <div className="bg-white p-1 rounded shadow-sm border border-gray-200">
+                <svg viewBox="0 0 21 21" className="w-12 h-12" fill="black" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="0" y="0" width="7" height="7" />
+                  <rect x="1" y="1" width="5" height="5" fill="white" />
+                  <rect x="2" y="2" width="3" height="3" />
+                  <rect x="14" y="0" width="7" height="7" />
+                  <rect x="15" y="1" width="5" height="5" fill="white" />
+                  <rect x="16" y="2" width="3" height="3" />
+                  <rect x="0" y="14" width="7" height="7" />
+                  <rect x="1" y="15" width="5" height="5" fill="white" />
+                  <rect x="2" y="16" width="3" height="3" />
+                  <rect x="8" y="2" width="1" height="1" /><rect x="10" y="2" width="1" height="1" /><rect x="12" y="2" width="1" height="1" />
+                  <rect x="8" y="4" width="1" height="1" /><rect x="10" y="4" width="2" height="1" />
+                  <rect x="8" y="8" width="1" height="1" /><rect x="10" y="8" width="1" height="1" /><rect x="12" y="8" width="1" height="1" />
+                  <rect x="8" y="10" width="1" height="1" /><rect x="10" y="10" width="1" height="1" /><rect x="14" y="10" width="1" height="1" />
+                  <rect x="8" y="12" width="1" height="1" /><rect x="12" y="12" width="1" height="1" /><rect x="14" y="12" width="1" height="1" />
+                  <rect x="16" y="8" width="1" height="1" /><rect x="18" y="8" width="1" height="1" />
+                  <rect x="16" y="10" width="1" height="1" /><rect x="18" y="10" width="1" height="1" /><rect x="20" y="10" width="1" height="1" />
+                  <rect x="16" y="14" width="1" height="1" /><rect x="18" y="14" width="1" height="1" /><rect x="20" y="14" width="1" height="1" />
+                  <rect x="8" y="14" width="1" height="1" /><rect x="10" y="16" width="1" height="1" /><rect x="12" y="18" width="1" height="1" />
+                </svg>
+              </div>
+              <p style={{ color: mutedColor, fontSize: 'clamp(4px, 0.6vw, 6px)', marginTop: '2px' }}>Scan to verify</p>
             </div>
 
             <div className="text-center flex-1">
@@ -204,35 +222,6 @@ function CertificatePreview({ template, formData }) {
               <p style={{ color: mutedColor, fontSize: 'clamp(5px, 0.8vw, 8px)' }}>{formData.signature_2_title || 'CTO'}</p>
             </div>
           </div>
-
-          {/* QR Code */}
-          <div className="flex flex-col items-center">
-            <div className="bg-white p-1.5 rounded shadow-sm border border-gray-200">
-              <svg viewBox="0 0 21 21" className="w-14 h-14" fill="black" xmlns="http://www.w3.org/2000/svg">
-                <rect x="0" y="0" width="7" height="7" />
-                <rect x="1" y="1" width="5" height="5" fill="white" />
-                <rect x="2" y="2" width="3" height="3" />
-                <rect x="14" y="0" width="7" height="7" />
-                <rect x="15" y="1" width="5" height="5" fill="white" />
-                <rect x="16" y="2" width="3" height="3" />
-                <rect x="0" y="14" width="7" height="7" />
-                <rect x="1" y="15" width="5" height="5" fill="white" />
-                <rect x="2" y="16" width="3" height="3" />
-                <rect x="8" y="2" width="1" height="1" /><rect x="10" y="2" width="1" height="1" /><rect x="12" y="2" width="1" height="1" />
-                <rect x="8" y="4" width="1" height="1" /><rect x="10" y="4" width="2" height="1" />
-                <rect x="8" y="8" width="1" height="1" /><rect x="10" y="8" width="1" height="1" /><rect x="12" y="8" width="1" height="1" />
-                <rect x="8" y="10" width="1" height="1" /><rect x="10" y="10" width="1" height="1" /><rect x="14" y="10" width="1" height="1" />
-                <rect x="8" y="12" width="1" height="1" /><rect x="12" y="12" width="1" height="1" /><rect x="14" y="12" width="1" height="1" />
-                <rect x="16" y="8" width="1" height="1" /><rect x="18" y="8" width="1" height="1" />
-                <rect x="16" y="10" width="1" height="1" /><rect x="18" y="10" width="1" height="1" /><rect x="20" y="10" width="1" height="1" />
-                <rect x="16" y="14" width="1" height="1" /><rect x="18" y="14" width="1" height="1" /><rect x="20" y="14" width="1" height="1" />
-                <rect x="8" y="14" width="1" height="1" /><rect x="10" y="16" width="1" height="1" /><rect x="12" y="18" width="1" height="1" />
-              </svg>
-            </div>
-            <p style={{ color: mutedColor, fontSize: 'clamp(5px, 0.7vw, 7px)', marginTop: '2px' }}>
-              Scan to verify
-            </p>
-          </div>
         </div>
       </div>
     </div>
@@ -240,7 +229,7 @@ function CertificatePreview({ template, formData }) {
 }
 
 // ─── Template Editor ───
-function TemplateEditor({ template, onSave, onCancel, signatures, certifyingBodies, organizations }) {
+function TemplateEditor({ template, onSave, onCancel, signatures, organizations }) {
   const { token } = useAuth();
   const headers = { Authorization: `Bearer ${token}` };
 
@@ -258,7 +247,7 @@ function TemplateEditor({ template, onSave, onCancel, signatures, certifyingBodi
     const logoEl = findEl('company_logo');
     const sig1El = findEl('signature_left');
     const sig2El = findEl('signature_right');
-    const certBodyEl = findEl('certifying_body');
+    const certBodyEl = findEl('certifying_body'); // legacy — no longer used but parsed for backward compat
 
     return {
       name: tmpl?.name || '',
@@ -283,8 +272,6 @@ function TemplateEditor({ template, onSave, onCancel, signatures, certifyingBodi
       signature_1_title: sig1El?.style?.title || 'Program Director',
       signature_2: sig2El?.content || '',
       signature_2_title: sig2El?.style?.title || 'CTO',
-      certifying_body_logo: certBodyEl?.content || '',
-      certifying_body_name: certBodyEl?.style?.title || 'Vasilis NetShield',
     };
   };
 
@@ -321,9 +308,8 @@ function TemplateEditor({ template, onSave, onCancel, signatures, certifyingBodi
       { id: 'score', type: 'text', x: 20, y: isPortrait ? 52 : 64, width: 60, height: 5, placeholder: s.score_format, style: { fontSize: '15px', fontWeight: 'bold', textAlign: 'center', color: '#2E8B57', fontFamily } },
       { id: 'date', type: 'text', x: 25, y: isPortrait ? 58 : 70, width: 50, height: 4, placeholder: s.date_format, style: { fontSize: '11px', textAlign: 'center', color: '#888888' } },
       { id: 'signature_left', type: 'signature', x: 5, y: isPortrait ? 72 : 78, width: 28, height: isPortrait ? 12 : 14, content: s.signature_1 || '', placeholder: '{signature_1}', style: { title: s.signature_1_title } },
-      { id: 'certifying_body', type: 'certifying_body', x: isPortrait ? 33 : 37, y: isPortrait ? 72 : 78, width: isPortrait ? 34 : 26, height: isPortrait ? 12 : 14, content: s.certifying_body_logo || '', placeholder: '{certifying_body}', style: { title: s.certifying_body_name } },
+      { id: 'qr_code', type: 'qr_code', x: isPortrait ? 36 : 37, y: isPortrait ? 72 : 78, width: isPortrait ? 28 : 26, height: isPortrait ? 12 : 14, content: '', placeholder: '{certificate_id}', style: {} },
       { id: 'signature_right', type: 'signature', x: 67, y: isPortrait ? 72 : 78, width: 28, height: isPortrait ? 12 : 14, content: s.signature_2 || '', placeholder: '{signature_2}', style: { title: s.signature_2_title } },
-      { id: 'qr_code', type: 'qr_code', x: isPortrait ? 40 : 43, y: isPortrait ? 86 : 90, width: isPortrait ? 20 : 14, height: isPortrait ? 10 : 8, content: '', placeholder: '{certificate_id}', style: {} },
     ];
   };
 
@@ -606,27 +592,6 @@ function TemplateEditor({ template, onSave, onCancel, signatures, certifyingBodi
             </div>
           </Section>
 
-          {/* Certifying Body */}
-          <Section title="Certifying Body">
-            <Field label="Organization Name">
-              <Input value={formData.certifying_body_name} onChange={e => updateField('certifying_body_name', e.target.value)}
-                className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5] h-8 text-sm" placeholder="e.g., ISO Board" />
-            </Field>
-            {certifyingBodies.length > 0 && (
-              <Field label="Select Saved Body">
-                <Select value="" onValueChange={v => {
-                  const body = certifyingBodies.find(b => b.body_id === v);
-                  if (body) { updateField('certifying_body_logo', body.logo_data); if (body.name) updateField('certifying_body_name', body.name); }
-                }}>
-                  <SelectTrigger className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5] h-8 text-xs"><SelectValue placeholder="Choose..." /></SelectTrigger>
-                  <SelectContent className="bg-[#161B22] border-[#30363D]">
-                    {certifyingBodies.map(b => <SelectItem key={b.body_id} value={b.body_id}>{b.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </Field>
-            )}
-            <ImageUploader value={formData.certifying_body_logo} onUpload={e => handleImageUpload(e, 'certifying_body_logo')} onClear={() => updateField('certifying_body_logo', '')} label="Upload Logo" small />
-          </Section>
         </div>
 
         {/* Right: Live Preview */}
@@ -681,7 +646,6 @@ export default function CertificateTemplates({ embedded = false }) {
   const { token } = useAuth();
   const [templates, setTemplates] = useState([]);
   const [signatures, setSignatures] = useState([]);
-  const [certifyingBodies, setCertifyingBodies] = useState([]);
   const [organizations, setOrganizations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingTemplate, setEditingTemplate] = useState(null);
@@ -698,15 +662,13 @@ export default function CertificateTemplates({ embedded = false }) {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [tRes, sRes, bRes, oRes] = await Promise.all([
+      const [tRes, sRes, oRes] = await Promise.all([
         axios.get(`${API}/certificate-templates`, { headers }),
         axios.get(`${API}/certificate-templates/assets/signatures`, { headers }).catch(() => ({ data: [] })),
-        axios.get(`${API}/certificate-templates/assets/certifying-bodies`, { headers }).catch(() => ({ data: [] })),
         axios.get(`${API}/organizations`, { headers }).catch(() => ({ data: [] })),
       ]);
       setTemplates(tRes.data);
       setSignatures(sRes.data);
-      setCertifyingBodies(bRes.data);
       setOrganizations(oRes.data);
     } catch (err) {
       console.error('Failed to fetch:', err);
@@ -791,7 +753,6 @@ export default function CertificateTemplates({ embedded = false }) {
           onSave={handleSaved}
           onCancel={closeEditor}
           signatures={signatures}
-          certifyingBodies={certifyingBodies}
           organizations={organizations}
         />
       </div>
