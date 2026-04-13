@@ -13,8 +13,8 @@ BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
 # Test credentials
 TEST_USER_ID = "a2be3723-95b8-4f00-bf33-583d8b46463a"
-TEST_EMAIL = "admin@vasilisnetshield.com"
-TEST_PASSWORD = "Admin123!"
+TEST_EMAIL = os.environ.get("TEST_ADMIN_EMAIL", "admin@vasilisnetshield.com")
+TEST_PASSWORD = os.environ.get("TEST_ADMIN_PASSWORD", "Admin123!")
 MODULE_ID = "mod_phishing_email"
 EXPECTED_MODULE_NAME = "Phishing Email Detection"
 

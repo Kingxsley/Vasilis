@@ -13,12 +13,12 @@ import os
 import uuid
 import time
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://cert-builder-21.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', os.environ.get('TEST_BASE_URL', 'http://localhost:8001')).rstrip('/')
 API = f"{BASE_URL}/api"
 
 # Test credentials
 ADMIN_EMAIL = "test@admin.com"
-ADMIN_PASSWORD = "TestAdmin123!"
+ADMIN_PASSWORD = os.environ.get("TEST_ADMIN_PASSWORD", "TestAdmin123!")
 
 
 def login_with_retry(session, email, password, max_retries=3):

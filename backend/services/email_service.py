@@ -91,7 +91,7 @@ async def get_branding_settings(db):
 async def get_system_email_template(db, template_id: str) -> dict:
     """Get system email template configuration (customized or default)"""
     try:
-        from routes.system_emails import DEFAULT_TEMPLATES
+        from shared.email_defaults import DEFAULT_EMAIL_TEMPLATES as DEFAULT_TEMPLATES
         default = DEFAULT_TEMPLATES.get(template_id, DEFAULT_TEMPLATES.get("welcome", {}))
         custom = await db.system_email_templates.find_one({"template_id": template_id}, {"_id": 0})
         if custom:

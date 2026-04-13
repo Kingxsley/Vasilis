@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { PublicNav } from '../components/layout/PublicNav';
 import { PublicFooter } from '../components/layout/PublicFooter';
+import { sanitizeHtml } from '../utils/sanitize';
 import { Loader2, AlertTriangle } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -99,7 +100,7 @@ export default function PublicCmsPage() {
           <div 
             className="prose prose-invert max-w-none"
             style={{ color: textColor }}
-            dangerouslySetInnerHTML={{ __html: page.custom_content }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(page.custom_content) }}
           />
         ) : (
           <p className="text-gray-500 text-center py-12">This page has no content yet.</p>
@@ -128,7 +129,7 @@ function PublicBlockRenderer({ block, branding }) {
     }
     case 'text':
       return (
-        <div className="prose prose-invert max-w-none mb-4" style={{ color: textColor }} dangerouslySetInnerHTML={{ __html: content.html }} />
+        <div className="prose prose-invert max-w-none mb-4" style={{ color: textColor }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(content.html) }} />
       );
     case 'image':
       return (

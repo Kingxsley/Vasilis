@@ -7,11 +7,11 @@ BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
 # Admin credentials
 ADMIN_EMAIL = "test@admin.com"
-ADMIN_PASSWORD = "TestAdmin123!"
+ADMIN_PASSWORD = os.environ.get("TEST_ADMIN_PASSWORD", "TestAdmin123!")
 
 # Viewer credentials
 VIEWER_EMAIL = "admin@test.com"
-VIEWER_PASSWORD = "Admin123!"
+VIEWER_PASSWORD = os.environ.get("TEST_VIEWER_PASSWORD", "Admin123!")
 
 
 def login_with_retry(session, email, password, max_retries=3):

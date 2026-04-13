@@ -56,8 +56,9 @@ else:
 # JWT Config
 JWT_SECRET = os.environ.get('JWT_SECRET')
 if not JWT_SECRET:
-    JWT_SECRET = 'vasilisnetshield-secret-key-dev-only'
-    logger.warning("⚠️ JWT_SECRET not set in environment. Using default key - DO NOT USE IN PRODUCTION!")
+    import secrets as _secrets
+    JWT_SECRET = _secrets.token_hex(32)
+    logger.warning("JWT_SECRET not set in environment. Generated ephemeral key – sessions will not survive restarts.")
 JWT_ALGORITHM = "HS256"
 JWT_ACCESS_TOKEN_EXPIRE_HOURS = 24  # Shorter access token lifespan
 JWT_REFRESH_TOKEN_EXPIRE_DAYS = 7  # Refresh tokens last longer

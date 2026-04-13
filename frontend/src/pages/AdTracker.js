@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { sanitizeHtml } from '../utils/sanitize';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -113,7 +114,7 @@ export default function AdTracker() {
 
   return (
     <div
-      dangerouslySetInnerHTML={{ __html: content }}
+      dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
       style={{ minHeight: '100vh' }}
     />
   );

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { useAuth } from '../App';
+import { sanitizeHtml } from '../utils/sanitize';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -1444,7 +1445,7 @@ export default function CredentialHarvest() {
                         <p className="text-sm text-[#E8DDB5] mb-3 font-medium">Live Preview</p>
                         <div className="bg-white rounded-lg p-4 min-h-[300px] max-h-[400px] overflow-y-auto">
                           <div 
-                            dangerouslySetInnerHTML={{ __html: newTemplate.body_html || '<p style="color:#999;text-align:center;padding:40px 20px;">Click buttons on the left to add email elements.<br/><br/>Use the CTA Button to add your phishing link.</p>' }}
+                            dangerouslySetInnerHTML={{ __html: sanitizeHtml(newTemplate.body_html || '<p style="color:#999;text-align:center;padding:40px 20px;">Click buttons on the left to add email elements.<br/><br/>Use the CTA Button to add your phishing link.</p>') }}
                             className="prose prose-sm max-w-none"
                           />
                         </div>
@@ -1712,7 +1713,7 @@ export default function CredentialHarvest() {
                           <p className="text-sm text-[#E8DDB5] mb-3 font-medium">Live Preview</p>
                           <div className="bg-white rounded-lg p-4 min-h-[250px] max-h-[350px] overflow-y-auto">
                             <div 
-                              dangerouslySetInnerHTML={{ __html: editingTemplate.body_html || '<p style="color:#999;text-align:center;padding:40px 20px;">Click buttons on the left to add email elements.</p>' }}
+                              dangerouslySetInnerHTML={{ __html: sanitizeHtml(editingTemplate.body_html || '<p style="color:#999;text-align:center;padding:40px 20px;">Click buttons on the left to add email elements.</p>') }}
                               className="prose prose-sm max-w-none"
                             />
                           </div>

@@ -91,6 +91,7 @@ export default function UsersPage() {
     }
   }, [location.search]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchData();
   }, []);

@@ -7,14 +7,14 @@ import requests
 import os
 import time
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://cert-builder-21.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', os.environ.get('TEST_BASE_URL', 'http://localhost:8001')).rstrip('/')
 API = f"{BASE_URL}/api"
 
 # Test credentials
-SUPER_ADMIN_EMAIL = "superadmin@vasilisns.com"
-SUPER_ADMIN_PASSWORD = "Admin123!Pass"
+SUPER_ADMIN_EMAIL = os.environ.get("TEST_ADMIN_EMAIL", "superadmin@vasilisns.com")
+SUPER_ADMIN_PASSWORD = os.environ.get("TEST_ADMIN_PASSWORD", "Admin123!Pass")
 TRAINEE_EMAIL = "trainee@testorg.com"
-TRAINEE_PASSWORD = "Admin123!Pass"
+TRAINEE_PASSWORD = os.environ.get("TEST_TRAINEE_PASSWORD", "Admin123!Pass")
 
 # Cached token for reuse across tests
 _cached_token = None

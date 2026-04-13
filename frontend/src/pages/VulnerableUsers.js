@@ -56,6 +56,7 @@ import {
   TableRow,
 } from '../components/ui/table';
 import { toast } from 'sonner';
+import { useAuth } from '../App';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -103,6 +104,7 @@ const RiskIndicator = ({ level }) => {
 
 export default function VulnerableUsers() {
   const navigate = useNavigate();
+  const { token } = useAuth();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState({ users: [], stats: {}, total: 0 });
   const [days, setDays] = useState(30);
@@ -121,7 +123,6 @@ export default function VulnerableUsers() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
       const params = new URLSearchParams({ days: days.toString() });
       if (riskLevel !== 'all') params.append('risk_level', riskLevel);
       if (organizationId !== 'all') params.append('organization_id', organizationId);
@@ -140,11 +141,10 @@ export default function VulnerableUsers() {
     } finally {
       setLoading(false);
     }
-  }, [days, riskLevel, organizationId]);
+  }, [days, riskLevel, organizationId, token]);
 
-  const fetchOrganizations = async () => {
+  const fetchOrganizations = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`${API_URL}/api/organizations`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -155,18 +155,17 @@ export default function VulnerableUsers() {
     } catch (error) {
       console.error('Error fetching organizations:', error);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchData();
     fetchOrganizations();
     fetchTrainingModules();
-  }, [fetchData]);
+  }, [fetchData, fetchOrganizations, fetchTrainingModules]);
 
   // Fetch training modules for assignment
-  const fetchTrainingModules = async () => {
+  const fetchTrainingModules = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`${API_URL}/api/training/modules`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -177,7 +176,7 @@ export default function VulnerableUsers() {
     } catch (error) {
       console.error('Error fetching training modules:', error);
     }
-  };
+  }, [token]);
 
   // View user profile - navigate to Users page with search filter
   const viewUserProfile = (user) => {
@@ -196,7 +195,6 @@ export default function VulnerableUsers() {
     if (!selectedUserForTraining || !moduleId) return;
     setAssigningTraining(true);
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`${API_URL}/api/training/reassign`, {
         method: 'POST',
         headers: {
@@ -267,7 +265,6 @@ export default function VulnerableUsers() {
 
   const exportData = async (format) => {
     try {
-      const token = localStorage.getItem('token');
       const params = new URLSearchParams({ days: days.toString() });
       if (organizationId !== 'all') params.append('organization_id', organizationId);
 
