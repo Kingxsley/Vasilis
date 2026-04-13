@@ -46,7 +46,7 @@ const LAYOUT_OPTIONS = [
 ];
 
 // ─── Image compression utility ───
-const compressImage = (dataUrl, maxWidth = 600, quality = 0.6) => {
+const compressImage = (dataUrl, maxWidth = 600, quality = 0.7) => {
   return new Promise((resolve) => {
     const img = new Image();
     img.onload = () => {
@@ -55,8 +55,23 @@ const compressImage = (dataUrl, maxWidth = 600, quality = 0.6) => {
       if (w > maxWidth) { h = (h * maxWidth) / w; w = maxWidth; }
       canvas.width = w;
       canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      resolve(canvas.toDataURL('image/jpeg', quality));
+      const ctx = canvas.getContext('2d');
+
+      // Detect if source is PNG (has transparency) — keep as PNG
+      const isPng = dataUrl.includes('image/png');
+      if (!isPng) {
+        // For JPEG/other: fill white background first to avoid black areas
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, w, h);
+      }
+      ctx.drawImage(img, 0, 0, w, h);
+
+      // Preserve PNG format for transparency, use JPEG for photos
+      if (isPng) {
+        resolve(canvas.toDataURL('image/png'));
+      } else {
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      }
     };
     img.onerror = () => resolve(dataUrl);
     img.src = dataUrl;
