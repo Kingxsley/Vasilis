@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Award, CheckCircle2, XCircle, Calendar, TrendingUp, BookOpen, Building2, User, Shield, Loader2 } from 'lucide-react';
+import { Award, CheckCircle2, XCircle, Calendar, Building2, Shield, Loader2 } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -74,9 +74,6 @@ export default function CertificateVerify() {
   }
 
   // Success — verified certificate
-  const scoreNum = typeof cert.average_score === 'number' ? cert.average_score : parseFloat(cert.average_score) || 0;
-  const scoreColor = scoreNum >= 80 ? '#2E8B57' : scoreNum >= 60 ? '#D4A836' : '#E74C3C';
-
   return (
     <div className="min-h-screen bg-[#0D1117] flex flex-col">
       {/* Top bar */}
@@ -131,61 +128,19 @@ export default function CertificateVerify() {
               )}
             </div>
 
-            {/* Details Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-0 border-t border-[#30363D]">
-              {/* Score */}
-              <div className="p-5 border-r border-b border-[#30363D] text-center">
-                <TrendingUp className="w-5 h-5 mx-auto mb-1.5" style={{ color: scoreColor }} />
-                <p className="text-2xl font-bold" style={{ color: scoreColor }}>
-                  {typeof cert.average_score === 'number' ? `${cert.average_score.toFixed(1)}%` : `${cert.average_score}`}
-                </p>
-                <p className="text-gray-500 text-xs mt-0.5">Achievement Score</p>
-              </div>
-
-              {/* Date */}
-              <div className="p-5 border-r border-b border-[#30363D] text-center">
-                <Calendar className="w-5 h-5 text-[#6B9BD2] mx-auto mb-1.5" />
-                <p className="text-lg font-semibold text-white">
-                  {formatDate(cert.completion_date)}
-                </p>
-                <p className="text-gray-500 text-xs mt-0.5">Completion Date</p>
-              </div>
-
-              {/* Modules */}
-              <div className="p-5 border-b border-[#30363D] text-center col-span-2 sm:col-span-1">
-                <BookOpen className="w-5 h-5 text-[#D4A836] mx-auto mb-1.5" />
-                <p className="text-lg font-semibold text-white">
-                  {(cert.modules_completed || []).length}
-                </p>
-                <p className="text-gray-500 text-xs mt-0.5">Module{(cert.modules_completed || []).length !== 1 ? 's' : ''} Completed</p>
-              </div>
+            {/* Completion Date - Centered */}
+            <div className="px-8 py-6 border-t border-[#30363D] text-center">
+              <Calendar className="w-6 h-6 text-[#6B9BD2] mx-auto mb-2" />
+              <p className="text-xl font-semibold text-white">
+                {formatDate(cert.completion_date)}
+              </p>
+              <p className="text-gray-500 text-sm mt-1">Completion Date</p>
             </div>
 
-            {/* Modules List */}
-            {cert.modules_completed && cert.modules_completed.length > 0 && (
-              <div className="px-8 py-5 border-t border-[#30363D]">
-                <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-3">Training Modules</p>
-                <div className="space-y-2">
-                  {cert.modules_completed.map((mod, i) => (
-                    <div key={i} className="flex items-center gap-2 text-gray-300 text-sm">
-                      <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
-                      {mod}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* Certificate ID footer */}
-            <div className="px-8 py-4 bg-[#0D1117] border-t border-[#30363D] flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-[10px] uppercase tracking-wider">Certificate ID</p>
-                <p className="text-gray-400 text-sm font-mono">{cert.certificate_id}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-gray-600 text-[10px] uppercase tracking-wider">Issued</p>
-                <p className="text-gray-400 text-sm">{formatDate(cert.generated_at)}</p>
-              </div>
+            <div className="px-8 py-4 bg-[#0D1117] border-t border-[#30363D]">
+              <p className="text-gray-600 text-[10px] uppercase tracking-wider text-center">Certificate ID</p>
+              <p className="text-gray-400 text-sm font-mono text-center">{cert.certificate_id}</p>
             </div>
           </div>
 
