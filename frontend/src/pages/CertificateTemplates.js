@@ -73,25 +73,31 @@ const fileToBase64 = (file) => new Promise((resolve, reject) => {
 
 // ─── Live HTML Certificate Preview ───
 function CertificatePreview({ template, formData }) {
-  const isLandscape = (template?.orientation || 'landscape') !== 'portrait';
-  const borderStyle = template?.border_style || formData.border_style || 'classic';
-  const bgColor = template?.background_color || formData.background_color || '#ffffff';
+  const isLandscape = (formData.orientation || template?.orientation || 'portrait') !== 'portrait';
+  const borderStyle = formData.border_style || template?.border_style || 'corporate';
+  const bgColor = formData.background_color || template?.background_color || '#FAFAFA';
 
   const borderClass = {
     classic: 'border-[6px] border-double border-[#D4A836]',
     modern: 'border-2 border-gray-300',
     corporate: 'border-4 border-[#1F4E79]',
     ornate: 'border-[6px] border-double border-[#8B4513]',
-  }[borderStyle] || 'border-2 border-gray-300';
+  }[borderStyle] || 'border-4 border-[#1F4E79]';
 
-  // Determine theme colors based on template/layout
+  // Determine theme colors
   const isDark = bgColor === '#0D1117' || bgColor === '#0d1117';
   const titleColor = isDark ? '#E8DDB5' : (formData.title_color || '#1F4E79');
   const subtitleColor = isDark ? '#6B9BD2' : (formData.subtitle_color || '#D4A836');
   const textColor = isDark ? '#AAAAAA' : '#333333';
-  const nameColor = isDark ? '#FFFFFF' : (formData.name_color || '#1F4E79');
-  const scoreColor = isDark ? '#00E676' : '#51CF66';
-  const mutedColor = isDark ? '#666666' : '#999999';
+  const nameColor = isDark ? '#FFFFFF' : (formData.name_color || '#000000');
+  const scoreColor = isDark ? '#00E676' : '#2E8B57';
+  const mutedColor = isDark ? '#666666' : '#888888';
+
+  // Show preview-friendly text for {training_name} placeholder
+  const previewSubtitle = (formData.subtitle || '{training_name}').replace('{training_name}', 'Cybersecurity Awareness Training');
+  const previewBody = (formData.body_text || 'Has successfully demonstrated proficiency in {training_name}').replace('{training_name}', 'Cybersecurity Awareness Training');
+  const previewScore = (formData.score_format || 'Achievement Score: {score}%').replace('{score}', '92');
+  const previewDate = (formData.date_format || 'Date: {date}').replace('{date}', 'July 13, 2025');
 
   return (
     <div className="w-full flex flex-col items-center">
@@ -110,73 +116,77 @@ function CertificatePreview({ template, formData }) {
         <div className="absolute inset-0 flex flex-col items-center justify-between p-[6%]">
           {/* Logo */}
           {formData.logo ? (
-            <img src={formData.logo} alt="Logo" className="h-[10%] object-contain" />
+            <img src={formData.logo} alt="Logo" className="h-[8%] object-contain" />
           ) : (
-            <div className="h-[10%] flex items-center">
+            <div className="h-[8%] flex items-center">
               <div className="w-12 h-12 rounded border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-[10px]">Logo</div>
             </div>
           )}
 
           {/* Title Section */}
-          <div className="text-center w-full space-y-1 flex-shrink-0">
+          <div className="text-center w-full space-y-2 flex-shrink-0">
             <h2
-              className="font-bold tracking-wider"
-              style={{ color: titleColor, fontSize: 'clamp(12px, 2.5vw, 22px)', fontFamily: formData.font_family || 'Georgia, serif' }}
+              className="font-bold tracking-wider uppercase"
+              style={{ color: titleColor, fontSize: 'clamp(14px, 2.8vw, 26px)', fontFamily: formData.font_family || 'Georgia, serif' }}
             >
-              {formData.title || 'CERTIFICATE OF COMPLETION'}
+              {formData.title || 'CERTIFICATE OF ACHIEVEMENT'}
             </h2>
-            <p style={{ color: subtitleColor, fontSize: 'clamp(8px, 1.4vw, 13px)', fontFamily: formData.font_family || 'Georgia, serif' }}>
-              {formData.subtitle || 'Cybersecurity Awareness Training'}
+            {/* Training Module Name — always shown */}
+            <p className="italic" style={{ color: subtitleColor, fontSize: 'clamp(9px, 1.6vw, 15px)', fontFamily: formData.font_family || 'Georgia, serif' }}>
+              {previewSubtitle}
             </p>
           </div>
 
           {/* Recipient */}
-          <div className="text-center w-full space-y-1 flex-1 flex flex-col justify-center">
-            <p style={{ color: textColor, fontSize: 'clamp(7px, 1.1vw, 11px)' }}>
+          <div className="text-center w-full space-y-2 flex-1 flex flex-col justify-center">
+            <p style={{ color: textColor, fontSize: 'clamp(7px, 1.1vw, 12px)' }}>
               {formData.presented_to_label || 'This certificate is presented to'}
             </p>
             <p
               className="font-bold"
-              style={{ color: nameColor, fontSize: 'clamp(14px, 3vw, 26px)', fontFamily: formData.font_family || 'Georgia, serif' }}
+              style={{ color: nameColor, fontSize: 'clamp(16px, 3.5vw, 30px)', fontFamily: formData.font_family || 'Georgia, serif' }}
             >
-              {'John Doe'}
+              John Doe
             </p>
-            <p style={{ color: textColor, fontSize: 'clamp(6px, 1vw, 10px)' }}>
-              {formData.body_text || 'for successfully completing the {training_name} training'}
+            {/* Body text — includes training module name */}
+            <p style={{ color: textColor, fontSize: 'clamp(7px, 1vw, 11px)' }}>
+              {previewBody}
             </p>
-            <p className="font-bold" style={{ color: scoreColor, fontSize: 'clamp(8px, 1.3vw, 13px)' }}>
-              {formData.score_format || 'Score: {score}%'}
+            <p className="font-bold" style={{ color: scoreColor, fontSize: 'clamp(9px, 1.3vw, 14px)', fontFamily: formData.font_family || 'Georgia, serif' }}>
+              {previewScore}
             </p>
-            <p style={{ color: mutedColor, fontSize: 'clamp(6px, 0.9vw, 9px)' }}>
-              {formData.date_format || 'Awarded on {date}'}
+            <p style={{ color: mutedColor, fontSize: 'clamp(7px, 0.9vw, 10px)' }}>
+              {previewDate}
             </p>
           </div>
 
           {/* Signatures Row */}
-          <div className="w-full flex items-end justify-between px-[5%] flex-shrink-0">
+          <div className="w-full flex items-end justify-between px-[3%] flex-shrink-0">
             <div className="text-center flex-1">
               {formData.signature_1 ? (
-                <img src={formData.signature_1} alt="Signature" className="h-8 mx-auto object-contain mb-1" />
+                <img src={formData.signature_1} alt="Signature" className="h-10 mx-auto object-contain mb-1" />
               ) : (
-                <div className="border-b border-gray-400 w-3/4 mx-auto mb-1" />
+                <div className="border-b border-gray-400 w-3/4 mx-auto mb-1 h-10" />
               )}
               <p style={{ color: mutedColor, fontSize: 'clamp(5px, 0.8vw, 8px)' }}>{formData.signature_1_title || 'Program Director'}</p>
             </div>
 
-            {formData.certifying_body_logo ? (
-              <div className="text-center flex-1">
+            <div className="text-center flex-1">
+              {formData.certifying_body_logo ? (
                 <img src={formData.certifying_body_logo} alt="Certifying" className="h-10 mx-auto object-contain mb-1" />
-                <p style={{ color: mutedColor, fontSize: 'clamp(5px, 0.7vw, 7px)' }}>{formData.certifying_body_name || ''}</p>
-              </div>
-            ) : null}
+              ) : (
+                <div className="h-10" />
+              )}
+              <p style={{ color: mutedColor, fontSize: 'clamp(5px, 0.8vw, 8px)' }}>{formData.certifying_body_name || 'Vasilis NetShield'}</p>
+            </div>
 
             <div className="text-center flex-1">
               {formData.signature_2 ? (
-                <img src={formData.signature_2} alt="Signature" className="h-8 mx-auto object-contain mb-1" />
+                <img src={formData.signature_2} alt="Signature" className="h-10 mx-auto object-contain mb-1" />
               ) : (
-                <div className="border-b border-gray-400 w-3/4 mx-auto mb-1" />
+                <div className="border-b border-gray-400 w-3/4 mx-auto mb-1 h-10" />
               )}
-              <p style={{ color: mutedColor, fontSize: 'clamp(5px, 0.8vw, 8px)' }}>{formData.signature_2_title || 'Administrator'}</p>
+              <p style={{ color: mutedColor, fontSize: 'clamp(5px, 0.8vw, 8px)' }}>{formData.signature_2_title || 'CTO'}</p>
             </div>
           </div>
 
@@ -214,26 +224,28 @@ function TemplateEditor({ template, onSave, onCancel, signatures, certifyingBodi
     return {
       name: tmpl?.name || '',
       description: tmpl?.description || '',
-      background_color: tmpl?.background_color || '#ffffff',
-      border_style: tmpl?.border_style || 'classic',
-      orientation: tmpl?.orientation || 'landscape',
+      background_color: tmpl?.background_color || '#FAFAFA',
+      border_style: tmpl?.border_style || 'corporate',
+      orientation: tmpl?.orientation || 'portrait',
       font_family: titleEl?.style?.fontFamily || 'Georgia, serif',
-      title: titleEl?.content || 'CERTIFICATE OF COMPLETION',
+      title: titleEl?.content || 'CERTIFICATE OF ACHIEVEMENT',
       title_color: titleEl?.style?.color || '#1F4E79',
-      subtitle: subtitleEl?.content || 'Cybersecurity Awareness Training',
+      // Subtitle always carries the training module name
+      subtitle: subtitleEl?.content || '{training_name}',
       subtitle_color: subtitleEl?.style?.color || '#D4A836',
       presented_to_label: presentedEl?.content || 'This certificate is presented to',
-      name_color: (findEl('user_name')?.style?.color) || '#1F4E79',
-      body_text: bodyEl?.content || bodyEl?.placeholder || 'for successfully completing the {training_name} training',
-      score_format: scoreEl?.content || scoreEl?.placeholder || 'Score: {score}%',
-      date_format: dateEl?.content || dateEl?.placeholder || 'Awarded on {date}',
+      name_color: (findEl('user_name')?.style?.color) || '#000000',
+      // Body text always includes the training module name
+      body_text: bodyEl?.content || bodyEl?.placeholder || 'Has successfully demonstrated proficiency in {training_name}',
+      score_format: scoreEl?.content || scoreEl?.placeholder || 'Achievement Score: {score}%',
+      date_format: dateEl?.content || dateEl?.placeholder || 'Date: {date}',
       logo: logoEl?.content || '',
       signature_1: sig1El?.content || '',
       signature_1_title: sig1El?.style?.title || 'Program Director',
       signature_2: sig2El?.content || '',
-      signature_2_title: sig2El?.style?.title || 'Administrator',
+      signature_2_title: sig2El?.style?.title || 'CTO',
       certifying_body_logo: certBodyEl?.content || '',
-      certifying_body_name: certBodyEl?.style?.title || '',
+      certifying_body_name: certBodyEl?.style?.title || 'Vasilis NetShield',
     };
   };
 
@@ -260,17 +272,19 @@ function TemplateEditor({ template, onSave, onCancel, signatures, certifyingBodi
 
     return [
       { id: 'company_logo', type: 'logo', x: isPortrait ? 38 : 42, y: 3, width: isPortrait ? 24 : 16, height: isPortrait ? 8 : 10, content: s.logo || '', placeholder: '{company_logo}', style: {} },
-      { id: 'title', type: 'text', x: 5, y: isPortrait ? 15 : 18, width: 90, height: isPortrait ? 6 : 10, content: s.title, style: { fontSize: isPortrait ? '26px' : '32px', fontWeight: 'bold', textAlign: 'center', color: s.title_color, fontFamily, letterSpacing: '3px' } },
-      { id: 'subtitle', type: 'text', x: 15, y: isPortrait ? 22 : 29, width: 70, height: 5, content: s.subtitle, style: { fontSize: isPortrait ? '13px' : '16px', textAlign: 'center', color: s.subtitle_color, fontFamily } },
-      { id: 'presented_to', type: 'text', x: 15, y: isPortrait ? 29 : 38, width: 70, height: 4, content: s.presented_to_label, style: { fontSize: '13px', textAlign: 'center', color: '#666666' } },
-      { id: 'user_name', type: 'text', x: 10, y: isPortrait ? 33 : 44, width: 80, height: isPortrait ? 6 : 10, placeholder: '{user_name}', style: { fontSize: isPortrait ? '28px' : '32px', fontWeight: 'bold', textAlign: 'center', color: s.name_color, fontFamily } },
-      { id: 'completion_text', type: 'text', x: 10, y: isPortrait ? 40 : 56, width: 80, height: isPortrait ? 10 : 6, placeholder: s.body_text, style: { fontSize: '12px', textAlign: 'center', color: '#444444', lineHeight: '1.6' } },
-      { id: 'score', type: 'text', x: 25, y: isPortrait ? 54 : 64, width: 50, height: 5, placeholder: s.score_format, style: { fontSize: '15px', fontWeight: 'bold', textAlign: 'center', color: '#51CF66' } },
-      { id: 'date', type: 'text', x: 25, y: isPortrait ? 60 : 70, width: 50, height: 4, placeholder: s.date_format, style: { fontSize: '11px', textAlign: 'center', color: '#888888' } },
-      { id: 'signature_left', type: 'signature', x: 10, y: isPortrait ? 72 : 78, width: 25, height: isPortrait ? 12 : 14, content: s.signature_1 || '', placeholder: '{signature_1}', style: { title: s.signature_1_title } },
-      { id: 'certifying_body', type: 'certifying_body', x: isPortrait ? 30 : 37, y: isPortrait ? 72 : 78, width: isPortrait ? 40 : 26, height: isPortrait ? 12 : 14, content: s.certifying_body_logo || '', placeholder: '{certifying_body}', style: { title: s.certifying_body_name } },
-      { id: 'signature_right', type: 'signature', x: 65, y: isPortrait ? 72 : 78, width: 25, height: isPortrait ? 12 : 14, content: s.signature_2 || '', placeholder: '{signature_2}', style: { title: s.signature_2_title } },
-      { id: 'certificate_id', type: 'text', x: 15, y: isPortrait ? 96 : 95, width: 70, height: 3, placeholder: 'Certificate ID: {certificate_id}', style: { fontSize: '9px', textAlign: 'center', color: '#999999' } },
+      { id: 'title', type: 'text', x: 5, y: isPortrait ? 15 : 18, width: 90, height: isPortrait ? 6 : 10, content: s.title, style: { fontSize: isPortrait ? '26px' : '32px', fontWeight: 'bold', textAlign: 'center', color: s.title_color, fontFamily, letterSpacing: '3px', textTransform: 'uppercase' } },
+      // Subtitle hardcoded to carry {training_name} — always shows the module completed
+      { id: 'subtitle', type: 'text', x: 10, y: isPortrait ? 22 : 29, width: 80, height: 5, placeholder: '{training_name}', style: { fontSize: isPortrait ? '15px' : '16px', textAlign: 'center', color: s.subtitle_color, fontFamily, fontStyle: 'italic' } },
+      { id: 'presented_to', type: 'text', x: 15, y: isPortrait ? 30 : 38, width: 70, height: 4, content: s.presented_to_label, style: { fontSize: '13px', textAlign: 'center', color: '#666666' } },
+      { id: 'user_name', type: 'text', x: 10, y: isPortrait ? 35 : 44, width: 80, height: isPortrait ? 6 : 10, placeholder: '{user_name}', style: { fontSize: isPortrait ? '28px' : '32px', fontWeight: 'bold', textAlign: 'center', color: s.name_color, fontFamily } },
+      // Body text hardcoded to carry {training_name} — always references the module completed
+      { id: 'completion_text', type: 'text', x: 10, y: isPortrait ? 43 : 56, width: 80, height: isPortrait ? 8 : 6, placeholder: s.body_text, style: { fontSize: '12px', textAlign: 'center', color: '#444444', lineHeight: '1.6' } },
+      { id: 'score', type: 'text', x: 20, y: isPortrait ? 52 : 64, width: 60, height: 5, placeholder: s.score_format, style: { fontSize: '15px', fontWeight: 'bold', textAlign: 'center', color: '#2E8B57', fontFamily } },
+      { id: 'date', type: 'text', x: 25, y: isPortrait ? 58 : 70, width: 50, height: 4, placeholder: s.date_format, style: { fontSize: '11px', textAlign: 'center', color: '#888888' } },
+      { id: 'signature_left', type: 'signature', x: 5, y: isPortrait ? 72 : 78, width: 28, height: isPortrait ? 12 : 14, content: s.signature_1 || '', placeholder: '{signature_1}', style: { title: s.signature_1_title } },
+      { id: 'certifying_body', type: 'certifying_body', x: isPortrait ? 33 : 37, y: isPortrait ? 72 : 78, width: isPortrait ? 34 : 26, height: isPortrait ? 12 : 14, content: s.certifying_body_logo || '', placeholder: '{certifying_body}', style: { title: s.certifying_body_name } },
+      { id: 'signature_right', type: 'signature', x: 67, y: isPortrait ? 72 : 78, width: 28, height: isPortrait ? 12 : 14, content: s.signature_2 || '', placeholder: '{signature_2}', style: { title: s.signature_2_title } },
+      { id: 'certificate_id', type: 'text', x: 15, y: isPortrait ? 93 : 95, width: 70, height: 3, placeholder: 'Certificate ID: {certificate_id}', style: { fontSize: '9px', textAlign: 'center', color: '#999999' } },
     ];
   };
 
@@ -279,6 +293,15 @@ function TemplateEditor({ template, onSave, onCancel, signatures, certifyingBodi
     setSaving(true);
     try {
       const elements = buildElements();
+
+      // Enforce: subtitle must carry {training_name} and body must include {training_name}
+      const subtitleEl = elements.find(e => e.id === 'subtitle');
+      if (subtitleEl) subtitleEl.placeholder = '{training_name}';
+      const bodyEl = elements.find(e => e.id === 'completion_text');
+      if (bodyEl && bodyEl.placeholder && !bodyEl.placeholder.includes('{training_name}')) {
+        bodyEl.placeholder = 'Has successfully demonstrated proficiency in {training_name}';
+      }
+
       // Compress images
       for (const el of elements) {
         if (el.content && el.content.startsWith('data:image')) {
@@ -447,9 +470,17 @@ function TemplateEditor({ template, onSave, onCancel, signatures, certifyingBodi
                 </div>
               </Field>
             </div>
-            <Field label="Subtitle">
-              <Input value={formData.subtitle} onChange={e => updateField('subtitle', e.target.value)}
-                className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5] h-8 text-sm" />
+
+            {/* Subtitle — hardcoded to carry module name */}
+            <Field label="Subtitle (Training Module Name)">
+              <div className="relative">
+                <Input value={formData.subtitle} readOnly
+                  className="bg-[#0D1117] border-[#30363D] text-[#D4A836] h-8 text-sm cursor-not-allowed opacity-80" />
+                <Badge className="absolute right-1 top-1.5 bg-green-600/20 text-green-400 text-[9px] h-5">
+                  <Check className="w-2.5 h-2.5 mr-0.5" /> Auto: Module Name
+                </Badge>
+              </div>
+              <p className="text-[10px] text-green-500/80 mt-0.5">Always shows the completed training module name</p>
             </Field>
             <Field label="Subtitle Color">
               <div className="flex gap-1.5">
@@ -463,11 +494,19 @@ function TemplateEditor({ template, onSave, onCancel, signatures, certifyingBodi
               <Input value={formData.presented_to_label} onChange={e => updateField('presented_to_label', e.target.value)}
                 className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5] h-8 text-sm" />
             </Field>
-            <Field label="Body Text">
-              <Textarea value={formData.body_text} onChange={e => updateField('body_text', e.target.value)}
-                className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5] text-sm min-h-[60px]" />
-              <p className="text-[10px] text-gray-500 mt-0.5">Placeholders: {'{training_name}'}</p>
+
+            {/* Body Text — hardcoded to carry module name */}
+            <Field label="Body Text (includes Module Name)">
+              <div className="relative">
+                <Textarea value={formData.body_text} readOnly
+                  className="bg-[#0D1117] border-[#30363D] text-[#D4A836] text-sm min-h-[60px] cursor-not-allowed opacity-80" />
+                <Badge className="absolute right-1 top-1.5 bg-green-600/20 text-green-400 text-[9px] h-5">
+                  <Check className="w-2.5 h-2.5 mr-0.5" /> Auto: Module Name
+                </Badge>
+              </div>
+              <p className="text-[10px] text-green-500/80 mt-0.5">{'Always includes {training_name} — replaced with actual module at generation'}</p>
             </Field>
+
             <Field label="Score Format">
               <Input value={formData.score_format} onChange={e => updateField('score_format', e.target.value)}
                 className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5] h-8 text-sm" />
