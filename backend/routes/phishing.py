@@ -2737,7 +2737,7 @@ async def delete_phishing_media(image_id: str, request: Request):
 # ============== QR CODE ROUTES ==============
 
 @router.post("/qrcode/generate")
-async def generate_qr_code(request: Request):
+async def generate_qr_code_from_url(request: Request):
     """Generate a QR code image from a URL"""
     await require_admin(request)
     

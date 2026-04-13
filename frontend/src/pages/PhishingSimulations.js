@@ -197,7 +197,7 @@ export default function PhishingSimulations() {
       const res = await axios.get(`${API}/custom-email-templates`, { headers });
       setCustomEmailTemplates(res.data.templates || []);
     } catch (err) {
-      console.log('No custom email templates');
+      process.env.NODE_ENV !== 'production' && console.log('No custom email templates');
     }
   };
 

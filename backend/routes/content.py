@@ -139,7 +139,7 @@ def generate_slug(title: str) -> str:
 @router.post("/blog")
 async def create_blog_post(data: BlogPostCreate, request: Request):
     """Create a new blog post"""
-    user = await require_content_access(request)
+    await require_content_access(request)
     db = get_db()
     
     post_id = f"post_{uuid.uuid4().hex[:12]}"
@@ -216,7 +216,7 @@ async def get_blog_post(slug: str):
 @router.patch("/blog/{post_id}")
 async def update_blog_post(post_id: str, data: BlogPostUpdate, request: Request):
     """Update a blog post"""
-    user = await require_content_access(request)
+    await require_content_access(request)
     db = get_db()
     
     update_data = {k: v for k, v in data.model_dump().items() if v is not None}
@@ -239,7 +239,7 @@ async def update_blog_post(post_id: str, data: BlogPostUpdate, request: Request)
 @router.delete("/blog/{post_id}")
 async def delete_blog_post(post_id: str, request: Request):
     """Delete a blog post"""
-    user = await require_content_access(request)
+    await require_content_access(request)
     db = get_db()
     
     result = await db.blog_posts.delete_one({"post_id": post_id})
@@ -254,7 +254,7 @@ async def delete_blog_post(post_id: str, request: Request):
 @router.post("/news")
 async def create_news(data: NewsCreate, request: Request):
     """Create a news item"""
-    user = await require_content_access(request)
+    await require_content_access(request)
     db = get_db()
     
     news_id = f"news_{uuid.uuid4().hex[:12]}"
@@ -377,7 +377,7 @@ async def list_news(
 @router.post("/news/rss-feeds")
 async def add_rss_feed(data: RssFeedCreate, request: Request):
     """Add an RSS feed source"""
-    user = await require_content_access(request)
+    await require_content_access(request)
     db = get_db()
     
     feed_id = f"feed_{uuid.uuid4().hex[:12]}"
@@ -441,7 +441,7 @@ async def delete_rss_feed(feed_id: str, request: Request):
 @router.delete("/news/{news_id}")
 async def delete_news(news_id: str, request: Request):
     """Delete a news item"""
-    user = await require_content_access(request)
+    await require_content_access(request)
     db = get_db()
     
     result = await db.news.delete_one({"news_id": news_id})
@@ -460,7 +460,7 @@ async def update_news(news_id: str, data: NewsUpdate, request: Request):
     link, and published status of a news article.  An error will be raised
     if the news_id does not exist or if no fields are provided for update.
     """
-    user = await require_content_access(request)
+    await require_content_access(request)
     db = get_db()
     # Build update document from provided fields
     update_data = {k: v for k, v in data.dict().items() if v is not None}
@@ -479,7 +479,7 @@ async def update_news(news_id: str, data: NewsUpdate, request: Request):
 @router.post("/videos")
 async def create_video(data: VideoCreate, request: Request):
     """Add a YouTube video"""
-    user = await require_content_access(request)
+    await require_content_access(request)
     db = get_db()
     
     video_id = f"vid_{uuid.uuid4().hex[:12]}"
@@ -537,7 +537,7 @@ async def list_videos(
 @router.patch("/videos/{video_id}")
 async def update_video(video_id: str, data: dict, request: Request):
     """Update a video"""
-    user = await require_content_access(request)
+    await require_content_access(request)
     db = get_db()
     
     allowed_fields = ["title", "description", "category", "published"]
@@ -560,7 +560,7 @@ async def update_video(video_id: str, data: dict, request: Request):
 @router.delete("/videos/{video_id}")
 async def delete_video(video_id: str, request: Request):
     """Delete a video"""
-    user = await require_content_access(request)
+    await require_content_access(request)
     db = get_db()
     
     result = await db.videos.delete_one({"video_id": video_id})
@@ -592,7 +592,7 @@ async def get_about():
 @router.patch("/about")
 async def update_about(data: AboutUpdate, request: Request):
     """Update about page content"""
-    user = await require_content_access(request)
+    await require_content_access(request)
     db = get_db()
     
     update_data = {k: v for k, v in data.model_dump().items() if v is not None}
@@ -614,7 +614,7 @@ async def update_about(data: AboutUpdate, request: Request):
 @router.post("/upload")
 async def upload_media(request: Request, file: UploadFile = File(...)):
     """Upload an image for use in blog posts"""
-    user = await require_content_access(request)
+    await require_content_access(request)
     db = get_db()
     
     allowed_types = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif"]
@@ -651,7 +651,7 @@ async def upload_media(request: Request, file: UploadFile = File(...)):
 @router.get("/media")
 async def list_media(request: Request, limit: int = 50):
     """List uploaded media"""
-    user = await require_content_access(request)
+    await require_content_access(request)
     db = get_db()
     
     media = await db.media.find({}, {"_id": 0, "data_url": 0}).sort("created_at", -1).limit(limit).to_list(limit)
@@ -673,7 +673,7 @@ async def get_media(media_id: str):
 @router.delete("/media/{media_id}")
 async def delete_media(media_id: str, request: Request):
     """Delete a media item"""
-    user = await require_content_access(request)
+    await require_content_access(request)
     db = get_db()
     
     result = await db.media.delete_one({"media_id": media_id})

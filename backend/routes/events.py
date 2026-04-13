@@ -87,7 +87,7 @@ class RSVPCreate(BaseModel):
 @router.post("")
 async def create_event(data: EventCreate, request: Request):
     """Create a new event (super admin only)"""
-    user = await require_super_admin(request)
+    await require_super_admin(request)
     db = get_db()
     
     event_id = f"evt_{uuid.uuid4().hex[:12]}"
@@ -191,7 +191,7 @@ async def get_event(event_id: str):
 @router.patch("/{event_id}")
 async def update_event(event_id: str, data: EventUpdate, request: Request):
     """Update an event (super admin only)"""
-    user = await require_super_admin(request)
+    await require_super_admin(request)
     db = get_db()
     
     event = await db.events.find_one({"event_id": event_id})
@@ -353,7 +353,7 @@ async def export_all_events_ics(request: Request):
 @router.post("/import/ics")
 async def import_events_from_ics(request: Request, file: UploadFile = File(...)):
     """Import events from ICS file (super admin only)"""
-    user = await require_super_admin(request)
+    await require_super_admin(request)
     db = get_db()
     
     if not file.filename.endswith('.ics'):

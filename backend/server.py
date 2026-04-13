@@ -138,8 +138,8 @@ from models.schemas import (
     AIGenerateRequest, AIGenerateResponse,
     UserCreate, UserUpdate, DashboardStats,
     ForgotPasswordRequest, ResetPasswordRequest, RefreshTokenRequest,
-    sanitize_string,
 )
+# Note: sanitize_string is defined locally above (line 94); the schema's version is unused.
 
 # ============== HELPERS ==============
 
@@ -433,12 +433,14 @@ async def login(data: UserLogin, request: Request):
         created_at=created_at
     )
 
-    return TokenResponse(
+    response = TokenResponse(
         token=token, 
         user=user_response,
         requires_2fa_verification=requires_2fa_verification,
         two_factor_enabled=user.get("two_factor_enabled", False)
     )
+
+    return response
 
 
 # RefreshTokenRequest is imported from models.schemas
@@ -3227,7 +3229,7 @@ async def test_discord_webhook(request: Request):
     token = auth_header.split(" ")[1]
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        user_id = payload.get("user_id")
+        _user_id = payload.get("user_id")  # extracted for token validation
         user_role = payload.get("role")
         user_email = payload.get("email")
     except jwt.InvalidTokenError:
@@ -3881,7 +3883,6 @@ async def cron_check_password_expiry():
         return {"message": "Password expiry is disabled", "reminders_sent": 0}
     
     now = datetime.now(timezone.utc)
-    reminder_threshold = now + timedelta(days=reminder_days)
     
     # Find users whose passwords are about to expire
     users_to_notify = []

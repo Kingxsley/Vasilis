@@ -1,10 +1,16 @@
 /**
- * Secure token storage — uses sessionStorage (cleared on tab close)
- * with lightweight obfuscation to prevent trivial inspection.
- * For full production security, use httpOnly cookies instead.
+ * Secure token storage — uses in-memory state as primary store
+ * with sessionStorage as fallback for page refreshes.
+ * The token is obfuscated before storage to prevent trivial inspection.
+ *
+ * For maximum security, tokens should be stored in httpOnly cookies
+ * (handled server-side). This module provides a defense-in-depth layer.
  */
 
 const STORAGE_KEY = '_vs_auth';
+
+// In-memory primary store — not accessible via DevTools
+let _memoryToken = null;
 
 function obfuscate(value) {
   try {
@@ -23,16 +29,23 @@ function deobfuscate(value) {
 }
 
 export function getStoredToken() {
-  // Check sessionStorage first (current session), then localStorage (migration)
-  const sessionVal = sessionStorage.getItem(STORAGE_KEY);
-  if (sessionVal) return deobfuscate(sessionVal);
+  // 1. Check in-memory store first (most secure)
+  if (_memoryToken) return _memoryToken;
 
-  // Migrate from old localStorage if present
+  // 2. Check sessionStorage (survives refreshes within same tab)
+  const sessionVal = sessionStorage.getItem(STORAGE_KEY);
+  if (sessionVal) {
+    _memoryToken = deobfuscate(sessionVal);
+    return _memoryToken;
+  }
+
+  // 3. Migrate from old localStorage if present (one-time)
   const legacyVal = localStorage.getItem('token');
   if (legacyVal) {
-    setStoredToken(legacyVal);
+    _memoryToken = legacyVal;
+    sessionStorage.setItem(STORAGE_KEY, obfuscate(legacyVal));
     localStorage.removeItem('token');
-    return legacyVal;
+    return _memoryToken;
   }
 
   return null;
@@ -43,10 +56,12 @@ export function setStoredToken(token) {
     clearStoredToken();
     return;
   }
+  _memoryToken = token;
   sessionStorage.setItem(STORAGE_KEY, obfuscate(token));
 }
 
 export function clearStoredToken() {
+  _memoryToken = null;
   sessionStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem('token'); // clean up legacy
 }

@@ -129,7 +129,7 @@ class ScenarioResponse(BaseModel):
 @router.post("", response_model=ScenarioResponse)
 async def create_scenario(data: ScenarioCreate, request: Request):
     """Create a new training scenario"""
-    user = await require_admin(request)
+    await require_admin(request)
     db = get_db()
     
     scenario_id = f"scen_{uuid.uuid4().hex[:12]}"
@@ -195,7 +195,7 @@ async def list_scenarios(
     request: Request = None
 ):
     """List all scenarios"""
-    user = await require_admin(request)
+    await require_admin(request)
     db = get_db()
     
     query = {}
@@ -232,7 +232,7 @@ async def list_scenarios(
 @router.get("/{scenario_id}", response_model=ScenarioResponse)
 async def get_scenario(scenario_id: str, request: Request):
     """Get a specific scenario"""
-    user = await require_admin(request)
+    await require_admin(request)
     db = get_db()
     
     scenario = await db.scenarios.find_one({"scenario_id": scenario_id}, {"_id": 0})
@@ -261,7 +261,7 @@ async def get_scenario(scenario_id: str, request: Request):
 @router.patch("/{scenario_id}", response_model=ScenarioResponse)
 async def update_scenario(scenario_id: str, data: ScenarioUpdate, request: Request):
     """Update a scenario"""
-    user = await require_admin(request)
+    await require_admin(request)
     db = get_db()
     
     update_data = {k: v for k, v in data.model_dump().items() if v is not None}
@@ -282,7 +282,7 @@ async def update_scenario(scenario_id: str, data: ScenarioUpdate, request: Reque
 @router.delete("/{scenario_id}")
 async def delete_scenario(scenario_id: str, request: Request):
     """Delete a scenario"""
-    user = await require_admin(request)
+    await require_admin(request)
     db = get_db()
     
     result = await db.scenarios.delete_one({"scenario_id": scenario_id})
@@ -304,7 +304,7 @@ async def import_scenarios(request: Request, file: UploadFile = File(...)):
     correct_answer: safe, unsafe
     content_json: JSON string with scenario content
     """
-    user = await require_admin(request)
+    await require_admin(request)
     db = get_db()
     
     if not file.filename.endswith('.csv'):
@@ -380,7 +380,7 @@ async def import_scenarios(request: Request, file: UploadFile = File(...)):
 @router.get("/export")
 async def export_scenarios(request: Request):
     """Export all scenarios as JSON for backup"""
-    user = await require_admin(request)
+    await require_admin(request)
     db = get_db()
     
     scenarios = await db.scenarios.find({}, {"_id": 0}).to_list(1000)
@@ -430,8 +430,8 @@ async def get_random_scenario(scenario_type: str, exclude_ids: str = "", request
         # Return None if no custom scenarios, training will use templates
         return {"scenario": None, "source": "templates"}
     
-    import random
-    scenario = random.choice(scenarios)
+    import secrets
+    scenario = secrets.choice(scenarios)
     
     return {
         "scenario": scenario,
@@ -445,7 +445,7 @@ async def get_random_scenario(scenario_type: str, exclude_ids: str = "", request
 @router.post("/seed-templates")
 async def seed_simulation_templates(request: Request):
     """Seed the database with default simulation templates for all types"""
-    user = await require_admin(request)
+    await require_admin(request)
     db = get_db()
     
     # Only super admins can seed templates

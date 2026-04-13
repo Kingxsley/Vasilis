@@ -169,7 +169,7 @@ export default function EmailTemplates() {
         setCustomAlertTemplates(res.data.templates);
       }
     } catch (err) {
-      console.log('Using default alert templates');
+      process.env.NODE_ENV !== 'production' && console.log('Using default alert templates');
     }
   };
 
@@ -180,7 +180,7 @@ export default function EmailTemplates() {
         setCustomEmailTemplates(res.data.templates);
       }
     } catch (err) {
-      console.log('No custom email templates');
+      process.env.NODE_ENV !== 'production' && console.log('No custom email templates');
     }
   };
 
@@ -189,7 +189,7 @@ export default function EmailTemplates() {
       const res = await axios.get(`${API}/phishing/templates`, { headers });
       setPhishingEmailTemplates(res.data || []);
     } catch (err) {
-      console.log('No phishing templates');
+      process.env.NODE_ENV !== 'production' && console.log('No phishing templates');
     }
   };
 

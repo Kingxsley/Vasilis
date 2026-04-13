@@ -14,14 +14,13 @@ router = APIRouter(prefix="/landing-layouts", tags=["Landing Layouts"])
 
 
 def get_db():
-    from server import db
-    return db
+    from shared.database import get_db as _get_db
+    return _get_db()
 
 
 async def get_current_user(request: Request) -> dict:
-    from utils import get_current_user as _get_current_user, security
-    credentials = await security(request)
-    return await _get_current_user(request, credentials)
+    from shared.database import get_current_user_from_request
+    return await get_current_user_from_request(request)
 
 
 async def require_admin(request: Request) -> dict:

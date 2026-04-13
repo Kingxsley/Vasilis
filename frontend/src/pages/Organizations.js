@@ -87,7 +87,7 @@ export default function Organizations() {
         if (payload.discord_webhook_url === '' && !editingOrg.discord_webhook_url) {
           delete payload.discord_webhook_url;
         }
-        console.log('Updating organization with payload:', payload);
+        process.env.NODE_ENV !== 'production' && console.log('Updating organization with payload:', payload);
         await axios.patch(`${API}/organizations/${editingOrg.organization_id}`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });

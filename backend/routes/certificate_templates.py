@@ -125,7 +125,7 @@ async def get_certificate_template(template_id: str, request: Request):
 @router.post("")
 async def create_certificate_template(data: CertificateTemplateCreate, request: Request):
     """Create a new certificate template"""
-    user = await require_admin(request)
+    await require_admin(request)
     db = get_db()
     
     template_id = f"certtmpl_{uuid.uuid4().hex[:12]}"
@@ -339,7 +339,7 @@ async def list_signatures(request: Request):
 @router.post("/assets/signatures")
 async def create_signature(data: SignatureCreate, request: Request):
     """Save a new signature"""
-    user = await require_admin(request)
+    await require_admin(request)
     db = get_db()
     
     signature_id = f"sig_{uuid.uuid4().hex[:12]}"
@@ -384,7 +384,7 @@ async def list_certifying_bodies(request: Request):
 @router.post("/assets/certifying-bodies")
 async def create_certifying_body(data: CertifyingBodyCreate, request: Request):
     """Add a new certifying body"""
-    user = await require_admin(request)
+    await require_admin(request)
     db = get_db()
     
     body_id = f"certbody_{uuid.uuid4().hex[:12]}"
@@ -442,7 +442,7 @@ async def upload_certificate_image(file: UploadFile = File(...), request: Reques
 @router.post("/seed-presets")
 async def seed_preset_templates(request: Request):
     """Create preset certificate templates"""
-    user = await require_admin(request)
+    await require_admin(request)
     db = get_db()
     
     presets = [
@@ -570,7 +570,7 @@ async def seed_preset_templates(request: Request):
 @router.post("/update-presets")
 async def update_preset_templates(request: Request):
     """Update existing preset templates with their element definitions (useful for fixing templates without elements)"""
-    user = await require_admin(request)
+    await require_admin(request)
     db = get_db()
     
     # Mapping of template names to their element functions

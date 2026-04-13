@@ -291,7 +291,7 @@ async def send_welcome_email(user_email: str, user_name: str, password: str, log
 </table>
 </body>
 </html>"""
-        subject = f"Welcome to {company_name} - Your Login Credentials"
+        subject = f"Welcome to {company_name} - Your Login Credentials"  # noqa: F841
     
     plain_text = f"""Welcome to {company_name}!
 

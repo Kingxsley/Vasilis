@@ -68,7 +68,7 @@ export const useGoogleAnalytics = () => {
       });
 
       setLoaded(true);
-      console.log('Google Analytics loaded:', gaId);
+      process.env.NODE_ENV !== 'production' && console.log('Google Analytics loaded:', gaId);
     };
 
     document.head.appendChild(script);
