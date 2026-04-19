@@ -1,0 +1,51 @@
+{
+  "summary": "Iteration 22: Tested News CRUD, News RSS, Navigation Manager, Blog Manager, Page Builder and dashboard auth persistence. Backend: 6/12 tests PASS. CRITICAL duplicate-route conflict discovered: /api/content/news POST is being handled by old /app/backend/routes/content.py:create_news which throws NameError: name 'user' is not defined (line 268 references undefined 'user' - the old handler has no auth dependency injecting the user). The newer /app/backend/routes/news.py router is registered AFTER content.py, so the broken old handler wins and ALL news create/update/delete via POST fail with HTTP 500. GET /api/content/news and /api/content/news/public return 200 but are served by content.py's list_news (different shape than new news.py). RSS /api/news/rss.xml and /api/news/sitemap.xml return 200 valid XML. Navigation endpoint not found at /api/navigation*. Frontend: login works, /dashboard/navigation-menu loads without logout (bug fix confirmed), /dashboard/news-manager, /dashboard/blog-manager, /dashboard/page-builder all load. News Manager empty state with Create News Article button renders correctly. Blog Manager Visual/HTML toggle buttons not visible on list page (they appear inside the edit/create modal - not verified).",
+  "backend_issues": {
+    "critical": [
+      {"endpoint": "POST /api/content/news", "issue": "500 Internal Server Error: NameError: name 'user' is not defined at /app/backend/routes/content.py line 268 ('author_id': user['user_id']). Old content.py create_news has no `user` dependency - it shadows the new news.py POST handler due to registration order. News creation is COMPLETELY BROKEN via the UI.", "priority": "CRITICAL"},
+      {"endpoint": "PATCH/DELETE /api/content/news/{id}", "issue": "Same duplicate-route conflict likely affects update/delete (couldn't verify because create fails first). Main agent must EITHER remove news endpoints from /app/backend/routes/content.py OR register news_router BEFORE content_router in server.py so the new correct handlers take precedence.", "priority": "CRITICAL"}
+    ],
+    "minor": [
+      {"endpoint": "GET /api/navigation*", "issue": "No navigation GET endpoint found at /api/navigation, /api/navigation/menu, or /api/navigation/items. Navigation router prefix/routes may differ - main agent to confirm the intended public read endpoint."},
+      {"endpoint": "GET /api/content/news/slug/{slug}", "issue": "Returns 404 because the new news.py handler defines /slug/{slug} but the router registered after content.py has 'news/{news_id}' catch-all which may also cause shadowing once create works. Worth retesting after route conflict fix."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {"flow": "News Manager create/update", "issue": "UI will fail on save since backend POST /api/content/news returns 500 (duplicate route bug). Empty state UI renders correctly.", "affected_selectors": ["button:has-text('Create News Article')", "button:has-text('Add News')"]},
+      {"flow": "Blog Manager visual editor toggle", "issue": "Could not visually verify ReactQuill Visual/HTML toggle - it is inside the edit modal (not opened in this test run). Main agent should self-verify by opening edit modal.", "affected_selectors": ["button:has-text('Visual')", "button:has-text('HTML')"]}
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration_22.py",
+    "/app/test_reports/pytest/pytest_results_22.xml"
+  ],
+  "action_items": [
+    "CRITICAL: Fix duplicate /content/news route conflict. Recommended: DELETE the old news endpoints (create_news, list_news, and any other /news routes) from /app/backend/routes/content.py so the new /app/backend/routes/news.py router handles all /content/news/* requests.",
+    "Alternatively: reorder server.py so api_router.include_router(news_router) is called BEFORE api_router.include_router(content_router).",
+    "After fix, re-run /app/backend/tests/test_iteration_22.py - should go from 6/12 to 12/12.",
+    "Main agent to self-verify Blog Manager Visual/HTML editor toggle by clicking Edit on an existing blog post.",
+    "Confirm Navigation Manager's actual backend endpoint path (not at /api/navigation).",
+    "Confirm Page Builder 'New Page Type' dropdown exposes all 21 types (couldn't open the Create modal in test run)."
+  ],
+  "critical_code_review_comments": [
+    "Duplicate news endpoint definition across /app/backend/routes/content.py and /app/backend/routes/news.py is a code-quality red flag. One should be authoritative. Prefer keeping the new news.py (it has proper auth dependency, slug uniqueness, uuid news_id, and consistent shape) and removing old code from content.py.",
+    "content.py:create_news references an undefined `user` variable - indicates an unfinished refactor. Would also fail lint if strict mode were on.",
+    "news.py author_id/author fields vs content.py author_id/author field names are inconsistent - schema drift risk."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration_22.py (new)"
+  ],
+  "success_rate": {
+    "backend": "50% (6/12 passed - all failures traced to one duplicate-route root cause)",
+    "frontend": "partial - login + routes load without logout verified; News create/edit modal flow blocked by backend bug; Blog Visual/HTML toggle and PageBuilder 21 page-types not opened in test run"
+  },
+  "test_credentials": "admin@vasilisnetshield.com / Admin123! (from /app/memory/test_credentials.md) - LOGIN WORKS",
+  "seed_data_creation": "None - attempted TEST_ prefixed news creation; rolled back by failure.",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Root cause of News 500s is a duplicate FastAPI route registration - two handlers at /content/news. Once main agent removes the /news routes from content.py (keep the new news.py), rerun pytest /app/backend/tests/test_iteration_22.py -v to confirm 12/12. Frontend auth-persistent navigation to /dashboard/* now works (sign-out bug fix confirmed). Remaining UI checks: Blog Visual/HTML toggle inside edit modal, Page Builder create-page dropdown should list 21 types, Content sidebar menu should show 7 items (observed: Page Builder, Blog Manager, News Manager = 3; need to confirm all 7).",
+  "rca_of_the_issue": "POST /api/content/news returns 500 with 'NameError: name user is not defined' because /app/backend/routes/content.py:254 defines @router.post('/news') create_news(data, request) with NO user dependency, yet line 268 references user['user_id']. Meanwhile /app/backend/routes/news.py:115 defines a correct @router.post('') create_news with user=Depends(require_admin). Because content_router is registered before news_router in server.py, FastAPI picks the broken content.py handler first. Fix: remove duplicate news endpoints from content.py (preferred) or swap include_router order. Reproduction: POST to /api/content/news with any body -> 500."
+}

@@ -25,8 +25,21 @@ import {
 import { Plus, Edit, Trash2, Loader2, Eye, FileText, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../App';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+const quillModules = {
+  toolbar: [
+    [{ 'header': [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+    [{ 'color': [] }, { 'background': [] }],
+    ['link', 'image'],
+    ['clean']
+  ]
+};
 
 export default function BlogManager() {
   const { token, user } = useAuth();
@@ -35,6 +48,7 @@ export default function BlogManager() {
   const [saving, setSaving] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
+  const [useHtml, setUseHtml] = useState(false);
   
   const [postForm, setPostForm] = useState({
     title: '',
@@ -329,14 +343,37 @@ export default function BlogManager() {
               </div>
 
               <div>
-                <Label className="text-gray-400">Content (HTML)</Label>
-                <Textarea
-                  value={postForm.content}
-                  onChange={(e) => setPostForm({ ...postForm, content: e.target.value })}
-                  placeholder="<h2>Introduction</h2><p>Your content here...</p>"
-                  className="bg-[#1a1a24] border-[#30363D] text-white min-h-[300px] font-mono text-sm"
-                  required
-                />
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-gray-400">Content</Label>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setUseHtml(!useHtml)}
+                    className="border-[#30363D] text-gray-400"
+                  >
+                    {useHtml ? 'Visual Editor' : 'HTML Editor'}
+                  </Button>
+                </div>
+                {useHtml ? (
+                  <Textarea
+                    value={postForm.content}
+                    onChange={(e) => setPostForm({ ...postForm, content: e.target.value })}
+                    placeholder="<h2>Introduction</h2><p>Your content here...</p>"
+                    className="bg-[#1a1a24] border-[#30363D] text-white min-h-[300px] font-mono text-sm"
+                    required
+                  />
+                ) : (
+                  <div className="bg-white rounded-lg">
+                    <ReactQuill
+                      theme="snow"
+                      value={postForm.content}
+                      onChange={(content) => setPostForm({ ...postForm, content })}
+                      modules={quillModules}
+                      style={{ minHeight: '300px' }}
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="grid md:grid-cols-2 gap-4">

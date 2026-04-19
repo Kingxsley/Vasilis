@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="6" skipped="0" tests="12" time="1.848" timestamp="2026-04-19T09:41:05.928298+00:00" hostname="agent-env-4599e079-14a7-4456-9eea-f2259890f5e2"><testcase classname="backend.tests.test_iteration_22.TestNewsCRUD" name="test_01_list_news" time="0.701" /><testcase classname="backend.tests.test_iteration_22.TestNewsCRUD" name="test_02_public_news" time="0.135" /><testcase classname="backend.tests.test_iteration_22.TestNewsCRUD" name="test_03_create_news" time="0.112"><failure message="AssertionError: {&quot;detail&quot;:&quot;Internal server error&quot;,&quot;error&quot;:&quot;name 'user' is not defined&quot;}&#10;assert 500 == 200&#10; +  where 500 = &lt;Response [500]&gt;.status_code">backend/tests/test_iteration_22.py:77: in test_03_create_news
+    assert r.status_code == 200, r.text
+E   AssertionError: {"detail":"Internal server error","error":"name 'user' is not defined"}
+E   assert 500 == 200
+E    +  where 500 = &lt;Response [500]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iteration_22.TestNewsCRUD" name="test_04_get_news_by_id" time="0.000"><failure message="assert None&#10; +  where None = TestNewsCRUD._created_id">backend/tests/test_iteration_22.py:86: in test_04_get_news_by_id
+    assert TestNewsCRUD._created_id
+E   assert None
+E    +  where None = TestNewsCRUD._created_id</failure></testcase><testcase classname="backend.tests.test_iteration_22.TestNewsCRUD" name="test_05_get_news_by_slug" time="0.171"><failure message="AssertionError: {&quot;detail&quot;:&quot;News not found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code">backend/tests/test_iteration_22.py:99: in test_05_get_news_by_slug
+    assert r.status_code == 200, r.text
+E   AssertionError: {"detail":"News not found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iteration_22.TestNewsCRUD" name="test_06_update_news" time="0.000"><failure message="assert None&#10; +  where None = TestNewsCRUD._created_id">backend/tests/test_iteration_22.py:103: in test_06_update_news
+    assert TestNewsCRUD._created_id
+E   assert None
+E    +  where None = TestNewsCRUD._created_id</failure></testcase><testcase classname="backend.tests.test_iteration_22.TestNewsCRUD" name="test_07_duplicate_slug_rejected" time="0.109"><failure message="AssertionError: {&quot;detail&quot;:&quot;Internal server error&quot;,&quot;error&quot;:&quot;name 'user' is not defined&quot;}&#10;assert 500 == 400&#10; +  where 500 = &lt;Response [500]&gt;.status_code">backend/tests/test_iteration_22.py:130: in test_07_duplicate_slug_rejected
+    assert r.status_code == 400, r.text
+E   AssertionError: {"detail":"Internal server error","error":"name 'user' is not defined"}
+E   assert 500 == 400
+E    +  where 500 = &lt;Response [500]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iteration_22.TestNewsCRUD" name="test_08_delete_news" time="0.001"><failure message="assert None&#10; +  where None = TestNewsCRUD._created_id">backend/tests/test_iteration_22.py:133: in test_08_delete_news
+    assert TestNewsCRUD._created_id
+E   assert None
+E    +  where None = TestNewsCRUD._created_id</failure></testcase><testcase classname="backend.tests.test_iteration_22.TestNewsRSS" name="test_rss_xml" time="0.113" /><testcase classname="backend.tests.test_iteration_22.TestNewsRSS" name="test_sitemap_xml" time="0.144" /><testcase classname="backend.tests.test_iteration_22.TestNavigation" name="test_get_navigation" time="0.140" /><testcase classname="backend.tests.test_iteration_22.TestBlog" name="test_list_blog" time="0.148" /></testsuite></testsuites>
