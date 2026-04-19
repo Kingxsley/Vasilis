@@ -195,6 +195,9 @@ class CustomPageCreate(BaseModel):
     show_in_nav: bool = False
     nav_section: str = "main"
     is_published: bool = False
+    # Phase 2: visibility — who can see this page? Multi-select. Default public.
+    # Valid entries: "public", "user", "trainee", "org_admin", "super_admin"
+    auth_levels: List[str] = ["public"]
 
 
 class CustomPageUpdate(BaseModel):
@@ -206,9 +209,35 @@ class CustomPageUpdate(BaseModel):
     show_in_nav: Optional[bool] = None
     nav_section: Optional[str] = None
     is_published: Optional[bool] = None
+    auth_levels: Optional[List[str]] = None
 
 
 import uuid
+from auth_levels import AuthLevel, user_meets_any_level
+
+
+VALID_AUTH_LEVELS = {lvl.value for lvl in AuthLevel}
+
+
+def _normalize_auth_levels(raw) -> List[str]:
+    """Clean + validate an auth_levels list. Default to ['public'] if empty."""
+    if not raw:
+        return [AuthLevel.PUBLIC.value]
+    out = []
+    seen = set()
+    for item in raw:
+        if not isinstance(item, str):
+            continue
+        item = item.strip().lower()
+        if item in VALID_AUTH_LEVELS and item not in seen:
+            out.append(item)
+            seen.add(item)
+    if not out:
+        return [AuthLevel.PUBLIC.value]
+    # If 'public' is present, it dominates (anyone is allowed).
+    if AuthLevel.PUBLIC.value in out:
+        return [AuthLevel.PUBLIC.value]
+    return out
 
 
 @router.get("/custom")
@@ -216,22 +245,31 @@ async def list_custom_pages(
     request: Request,
     include_unpublished: bool = False
 ):
-    """List all custom pages"""
+    """List all custom pages honoring auth_levels visibility."""
     db = get_db()
-    
+
     query = {}
-    
+    current_user = None
+
     # If not authenticated or requesting only published, filter by published
     try:
-        await get_current_user(request)
+        current_user = await get_current_user(request)
         if not include_unpublished:
             query["is_published"] = True
     except Exception:
         query["is_published"] = True
-    
+
     pages = await db.custom_pages.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
-    
-    return {"pages": pages, "total": len(pages)}
+
+    # Filter by auth_levels visibility (Phase 2)
+    user_role = (current_user or {}).get("role")
+    visible = []
+    for p in pages:
+        levels = p.get("auth_levels") or [AuthLevel.PUBLIC.value]
+        if user_meets_any_level(user_role, levels):
+            visible.append(p)
+
+    return {"pages": visible, "total": len(visible)}
 
 
 @router.post("/custom")
@@ -265,6 +303,7 @@ async def create_custom_page(data: CustomPageCreate, request: Request):
         "show_in_nav": data.show_in_nav,
         "nav_section": data.nav_section,
         "is_published": data.is_published,
+        "auth_levels": _normalize_auth_levels(data.auth_levels),
         "created_at": datetime.now(timezone.utc).isoformat(),
         "updated_at": datetime.now(timezone.utc).isoformat()
     }
@@ -280,21 +319,43 @@ async def create_custom_page(data: CustomPageCreate, request: Request):
 
 @router.get("/custom/{slug}")
 async def get_custom_page(slug: str, request: Request = None):
-    """Get a custom page by slug (public for published pages)"""
+    """Get a custom page by slug.
+
+    Visibility rules (Phase 2):
+      - Unpublished pages: only visible to admins (unchanged).
+      - Published pages honor the `auth_levels` list. If the current user
+        doesn't satisfy any of the levels, we 404 (not 403) to avoid
+        leaking the existence of private pages.
+    """
     db = get_db()
-    
+
     page = await db.custom_pages.find_one({"slug": slug.lower()}, {"_id": 0})
-    
+
     if not page:
         raise HTTPException(status_code=404, detail="Page not found")
-    
-    # Check if user has access to unpublished pages
+
+    # --- current user (may be None) -----------------------------------
+    current_user = None
+    try:
+        current_user = await get_current_user(request)
+    except Exception:
+        current_user = None
+    user_role = (current_user or {}).get("role")
+
+    # --- unpublished: admin only --------------------------------------
     if not page.get("is_published"):
         try:
             await require_admin(request)
         except Exception:
             raise HTTPException(status_code=404, detail="Page not found")
-    
+        return page
+
+    # --- published: auth_levels gate ----------------------------------
+    auth_levels = page.get("auth_levels") or [AuthLevel.PUBLIC.value]
+    if not user_meets_any_level(user_role, auth_levels):
+        # 404 (not 403) to hide existence from unauthorized callers.
+        raise HTTPException(status_code=404, detail="Page not found")
+
     return page
 
 
@@ -337,6 +398,8 @@ async def update_custom_page(page_id: str, data: CustomPageUpdate, request: Requ
         update_doc["nav_section"] = data.nav_section
     if data.is_published is not None:
         update_doc["is_published"] = data.is_published
+    if data.auth_levels is not None:
+        update_doc["auth_levels"] = _normalize_auth_levels(data.auth_levels)
     
     await db.custom_pages.update_one({"page_id": page_id}, {"$set": update_doc})
     

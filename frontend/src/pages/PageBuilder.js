@@ -25,7 +25,8 @@ import {
 import { 
   Plus, Edit, Trash2, Loader2, Eye, EyeOff, FileText, Layout, 
   Type, Image, Mail, Calendar, LayoutGrid, Minus, MousePointerClick,
-  GripVertical, ArrowUp, ArrowDown, ExternalLink, Save, X, Globe
+  GripVertical, ArrowUp, ArrowDown, ExternalLink, Save, X, Globe,
+  Smartphone, Tablet, Monitor, Lock
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../App';
@@ -43,6 +44,138 @@ const BLOCK_ICONS = {
   event_registration: Calendar,
   cards: LayoutGrid,
 };
+
+// ============================================================================
+// Phase 2 helpers — visibility note + live preview renderer
+// ============================================================================
+
+function publicSelectedNote(levels) {
+  const l = levels || [];
+  if (l.includes('public')) {
+    return (
+      <p className="text-xs text-gray-500 mt-2">
+        <Globe className="w-3 h-3 inline mr-1" />
+        This page is <span className="text-[#D4A836]">public</span> — anyone can view it, no login required.
+      </p>
+    );
+  }
+  if (l.length === 0) {
+    return (
+      <p className="text-xs text-red-400 mt-2">
+        Select at least one visibility level (defaults to Public).
+      </p>
+    );
+  }
+  const labels = {
+    user: 'Any logged-in user',
+    trainee: 'Trainee',
+    org_admin: 'Org admin',
+    super_admin: 'Super admin',
+  };
+  const joined = l.map(x => labels[x] || x).join(', ');
+  return (
+    <p className="text-xs text-gray-500 mt-2">
+      <Lock className="w-3 h-3 inline mr-1" />
+      Visible to: <span className="text-[#D4A836]">{joined}</span>
+    </p>
+  );
+}
+
+/**
+ * Minimal live-preview renderer for the device-preview pane. Renders each
+ * content block with basic styling so the admin can gauge layout at each
+ * device width. Does NOT attempt pixel-perfect parity with the public page —
+ * that would require a real iframe preview endpoint.
+ */
+function renderPagePreview(pageForm) {
+  if (!pageForm) return null;
+  if (!pageForm.blocks || pageForm.blocks.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-600 text-sm">
+        <p className="mb-1">Preview</p>
+        <p>No content blocks yet. Add blocks to see them rendered here.</p>
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-3">
+      {pageForm.title && (
+        <h1 className="text-2xl font-bold text-[#E8DDB5] break-words">{pageForm.title}</h1>
+      )}
+      {pageForm.description && (
+        <p className="text-gray-400 text-sm break-words">{pageForm.description}</p>
+      )}
+      {pageForm.blocks.map((block, idx) => {
+        const c = block.content || {};
+        switch (block.type) {
+          case 'heading':
+            return <h2 key={idx} className="text-xl font-semibold text-[#E8DDB5] break-words">{c.text || 'Heading'}</h2>;
+          case 'text':
+            return <p key={idx} className="text-gray-300 text-sm break-words whitespace-pre-wrap">{c.text || 'Paragraph text...'}</p>;
+          case 'button':
+            return (
+              <div key={idx}>
+                <span className="inline-block bg-[#D4A836] text-black text-sm font-medium px-4 py-2 rounded">
+                  {c.text || 'Button'}
+                </span>
+              </div>
+            );
+          case 'image':
+            return c.url ? (
+              <img key={idx} src={c.url} alt={c.alt || ''} className="max-w-full h-auto rounded" />
+            ) : (
+              <div key={idx} className="bg-[#1a1a24] border border-dashed border-[#30363D] rounded h-32 flex items-center justify-center text-gray-600 text-xs">
+                Image placeholder
+              </div>
+            );
+          case 'divider':
+            return <hr key={idx} className="border-[#30363D]" />;
+          case 'hero':
+            return (
+              <div key={idx} className="bg-gradient-to-br from-[#1a1a24] to-[#0f0f15] border border-[#30363D] rounded-md p-6 text-center">
+                <h2 className="text-xl font-bold text-[#E8DDB5] break-words">{c.title || 'Hero title'}</h2>
+                {c.subtitle && <p className="text-gray-400 mt-2 break-words">{c.subtitle}</p>}
+                {c.cta_text && (
+                  <span className="inline-block bg-[#D4A836] text-black text-sm font-medium px-4 py-2 rounded mt-3">
+                    {c.cta_text}
+                  </span>
+                )}
+              </div>
+            );
+          case 'cards':
+            return (
+              <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {(c.items || [{}, {}, {}]).slice(0, 6).map((it, i) => (
+                  <div key={i} className="bg-[#1a1a24] border border-[#30363D] rounded p-3">
+                    <div className="font-medium text-[#E8DDB5] text-sm break-words">{it.title || `Card ${i + 1}`}</div>
+                    <div className="text-gray-400 text-xs mt-1 break-words">{it.description || 'Short description'}</div>
+                  </div>
+                ))}
+              </div>
+            );
+          case 'contact_form':
+            return (
+              <div key={idx} className="bg-[#1a1a24] border border-[#30363D] rounded p-3 text-xs text-gray-500">
+                📧 Contact form placeholder ({Array.isArray(c.fields) ? c.fields.length : 4} fields)
+              </div>
+            );
+          case 'event_registration':
+            return (
+              <div key={idx} className="bg-[#1a1a24] border border-[#30363D] rounded p-3 text-xs text-gray-500">
+                📅 Event registration placeholder
+              </div>
+            );
+          default:
+            return (
+              <div key={idx} className="bg-[#1a1a24] border border-dashed border-[#30363D] rounded p-2 text-xs text-gray-600">
+                {block.type} block
+              </div>
+            );
+        }
+      })}
+    </div>
+  );
+}
 
 export default function PageBuilder() {
   const { token, user } = useAuth();
@@ -67,8 +200,12 @@ export default function PageBuilder() {
     blocks: [],
     show_in_nav: false,
     nav_section: 'main',
-    is_published: false
+    is_published: false,
+    auth_levels: ['public']
   });
+
+  // Phase 2: device preview mode (mobile/tablet/desktop).
+  const [devicePreview, setDevicePreview] = useState('desktop');
   
   const [blockForm, setBlockForm] = useState({
     type: 'text',
@@ -114,8 +251,10 @@ export default function PageBuilder() {
       blocks: [],
       show_in_nav: false,
       nav_section: 'main',
-      is_published: false
+      is_published: false,
+      auth_levels: ['public']
     });
+    setDevicePreview('desktop');
     setEditingPage(null);
   };
 
@@ -155,8 +294,12 @@ export default function PageBuilder() {
       blocks: page.blocks || [],
       show_in_nav: page.show_in_nav || false,
       nav_section: page.nav_section || 'main',
-      is_published: page.is_published || false
+      is_published: page.is_published || false,
+      auth_levels: Array.isArray(page.auth_levels) && page.auth_levels.length > 0
+        ? page.auth_levels
+        : ['public']
     });
+    setDevicePreview('desktop');
     setShowPageDialog(true);
   };
 
@@ -685,6 +828,136 @@ export default function PageBuilder() {
                     />
                     <span className="text-gray-400">Publish Page</span>
                   </label>
+                </div>
+              </div>
+
+              {/* Phase 2 — Visibility (multi-select auth levels) */}
+              <div className="border-t border-[#30363D] pt-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Lock className="w-4 h-4 text-[#D4A836]" />
+                  <Label className="text-[#E8DDB5] font-medium">Visibility</Label>
+                  <span className="text-xs text-gray-500">
+                    — select one or more roles who can view this page
+                  </span>
+                </div>
+                {(() => {
+                  const levels = [
+                    { key: 'public',      label: 'Public',           hint: 'Anyone, no login required' },
+                    { key: 'user',        label: 'Any logged-in',    hint: 'Any authenticated user' },
+                    { key: 'trainee',     label: 'Trainee',          hint: 'Trainees only' },
+                    { key: 'org_admin',   label: 'Org admin',        hint: 'Organization admins' },
+                    { key: 'super_admin', label: 'Super admin',      hint: 'Super admins only' },
+                  ];
+                  const has = (k) => (pageForm.auth_levels || []).includes(k);
+                  const publicSelected = has('public');
+
+                  const toggle = (key) => {
+                    let next;
+                    if (key === 'public') {
+                      // Public dominates — clicking it clears others; unclick
+                      // leaves an empty list which falls back to ['public'].
+                      next = has('public') ? [] : ['public'];
+                    } else {
+                      // Selecting a specific role removes 'public' implicitly.
+                      const current = (pageForm.auth_levels || []).filter(x => x !== 'public');
+                      if (current.includes(key)) {
+                        next = current.filter(x => x !== key);
+                      } else {
+                        next = [...current, key];
+                      }
+                    }
+                    if (next.length === 0) next = ['public'];
+                    setPageForm({ ...pageForm, auth_levels: next });
+                  };
+
+                  return (
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                      {levels.map((lvl) => {
+                        const disabled = publicSelected && lvl.key !== 'public';
+                        const active = has(lvl.key);
+                        return (
+                          <button
+                            type="button"
+                            key={lvl.key}
+                            onClick={() => toggle(lvl.key)}
+                            disabled={disabled}
+                            title={lvl.hint}
+                            className={[
+                              'rounded-md border px-3 py-2 text-left transition text-sm',
+                              active
+                                ? 'bg-[#D4A836]/20 border-[#D4A836] text-[#E8DDB5]'
+                                : 'bg-[#1a1a24] border-[#30363D] text-gray-400 hover:border-[#D4A836]/40',
+                              disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer',
+                            ].join(' ')}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className={[
+                                'inline-block w-4 h-4 rounded border flex items-center justify-center',
+                                active
+                                  ? 'bg-[#D4A836] border-[#D4A836] text-black'
+                                  : 'bg-transparent border-[#30363D]'
+                              ].join(' ')}>
+                                {active ? '✓' : ''}
+                              </span>
+                              <span className="font-medium">{lvl.label}</span>
+                            </div>
+                            <div className="text-xs text-gray-500 mt-1">{lvl.hint}</div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+                {publicSelectedNote(pageForm.auth_levels)}
+              </div>
+
+              {/* Phase 2 — Device preview toolbar */}
+              <div className="border-t border-[#30363D] pt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-[#E8DDB5] font-medium">Preview</Label>
+                  <div className="inline-flex rounded-md border border-[#30363D] overflow-hidden">
+                    {[
+                      { key: 'mobile',  label: 'Mobile',  icon: Smartphone, width: 375 },
+                      { key: 'tablet',  label: 'Tablet',  icon: Tablet,     width: 768 },
+                      { key: 'desktop', label: 'Desktop', icon: Monitor,    width: 1440 },
+                    ].map((d) => {
+                      const Icon = d.icon;
+                      const active = devicePreview === d.key;
+                      return (
+                        <button
+                          type="button"
+                          key={d.key}
+                          onClick={() => setDevicePreview(d.key)}
+                          className={[
+                            'flex items-center gap-1.5 px-3 py-1.5 text-xs transition',
+                            active
+                              ? 'bg-[#D4A836] text-black'
+                              : 'bg-[#1a1a24] text-gray-400 hover:text-[#E8DDB5]'
+                          ].join(' ')}
+                          title={`${d.label} (${d.width}px)`}
+                        >
+                          <Icon className="w-4 h-4" />
+                          <span>{d.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="bg-[#0a0a0f] border border-[#30363D] rounded-lg p-4 overflow-x-auto">
+                  <div
+                    className="mx-auto transition-all duration-200 bg-[#0f0f15] border border-[#30363D] rounded-md p-4"
+                    style={{
+                      width: devicePreview === 'mobile'
+                        ? '375px'
+                        : devicePreview === 'tablet'
+                        ? '768px'
+                        : '100%',
+                      maxWidth: devicePreview === 'desktop' ? '1440px' : undefined,
+                      minHeight: '200px'
+                    }}
+                  >
+                    {renderPagePreview(pageForm)}
+                  </div>
                 </div>
               </div>
 

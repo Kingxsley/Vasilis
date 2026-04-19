@@ -134,6 +134,61 @@ def require_auth_level(level: AuthLevel) -> Callable:
     return _dep
 
 
+def user_meets_any_level(user_role: Optional[str], levels: list) -> bool:
+    """Multi-level check: does a user satisfy ANY of the given auth levels?
+
+    Accepts a list whose entries may be AuthLevel enum members or the
+    raw string values (e.g. from a CMS document's `auth_levels` field).
+    Any invalid entry is silently ignored. An empty list denies all.
+    An 'public' entry always returns True (anyone passes).
+    """
+    if not levels:
+        return False
+    for raw in levels:
+        try:
+            lvl = raw if isinstance(raw, AuthLevel) else AuthLevel(raw)
+        except ValueError:
+            continue
+        if user_meets_level(user_role, lvl):
+            return True
+    return False
+
+
+def require_any_auth_level(levels: list) -> Callable:
+    """Dependency factory for multi-select auth.
+
+    Content (pages, tiles, posts, etc.) is allowed if the user's role
+    satisfies ANY of the listed levels. If AuthLevel.PUBLIC is in the
+    list the endpoint is effectively public.
+    """
+    async def _dep(
+        request: Request,
+        credentials=Depends(_bearer),
+    ) -> Optional[dict]:
+        # PUBLIC entry short-circuits to anonymous-allowed.
+        if any(
+            (lvl == AuthLevel.PUBLIC or (isinstance(lvl, str) and lvl == "public"))
+            for lvl in levels
+        ):
+            return None
+
+        from server import get_current_user  # type: ignore
+        try:
+            user = await get_current_user(request, credentials)
+        except HTTPException:
+            raise HTTPException(status_code=401, detail="Unauthorized")
+
+        role = user.get("role") if user else None
+        if not user_meets_any_level(role, levels):
+            raise HTTPException(
+                status_code=403,
+                detail="Access denied. You do not have permission to view this content.",
+            )
+        return user
+
+    return _dep
+
+
 def filter_by_auth_level(items: list[dict], user_role: Optional[str]) -> list[dict]:
     """Filter a list of CMS items by their `auth_level` field against a user role.
 
@@ -143,11 +198,12 @@ def filter_by_auth_level(items: list[dict], user_role: Optional[str]) -> list[di
     """
     out = []
     for item in items:
-        raw_level = item.get("auth_level", AuthLevel.PUBLIC.value)
-        try:
-            level = AuthLevel(raw_level)
-        except ValueError:
-            level = AuthLevel.PUBLIC
-        if user_meets_level(user_role, level):
+        # Support BOTH the legacy single `auth_level` field and the new
+        # multi-value `auth_levels` list. `auth_levels` wins if present.
+        raw_levels = item.get("auth_levels")
+        if raw_levels is None:
+            raw_single = item.get("auth_level", AuthLevel.PUBLIC.value)
+            raw_levels = [raw_single]
+        if user_meets_any_level(user_role, raw_levels):
             out.append(item)
     return out
