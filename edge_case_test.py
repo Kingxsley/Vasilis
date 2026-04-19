@@ -6,7 +6,7 @@ Additional edge case tests for CMS Admin endpoints
 import asyncio
 import httpx
 
-BACKEND_URL = "https://security-hardening-28.preview.emergentagent.com/api"
+BACKEND_URL = "https://cms-enterprise.preview.emergentagent.com/api"
 ADMIN_EMAIL = "admin@vasilisnetshield.com"
 ADMIN_PASSWORD = "Admin123!"
 

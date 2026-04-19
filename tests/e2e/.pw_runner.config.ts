@@ -11,7 +11,7 @@ export default defineConfig({
     ['json', { outputFile: '/root/.emergent/automation_output/20260303_062416/results.json' }],
   ],
   use: {
-    baseURL: 'https://security-hardening-28.preview.emergentagent.com',
+    baseURL: 'https://cms-enterprise.preview.emergentagent.com',
     screenshot: 'only-on-failure',
     trace: 'off',
     headless: true,

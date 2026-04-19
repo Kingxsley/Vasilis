@@ -21,7 +21,7 @@ from typing import Dict, Any, Optional
 import httpx
 
 # Backend URL from frontend .env
-BACKEND_URL = "https://security-hardening-28.preview.emergentagent.com/api"
+BACKEND_URL = "https://cms-enterprise.preview.emergentagent.com/api"
 
 # Test credentials
 ADMIN_EMAIL = "admin@vasilisnetshield.com"
