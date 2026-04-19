@@ -297,4 +297,4 @@ async def render_page_sidebar_widgets(page_slug: str):
     rendered_widgets.sort(key=lambda w: w["order"])
     
     return {"widgets": rendered_widgets}
-ts}
+

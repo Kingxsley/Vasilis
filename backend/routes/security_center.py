@@ -195,7 +195,6 @@ async def get_locked_accounts(user: dict = Depends(require_super_admin)):
 async def unblock_ip(data: IPBlockAction, user: dict = Depends(require_super_admin)):
     """Manually unblock an IP (temporary block only)"""
     ip_limiter, _ = get_rate_limiters()
-    db = get_db()
     
     # Remove from in-memory temporary blocks
     if data.ip_address in ip_limiter.blocked_ips:
@@ -346,7 +345,6 @@ async def remove_ip_from_whitelist(ip_address: str, user: dict = Depends(require
 async def unlock_account(email: str, user: dict = Depends(require_super_admin)):
     """Manually unlock a locked account"""
     _, account_lockout = get_rate_limiters()
-    db = get_db()
     
     email_lower = email.lower()
     
