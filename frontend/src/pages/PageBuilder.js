@@ -210,6 +210,18 @@ export default function PageBuilder() {
     sidebar_config: null  // Phase 2: sidebar config slug
   });
 
+  // Auto-generate slug from title
+  useEffect(() => {
+    if (pageForm.title && !editingPage) {
+      const slug = pageForm.title
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/[\s_]+/g, '-')
+        .substring(0, 100);
+      setPageForm(prev => ({ ...prev, slug }));
+    }
+  }, [pageForm.title, editingPage]);
+
   // Phase 2: device preview mode (mobile/tablet/desktop).
   const [devicePreview, setDevicePreview] = useState('desktop');
   
@@ -831,9 +843,17 @@ export default function PageBuilder() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="custom">Custom Page</SelectItem>
+                      <SelectItem value="landing">Landing Page</SelectItem>
                       <SelectItem value="contact">Contact Page</SelectItem>
+                      <SelectItem value="about">About Page</SelectItem>
+                      <SelectItem value="services">Services Page</SelectItem>
+                      <SelectItem value="pricing">Pricing Page</SelectItem>
+                      <SelectItem value="faq">FAQ Page</SelectItem>
+                      <SelectItem value="testimonials">Testimonials</SelectItem>
+                      <SelectItem value="team">Team Page</SelectItem>
+                      <SelectItem value="portfolio">Portfolio</SelectItem>
                       <SelectItem value="event">Event Page</SelectItem>
-                      <SelectItem value="info">Info Page</SelectItem>
+                      <SelectItem value="legal">Legal/Terms</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

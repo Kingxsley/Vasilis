@@ -795,6 +795,22 @@ const AppRouter = () => {
           }
         />
         <Route
+          path="/dashboard/blog-manager"
+          element={
+            <ProtectedRoute adminOnly>
+              <React.lazy(() => import('./pages/BlogManager')).type />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/sidebar-manager"
+          element={
+            <ProtectedRoute adminOnly>
+              <React.lazy(() => import('./pages/SidebarManager')).type />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/security"
           element={<Navigate to="/security-hub" replace />}
         />
