@@ -14,16 +14,16 @@ const Logo = ({ branding }) => {
   };
 
   return (
-    <a href="/" onClick={handleClick} className="flex items-center gap-2">
+    <a href="/" onClick={handleClick} className="flex items-center gap-2" data-testid="public-nav-logo">
       {branding?.logo_url ? (
         <img src={branding.logo_url} alt="Logo" className="w-8 h-8 object-contain" />
       ) : (
         <img src="/favicon.svg" alt="Logo" className="w-8 h-8 object-contain" />
       )}
-      <span 
-        className="text-xl font-bold" 
-        style={{ 
-          color: branding?.text_color || '#E8DDB5', 
+      <span
+        className="text-xl font-bold"
+        style={{
+          color: branding?.text_color || '#E8DDB5',
           fontFamily: 'Chivo, sans-serif'
         }}
       >
@@ -33,71 +33,87 @@ const Logo = ({ branding }) => {
   );
 };
 
-export const PublicNav = ({ branding, isLoading = false }) => {
+export const PublicNav = ({ branding }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [customPages, setCustomPages] = useState([]);
+  const [navItems, setNavItems] = useState([]);
   const location = useLocation();
-  
+
   const textColor = branding?.text_color || '#E8DDB5';
   const primaryColor = branding?.primary_color || '#D4A836';
-  
-  // Fetch CMS tiles that should show in nav
+
+  // Fetch navigation items from the central /api/navigation/public endpoint.
+  // This endpoint returns BOTH admin-authored navigation items AND
+  // PageBuilder pages that opted into the public nav via "Show in Navigation".
   useEffect(() => {
-    const fetchNavPages = async () => {
+    const fetchNav = async () => {
       try {
-        // Fetch CMS tiles that are published and have show_in_nav
-        const res = await axios.get(`${API}/cms-tiles/nav`);
-        const tiles = (res.data.tiles || []).filter(t => t.published);
-        setCustomPages(tiles.map(t => ({
-          slug: t.slug,
-          title: t.name
-        })));
+        const res = await axios.get(`${API}/navigation/public`);
+        const items = (res.data?.items || [])
+          .filter((i) => i.is_active !== false)
+          .filter((i) => (i.section_id || 'header') === 'header')
+          .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+        setNavItems(items);
       } catch (error) {
-        console.error('Failed to fetch nav pages:', error);
+        console.error('Failed to fetch public nav:', error);
+        setNavItems([]);
       }
     };
-    fetchNavPages();
+    fetchNav();
   }, []);
-  
-  // Navigation visibility - now controlled entirely by CMS tiles
-  // Build visible nav items from CMS tiles only
-  const allNavItems = customPages.map(page => ({
-    to: `/${page.slug}`,
-    label: page.title
-  }));
-  
-  // Filter out current page from nav
-  const navItems = allNavItems.filter(item => !location.pathname.startsWith(item.to));
+
+  // Hide the current-page link from the nav (reduces UI noise)
+  const visibleItems = navItems.filter(
+    (item) => !item.path || item.path !== location.pathname
+  );
 
   return (
-    <header className="border-b" style={{ borderColor: `${primaryColor}15` }}>
+    <header className="border-b" style={{ borderColor: `${primaryColor}15` }} data-testid="public-nav-header">
       <div className="container mx-auto px-4 sm:px-6 py-4">
         <div className="flex justify-between items-center">
           <Logo branding={branding} />
-          
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
-            {navItems.map((item) => (
-              <Link 
-                key={item.to}
-                to={item.to} 
-                className="text-gray-400 hover:opacity-80 transition-colors" 
-                style={{ '--hover-color': textColor }}
-              >
-                {item.label}
-              </Link>
-            ))}
-            <Link to="/auth">
+
+          {/* Desktop Navigation — rendered to the LEFT of the Login button */}
+          <nav className="hidden md:flex items-center gap-6" data-testid="public-nav-desktop">
+            {visibleItems.map((item) => {
+              const isExternal = item.link_type === 'external';
+              if (isExternal) {
+                return (
+                  <a
+                    key={item.item_id || item.path}
+                    href={item.path}
+                    target={item.open_in_new_tab ? '_blank' : '_self'}
+                    rel={item.open_in_new_tab ? 'noopener noreferrer' : undefined}
+                    className="text-gray-400 hover:opacity-80 transition-colors"
+                    style={{ '--hover-color': textColor }}
+                    data-testid={`public-nav-link-${(item.label || '').toLowerCase().replace(/\s+/g, '-')}`}
+                  >
+                    {item.label}
+                  </a>
+                );
+              }
+              return (
+                <Link
+                  key={item.item_id || item.path}
+                  to={item.path || '/'}
+                  className="text-gray-400 hover:opacity-80 transition-colors"
+                  style={{ '--hover-color': textColor }}
+                  data-testid={`public-nav-link-${(item.label || '').toLowerCase().replace(/\s+/g, '-')}`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+            <Link to="/auth" data-testid="public-nav-login-btn">
               <Button className="text-black" style={{ backgroundColor: primaryColor }}>Login</Button>
             </Link>
           </nav>
-          
+
           {/* Mobile Navigation Controls */}
           <div className="flex md:hidden items-center gap-2">
             <Link to="/auth">
-              <Button size="sm" className="text-black" style={{ backgroundColor: primaryColor }}>Login</Button>
+              <Button size="sm" className="text-black" style={{ backgroundColor: primaryColor }} data-testid="public-nav-login-btn-mobile">Login</Button>
             </Link>
-            {navItems.length > 0 && (
+            {visibleItems.length > 0 && (
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="p-2 text-gray-400 hover:text-[#E8DDB5]"
@@ -108,21 +124,38 @@ export const PublicNav = ({ branding, isLoading = false }) => {
             )}
           </div>
         </div>
-        
+
         {/* Mobile Menu Dropdown */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t mt-4" style={{ borderColor: `${primaryColor}20` }}>
+          <div className="md:hidden py-4 border-t mt-4" style={{ borderColor: `${primaryColor}20` }} data-testid="public-nav-mobile-menu">
             <div className="flex flex-col gap-2">
-              {navItems.map((item) => (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="px-4 py-2 text-gray-400 hover:text-[#E8DDB5] hover:bg-white/5 rounded-lg transition-colors"
-                >
-                  {item.label}
-                </Link>
-              ))}
+              {visibleItems.map((item) => {
+                const isExternal = item.link_type === 'external';
+                if (isExternal) {
+                  return (
+                    <a
+                      key={item.item_id || item.path}
+                      href={item.path}
+                      target={item.open_in_new_tab ? '_blank' : '_self'}
+                      rel={item.open_in_new_tab ? 'noopener noreferrer' : undefined}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="px-4 py-2 text-gray-400 hover:text-[#E8DDB5] hover:bg-white/5 rounded-lg transition-colors"
+                    >
+                      {item.label}
+                    </a>
+                  );
+                }
+                return (
+                  <Link
+                    key={item.item_id || item.path}
+                    to={item.path || '/'}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="px-4 py-2 text-gray-400 hover:text-[#E8DDB5] hover:bg-white/5 rounded-lg transition-colors"
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
             </div>
           </div>
         )}

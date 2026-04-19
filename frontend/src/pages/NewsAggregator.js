@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { PublicNav } from '../components/PublicNav';
-import { PublicFooter } from '../components/PublicFooter';
+import { PublicNav } from '../components/layout/PublicNav';
+import { PublicFooter } from '../components/layout/PublicFooter';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Rss, ExternalLink, Calendar, Loader2, Plus, Trash2 } from 'lucide-react';
 import { useAuth } from '../App';
+import { PageBuilderBlocks, usePageBuilderOverride } from '../components/PageBuilderRenderer';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -100,6 +101,32 @@ export default function NewsAggregator() {
   const primaryColor = branding?.primary_color || '#D4A836';
   const bgColor = branding?.background_color || '#0f0f15';
   const textColor = branding?.text_color || '#E8DDB5';
+
+  // PageBuilder override for /news
+  const { override, loading: overrideLoading } = usePageBuilderOverride('news');
+
+  if (overrideLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: bgColor }}>
+        <Loader2 className="w-8 h-8 animate-spin" style={{ color: primaryColor }} />
+      </div>
+    );
+  }
+
+  if (override) {
+    return (
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: bgColor, color: textColor }}>
+        <PublicNav branding={branding} />
+        <main className="container mx-auto px-6 py-12 flex-1 max-w-5xl">
+          <h1 className="text-3xl md:text-4xl font-bold text-[#E8DDB5] mb-8 text-center">
+            {override.title}
+          </h1>
+          <PageBuilderBlocks blocks={override.blocks} />
+        </main>
+        <PublicFooter branding={branding} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: bgColor, color: textColor }}>

@@ -47,6 +47,7 @@ export default function LandingPage() {
   const [pageContent, setPageContent] = useState(null);
   const [customPages, setCustomPages] = useState([]);
   const [cmsTiles, setCmsTiles] = useState([]);
+  const [publicNavItems, setPublicNavItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -56,9 +57,10 @@ export default function LandingPage() {
       axios.get(`${API}/settings/branding`).catch(() => ({ data: null })),
       axios.get(`${API}/pages/landing`).catch(() => ({ data: null })),
       axios.get(`${API}/pages/custom`).catch(() => ({ data: { pages: [] } })),
-      axios.get(`${API}/cms-tiles/public`).catch(() => ({ data: { tiles: [] } }))
+      axios.get(`${API}/cms-tiles/public`).catch(() => ({ data: { tiles: [] } })),
+      axios.get(`${API}/navigation/public`).catch(() => ({ data: { items: [] } }))
     ])
-      .then(([layoutRes, brandingRes, pageRes, customPagesRes, cmsTilesRes]) => {
+      .then(([layoutRes, brandingRes, pageRes, customPagesRes, cmsTilesRes, navRes]) => {
         setLayout(layoutRes.data);
         setBranding(brandingRes.data);
         setPageContent(pageRes.data);
@@ -72,6 +74,11 @@ export default function LandingPage() {
           t => !t.is_system && t.name  // Exclude system tiles and empty names
         );
         setCmsTiles(navTiles);
+        // Central public navigation items (admin-authored + PageBuilder auto-sync)
+        const navItems = (navRes.data?.items || [])
+          .filter(i => i.is_active !== false)
+          .filter(i => (i.section_id || 'header') === 'header');
+        setPublicNavItems(navItems);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -165,6 +172,20 @@ export default function LandingPage() {
   // Navigation - Build ordered menu items from branding settings + CMS tiles
   // All items load at once, static display (not collapsible)
   const getOrderedNavItems = () => {
+    // If the admin has configured the central navigation (PageBuilder
+    // auto-sync + explicit nav items), use that as the source of truth for
+    // the landing page header. Falls back to the legacy branding toggles if
+    // no navigation items exist yet.
+    if (publicNavItems && publicNavItems.length > 0) {
+      return publicNavItems.map((it) => ({
+        id: it.item_id || it.path,
+        to: it.path,
+        label: it.label,
+        visible: true,
+        external: it.link_type === 'external',
+      }));
+    }
+
     // System pages with their visibility from branding
     const systemPages = [
       { id: 'blog', to: '/blog', label: 'Blog', visible: branding?.show_blog },

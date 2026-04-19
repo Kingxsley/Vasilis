@@ -10,6 +10,7 @@ import { PublicNav } from '../components/layout/PublicNav';
 import { PublicFooter } from '../components/layout/PublicFooter';
 import { DynamicSidebar } from '../components/layout/DynamicSidebar';
 import { PublicPagination } from '../components/common/Pagination';
+import { PageBuilderBlocks, usePageBuilderOverride } from '../components/PageBuilderRenderer';
 import '../styles/blog-optimized.css';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -88,6 +89,34 @@ export function BlogList() {
   const headingColor = branding?.heading_color || '#FFFFFF';
   const accentColor = branding?.accent_color || '#D4A836';
   const primaryColor = branding?.primary_color || '#D4A836';
+
+  // PageBuilder override — if an admin created a custom_page with slug "blog"
+  // and published it with blocks, render those blocks instead of the default
+  // blog listing. This lets admins fully customize the /blog page.
+  const { override, loading: overrideLoading } = usePageBuilderOverride('blog');
+
+  if (overrideLoading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin" style={{ color: primaryColor }} />
+      </div>
+    );
+  }
+
+  if (override) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] flex flex-col">
+        <PublicNav branding={branding} />
+        <main className="container mx-auto px-6 py-12 flex-1 max-w-5xl">
+          <h1 className="text-3xl md:text-4xl font-bold text-[#E8DDB5] mb-8 text-center">
+            {override.title}
+          </h1>
+          <PageBuilderBlocks blocks={override.blocks} />
+        </main>
+        <PublicFooter branding={branding} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] flex flex-col">

@@ -157,18 +157,99 @@ async def get_custom_nav_items(request: Request):
 async def get_public_nav_items():
     """Public site navigation items (NO AUTH).
 
-    Returns only items that the admin has explicitly added via the Navigation
-    Menu Manager. PageBuilder pages are NOT auto-injected — admins must opt
-    them into the public nav by creating an explicit nav item that points to
-    ``/page/<slug>``.
+    Returns a merged list of:
+      1. Items explicitly added via the Navigation Menu Manager
+         (collection: navigation_items, is_active=True).
+      2. PageBuilder pages that opted into the public nav (collection:
+         custom_pages, show_in_nav=True, is_published=True, and public
+         visibility via auth_levels). These are auto-synced so admins don't
+         have to duplicate entries in the Navigation Manager.
+
+    The merged list is deduped by ``path`` (explicit nav items win over
+    auto-synced PageBuilder entries) and sorted by ``sort_order``.
     """
     db = get_db()
 
+    # 1. Explicit nav items
     items = await db.navigation_items.find(
         {"is_active": True},
         {"_id": 0}
     ).sort("sort_order", 1).to_list(200)
 
+    existing_paths = {i.get("path") for i in items if i.get("path")}
+    # Default public nav items (Blog, Videos, News, About) that route to
+    # PageBuilder-overridable public pages. We auto-include them so the
+    # public menu is never empty, even before the admin seeds defaults.
+    # Entries whose path is already covered (by either an explicit nav item
+    # OR a PageBuilder page with the same slug) are skipped.
+    public_defaults = [
+        {"label": "Blog",   "path": "/blog",   "icon": "FileText",  "section_id": "header", "sort_order": 10},
+        {"label": "Videos", "path": "/videos", "icon": "Video",     "section_id": "header", "sort_order": 20},
+        {"label": "News",   "path": "/news",   "icon": "Newspaper", "section_id": "header", "sort_order": 30},
+        {"label": "About",  "path": "/about",  "icon": "Users",     "section_id": "header", "sort_order": 40},
+    ]
+
+    # 2. PageBuilder pages that opted into the public nav
+    try:
+        pb_pages = await db.custom_pages.find(
+            {
+                "show_in_nav": True,
+                "is_published": True,
+            },
+            {"_id": 0, "title": 1, "slug": 1, "nav_section": 1, "auth_levels": 1}
+        ).to_list(200)
+    except Exception:
+        pb_pages = []
+
+    for idx, p in enumerate(pb_pages):
+        # Only expose publicly-visible pages in the anonymous nav endpoint.
+        levels = p.get("auth_levels") or ["public"]
+        if "public" not in levels:
+            continue
+        slug = p.get("slug")
+        if not slug:
+            continue
+        # Reserved slugs map to top-level public routes (/blog, /news, etc.)
+        # so that PageBuilder pages can override those built-in sections.
+        reserved = {"blog", "videos", "news", "about"}
+        path = f"/{slug}" if slug in reserved else f"/page/{slug}"
+        if path in existing_paths:
+            continue
+        existing_paths.add(path)
+        items.append({
+            "item_id": f"pb_{slug}",
+            "label": p.get("title") or slug,
+            "link_type": "cms_page",
+            "path": path,
+            "icon": "FileText",
+            "section_id": p.get("nav_section") or "header",
+            "sort_order": 100 + idx,
+            "is_active": True,
+            "visible_to": ["all"],
+            "open_in_new_tab": False,
+            "is_pagebuilder": True,
+        })
+
+    # Seed public defaults if path not already present
+    for idx, d in enumerate(public_defaults):
+        if d["path"] in existing_paths:
+            continue
+        existing_paths.add(d["path"])
+        items.append({
+            "item_id": f"default_{d['label'].lower()}",
+            "label": d["label"],
+            "link_type": "internal",
+            "path": d["path"],
+            "icon": d["icon"],
+            "section_id": d["section_id"],
+            "sort_order": d["sort_order"],
+            "is_active": True,
+            "visible_to": ["all"],
+            "open_in_new_tab": False,
+            "is_default": True,
+        })
+
+    items.sort(key=lambda x: (x.get("sort_order") or 999, x.get("label") or ""))
     return {"items": items}
 
 
