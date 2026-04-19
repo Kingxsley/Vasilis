@@ -3391,6 +3391,7 @@ from routes.sidebar_configs import router as sidebar_configs_router
 from routes.blog_rss import router as blog_rss_router
 from routes.news import router as news_router
 from routes.news_rss import router as news_rss_router
+from routes.granular_permissions import router as granular_permissions_router
 from routes.sitemap import router as sitemap_router
 from routes.security_center import router as security_center_router
 from routes.permissions import router as permissions_router, init_permission_routes
