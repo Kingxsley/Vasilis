@@ -72,18 +72,36 @@ from fastapi import Request as FastAPIRequest
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: FastAPIRequest, exc: Exception):
-    """Handle all unhandled exceptions and return proper JSON with error info"""
+    """Handle all unhandled exceptions and return proper JSON with error info.
+
+    CORS headers are *origin-reflected against an allow-list* — never '*' —
+    so that 500 responses cannot be read cross-origin by attacker pages even
+    if an exception is triggered. Mirrors the PRODUCTION_ORIGINS list used
+    by the CORSMiddleware below.
+    """
     import traceback
     logger.error(f"Unhandled exception: {exc}")
     logger.error(traceback.format_exc())
+
+    _ALLOWED_EXC_ORIGINS = {
+        "https://vasilisnetshield.com",
+        "https://www.vasilisnetshield.com",
+        "https://api.vasilisnetshield.com",
+    }
+    req_origin = request.headers.get("origin", "")
+    cors_headers = {"Vary": "Origin"}
+    if req_origin in _ALLOWED_EXC_ORIGINS:
+        cors_headers.update({
+            "Access-Control-Allow-Origin": req_origin,
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        })
+
     return JSONResponse(
         status_code=500,
         content={"detail": "Internal server error", "error": str(exc)},
-        headers={
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
-            "Access-Control-Allow-Headers": "*",
-        }
+        headers=cors_headers,
     )
 
 # Initialize audit logger (connected to DB after startup)
