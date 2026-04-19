@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import { 
   LayoutDashboard, Building2, Users, 
-  BookOpen, BarChart3, LogOut, Menu, X, ChevronDown, ChevronRight, Mail, Monitor, Upload, Award, FileText, Settings, Layout, Crosshair, GraduationCap, Cog, ShieldAlert, TrendingUp, Mail as MailIcon, PanelLeftClose, PanelLeft, MessageSquare, Image, Search, ExternalLink, Activity, Wand2, HelpCircle, Key, AlertTriangle, KeyRound, Presentation, CalendarDays
+  BookOpen, BarChart3, LogOut, Menu, X, ChevronDown, ChevronRight, Mail, Monitor, Upload, Award, FileText, Settings, Layout, Crosshair, GraduationCap, Cog, ShieldAlert, TrendingUp, Mail as MailIcon, PanelLeftClose, PanelLeft, MessageSquare, Image, Search, ExternalLink, Activity, Wand2, HelpCircle, Key, AlertTriangle, KeyRound, Presentation, CalendarDays, Newspaper
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import {
@@ -100,6 +100,7 @@ const navGroups = [
     items: [
       { path: '/dashboard/page-builder', label: 'Page Builder', icon: Layout, superAdminOnly: true },
       { path: '/dashboard/blog-manager', label: 'Blog Manager', icon: BookOpen, superAdminOnly: true },
+      { path: '/dashboard/news-manager', label: 'News Manager', icon: Newspaper, superAdminOnly: true },
       { path: '/dashboard/sidebar-manager', label: 'Sidebar Manager', icon: PanelLeft, superAdminOnly: true },
       { path: '/dashboard/navigation-menu', label: 'Navigation Menu', icon: Menu, superAdminOnly: true },
       { path: '/events', label: 'Events', icon: CalendarDays, superAdminOnly: true },

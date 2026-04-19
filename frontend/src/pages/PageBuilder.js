@@ -844,6 +844,7 @@ export default function PageBuilder() {
                     <SelectContent>
                       <SelectItem value="custom">Custom Page</SelectItem>
                       <SelectItem value="landing">Landing Page</SelectItem>
+                      <SelectItem value="home">Homepage</SelectItem>
                       <SelectItem value="contact">Contact Page</SelectItem>
                       <SelectItem value="about">About Page</SelectItem>
                       <SelectItem value="services">Services Page</SelectItem>
@@ -853,6 +854,14 @@ export default function PageBuilder() {
                       <SelectItem value="team">Team Page</SelectItem>
                       <SelectItem value="portfolio">Portfolio</SelectItem>
                       <SelectItem value="event">Event Page</SelectItem>
+                      <SelectItem value="blog">Blog Page</SelectItem>
+                      <SelectItem value="news">News Page</SelectItem>
+                      <SelectItem value="case-study">Case Study</SelectItem>
+                      <SelectItem value="product">Product Page</SelectItem>
+                      <SelectItem value="careers">Careers</SelectItem>
+                      <SelectItem value="press">Press/Media</SelectItem>
+                      <SelectItem value="partners">Partners</SelectItem>
+                      <SelectItem value="resources">Resources</SelectItem>
                       <SelectItem value="legal">Legal/Terms</SelectItem>
                     </SelectContent>
                   </Select>
