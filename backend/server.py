@@ -286,24 +286,42 @@ async def register(data: UserRegister):
 async def login(data: UserLogin, request: Request):
     client_ip = get_client_ip(request)
     
-    # PENTEST FIX 1: IP-based rate limiting (max 10 requests per 15 min)
-    # Check if IP is blocked due to too many requests
-    ip_blocked, ip_seconds_remaining = ip_login_limiter.is_blocked(client_ip)
-    if ip_blocked:
-        await audit_logger.log(
-            action="login_blocked_ip_rate_limit",
-            ip_address=client_ip,
-            severity="warning",
-            details={"reason": "Too many login requests from IP"}
-        )
-        raise HTTPException(
-            status_code=429,
-            detail=f"Too many login requests from this IP. Try again in {ip_seconds_remaining // 60} minutes.",
-            headers={"Retry-After": "900"}  # 15 minutes in seconds
-        )
-    
-    # Record this login attempt for IP tracking
-    ip_login_limiter.record_attempt(client_ip)
+    # Check whitelist first (bypass all checks)
+    if await ip_login_limiter.is_whitelisted(client_ip):
+        # Continue with normal login, skip rate limit checks
+        pass
+    else:
+        # Check permanent blocklist
+        if await ip_login_limiter.is_permanently_blocked(client_ip):
+            await audit_logger.log(
+                action="login_blocked_permanent",
+                ip_address=client_ip,
+                severity="critical",
+                details={"reason": "IP in permanent blocklist"}
+            )
+            raise HTTPException(
+                status_code=403,
+                detail="Access denied from this IP address."
+            )
+        
+        # PENTEST FIX 1: IP-based rate limiting (max 10 requests per 15 min)
+        # Check if IP is blocked due to too many requests
+        ip_blocked, ip_seconds_remaining = ip_login_limiter.is_blocked(client_ip)
+        if ip_blocked:
+            await audit_logger.log(
+                action="login_blocked_ip_rate_limit",
+                ip_address=client_ip,
+                severity="warning",
+                details={"reason": "Too many login requests from IP"}
+            )
+            raise HTTPException(
+                status_code=429,
+                detail=f"Too many login requests from this IP. Try again in {ip_seconds_remaining // 60} minutes.",
+                headers={"Retry-After": "900"}  # 15 minutes in seconds
+            )
+        
+        # Record this login attempt for IP tracking
+        ip_login_limiter.record_attempt(client_ip)
     
     # PENTEST FIX 2: Per-account lockout (max 5 failed attempts per 15 min)
     # Check if account is locked
@@ -3370,6 +3388,7 @@ from routes.media import router as media_router
 from routes.sidebar import router as sidebar_router
 from routes.sidebar_widgets import router as sidebar_widgets_router
 from routes.sitemap import router as sitemap_router
+from routes.security_center import router as security_center_router
 from routes.permissions import router as permissions_router, init_permission_routes
 from routes.navigation import router as navigation_router
 from routes.activity_logs import router as activity_logs_router
@@ -3423,6 +3442,7 @@ api_router.include_router(media_router)
 api_router.include_router(sidebar_router)
 api_router.include_router(sidebar_widgets_router)
 api_router.include_router(sitemap_router)
+api_router.include_router(security_center_router)
 api_router.include_router(permissions_router)
 api_router.include_router(navigation_router)
 api_router.include_router(activity_logs_router)

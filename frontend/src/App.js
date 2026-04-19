@@ -322,6 +322,7 @@ const MediaLibrary = React.lazy(() => import('./pages/MediaLibrary'));
 const SEOSettings = React.lazy(() => import('./pages/SEOSettings'));
 const SidebarCustomizer = React.lazy(() => import('./pages/SidebarCustomizer'));
 const SidebarWidgetManager = React.lazy(() => import('./pages/SidebarWidgetManager'));
+const SecurityCenter = React.lazy(() => import('./pages/SecurityCenter'));
 const PermissionsPage = React.lazy(() => import('./pages/PermissionsPage'));
 const AuditLogs = React.lazy(() => import('./pages/AuditLogs'));
 const PasswordPolicyPage = React.lazy(() => import('./pages/PasswordPolicyPage'));
@@ -725,6 +726,14 @@ const AppRouter = () => {
           element={
             <ProtectedRoute adminOnly>
               <SidebarWidgetManager />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/security-center"
+          element={
+            <ProtectedRoute adminOnly>
+              <SecurityCenter />
             </ProtectedRoute>
           }
         />

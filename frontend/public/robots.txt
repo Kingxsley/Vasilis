@@ -18,7 +18,9 @@ Disallow: /inquiries
 Disallow: /analytics
 Disallow: /advanced-analytics
 Disallow: /security
+Disallow: /security-center
 Disallow: /training
 Disallow: /landing-editor
 Disallow: /certificate-templates
 Disallow: /page-editor
+Disallow: /sidebar-widgets

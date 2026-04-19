@@ -331,6 +331,7 @@ class IPLoginRateLimiter:
     Per pentest requirements:
     - Max 10 login requests per IP per 15 minutes → HTTP 429
     - Separate from per-account lockout (HTTP 423)
+    - Supports permanent blocklist and whitelist from database
     """
     
     def __init__(self):
@@ -339,6 +340,24 @@ class IPLoginRateLimiter:
         self.max_requests = 10
         self.window_minutes = 15
         self.block_duration_minutes = 15
+    
+    async def is_whitelisted(self, ip: str) -> bool:
+        """Check if IP is in whitelist (bypass rate limiting)"""
+        try:
+            from server import db
+            whitelist = await db.ip_whitelist.find_one({"ip_address": ip})
+            return whitelist is not None
+        except:
+            return False
+    
+    async def is_permanently_blocked(self, ip: str) -> bool:
+        """Check if IP is in permanent blocklist"""
+        try:
+            from server import db
+            blocked = await db.ip_blocklist.find_one({"ip_address": ip})
+            return blocked is not None
+        except:
+            return False
     
     def record_attempt(self, ip: str) -> bool:
         """Record a login attempt from an IP. Returns True if IP should be blocked."""
