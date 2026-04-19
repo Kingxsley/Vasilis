@@ -153,6 +153,21 @@ backend:
         - agent: "testing"
         - comment: "Comprehensive testing completed successfully. Fixed auth_levels.py dependency injection issue and created missing admin user. All 3 endpoints working correctly: (1) GET /api/admin/cms/status returns proper structure with 9 CMS collection counts (all 0 in test DB), (2) POST /api/admin/cms/reset enforces dry-run safety requiring BOTH confirm=true AND i_understand_data_loss=true, (3) POST /api/admin/cms/restore returns 404 for non-existent backups. Authentication enforcement verified: unauthenticated → 401, non-super-admin → 403, super-admin → 200. All safety checks working - dry-run prevents accidental data loss."
 
+  - task: "Blog Manager endpoints (pagination, filtering, CRUD, bulk actions)"
+    implemented: true
+    working: true
+    file: "routes/content.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "main"
+        - comment: "Implemented comprehensive blog management system: GET /api/content/blog (pagination + filtering + search), GET /api/content/blog/stats, GET /api/content/blog/id/{post_id}, PATCH /api/content/blog/{post_id}/status, POST /api/content/blog/bulk, POST /api/content/blog/{post_id}/duplicate, DELETE /api/content/blog/{post_id}, POST /api/content/blog (create with optional fields). Fixed user-not-defined bug in other content endpoints."
+        - working: true
+        - agent: "testing"
+        - comment: "Comprehensive testing completed successfully. All 9 blog manager endpoints tested with 40 test cases: (1) GET /api/content/blog - pagination, filtering by status (all/draft/published/archived), search, sorting (title/oldest), limit clamping (150→100), auth enforcement (403 for non-published status without auth), (2) GET /api/content/blog/stats - correct counts {total:45, published:30, draft:10, archived:5}, auth required, (3) GET /api/content/blog/id/{post_id} - auth required, 404 for invalid ID, (4) PATCH /api/content/blog/{post_id}/status - status transitions (draft→published→archived), 400 for invalid status, auth required, (5) POST /api/content/blog/bulk - archive/publish/restore actions, stats verification, 400 for empty post_ids/invalid action, auth required, (6) POST /api/content/blog/{post_id}/duplicate - creates draft copy with '(Copy)' suffix and unique slug, (7) DELETE /api/content/blog/{post_id} - soft delete (archives) vs permanent delete, (8) POST /api/content/blog - create with minimal fields (excerpt optional), status/published field sync, unique slug generation for duplicate titles, (9) Smoke tests for other content endpoints - all working without user-not-defined errors. Seed counts maintained at 45 total posts. All authentication, validation, and business logic working correctly."
+
 frontend:
   - task: "Simplified navigation (9 groups -> 6 groups)"
     implemented: true
@@ -269,7 +284,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Phase 1 — CMS reset foundation: auth_levels.py + cms_admin routes + reset_cms.py"
+    - "Navigation Manager CRUD via admin endpoint"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -279,3 +294,25 @@ agent_communication:
     - message: "Phase 1 of CMS rebuild delivered. New files: backend/auth_levels.py (5-level auth enum + require_auth_level dependency factory), backend/routes/cms_admin.py (GET /api/admin/cms/status + POST /api/admin/cms/reset + POST /api/admin/cms/restore — all super_admin only), scripts/reset_cms.py (standalone dry-run-by-default migration with auto-backup). Also registered the router in server.py and added ADMIN_EMAIL=kingsley@vasilisnetshield.com to .env. Please test ONLY these 3 new endpoints: (1) GET /api/admin/cms/status, (2) POST /api/admin/cms/reset with confirm=false dry-run, (3) POST /api/admin/cms/restore non-existent backup should 404. Login with admin@vasilisnetshield.com / Admin123!. Verify unauthenticated requests → 401, non-super-admin requests → 403 (create a trainee user if needed), super_admin requests → 200. Do NOT actually run the destructive reset with confirm=true+i_understand_data_loss=true — we want to verify the dry-run path works correctly first. Pre-existing tasks from prior sessions are out of scope for this Phase 1 test."
     - agent: "testing"
     - message: "Phase 1 CMS Admin endpoints testing completed successfully. Fixed auth_levels.py dependency injection issue and created missing admin user. All 3 new endpoints tested comprehensively: (1) GET /api/admin/cms/status returns correct structure with 9 CMS collection counts, (2) POST /api/admin/cms/reset properly enforces dry-run safety (requires BOTH confirm=true AND i_understand_data_loss=true), (3) POST /api/admin/cms/restore correctly returns 404 for non-existent backups. Authentication enforcement working: unauthenticated requests → 401, non-super-admin requests → 403, super-admin requests → 200. All safety checks verified - dry-run behavior prevents accidental data loss. Ready for Phase 2 implementation."
+    - agent: "main"
+    - message: |
+        P0 Critical Fixes Bundle + Events Page redesign delivered. Please test ONLY these new/modified backend blog endpoints under /api/content/blog:
+
+        1. GET /api/content/blog — must now accept query params: status (all|draft|published|archived), limit (default 20, max 100), skip, search, tag, sort (newest|oldest|title). Response shape: {posts, total, skip, limit, page, total_pages}. Public callers (no auth) must only see published posts; passing status=draft or status=archived without auth should return 403. Authenticated super_admin should see all.
+        2. GET /api/content/blog/stats — returns {total, published, draft, archived}. Requires content-manager auth.
+        3. GET /api/content/blog/id/{post_id} — admin-only fetch (can retrieve drafts/archived by ID).
+        4. POST /api/content/blog — create; now accepts optional status field; excerpt is now optional.
+        5. PATCH /api/content/blog/{post_id} — update; sending status keeps published flag in sync, sending published toggles status for non-archived posts.
+        6. PATCH /api/content/blog/{post_id}/status — body {status:"draft|published|archived"}; rejects invalid values with 400.
+        7. POST /api/content/blog/bulk — body {post_ids:[...], action:"publish|unpublish|archive|restore|delete"}; returns {action, affected, post_ids}. Rejects empty post_ids (400), invalid action (400).
+        8. POST /api/content/blog/{post_id}/duplicate — creates a new draft copy with suffix "(Copy)" and unique slug.
+        9. DELETE /api/content/blog/{post_id}?permanent=true|false — default soft-delete (archives); permanent=true actually removes the document.
+
+        ALSO verify the existing create_news / create_video / upload_media / update_about endpoints no longer throw NameError (bug: "user" was not defined — now fixed by capturing the return of require_content_access()).
+
+        Seed data: 45 blog posts are already present (30 published, 10 draft, 5 archived). Admin login: admin@vasilisnetshield.com / Admin123!.
+
+        Out of scope for this test: navigation endpoints (already tested earlier and still work), events endpoints, all frontend.
+    - agent: "testing"
+    - message: "Blog Manager endpoints testing completed successfully. Comprehensive testing of all 9 blog endpoints with 40 test cases passed. Key results: (1) GET /api/content/blog - pagination, filtering, search, sorting all working correctly with proper auth enforcement (403 for non-published status without auth), (2) GET /api/content/blog/stats - returns correct counts {total:45, published:30, draft:10, archived:5}, (3) GET /api/content/blog/id/{post_id} - auth required, proper 404 handling, (4) PATCH /api/content/blog/{post_id}/status - status transitions working, 400 for invalid status, (5) POST /api/content/blog/bulk - all actions (archive/publish/restore) working with stats verification, proper validation, (6) POST /api/content/blog/{post_id}/duplicate - creates draft copy with '(Copy)' suffix and unique slug, (7) DELETE /api/content/blog/{post_id} - both soft delete (archives) and permanent delete working, (8) POST /api/content/blog - create with optional fields working, excerpt now optional, status/published field sync correct, unique slug generation for duplicate titles, (9) Smoke tests confirmed user-not-defined bug fixed in other content endpoints (news, videos, rss-feeds, about, upload). All authentication, validation, and business logic working correctly. Seed counts maintained at 45 total posts. Ready for main agent to summarize and finish."
+

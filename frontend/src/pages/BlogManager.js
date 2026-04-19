@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import axios from 'axios';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { Button } from '../components/ui/button';
@@ -7,7 +7,7 @@ import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '../components/ui/tabs';
 import {
   Dialog,
   DialogContent,
@@ -22,7 +22,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { Plus, Edit, Trash2, Loader2, Eye, FileText } from 'lucide-react';
+import {
+  Plus, Edit, Trash2, Loader2, FileText, Search, X, Copy, Archive,
+  ArchiveRestore, Eye, EyeOff, MoreVertical, ChevronLeft, ChevronRight,
+  CheckCircle2, FileEdit, FileX, Tag as TagIcon, Calendar, User,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../App';
 import ReactQuill from 'react-quill-new';
@@ -30,44 +34,130 @@ import 'react-quill-new/dist/quill.snow.css';
 import '../styles/quill-dark.css';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const PAGE_SIZE = 20;
 
 const quillModules = {
   toolbar: [
-    [{ 'header': [1, 2, 3, false] }],
+    [{ header: [1, 2, 3, false] }],
     ['bold', 'italic', 'underline', 'strike'],
-    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-    [{ 'color': [] }, { 'background': [] }],
+    [{ list: 'ordered' }, { list: 'bullet' }],
+    [{ color: [] }, { background: [] }],
     ['link', 'image'],
-    ['clean']
-  ]
+    ['clean'],
+  ],
 };
+
+const STATUS_META = {
+  published: { label: 'Published', cls: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30', icon: CheckCircle2 },
+  draft:     { label: 'Draft',     cls: 'bg-amber-500/15 text-amber-300 border-amber-500/30',       icon: FileEdit },
+  archived:  { label: 'Archived',  cls: 'bg-zinc-500/15 text-zinc-300 border-zinc-500/30',           icon: Archive },
+};
+
+function StatusBadge({ status }) {
+  const meta = STATUS_META[status] || STATUS_META.draft;
+  const Icon = meta.icon;
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border ${meta.cls}`}>
+      <Icon className="w-3 h-3" />
+      {meta.label}
+    </span>
+  );
+}
+
+function StatTile({ label, value, accent, active, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`text-left px-4 py-3 rounded-xl border transition-all hover:scale-[1.01] ${
+        active
+          ? 'bg-[#D4A836]/10 border-[#D4A836]/40 shadow-[0_0_0_1px_#D4A836]/20'
+          : 'bg-[#0f0f15] border-[#30363D] hover:border-[#D4A836]/30'
+      }`}
+    >
+      <div className={`text-[11px] uppercase tracking-wider ${accent || 'text-gray-400'}`}>{label}</div>
+      <div className="text-2xl font-bold text-[#E8DDB5] mt-1">{value}</div>
+    </button>
+  );
+}
+
+function useDebounced(value, delay = 300) {
+  const [v, setV] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setV(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return v;
+}
 
 export default function BlogManager() {
   const { token, user } = useAuth();
   const [posts, setPosts] = useState([]);
+  const [stats, setStats] = useState({ total: 0, published: 0, draft: 0, archived: 0 });
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
   const [useHtml, setUseHtml] = useState(false);
-  const [filter, setFilter] = useState('all');
-  
+
+  const [statusFilter, setStatusFilter] = useState('all'); // all | published | draft | archived
+  const [searchInput, setSearchInput] = useState('');
+  const search = useDebounced(searchInput, 300);
+  const [sort, setSort] = useState('newest');
+  const [page, setPage] = useState(1);
+
+  const [selectedIds, setSelectedIds] = useState(new Set());
+
   const [postForm, setPostForm] = useState({
-    title: '',
-    slug: '',
-    excerpt: '',
-    content: '',
-    tags: '',
-    meta_description: '',
-    audience: 'general',
-    published: true,
-    featured_image: ''
+    title: '', slug: '', excerpt: '', content: '',
+    tags: '', meta_description: '', audience: 'general',
+    status: 'draft', featured_image: '',
   });
 
-  useEffect(() => {
-    fetchPosts();
-  }, []);
+  const fetchPosts = useCallback(async () => {
+    setLoading(true);
+    try {
+      const skip = (page - 1) * PAGE_SIZE;
+      const params = new URLSearchParams({
+        status: statusFilter,
+        limit: String(PAGE_SIZE),
+        skip: String(skip),
+        sort,
+      });
+      if (search.trim()) params.set('search', search.trim());
 
+      const res = await axios.get(`${API}/content/blog?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPosts(res.data.posts || []);
+      setTotal(res.data.total || 0);
+    } catch (error) {
+      console.error('Failed to load posts:', error);
+      toast.error('Failed to load posts');
+    } finally {
+      setLoading(false);
+    }
+  }, [token, statusFilter, page, search, sort]);
+
+  const fetchStats = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API}/content/blog/stats`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setStats(res.data || { total: 0, published: 0, draft: 0, archived: 0 });
+    } catch (e) {
+      // ignore
+    }
+  }, [token]);
+
+  useEffect(() => { fetchPosts(); }, [fetchPosts]);
+  useEffect(() => { fetchStats(); }, [fetchStats]);
+
+  // Reset to page 1 when filters/search change
+  useEffect(() => { setPage(1); }, [statusFilter, search, sort]);
+
+  // Auto-generate slug
   useEffect(() => {
     if (postForm.title && !editingPost) {
       const slug = postForm.title
@@ -75,34 +165,18 @@ export default function BlogManager() {
         .replace(/[^a-z0-9\s-]/g, '')
         .replace(/[\s_]+/g, '-')
         .substring(0, 100);
-      setPostForm(prev => ({ ...prev, slug }));
+      setPostForm((prev) => ({ ...prev, slug }));
     }
-  }, [postForm.title, editingPost]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [postForm.title]);
 
-  const fetchPosts = async () => {
-    try {
-      const res = await axios.get(`${API}/content/blog`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setPosts(res.data.posts || []);
-    } catch (error) {
-      toast.error('Failed to load posts');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const resetForm = () => {
     setPostForm({
-      title: '',
-      slug: '',
-      excerpt: '',
-      content: '',
-      tags: '',
-      meta_description: '',
-      audience: 'general',
-      published: true,
-      featured_image: ''
+      title: '', slug: '', excerpt: '', content: '',
+      tags: '', meta_description: '', audience: 'general',
+      status: 'draft', featured_image: '',
     });
     setEditingPost(null);
     setUseHtml(false);
@@ -111,28 +185,26 @@ export default function BlogManager() {
   const handleCreateOrUpdate = async (e) => {
     e.preventDefault();
     setSaving(true);
-    
     try {
       const payload = {
         ...postForm,
-        tags: postForm.tags.split(',').map(t => t.trim()).filter(Boolean)
+        tags: postForm.tags.split(',').map((t) => t.trim()).filter(Boolean),
       };
-
       if (editingPost) {
         await axios.patch(`${API}/content/blog/${editingPost.post_id}`, payload, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         toast.success('Post updated');
       } else {
         await axios.post(`${API}/content/blog`, payload, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         toast.success('Post created');
       }
-      
       setShowDialog(false);
       resetForm();
       fetchPosts();
+      fetchStats();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to save post');
     } finally {
@@ -143,39 +215,97 @@ export default function BlogManager() {
   const handleEdit = (post) => {
     setEditingPost(post);
     setPostForm({
-      title: post.title,
-      slug: post.slug,
+      title: post.title || '',
+      slug: post.slug || '',
       excerpt: post.excerpt || '',
       content: post.content || '',
       tags: (post.tags || []).join(', '),
       meta_description: post.meta_description || '',
       audience: post.audience || 'general',
-      published: post.published !== false,
-      featured_image: post.featured_image || ''
+      status: post.status || (post.published ? 'published' : 'draft'),
+      featured_image: post.featured_image || '',
     });
     setShowDialog(true);
   };
 
-  const handleDelete = async (postId) => {
-    if (!window.confirm('Delete this post?')) return;
-    
+  const changeStatus = async (postId, newStatus) => {
     try {
-      await axios.delete(`${API}/content/blog/${postId}`, {
-        headers: { Authorization: `Bearer ${token}` }
+      await axios.patch(`${API}/content/blog/${postId}/status`, { status: newStatus }, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      toast.success('Post deleted');
+      toast.success(`Marked as ${newStatus}`);
       fetchPosts();
-    } catch (error) {
+      fetchStats();
+    } catch (e) {
+      toast.error(e.response?.data?.detail || 'Failed to change status');
+    }
+  };
+
+  const duplicate = async (postId) => {
+    try {
+      await axios.post(`${API}/content/blog/${postId}/duplicate`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success('Post duplicated');
+      fetchPosts();
+      fetchStats();
+    } catch (e) {
+      toast.error('Failed to duplicate');
+    }
+  };
+
+  const deleteOne = async (postId, permanent = false) => {
+    const msg = permanent
+      ? 'Permanently delete this post? This cannot be undone.'
+      : 'Archive this post? You can restore it from the Archived tab.';
+    if (!window.confirm(msg)) return;
+    try {
+      await axios.delete(`${API}/content/blog/${postId}?permanent=${permanent}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success(permanent ? 'Post deleted' : 'Post archived');
+      fetchPosts();
+      fetchStats();
+    } catch (e) {
       toast.error('Failed to delete');
     }
   };
 
-  const filteredPosts = posts.filter(post => {
-    if (filter === 'all') return true;
-    if (filter === 'published') return post.published === true;
-    if (filter === 'draft') return post.published === false;
-    return true;
-  });
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const selectAllOnPage = () => {
+    if (selectedIds.size === posts.length && posts.length > 0) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(posts.map((p) => p.post_id)));
+    }
+  };
+
+  const runBulk = async (action) => {
+    if (selectedIds.size === 0) return;
+    const ids = Array.from(selectedIds);
+    const confirmMsg = action === 'delete'
+      ? `Permanently delete ${ids.length} post(s)? This cannot be undone.`
+      : `Apply "${action}" to ${ids.length} post(s)?`;
+    if (!window.confirm(confirmMsg)) return;
+    try {
+      const res = await axios.post(`${API}/content/blog/bulk`, {
+        post_ids: ids, action,
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success(`${res.data.affected} post(s) updated`);
+      setSelectedIds(new Set());
+      fetchPosts();
+      fetchStats();
+    } catch (e) {
+      toast.error(e.response?.data?.detail || 'Bulk action failed');
+    }
+  };
 
   if (user?.role !== 'super_admin') {
     return (
@@ -187,107 +317,290 @@ export default function BlogManager() {
     );
   }
 
+  const allOnPageSelected = posts.length > 0 && selectedIds.size === posts.length;
+  const someSelected = selectedIds.size > 0;
+
   return (
     <DashboardLayout>
       <div className="p-4 lg:p-6 space-y-6">
-        <div className="flex items-center justify-between">
+        {/* Header */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-[#E8DDB5]">Blog Manager</h1>
-            <p className="text-gray-400">Create and manage blog posts</p>
+            <h1 className="text-2xl font-bold text-[#E8DDB5] flex items-center gap-2">
+              <FileText className="w-6 h-6 text-[#D4A836]" />
+              Blog Manager
+            </h1>
+            <p className="text-gray-400 text-sm mt-1">
+              Create, edit and manage blog posts. {total} {total === 1 ? 'post' : 'posts'} matching current filter.
+            </p>
           </div>
-          <Button 
+          <Button
             onClick={() => { resetForm(); setShowDialog(true); }}
-            className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
+            className="bg-[#D4A836] hover:bg-[#C49A30] text-black font-semibold"
           >
             <Plus className="w-4 h-4 mr-2" />
-            Create Post
+            New Post
           </Button>
         </div>
 
-        <Tabs value={filter} onValueChange={setFilter} className="w-full">
-          <TabsList className="bg-[#1a1a24] border border-[#30363D]">
-            <TabsTrigger value="all" className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">
-              All ({posts.length})
-            </TabsTrigger>
-            <TabsTrigger value="published" className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">
-              Published ({posts.filter(p => p.published).length})
-            </TabsTrigger>
-            <TabsTrigger value="draft" className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">
-              Drafts ({posts.filter(p => !p.published).length})
-            </TabsTrigger>
-          </TabsList>
+        {/* Stats / status filter tiles */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <StatTile label="All Posts"  value={stats.total}      active={statusFilter === 'all'}       onClick={() => setStatusFilter('all')} />
+          <StatTile label="Published"  value={stats.published}  accent="text-emerald-400" active={statusFilter === 'published'} onClick={() => setStatusFilter('published')} />
+          <StatTile label="Drafts"     value={stats.draft}      accent="text-amber-400"   active={statusFilter === 'draft'}     onClick={() => setStatusFilter('draft')} />
+          <StatTile label="Archived"   value={stats.archived}   accent="text-zinc-400"    active={statusFilter === 'archived'}  onClick={() => setStatusFilter('archived')} />
+        </div>
 
-          <TabsContent value={filter} className="mt-6">
-            {loading ? (
-              <div className="flex items-center justify-center h-64">
-                <Loader2 className="w-8 h-8 animate-spin text-[#D4A836]" />
-              </div>
-            ) : filteredPosts.length === 0 ? (
-              <Card className="bg-[#0f0f15] border-[#D4A836]/20">
-                <CardContent className="py-16 text-center">
-                  <FileText className="w-16 h-16 mx-auto mb-4 text-gray-600" />
-                  <h3 className="text-xl font-semibold text-[#E8DDB5] mb-2">No {filter === 'draft' ? 'Draft' : filter === 'published' ? 'Published' : ''} Posts</h3>
-                  <p className="text-gray-400 mb-6">Create your first post</p>
-                  <Button 
-                    onClick={() => { resetForm(); setShowDialog(true); }}
-                    className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Post
+        {/* Search + sort + bulk toolbar */}
+        <Card className="bg-[#0f0f15] border-[#30363D]">
+          <CardContent className="p-3 flex flex-col md:flex-row md:items-center gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+              <Input
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="Search title, excerpt, content, or tag…"
+                className="bg-[#1a1a24] border-[#30363D] text-white pl-9 pr-9"
+              />
+              {searchInput && (
+                <button
+                  onClick={() => setSearchInput('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
+                  aria-label="Clear search"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+            <Select value={sort} onValueChange={setSort}>
+              <SelectTrigger className="w-full md:w-[180px] bg-[#1a1a24] border-[#30363D] text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest first</SelectItem>
+                <SelectItem value="oldest">Oldest first</SelectItem>
+                <SelectItem value="title">Title (A→Z)</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {someSelected && (
+              <div className="flex items-center gap-2 flex-wrap pl-2 border-l border-[#30363D] md:ml-2">
+                <span className="text-xs text-[#D4A836] font-medium px-2">
+                  {selectedIds.size} selected
+                </span>
+                <Button size="sm" variant="outline" className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/10"
+                        onClick={() => runBulk('publish')}>
+                  <Eye className="w-3.5 h-3.5 mr-1" /> Publish
+                </Button>
+                <Button size="sm" variant="outline" className="border-amber-500/30 text-amber-300 hover:bg-amber-500/10"
+                        onClick={() => runBulk('unpublish')}>
+                  <EyeOff className="w-3.5 h-3.5 mr-1" /> Unpublish
+                </Button>
+                <Button size="sm" variant="outline" className="border-zinc-500/30 text-zinc-300 hover:bg-zinc-500/10"
+                        onClick={() => runBulk('archive')}>
+                  <Archive className="w-3.5 h-3.5 mr-1" /> Archive
+                </Button>
+                {statusFilter === 'archived' && (
+                  <Button size="sm" variant="outline" className="border-blue-500/30 text-blue-300 hover:bg-blue-500/10"
+                          onClick={() => runBulk('restore')}>
+                    <ArchiveRestore className="w-3.5 h-3.5 mr-1" /> Restore
                   </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredPosts.map((post) => (
-                  <Card key={post.post_id} className="bg-[#0f0f15] border-[#D4A836]/20">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <CardTitle className="text-[#E8DDB5] text-lg line-clamp-2 flex-1">{post.title}</CardTitle>
-                        <Badge className={post.published ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}>
-                          {post.published ? 'Published' : 'Draft'}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      {post.excerpt && <p className="text-gray-400 text-sm mb-4 line-clamp-3">{post.excerpt}</p>}
-                      <div className="flex items-center gap-2 mb-4 flex-wrap">
-                        <Badge variant="outline" className="text-xs border-[#D4A836]/30 text-[#D4A836]">
-                          {post.audience}
-                        </Badge>
-                        {post.tags && post.tags.slice(0, 2).map((tag, i) => (
-                          <Badge key={i} variant="outline" className="text-xs border-gray-600 text-gray-400">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => handleEdit(post)}
-                          className="flex-1 border-[#D4A836]/30"
-                        >
-                          <Edit className="w-4 h-4 mr-1" />
-                          Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleDelete(post.post_id)}
-                          className="text-red-400"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                )}
+                <Button size="sm" variant="outline" className="border-red-500/30 text-red-300 hover:bg-red-500/10"
+                        onClick={() => runBulk('delete')}>
+                  <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
+                </Button>
               </div>
             )}
-          </TabsContent>
+          </CardContent>
+        </Card>
+
+        {/* Tabs (extra navigation) */}
+        <Tabs value={statusFilter} onValueChange={setStatusFilter}>
+          <TabsList className="bg-[#1a1a24] border border-[#30363D]">
+            <TabsTrigger value="all"       className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">All</TabsTrigger>
+            <TabsTrigger value="published" className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">Published</TabsTrigger>
+            <TabsTrigger value="draft"     className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">Drafts</TabsTrigger>
+            <TabsTrigger value="archived"  className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">Archived</TabsTrigger>
+          </TabsList>
         </Tabs>
 
+        {/* Select-all helper */}
+        {posts.length > 0 && (
+          <div className="flex items-center gap-2 px-1 text-sm text-gray-400">
+            <input
+              type="checkbox"
+              checked={allOnPageSelected}
+              onChange={selectAllOnPage}
+              className="w-4 h-4 accent-[#D4A836]"
+            />
+            <span>Select all on this page ({posts.length})</span>
+          </div>
+        )}
+
+        {/* List */}
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="w-8 h-8 animate-spin text-[#D4A836]" />
+          </div>
+        ) : posts.length === 0 ? (
+          <Card className="bg-[#0f0f15] border-[#D4A836]/20">
+            <CardContent className="py-16 text-center">
+              <FileX className="w-16 h-16 mx-auto mb-4 text-gray-600" />
+              <h3 className="text-xl font-semibold text-[#E8DDB5] mb-2">No posts found</h3>
+              <p className="text-gray-400 mb-6">
+                {search ? 'Try a different search query.' : 'Create your first post to get started.'}
+              </p>
+              <Button onClick={() => { resetForm(); setShowDialog(true); }} className="bg-[#D4A836] hover:bg-[#C49A30] text-black">
+                <Plus className="w-4 h-4 mr-2" /> Create Post
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {posts.map((post) => {
+              const selected = selectedIds.has(post.post_id);
+              return (
+                <Card
+                  key={post.post_id}
+                  className={`bg-[#0f0f15] border transition-all ${
+                    selected ? 'border-[#D4A836] shadow-[0_0_0_1px_#D4A836]/30' : 'border-[#D4A836]/20 hover:border-[#D4A836]/40'
+                  }`}
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start gap-2">
+                      <input
+                        type="checkbox"
+                        checked={selected}
+                        onChange={() => toggleSelect(post.post_id)}
+                        className="mt-1 w-4 h-4 accent-[#D4A836]"
+                        aria-label={`Select ${post.title}`}
+                      />
+                      <CardTitle className="text-[#E8DDB5] text-base leading-snug line-clamp-2 flex-1">
+                        {post.title}
+                      </CardTitle>
+                      <StatusBadge status={post.status || (post.published ? 'published' : 'draft')} />
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {post.excerpt && (
+                      <p className="text-gray-400 text-sm mb-3 line-clamp-2">{post.excerpt}</p>
+                    )}
+                    <div className="flex items-center gap-2 mb-3 text-[11px] text-gray-500">
+                      <Calendar className="w-3 h-3" />
+                      <span>{post.created_at ? new Date(post.created_at).toLocaleDateString() : '—'}</span>
+                      <span className="mx-1">·</span>
+                      <User className="w-3 h-3" />
+                      <span className="truncate">{post.author_name || 'Unknown'}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 mb-3 flex-wrap">
+                      {post.audience && (
+                        <Badge variant="outline" className="text-[10px] border-[#D4A836]/30 text-[#D4A836]">
+                          {post.audience}
+                        </Badge>
+                      )}
+                      {(post.tags || []).slice(0, 3).map((tag, i) => (
+                        <Badge key={i} variant="outline" className="text-[10px] border-gray-600 text-gray-400">
+                          <TagIcon className="w-2.5 h-2.5 mr-1" />{tag}
+                        </Badge>
+                      ))}
+                      {post.tags && post.tags.length > 3 && (
+                        <span className="text-[10px] text-gray-500">+{post.tags.length - 3}</span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1 flex-wrap">
+                      <Button size="sm" variant="outline" onClick={() => handleEdit(post)} className="border-[#D4A836]/30">
+                        <Edit className="w-3.5 h-3.5 mr-1" /> Edit
+                      </Button>
+
+                      {/* Quick status actions */}
+                      {(post.status === 'draft' || post.status === 'archived') && (
+                        <Button size="sm" variant="ghost" onClick={() => changeStatus(post.post_id, 'published')}
+                                className="text-emerald-300 hover:bg-emerald-500/10" title="Publish">
+                          <CheckCircle2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                      {post.status === 'published' && (
+                        <Button size="sm" variant="ghost" onClick={() => changeStatus(post.post_id, 'draft')}
+                                className="text-amber-300 hover:bg-amber-500/10" title="Move to draft">
+                          <FileEdit className="w-4 h-4" />
+                        </Button>
+                      )}
+                      {post.status !== 'archived' && (
+                        <Button size="sm" variant="ghost" onClick={() => changeStatus(post.post_id, 'archived')}
+                                className="text-zinc-300 hover:bg-zinc-500/10" title="Archive">
+                          <Archive className="w-4 h-4" />
+                        </Button>
+                      )}
+                      {post.status === 'archived' && (
+                        <Button size="sm" variant="ghost" onClick={() => changeStatus(post.post_id, 'draft')}
+                                className="text-blue-300 hover:bg-blue-500/10" title="Restore">
+                          <ArchiveRestore className="w-4 h-4" />
+                        </Button>
+                      )}
+
+                      <Button size="sm" variant="ghost" onClick={() => duplicate(post.post_id)}
+                              className="text-gray-300 hover:bg-white/10" title="Duplicate">
+                        <Copy className="w-4 h-4" />
+                      </Button>
+
+                      <Button size="sm" variant="ghost" onClick={() => deleteOne(post.post_id, post.status === 'archived')}
+                              className="text-red-400 hover:bg-red-500/10 ml-auto" title={post.status === 'archived' ? 'Delete permanently' : 'Archive'}>
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {!loading && total > PAGE_SIZE && (
+          <div className="flex items-center justify-between border-t border-[#30363D] pt-4">
+            <div className="text-sm text-gray-400">
+              Page {page} of {totalPages} · Showing {posts.length} of {total}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))} className="border-[#30363D]">
+                <ChevronLeft className="w-4 h-4 mr-1" /> Prev
+              </Button>
+              {/* Page number bubbles - up to 7 */}
+              {Array.from({ length: Math.min(7, totalPages) }, (_, i) => {
+                let p;
+                if (totalPages <= 7) {
+                  p = i + 1;
+                } else if (page <= 4) {
+                  p = i + 1;
+                } else if (page >= totalPages - 3) {
+                  p = totalPages - 6 + i;
+                } else {
+                  p = page - 3 + i;
+                }
+                return (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={`w-8 h-8 rounded text-sm transition ${
+                      p === page
+                        ? 'bg-[#D4A836] text-black font-semibold'
+                        : 'bg-[#1a1a24] border border-[#30363D] text-gray-300 hover:border-[#D4A836]/40'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                );
+              })}
+              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} className="border-[#30363D]">
+                Next <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Create / Edit Dialog */}
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
           <DialogContent className="bg-[#0f0f15] border-[#D4A836]/20 max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
@@ -295,21 +608,21 @@ export default function BlogManager() {
                 {editingPost ? 'Edit Post' : 'Create Post'}
               </DialogTitle>
             </DialogHeader>
-            
+
             <form onSubmit={handleCreateOrUpdate} className="space-y-4 mt-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label>Title</Label>
+                  <Label>Title *</Label>
                   <Input
                     value={postForm.title}
                     onChange={(e) => setPostForm({ ...postForm, title: e.target.value })}
-                    placeholder="How to Secure Your Website..."
+                    placeholder="How to Secure Your Website…"
                     className="bg-[#1a1a24] border-[#30363D] text-white"
                     required
                   />
                 </div>
                 <div>
-                  <Label>URL Slug (auto-filled)</Label>
+                  <Label>URL Slug</Label>
                   <Input
                     value={postForm.slug}
                     onChange={(e) => setPostForm({ ...postForm, slug: e.target.value })}
@@ -324,7 +637,7 @@ export default function BlogManager() {
                 <Textarea
                   value={postForm.excerpt}
                   onChange={(e) => setPostForm({ ...postForm, excerpt: e.target.value })}
-                  placeholder="Brief description..."
+                  placeholder="Brief description…"
                   className="bg-[#1a1a24] border-[#30363D] text-white"
                   rows={2}
                 />
@@ -333,13 +646,8 @@ export default function BlogManager() {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <Label>Content</Label>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setUseHtml(!useHtml)}
-                    className="border-[#30363D] text-gray-400"
-                  >
+                  <Button type="button" size="sm" variant="outline"
+                    onClick={() => setUseHtml(!useHtml)} className="border-[#30363D] text-gray-400">
                     {useHtml ? 'Visual Editor' : 'HTML Editor'}
                   </Button>
                 </div>
@@ -347,7 +655,7 @@ export default function BlogManager() {
                   <Textarea
                     value={postForm.content}
                     onChange={(e) => setPostForm({ ...postForm, content: e.target.value })}
-                    placeholder="<h2>Your content...</h2>"
+                    placeholder="<h2>Your content…</h2>"
                     className="bg-[#1a1a24] border-[#30363D] text-white min-h-[300px] font-mono text-sm"
                     required
                   />
@@ -364,7 +672,20 @@ export default function BlogManager() {
                 )}
               </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid md:grid-cols-3 gap-4">
+                <div>
+                  <Label>Status</Label>
+                  <Select value={postForm.status} onValueChange={(v) => setPostForm({ ...postForm, status: v })}>
+                    <SelectTrigger className="bg-[#1a1a24] border-[#30363D] text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">Draft</SelectItem>
+                      <SelectItem value="published">Published</SelectItem>
+                      <SelectItem value="archived">Archived</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div>
                   <Label>Audience</Label>
                   <Select value={postForm.audience} onValueChange={(v) => setPostForm({ ...postForm, audience: v })}>
@@ -391,42 +712,23 @@ export default function BlogManager() {
               </div>
 
               <div>
-                <Label>SEO Meta Description (150-160 chars)</Label>
+                <Label>SEO Meta Description (150–160 chars)</Label>
                 <Textarea
                   value={postForm.meta_description}
                   onChange={(e) => setPostForm({ ...postForm, meta_description: e.target.value })}
-                  placeholder="SEO description..."
+                  placeholder="SEO description…"
                   className="bg-[#1a1a24] border-[#30363D] text-white"
                   rows={2}
                   maxLength={160}
                 />
-                <p className="text-xs text-gray-500 mt-1">{postForm.meta_description.length}/160</p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={postForm.published}
-                  onChange={(e) => setPostForm({ ...postForm, published: e.target.checked })}
-                  className="w-4 h-4"
-                />
-                <Label>Publish immediately</Label>
+                <p className="text-xs text-gray-500 mt-1">{(postForm.meta_description || '').length}/160</p>
               </div>
 
               <DialogFooter>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setShowDialog(false)}
-                  className="border-[#30363D]"
-                >
+                <Button type="button" variant="outline" onClick={() => setShowDialog(false)} className="border-[#30363D]">
                   Cancel
                 </Button>
-                <Button 
-                  type="submit" 
-                  disabled={saving}
-                  className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
-                >
+                <Button type="submit" disabled={saving} className="bg-[#D4A836] hover:bg-[#C49A30] text-black">
                   {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                   {editingPost ? 'Update' : 'Create'}
                 </Button>

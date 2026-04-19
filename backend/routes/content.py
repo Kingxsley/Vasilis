@@ -47,14 +47,21 @@ async def require_content_access(request: Request) -> dict:
 
 # ============== MODELS ==============
 
+VALID_BLOG_STATUSES = {"draft", "published", "archived"}
+
+
 class BlogPostCreate(BaseModel):
     title: str
     slug: Optional[str] = None
-    excerpt: str
+    excerpt: str = ""
     content: str  # HTML content
     featured_image: Optional[str] = None  # URL or base64
     tags: List[str] = []
     published: bool = False
+    status: Optional[str] = None  # draft|published|archived (overrides published if set)
+    audience: Optional[str] = "general"
+    meta_description: Optional[str] = None
+    meta_title: Optional[str] = None
 
 
 class BlogPostUpdate(BaseModel):
@@ -65,6 +72,19 @@ class BlogPostUpdate(BaseModel):
     featured_image: Optional[str] = None
     tags: Optional[List[str]] = None
     published: Optional[bool] = None
+    status: Optional[str] = None
+    audience: Optional[str] = None
+    meta_description: Optional[str] = None
+    meta_title: Optional[str] = None
+
+
+class BlogStatusUpdate(BaseModel):
+    status: str  # draft|published|archived
+
+
+class BlogBulkAction(BaseModel):
+    post_ids: List[str]
+    action: str  # publish|unpublish|archive|restore|delete
 
 
 class NewsCreate(BaseModel):
@@ -136,35 +156,57 @@ def generate_slug(title: str) -> str:
 
 # ============== BLOG ROUTES ==============
 
+def _normalize_post(post: dict) -> dict:
+    """Backwards-compat: ensure status field is present, derived from published if missing."""
+    if not post:
+        return post
+    if "status" not in post or post.get("status") not in VALID_BLOG_STATUSES:
+        post["status"] = "published" if post.get("published") else "draft"
+    return post
+
+
 @router.post("/blog")
 async def create_blog_post(data: BlogPostCreate, request: Request):
     """Create a new blog post"""
-    await require_content_access(request)
+    user = await require_content_access(request)
     db = get_db()
-    
+
     post_id = f"post_{uuid.uuid4().hex[:12]}"
     slug = data.slug or generate_slug(data.title)
-    
+
     # Check slug uniqueness
     existing = await db.blog_posts.find_one({"slug": slug})
     if existing:
         slug = f"{slug}-{uuid.uuid4().hex[:6]}"
-    
+
+    # Derive status: explicit status wins, else from published flag
+    if data.status and data.status in VALID_BLOG_STATUSES:
+        status = data.status
+    else:
+        status = "published" if data.published else "draft"
+
+    published = (status == "published")
+
     post_doc = {
         "post_id": post_id,
         "title": data.title,
         "slug": slug,
-        "excerpt": data.excerpt,
+        "excerpt": data.excerpt or "",
         "content": data.content,
         "featured_image": data.featured_image,
-        "tags": data.tags,
-        "published": data.published,
-        "author_id": user["user_id"],
-        "author_name": user.get("name", "Unknown"),
+        "tags": data.tags or [],
+        "audience": data.audience or "general",
+        "meta_title": data.meta_title,
+        "meta_description": data.meta_description,
+        "published": published,
+        "status": status,
+        "author_id": user.get("user_id"),
+        "author_name": user.get("name") or user.get("email", "Unknown"),
+        "view_count": 0,
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "updated_at": datetime.now(timezone.utc).isoformat()
+        "updated_at": datetime.now(timezone.utc).isoformat(),
     }
-    
+
     await db.blog_posts.insert_one(post_doc)
     post_doc.pop("_id", None)
     return post_doc
@@ -172,45 +214,165 @@ async def create_blog_post(data: BlogPostCreate, request: Request):
 
 @router.get("/blog")
 async def list_blog_posts(
-    published_only: bool = True, 
-    limit: int = 10, 
+    request: Request,
+    published_only: bool = True,
+    limit: int = 20,
     skip: int = 0,
-    search: str = None
+    search: Optional[str] = None,
+    status: Optional[str] = None,  # draft|published|archived|all
+    tag: Optional[str] = None,
+    sort: str = "newest",  # newest|oldest|title
 ):
-    """List blog posts with pagination and search (public endpoint)"""
+    """List blog posts with pagination, status filter, and search.
+
+    - Public callers (no auth) can only see published posts.
+    - Authenticated content managers can pass ``status=all`` or any specific status
+      to see drafts/archived posts.
+    """
     db = get_db()
-    
-    query = {}
-    if published_only:
-        query["published"] = True
-    
-    # Add search filter with sanitization to prevent NoSQL injection
+
+    # Determine if caller is an authenticated content manager (so they can see drafts/archived)
+    is_manager = False
+    try:
+        from utils import get_current_user as _get_current_user, security
+        credentials = await security(request)
+        if credentials:
+            user = await _get_current_user(request, credentials)
+            if user and user.get("role") in [
+                UserRole.SUPER_ADMIN,
+                UserRole.ORG_ADMIN,
+                UserRole.MEDIA_MANAGER,
+            ]:
+                is_manager = True
+    except Exception:
+        is_manager = False
+
+    query: dict = {}
+
+    # Status filter — only managers may filter by non-published status
+    if status and status != "all":
+        if status not in VALID_BLOG_STATUSES:
+            raise HTTPException(status_code=400, detail=f"Invalid status. Allowed: {sorted(VALID_BLOG_STATUSES)}")
+        if not is_manager and status != "published":
+            raise HTTPException(status_code=403, detail="Only content managers can filter by non-published status")
+        # Match either new status field or legacy published flag for backwards compat
+        if status == "published":
+            query["$or"] = [{"status": "published"}, {"status": {"$exists": False}, "published": True}]
+        elif status == "draft":
+            query["$or"] = [{"status": "draft"}, {"status": {"$exists": False}, "published": {"$ne": True}}]
+        else:  # archived
+            query["status"] = "archived"
+    elif status == "all":
+        if not is_manager:
+            # Non-managers cannot see all
+            query["$or"] = [{"status": "published"}, {"status": {"$exists": False}, "published": True}]
+    else:
+        # No status param: respect legacy published_only behaviour for public callers
+        if published_only and not is_manager:
+            query["$or"] = [{"status": "published"}, {"status": {"$exists": False}, "published": True}]
+        elif published_only and is_manager:
+            # Manager hitting default — still default to published unless they ask otherwise
+            # (preserve existing behaviour)
+            query["$or"] = [{"status": "published"}, {"status": {"$exists": False}, "published": True}]
+
+    # Tag filter
+    if tag:
+        query["tags"] = tag
+
+    # Search filter (sanitized)
     if search:
         safe_search = sanitize_search_query(search)
         if safe_search:
-            query["$or"] = [
+            search_clauses = [
                 {"title": {"$regex": safe_search, "$options": "i"}},
                 {"excerpt": {"$regex": safe_search, "$options": "i"}},
                 {"content": {"$regex": safe_search, "$options": "i"}},
-                {"tags": {"$regex": safe_search, "$options": "i"}}
+                {"tags": {"$regex": safe_search, "$options": "i"}},
             ]
-    
+            # Combine with existing $or if any
+            if "$or" in query:
+                query = {"$and": [query, {"$or": search_clauses}]}
+            else:
+                query["$or"] = search_clauses
+
+    # Sort
+    if sort == "oldest":
+        sort_spec = [("created_at", 1)]
+    elif sort == "title":
+        sort_spec = [("title", 1)]
+    else:
+        sort_spec = [("created_at", -1)]
+
+    # Clamp pagination
+    limit = max(1, min(100, limit))
+    skip = max(0, skip)
+
     total = await db.blog_posts.count_documents(query)
-    posts = await db.blog_posts.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
-    
-    return {"posts": posts, "total": total, "skip": skip, "limit": limit}
+    cursor = db.blog_posts.find(query, {"_id": 0}).sort(sort_spec).skip(skip).limit(limit)
+    posts = [_normalize_post(p) for p in await cursor.to_list(limit)]
+
+    page = (skip // limit) + 1 if limit > 0 else 1
+    total_pages = (total + limit - 1) // limit if limit > 0 else 1
+
+    return {
+        "posts": posts,
+        "total": total,
+        "skip": skip,
+        "limit": limit,
+        "page": page,
+        "total_pages": total_pages,
+    }
+
+
+@router.get("/blog/stats")
+async def blog_stats(request: Request):
+    """Counts of posts by status (managers only)."""
+    await require_content_access(request)
+    db = get_db()
+
+    total = await db.blog_posts.count_documents({})
+    archived = await db.blog_posts.count_documents({"status": "archived"})
+    # Use legacy-aware queries to count published/draft
+    published = await db.blog_posts.count_documents(
+        {"$or": [{"status": "published"}, {"status": {"$exists": False}, "published": True}]}
+    )
+    draft = await db.blog_posts.count_documents(
+        {"$or": [{"status": "draft"}, {"status": {"$exists": False}, "published": {"$ne": True}}]}
+    )
+    return {
+        "total": total,
+        "published": published,
+        "draft": draft,
+        "archived": archived,
+    }
 
 
 @router.get("/blog/{slug}")
 async def get_blog_post(slug: str):
     """Get a single blog post by slug (public endpoint)"""
     db = get_db()
-    
+
     post = await db.blog_posts.find_one({"slug": slug}, {"_id": 0})
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    
+
+    post = _normalize_post(post)
+    # Public endpoint: only show published
+    if post.get("status") != "published":
+        raise HTTPException(status_code=404, detail="Post not found")
     return post
+
+
+@router.get("/blog/id/{post_id}")
+async def get_blog_post_by_id(post_id: str, request: Request):
+    """Get blog post by ID (managers only — can fetch drafts/archived)."""
+    await require_content_access(request)
+    db = get_db()
+
+    post = await db.blog_posts.find_one({"post_id": post_id}, {"_id": 0})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    return _normalize_post(post)
 
 
 @router.patch("/blog/{post_id}")
@@ -218,35 +380,171 @@ async def update_blog_post(post_id: str, data: BlogPostUpdate, request: Request)
     """Update a blog post"""
     await require_content_access(request)
     db = get_db()
-    
+
     update_data = {k: v for k, v in data.model_dump().items() if v is not None}
     if not update_data:
         raise HTTPException(status_code=400, detail="No update data provided")
-    
+
+    # If status was sent, validate and keep `published` flag in sync
+    if "status" in update_data:
+        if update_data["status"] not in VALID_BLOG_STATUSES:
+            raise HTTPException(status_code=400, detail=f"Invalid status. Allowed: {sorted(VALID_BLOG_STATUSES)}")
+        update_data["published"] = (update_data["status"] == "published")
+    elif "published" in update_data:
+        # Legacy: published toggle => set status accordingly (only if not archived)
+        existing = await db.blog_posts.find_one({"post_id": post_id}, {"status": 1})
+        if existing and existing.get("status") != "archived":
+            update_data["status"] = "published" if update_data["published"] else "draft"
+
     update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
-    
+
     result = await db.blog_posts.update_one(
         {"post_id": post_id},
         {"$set": update_data}
     )
-    
+
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Post not found")
-    
-    return await db.blog_posts.find_one({"post_id": post_id}, {"_id": 0})
+
+    post = await db.blog_posts.find_one({"post_id": post_id}, {"_id": 0})
+    return _normalize_post(post)
+
+
+@router.patch("/blog/{post_id}/status")
+async def update_blog_post_status(post_id: str, data: BlogStatusUpdate, request: Request):
+    """Change a blog post's status (draft/published/archived)."""
+    await require_content_access(request)
+    db = get_db()
+
+    if data.status not in VALID_BLOG_STATUSES:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Allowed: {sorted(VALID_BLOG_STATUSES)}")
+
+    update = {
+        "status": data.status,
+        "published": (data.status == "published"),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    result = await db.blog_posts.update_one({"post_id": post_id}, {"$set": update})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    post = await db.blog_posts.find_one({"post_id": post_id}, {"_id": 0})
+    return _normalize_post(post)
+
+
+@router.post("/blog/bulk")
+async def bulk_blog_action(data: BlogBulkAction, request: Request):
+    """Perform a bulk action on multiple blog posts."""
+    await require_content_access(request)
+    db = get_db()
+
+    if not data.post_ids:
+        raise HTTPException(status_code=400, detail="post_ids cannot be empty")
+
+    action = data.action
+    now = datetime.now(timezone.utc).isoformat()
+    affected = 0
+
+    if action == "publish":
+        result = await db.blog_posts.update_many(
+            {"post_id": {"$in": data.post_ids}},
+            {"$set": {"status": "published", "published": True, "updated_at": now}},
+        )
+        affected = result.modified_count
+    elif action == "unpublish":
+        result = await db.blog_posts.update_many(
+            {"post_id": {"$in": data.post_ids}},
+            {"$set": {"status": "draft", "published": False, "updated_at": now}},
+        )
+        affected = result.modified_count
+    elif action == "archive":
+        result = await db.blog_posts.update_many(
+            {"post_id": {"$in": data.post_ids}},
+            {"$set": {"status": "archived", "published": False, "updated_at": now}},
+        )
+        affected = result.modified_count
+    elif action == "restore":
+        result = await db.blog_posts.update_many(
+            {"post_id": {"$in": data.post_ids}, "status": "archived"},
+            {"$set": {"status": "draft", "published": False, "updated_at": now}},
+        )
+        affected = result.modified_count
+    elif action == "delete":
+        result = await db.blog_posts.delete_many({"post_id": {"$in": data.post_ids}})
+        affected = result.deleted_count
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid action. Allowed: publish, unpublish, archive, restore, delete",
+        )
+
+    return {"action": action, "affected": affected, "post_ids": data.post_ids}
+
+
+@router.post("/blog/{post_id}/duplicate")
+async def duplicate_blog_post(post_id: str, request: Request):
+    """Duplicate a blog post as a new draft."""
+    user = await require_content_access(request)
+    db = get_db()
+
+    original = await db.blog_posts.find_one({"post_id": post_id}, {"_id": 0})
+    if not original:
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    new_id = f"post_{uuid.uuid4().hex[:12]}"
+    base_slug = (original.get("slug") or "post") + "-copy"
+    new_slug = base_slug
+    while await db.blog_posts.find_one({"slug": new_slug}):
+        new_slug = f"{base_slug}-{uuid.uuid4().hex[:6]}"
+
+    duplicate = {
+        **original,
+        "post_id": new_id,
+        "title": f"{original.get('title', 'Untitled')} (Copy)",
+        "slug": new_slug,
+        "status": "draft",
+        "published": False,
+        "author_id": user.get("user_id"),
+        "author_name": user.get("name") or user.get("email", "Unknown"),
+        "view_count": 0,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.blog_posts.insert_one(duplicate)
+    duplicate.pop("_id", None)
+    return duplicate
 
 
 @router.delete("/blog/{post_id}")
-async def delete_blog_post(post_id: str, request: Request):
-    """Delete a blog post"""
+async def delete_blog_post(post_id: str, request: Request, permanent: bool = False):
+    """Delete a blog post.
+
+    By default this is a soft-delete (marks status='archived'). Pass ``permanent=true``
+    to actually remove the document.
+    """
     await require_content_access(request)
     db = get_db()
-    
-    result = await db.blog_posts.delete_one({"post_id": post_id})
-    if result.deleted_count == 0:
+
+    if permanent:
+        result = await db.blog_posts.delete_one({"post_id": post_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Post not found")
+        return {"message": "Post permanently deleted", "permanent": True}
+
+    # Soft delete -> archive
+    result = await db.blog_posts.update_one(
+        {"post_id": post_id},
+        {
+            "$set": {
+                "status": "archived",
+                "published": False,
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            }
+        },
+    )
+    if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Post not found")
-    
-    return {"message": "Post deleted"}
+    return {"message": "Post archived", "permanent": False}
 
 
 # ============== NEWS ROUTES ==============
@@ -254,7 +552,7 @@ async def delete_blog_post(post_id: str, request: Request):
 @router.post("/news")
 async def create_news(data: NewsCreate, request: Request):
     """Create a news item"""
-    await require_content_access(request)
+    user = await require_content_access(request)
     db = get_db()
     
     news_id = f"news_{uuid.uuid4().hex[:12]}"
@@ -265,7 +563,7 @@ async def create_news(data: NewsCreate, request: Request):
         "content": data.content,
         "link": data.link,
         "published": data.published,
-        "author_id": user["user_id"],
+        "author_id": user.get("user_id"),
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     
@@ -377,7 +675,7 @@ async def list_news(
 @router.post("/news/rss-feeds")
 async def add_rss_feed(data: RssFeedCreate, request: Request):
     """Add an RSS feed source"""
-    await require_content_access(request)
+    user = await require_content_access(request)
     db = get_db()
     
     feed_id = f"feed_{uuid.uuid4().hex[:12]}"
@@ -387,7 +685,7 @@ async def add_rss_feed(data: RssFeedCreate, request: Request):
         "name": data.name,
         "url": data.url,
         "enabled": data.enabled,
-        "created_by": user["user_id"],
+        "created_by": user.get("user_id"),
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     
@@ -479,7 +777,7 @@ async def update_news(news_id: str, data: NewsUpdate, request: Request):
 @router.post("/videos")
 async def create_video(data: VideoCreate, request: Request):
     """Add a YouTube video"""
-    await require_content_access(request)
+    user = await require_content_access(request)
     db = get_db()
     
     video_id = f"vid_{uuid.uuid4().hex[:12]}"
@@ -497,7 +795,7 @@ async def create_video(data: VideoCreate, request: Request):
         "thumbnail": thumbnail,
         "category": data.category,
         "published": data.published,
-        "author_id": user["user_id"],
+        "author_id": user.get("user_id"),
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     
@@ -592,13 +890,13 @@ async def get_about():
 @router.patch("/about")
 async def update_about(data: AboutUpdate, request: Request):
     """Update about page content"""
-    await require_content_access(request)
+    user = await require_content_access(request)
     db = get_db()
     
     update_data = {k: v for k, v in data.model_dump().items() if v is not None}
     update_data["type"] = "about"
     update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
-    update_data["updated_by"] = user["user_id"]
+    update_data["updated_by"] = user.get("user_id")
     
     await db.settings.update_one(
         {"type": "about"},
@@ -614,7 +912,7 @@ async def update_about(data: AboutUpdate, request: Request):
 @router.post("/upload")
 async def upload_media(request: Request, file: UploadFile = File(...)):
     """Upload an image for use in blog posts"""
-    await require_content_access(request)
+    user = await require_content_access(request)
     db = get_db()
     
     allowed_types = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif"]
@@ -635,7 +933,7 @@ async def upload_media(request: Request, file: UploadFile = File(...)):
         "content_type": file.content_type,
         "data_url": data_url,
         "size": len(contents),
-        "uploaded_by": user["user_id"],
+        "uploaded_by": user.get("user_id"),
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     
