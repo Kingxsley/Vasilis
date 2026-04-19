@@ -101,6 +101,8 @@ function PagesTab({ token, user }) {
   const [view, setView] = useState('list'); // 'list', 'create', 'edit'
   const [editingTile, setEditingTile] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20; // Max 20 items per page as per requirement
 
   const headers = { Authorization: `Bearer ${token}` };
 

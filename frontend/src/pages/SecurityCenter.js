@@ -804,14 +804,14 @@ export default function SecurityCenter() {
                   className="max-w-xs bg-[#0D1117] border-[#30363D]"
                 />
                 <Select
-                  value={logFilters.severity}
-                  onValueChange={(value) => setLogFilters({...logFilters, severity: value})}
+                  value={logFilters.severity || "all"}
+                  onValueChange={(value) => setLogFilters({...logFilters, severity: value === "all" ? "" : value})}
                 >
                   <SelectTrigger className="w-40 bg-[#0D1117] border-[#30363D]">
                     <SelectValue placeholder="Severity" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Severities</SelectItem>
+                    <SelectItem value="all">All Severities</SelectItem>
                     <SelectItem value="critical">Critical</SelectItem>
                     <SelectItem value="warning">Warning</SelectItem>
                     <SelectItem value="info">Info</SelectItem>
