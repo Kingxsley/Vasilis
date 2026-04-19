@@ -3369,6 +3369,7 @@ from routes.inquiries import router as inquiries_router
 from routes.media import router as media_router
 from routes.sidebar import router as sidebar_router
 from routes.sidebar_widgets import router as sidebar_widgets_router
+from routes.sitemap import router as sitemap_router
 from routes.permissions import router as permissions_router, init_permission_routes
 from routes.navigation import router as navigation_router
 from routes.activity_logs import router as activity_logs_router
@@ -3421,6 +3422,7 @@ api_router.include_router(inquiries_router)
 api_router.include_router(media_router)
 api_router.include_router(sidebar_router)
 api_router.include_router(sidebar_widgets_router)
+api_router.include_router(sitemap_router)
 api_router.include_router(permissions_router)
 api_router.include_router(navigation_router)
 api_router.include_router(activity_logs_router)

@@ -350,6 +350,26 @@ async def export_all_events_ics(request: Request):
     )
 
 
+@router.get("/feed.ics")
+async def get_calendar_feed():
+    """Public subscribable calendar feed (iCal format)"""
+    db = get_db()
+    
+    # Get all published events
+    events = await db.events.find({"published": True}, {"_id": 0}).to_list(500)
+    
+    ics_content = generate_ics(events)
+    
+    return StreamingResponse(
+        io.BytesIO(ics_content.encode()),
+        media_type="text/calendar",
+        headers={
+            "Content-Disposition": "inline; filename=calendar.ics",
+            "Cache-Control": "no-cache"
+        }
+    )
+
+
 @router.post("/import/ics")
 async def import_events_from_ics(request: Request, file: UploadFile = File(...)):
     """Import events from ICS file (super admin only)"""
