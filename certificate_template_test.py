@@ -11,7 +11,7 @@ from datetime import datetime
 import uuid
 
 class CertificateTemplateTester:
-    def __init__(self, base_url="https://cert-builder-21.preview.emergentagent.com"):
+    def __init__(self, base_url="https://security-hardening-28.preview.emergentagent.com"):
         self.base_url = base_url.rstrip('/')
         self.api_base = f"{self.base_url}/api"
         self.token = None
