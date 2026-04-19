@@ -310,7 +310,7 @@ export function BlogPost() {
         <div 
           className="prose prose-invert prose-lg max-w-none"
           style={{ color: textColor }}
-          dangerouslySetInnerHTML={createSafeMarkup(sanitizeHTML(post.content))}
+          dangerouslySetInnerHTML={{ __html: sanitizeHTML(post.content) }}
         />
       </main>
 

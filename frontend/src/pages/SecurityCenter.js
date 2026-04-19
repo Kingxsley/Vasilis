@@ -38,6 +38,7 @@ import {
   TableRow,
 } from '../components/ui/table';
 import { QRCodeSVG } from 'qrcode.react';
+import { GranularPermissionsManager } from '../components/GranularPermissionsManager';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -1101,15 +1102,16 @@ export default function SecurityCenter() {
 
         {/* Permissions Dialog */}
         <Dialog open={permissionsDialogOpen} onOpenChange={setPermissionsDialogOpen}>
-          <DialogContent className="bg-[#161B22] border-[#30363D] max-w-2xl">
+          <DialogContent className="bg-[#161B22] border-[#30363D] max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Manage Permissions: {selectedUser?.email}</DialogTitle>
-              <DialogDescription>Update user role and permissions</DialogDescription>
+              <DialogDescription>Update user role and grant temporary feature-level permissions</DialogDescription>
             </DialogHeader>
             {userPermissions && (
-              <div className="space-y-4 py-4">
+              <div className="space-y-6 py-4">
+                {/* Core Role */}
                 <div>
-                  <Label>Current Role</Label>
+                  <Label>Core Role</Label>
                   <Select
                     value={userPermissions.role}
                     onValueChange={(role) => updateUserRole(selectedUser.user_id, role)}
@@ -1123,10 +1125,28 @@ export default function SecurityCenter() {
                       ))}
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-gray-500 mt-1">This determines the user's base permissions across the platform</p>
+                </div>
+
+                {/* Granular Permissions */}
+                <div className="border-t border-[#30363D] pt-6">
+                  <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-2">
+                    <Shield className="w-4 h-4" />
+                    Temporary Feature-Level Permissions
+                  </h3>
+                  <p className="text-xs text-gray-500 mb-4">
+                    Grant temporary access to specific features without changing the user's core role
+                  </p>
+
+                  <GranularPermissionsManager 
+                    userId={selectedUser.user_id}
+                    token={token}
+                  />
                 </div>
                 
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">Effective Permissions</Label>
+                {/* Effective Permissions Summary */}
+                <div className="border-t border-[#30363D] pt-6">
+                  <Label className="text-sm font-medium mb-2 block">Effective Permissions (Role-Based)</Label>
                   <div className="bg-[#0D1117] p-3 rounded border border-[#30363D] max-h-40 overflow-y-auto">
                     {userPermissions.effective_permissions?.length > 0 ? (
                       <div className="flex flex-wrap gap-2">
@@ -1137,7 +1157,7 @@ export default function SecurityCenter() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-gray-500">No permissions</p>
+                      <p className="text-sm text-gray-500">No role-based permissions</p>
                     )}
                   </div>
                 </div>

@@ -3404,6 +3404,7 @@ from routes.system_emails import router as system_emails_router
 from routes.executive_training import router as executive_training_router
 from routes.cms_tiles import router as cms_tiles_router
 from routes.contact import router as contact_router
+from routes.access_requests import router as access_requests_router
 from routes.events import router as events_router
 from routes.cms_admin import router as cms_admin_router
 
@@ -3462,6 +3463,8 @@ api_router.include_router(system_emails_router)
 api_router.include_router(executive_training_router)
 api_router.include_router(cms_tiles_router)
 api_router.include_router(contact_router)
+api_router.include_router(access_requests_router)
+api_router.include_router(granular_permissions_router)
 api_router.include_router(events_router)
 api_router.include_router(cms_admin_router)
 

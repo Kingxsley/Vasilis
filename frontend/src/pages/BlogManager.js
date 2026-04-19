@@ -27,6 +27,7 @@ import { toast } from 'sonner';
 import { useAuth } from '../App';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
+import '../styles/quill-dark.css';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 

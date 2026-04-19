@@ -136,6 +136,7 @@ async def submit_contact_form(data: ContactSubmission, background_tasks: Backgro
         "subject": data.subject or "Contact Form Submission",
         "message": data.message,
         "status": "new",
+        "type": "contact",
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     
