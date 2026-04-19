@@ -3,7 +3,7 @@ import axios from 'axios';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Loader2, Menu, Eye, EyeOff, GripVertical, Save } from 'lucide-react';
+import { Loader2, Eye, EyeOff, GripVertical, Save, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../App';
 import {
@@ -13,6 +13,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  DragOverlay,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -25,7 +26,6 @@ import { CSS } from '@dnd-kit/utilities';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-// Sortable Item Component
 function SortableNavItem({ item, onToggle }) {
   const {
     attributes,
@@ -42,21 +42,20 @@ function SortableNavItem({ item, onToggle }) {
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const isEditable = !item.is_auto_generated && !item.is_dynamic_page && !item.is_cms_tile;
-
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center justify-between p-4 bg-[#1a1a24] border border-[#30363D] rounded-lg"
+      className="flex items-center justify-between p-4 bg-[#1a1a24] border border-[#30363D] rounded-lg mb-2"
     >
       <div className="flex items-center gap-3 flex-1">
-        {isEditable && (
-          <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
-            <GripVertical className="w-4 h-4 text-gray-500" />
-          </div>
-        )}
-        {!isEditable && <div className="w-4" />}
+        <div 
+          {...attributes} 
+          {...listeners} 
+          className="cursor-grab active:cursor-grabbing touch-none"
+        >
+          <GripVertical className="w-5 h-5 text-gray-400" />
+        </div>
         <div className="flex-1">
           <p className="text-[#E8DDB5] font-medium">{item.label}</p>
           <p className="text-sm text-gray-500">{item.path}</p>
@@ -64,7 +63,7 @@ function SortableNavItem({ item, onToggle }) {
         <div className="flex items-center gap-2">
           {item.is_dynamic_page && (
             <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded">
-              Page
+              PageBuilder
             </span>
           )}
           {item.is_auto_generated && (
@@ -72,33 +71,16 @@ function SortableNavItem({ item, onToggle }) {
               Auto
             </span>
           )}
-          {item.is_cms_tile && (
-            <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-1 rounded">
-              CMS Tile
-            </span>
-          )}
         </div>
       </div>
-      <div className="flex items-center gap-2 ml-4">
-        {isEditable ? (
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => onToggle(item.item_id, !item.is_active)}
-            className={item.is_active ? 'text-green-400 hover:text-green-300' : 'text-gray-600 hover:text-gray-500'}
-          >
-            {item.is_active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-          </Button>
-        ) : (
-          <div className="w-9 flex items-center justify-center">
-            {item.is_active ? (
-              <Eye className="w-4 h-4 text-green-400" />
-            ) : (
-              <EyeOff className="w-4 h-4 text-gray-600" />
-            )}
-          </div>
-        )}
-      </div>
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={() => onToggle(item.item_id, !item.is_active)}
+        className={item.is_active ? 'text-green-400 hover:text-green-300' : 'text-gray-600 hover:text-gray-500'}
+      >
+        {item.is_active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+      </Button>
     </div>
   );
 }
@@ -109,9 +91,14 @@ export default function NavigationManager() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [activeId, setActiveId] = useState(null);
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
@@ -122,11 +109,13 @@ export default function NavigationManager() {
   }, []);
 
   const fetchNavItems = async () => {
+    setLoading(true);
     try {
-      const res = await axios.get(`${API}/navigation/public`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setItems(res.data.items || []);
+      const res = await axios.get(`${API}/navigation/public`);
+      const navItems = res.data.items || [];
+      // Sort by sort_order
+      navItems.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+      setItems(navItems);
       setHasChanges(false);
     } catch (error) {
       console.error('Failed to load navigation:', error);
@@ -136,8 +125,13 @@ export default function NavigationManager() {
     }
   };
 
+  const handleDragStart = (event) => {
+    setActiveId(event.active.id);
+  };
+
   const handleDragEnd = (event) => {
     const { active, over } = event;
+    setActiveId(null);
 
     if (over && active.id !== over.id) {
       setItems((items) => {
@@ -146,10 +140,10 @@ export default function NavigationManager() {
         
         const reorderedItems = arrayMove(items, oldIndex, newIndex);
         
-        // Update sort_order for each item
+        // Update sort_order
         const updatedItems = reorderedItems.map((item, index) => ({
           ...item,
-          sort_order: index * 10
+          sort_order: (index + 1) * 10
         }));
         
         setHasChanges(true);
@@ -159,10 +153,6 @@ export default function NavigationManager() {
   };
 
   const handleToggle = async (itemId, newActiveState) => {
-    // Find the item
-    const item = items.find(i => i.item_id === itemId);
-    if (!item) return;
-
     try {
       await axios.patch(
         `${API}/navigation/${itemId}`,
@@ -170,7 +160,6 @@ export default function NavigationManager() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // Update local state
       setItems(items.map(i => 
         i.item_id === itemId ? { ...i, is_active: newActiveState } : i
       ));
@@ -185,12 +174,10 @@ export default function NavigationManager() {
   const handleSaveOrder = async () => {
     setSaving(true);
     try {
-      const reorderPayload = items
-        .filter(item => item.is_custom) // Only reorder custom items
-        .map(item => ({
-          item_id: item.item_id,
-          sort_order: item.sort_order
-        }));
+      const reorderPayload = items.map((item, index) => ({
+        item_id: item.item_id,
+        sort_order: (index + 1) * 10
+      }));
 
       await axios.post(
         `${API}/navigation/reorder`,
@@ -224,18 +211,28 @@ export default function NavigationManager() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-[#E8DDB5]">Navigation Menu Manager</h1>
-            <p className="text-gray-400">Manage navigation visibility and ordering</p>
+            <p className="text-gray-400">Drag to reorder • Click eye to toggle visibility</p>
           </div>
-          {hasChanges && (
+          <div className="flex gap-2">
             <Button 
-              onClick={handleSaveOrder}
-              disabled={saving}
-              className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
+              onClick={fetchNavItems}
+              variant="outline"
+              className="border-[#30363D]"
             >
-              {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-              Save Order
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Refresh
             </Button>
-          )}
+            {hasChanges && (
+              <Button 
+                onClick={handleSaveOrder}
+                disabled={saving}
+                className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
+              >
+                {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                Save Order
+              </Button>
+            )}
+          </div>
         </div>
 
         {loading ? (
@@ -245,40 +242,47 @@ export default function NavigationManager() {
         ) : (
           <Card className="bg-[#0f0f15] border-[#D4A836]/20">
             <CardHeader>
-              <CardTitle className="text-[#E8DDB5]">Navigation Items</CardTitle>
+              <CardTitle className="text-[#E8DDB5]">Navigation Items ({items.length})</CardTitle>
             </CardHeader>
             <CardContent>
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
+                onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
               >
                 <SortableContext
                   items={items.map(item => item.item_id)}
                   strategy={verticalListSortingStrategy}
                 >
-                  <div className="space-y-2">
-                    {items.map((item) => (
-                      <SortableNavItem
-                        key={item.item_id}
-                        item={item}
-                        onToggle={handleToggle}
-                      />
-                    ))}
-                  </div>
+                  {items.map((item) => (
+                    <SortableNavItem
+                      key={item.item_id}
+                      item={item}
+                      onToggle={handleToggle}
+                    />
+                  ))}
                 </SortableContext>
+                <DragOverlay>
+                  {activeId ? (
+                    <div className="p-4 bg-[#1a1a24] border-2 border-[#D4A836] rounded-lg opacity-90">
+                      <div className="flex items-center gap-3">
+                        <GripVertical className="w-5 h-5 text-[#D4A836]" />
+                        <span className="text-[#E8DDB5] font-medium">
+                          {items.find(i => i.item_id === activeId)?.label}
+                        </span>
+                      </div>
+                    </div>
+                  ) : null}
+                </DragOverlay>
               </DndContext>
 
-              <div className="mt-6 p-4 bg-[#1a1a24]/50 border border-[#30363D] rounded-lg space-y-2">
-                <p className="text-sm text-[#E8DDB5] font-semibold">About Navigation Items:</p>
-                <ul className="text-sm text-gray-400 space-y-1 ml-4 list-disc">
-                  <li><span className="text-blue-400">Page</span> items are auto-generated from PageBuilder pages with "Show in Navigation" enabled</li>
-                  <li><span className="text-green-400">Auto</span> items are system-generated (e.g., Blog when posts exist)</li>
-                  <li><span className="text-purple-400">CMS Tile</span> items are from published CMS tiles</li>
-                  <li>Only custom items can be reordered and toggled on/off</li>
-                  <li>Dynamic items are controlled by their source (PageBuilder, Blog, etc.)</li>
-                </ul>
-              </div>
+              {items.length === 0 && (
+                <div className="text-center py-12 text-gray-400">
+                  <p>No navigation items yet</p>
+                  <p className="text-sm mt-2">Create pages in Page Builder with "Show in Navigation" enabled</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}

@@ -1,14 +1,15 @@
-/* Optimized Blog Content Styling */
+/* Enterprise-Grade Blog Content Styling */
 .blog-article-content {
-  max-width: 65rem;
-  margin: 0 auto;
+  max-width: 48rem !important;
+  margin: 0 auto !important;
+  padding: 0 1rem;
   font-size: 1.125rem;
   line-height: 1.8;
   color: #E8DDB5;
 }
 
 .blog-article-content h2 {
-  font-size: 2rem;
+  font-size: 1.875rem;
   font-weight: 700;
   color: #D4A836;
   margin-top: 3rem;
@@ -21,7 +22,7 @@
   font-size: 1.5rem;
   font-weight: 600;
   color: #E8DDB5;
-  margin-top: 2rem;
+  margin-top: 2.5rem;
   margin-bottom: 1rem;
   line-height: 1.4;
 }
@@ -33,13 +34,13 @@
 
 .blog-article-content ul,
 .blog-article-content ol {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
   padding-left: 2rem;
 }
 
 .blog-article-content li {
-  margin-bottom: 0.75rem;
-  line-height: 1.7;
+  margin-bottom: 0.875rem;
+  line-height: 1.75;
 }
 
 .blog-article-content li strong {
@@ -96,16 +97,17 @@
   padding: 0;
 }
 
-/* Reading experience improvements */
+/* Constrain all content */
 .blog-article-content > * {
   max-width: 100%;
 }
 
 .blog-article-content img {
   border-radius: 0.5rem;
-  margin: 2rem 0;
+  margin: 2rem auto;
   max-width: 100%;
   height: auto;
+  display: block;
 }
 
 /* Mobile optimization */
@@ -113,10 +115,11 @@
   .blog-article-content {
     font-size: 1rem;
     line-height: 1.7;
+    padding: 0 1rem;
   }
   
   .blog-article-content h2 {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     margin-top: 2rem;
   }
   

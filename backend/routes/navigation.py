@@ -179,7 +179,7 @@ async def get_public_nav_items(request: Request):
                 "section_id": "content",
                 "visible_to": ["all"],
                 "open_in_new_tab": False,
-                "sort_order": 45 + hash(page['slug']) % 10,
+                "sort_order": 45 + (ord(page['slug'][0]) % 10),  # Deterministic sort
                 "is_active": True,
                 "is_dynamic_page": True
             }
