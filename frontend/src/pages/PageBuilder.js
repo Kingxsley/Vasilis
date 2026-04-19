@@ -191,6 +191,11 @@ export default function PageBuilder() {
   const [editingBlock, setEditingBlock] = useState(null);
   const [editingBlockIndex, setEditingBlockIndex] = useState(null);
   
+  // Sidebar widgets (Phase 2)
+  const [sidebarConfigs, setSidebarConfigs] = useState([]);
+  const [availableWidgets, setAvailableWidgets] = useState([]);
+  const [showSidebarDialog, setShowSidebarDialog] = useState(false);
+  
   // Form states
   const [pageForm, setPageForm] = useState({
     title: '',
@@ -201,7 +206,8 @@ export default function PageBuilder() {
     show_in_nav: false,
     nav_section: 'main',
     is_published: false,
-    auth_levels: ['public']
+    auth_levels: ['public'],
+    sidebar_config: null  // Phase 2: sidebar config slug
   });
 
   // Phase 2: device preview mode (mobile/tablet/desktop).
@@ -215,6 +221,8 @@ export default function PageBuilder() {
   useEffect(() => {
     fetchPages();
     fetchBlockTemplates();
+    fetchSidebarConfigs();
+    fetchAvailableWidgets();
   }, []);
 
   const fetchPages = async () => {
@@ -242,6 +250,26 @@ export default function PageBuilder() {
     }
   };
 
+  const fetchSidebarConfigs = async () => {
+    try {
+      const res = await axios.get(`${API}/sidebar-configs`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSidebarConfigs(res.data || []);
+    } catch (error) {
+      console.error('Failed to load sidebar configs:', error);
+    }
+  };
+
+  const fetchAvailableWidgets = async () => {
+    try {
+      const res = await axios.get(`${API}/sidebar-widgets/defaults/list`);
+      setAvailableWidgets(res.data.widgets || []);
+    } catch (error) {
+      console.error('Failed to load available widgets:', error);
+    }
+  };
+
   const resetPageForm = () => {
     setPageForm({
       title: '',
@@ -252,7 +280,8 @@ export default function PageBuilder() {
       show_in_nav: false,
       nav_section: 'main',
       is_published: false,
-      auth_levels: ['public']
+      auth_levels: ['public'],
+      sidebar_config: null
     });
     setDevicePreview('desktop');
     setEditingPage(null);
@@ -297,7 +326,8 @@ export default function PageBuilder() {
       is_published: page.is_published || false,
       auth_levels: Array.isArray(page.auth_levels) && page.auth_levels.length > 0
         ? page.auth_levels
-        : ['public']
+        : ['public'],
+      sidebar_config: page.sidebar_config || null
     });
     setDevicePreview('desktop');
     setShowPageDialog(true);
@@ -909,6 +939,49 @@ export default function PageBuilder() {
                   );
                 })()}
                 {publicSelectedNote(pageForm.auth_levels)}
+              </div>
+
+              {/* Phase 2 — Sidebar Configuration Picker */}
+              <div className="border-t border-[#30363D] pt-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <LayoutGrid className="w-4 h-4 text-[#D4A836]" />
+                  <Label className="text-[#E8DDB5] font-medium">Page Sidebar</Label>
+                  <span className="text-xs text-gray-500">
+                    — select widgets to display in the right sidebar
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <Select 
+                    value={pageForm.sidebar_config || "none"} 
+                    onValueChange={(v) => setPageForm({ ...pageForm, sidebar_config: v === "none" ? null : v })}
+                  >
+                    <SelectTrigger className="flex-1 bg-[#1a1a24] border-[#30363D] text-white">
+                      <SelectValue placeholder="No sidebar" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No sidebar</SelectItem>
+                      {sidebarConfigs.map((config) => (
+                        <SelectItem key={config.page_slug} value={config.page_slug}>
+                          {config.page_slug} ({config.widgets?.length || 0} widgets)
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowSidebarDialog(true)}
+                    className="border-[#D4A836]/30 text-[#D4A836] hover:bg-[#D4A836]/10"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Manage Sidebars
+                  </Button>
+                </div>
+                {pageForm.sidebar_config && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    Using sidebar: <span className="text-[#D4A836]">{pageForm.sidebar_config}</span>
+                  </p>
+                )}
               </div>
 
               {/* Phase 2 — Device preview toolbar */}

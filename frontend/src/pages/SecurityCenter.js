@@ -163,7 +163,12 @@ export default function SecurityCenter() {
       
       const usersData = Array.isArray(usersRes.data) ? usersRes.data : (usersRes.data.users || []);
       setUsers(usersData);
-      setAvailableRoles(rolesRes.data.assignable_roles || []);
+      
+      // Extract role IDs from the role objects
+      const roles = rolesRes.data.assignable_roles || [];
+      const roleIds = roles.map(r => typeof r === 'string' ? r : r.id);
+      setAvailableRoles(roleIds);
+      
       setAvailablePermissions(permsRes.data.permission_groups || {});
     } catch (err) {
       toast.error('Failed to load permissions data');
