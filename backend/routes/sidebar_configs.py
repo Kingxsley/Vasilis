@@ -100,7 +100,8 @@ async def create_sidebar_config(data: SidebarConfigCreate, user: dict = Depends(
     }
     
     await db.sidebar_configs.insert_one(config_doc)
-    
+    config_doc.pop("_id", None)
+
     return {"message": "Sidebar config created", "page_slug": slug, "config": config_doc}
 
 

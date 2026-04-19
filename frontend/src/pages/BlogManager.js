@@ -328,10 +328,10 @@ export default function BlogManager() {
           <div>
             <h1 className="text-2xl font-bold text-[#E8DDB5] flex items-center gap-2">
               <FileText className="w-6 h-6 text-[#D4A836]" />
-              Blog Manager
+              Blog Posts
             </h1>
             <p className="text-gray-400 text-sm mt-1">
-              Create, edit and manage blog posts. {total} {total === 1 ? 'post' : 'posts'} matching current filter.
+              Create, edit and manage individual blog articles. {total} {total === 1 ? 'post' : 'posts'} matching current filter.
             </p>
           </div>
           <Button

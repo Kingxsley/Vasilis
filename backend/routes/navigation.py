@@ -53,15 +53,23 @@ AVAILABLE_ICONS = [
     "Phone", "Video", "Music", "Camera", "Mic", "Headphones"
 ]
 
-# Available sections to add items to
+# Available sections for public site navigation
+# (Navigation Manager manages only the PUBLIC website menus — not the admin dashboard sidebar)
 AVAILABLE_SECTIONS = [
-    {"id": "main", "label": "Overview"},
-    {"id": "management", "label": "Management"},
-    {"id": "simulations", "label": "Simulations"},
-    {"id": "content", "label": "Content"},
-    {"id": "training", "label": "Training"},
-    {"id": "settings", "label": "Settings"},
-    {"id": "security", "label": "Security"},
+    {"id": "header", "label": "Header Menu"},
+    {"id": "footer", "label": "Footer Menu"},
+]
+
+# Back-compat: older items may reference these legacy section ids.
+LEGACY_SECTION_IDS = {"main", "management", "simulations", "content", "training", "settings", "security"}
+
+
+# Default items for a fresh install — public-facing pages only.
+DEFAULT_NAV_ITEMS = [
+    {"label": "Blog",   "link_type": "internal", "path": "/blog",   "icon": "FileText",  "section_id": "header", "sort_order": 10},
+    {"label": "Videos", "link_type": "internal", "path": "/videos", "icon": "Video",     "section_id": "header", "sort_order": 20},
+    {"label": "News",   "link_type": "internal", "path": "/news",   "icon": "Newspaper", "section_id": "header", "sort_order": 30},
+    {"label": "About",  "link_type": "internal", "path": "/about",  "icon": "Users",     "section_id": "header", "sort_order": 40},
 ]
 
 # Available roles for visibility control
@@ -79,7 +87,7 @@ class NavItemCreate(BaseModel):
     link_type: str  # 'internal', 'external', 'cms_page'
     path: str  # Internal path like '/dashboard' or external URL
     icon: str = "Link"
-    section_id: str = "main"
+    section_id: str = "header"
     visible_to: List[str] = ["all"]  # Role IDs
     open_in_new_tab: bool = False
     sort_order: int = 100
@@ -96,6 +104,12 @@ class NavItemUpdate(BaseModel):
     open_in_new_tab: Optional[bool] = None
     sort_order: Optional[int] = None
     is_active: Optional[bool] = None
+
+
+def _valid_section(section_id: str) -> bool:
+    """Allow current sections + legacy ones so old data keeps working."""
+    valid = {s["id"] for s in AVAILABLE_SECTIONS} | LEGACY_SECTION_IDS
+    return section_id in valid
 
 
 @router.get("/options")
@@ -141,67 +155,56 @@ async def get_custom_nav_items(request: Request):
 
 @router.get("/public")
 async def get_public_nav_items():
-    """Get navigation items visible publicly (NO AUTH)"""
+    """Public site navigation items (NO AUTH).
+
+    Returns only items that the admin has explicitly added via the Navigation
+    Menu Manager. PageBuilder pages are NOT auto-injected — admins must opt
+    them into the public nav by creating an explicit nav item that points to
+    ``/page/<slug>``.
+    """
     db = get_db()
-    
-    # Get active navigation items
+
     items = await db.navigation_items.find(
         {"is_active": True},
         {"_id": 0}
-    ).sort("sort_order", 1).to_list(100)
-    
-    # Fetch published pages from PageBuilder with show_in_nav=true
-    try:
-        published_pages = await db.custom_pages.find(
-            {
-                "is_published": True,
-                "show_in_nav": True
-            },
-            {"_id": 0, "title": 1, "slug": 1, "page_type": 1}
-        ).sort("title", 1).to_list(100)
-        
-        for page in published_pages:
-            nav_item = {
-                "item_id": f"page_{page['slug']}",
-                "label": page["title"],
-                "link_type": "internal",
-                "path": f"/page/{page['slug']}",
-                "icon": "FileText",
-                "section_id": "content",
-                "visible_to": ["all"],
-                "open_in_new_tab": False,
-                "sort_order": 45 + (ord(page['slug'][0]) % 10),  # Deterministic sort
-                "is_active": True,
-                "is_dynamic_page": True
-            }
-            items.append(nav_item)
-    except Exception as e:
-        logger.warning(f"Failed to fetch pages for navigation: {e}")
-    
-    # Note: CMS tiles are deprecated - all pages now managed through PageBuilder
-    
-    # Note: Blog and News are accessible via public routes but NOT shown in dashboard sidebar
-    # Add News link if configured
-    try:
-        news_count = await db.news_feeds.count_documents({})
-        if news_count > 0:
-            items.append({
-                "item_id": "news_auto",
-                "label": "News",
-                "link_type": "internal",
-                "path": "/news",
-                "icon": "Newspaper",
-                "section_id": "content",
-                "visible_to": ["all"],
-                "open_in_new_tab": False,
-                "sort_order": 35,
-                "is_active": True,
-                "is_auto_generated": True
-            })
-    except:
-        pass
-    
+    ).sort("sort_order", 1).to_list(200)
+
     return {"items": items}
+
+
+@router.post("/seed-defaults")
+async def seed_default_nav_items(request: Request):
+    """Seed the Public Navigation with the default items (Blog, Videos, News, About).
+
+    Skips any default whose ``path`` already exists so it is safe to run repeatedly.
+    Returns {created: N, skipped: M, items: [...]}.
+    """
+    user = await require_super_admin(request)
+    db = get_db()
+
+    created: List[dict] = []
+    skipped: List[str] = []
+
+    for default in DEFAULT_NAV_ITEMS:
+        existing = await db.navigation_items.find_one({"path": default["path"]})
+        if existing:
+            skipped.append(default["label"])
+            continue
+        nav_item = {
+            "item_id": f"nav_{uuid.uuid4().hex[:12]}",
+            **default,
+            "visible_to": ["all"],
+            "open_in_new_tab": False,
+            "is_active": True,
+            "created_by": user["user_id"],
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "is_custom": True,
+        }
+        await db.navigation_items.insert_one(nav_item)
+        nav_item.pop("_id", None)
+        created.append(nav_item)
+
+    return {"created": len(created), "skipped": skipped, "items": created}
 
 
 @router.post("")
@@ -212,8 +215,8 @@ async def create_nav_item(data: NavItemCreate, request: Request):
     db = get_db()
     
     # Validate section
-    valid_sections = [s["id"] for s in AVAILABLE_SECTIONS]
-    if data.section_id not in valid_sections:
+    if not _valid_section(data.section_id):
+        valid_sections = [s["id"] for s in AVAILABLE_SECTIONS]
         raise HTTPException(status_code=400, detail=f"Invalid section. Must be one of: {valid_sections}")
     
     # Validate icon
@@ -287,8 +290,7 @@ async def update_nav_item(item_id: str, data: NavItemUpdate, request: Request):
     if data.icon is not None:
         update_data["icon"] = data.icon if data.icon in AVAILABLE_ICONS else "Link"
     if data.section_id is not None:
-        valid_sections = [s["id"] for s in AVAILABLE_SECTIONS]
-        if data.section_id in valid_sections:
+        if _valid_section(data.section_id):
             update_data["section_id"] = data.section_id
     if data.visible_to is not None:
         update_data["visible_to"] = data.visible_to

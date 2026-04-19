@@ -14,9 +14,8 @@ import {
 } from '../components/ui/dialog';
 import {
   Loader2, Eye, EyeOff, GripVertical, Save, RefreshCw, Plus, Edit, Trash2,
-  ExternalLink, Link2, FileText, Layout as LayoutIcon, Sparkles,
-} from 'lucide-react';
-import { toast } from 'sonner';
+  ExternalLink, Link2, FileText, Layout as LayoutIcon, Globe, Wand2,
+} from 'lucide-react';import { toast } from 'sonner';
 import { useAuth } from '../App';
 import {
   DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragOverlay,
@@ -36,14 +35,11 @@ const DEFAULT_ICONS = [
   'ExternalLink', 'BarChart3', 'Lock', 'ShieldAlert', 'Star', 'Activity',
   'MessageSquare',
 ];
+// Public-site sections only — this manager is for the public website header/footer,
+// not the admin dashboard sidebar.
 const DEFAULT_SECTIONS = [
-  { id: 'main',        label: 'Overview' },
-  { id: 'management',  label: 'Management' },
-  { id: 'simulations', label: 'Simulations' },
-  { id: 'content',     label: 'Content' },
-  { id: 'training',    label: 'Training' },
-  { id: 'settings',    label: 'Settings' },
-  { id: 'security',    label: 'Security' },
+  { id: 'header', label: 'Header Menu' },
+  { id: 'footer', label: 'Footer Menu' },
 ];
 const DEFAULT_ROLES = [
   { id: 'all',           label: 'All Users (incl. anonymous)' },
@@ -70,7 +66,6 @@ function SortableNavItem({ item, onToggle, onEdit, onDelete, sections }) {
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const isManaged = item.is_dynamic_page || item.is_auto_generated;
   const linkMeta = LINK_TYPE_META[item.link_type] || LINK_TYPE_META.internal;
   const sectionLabel = sections.find((s) => s.id === item.section_id)?.label || item.section_id;
 
@@ -97,21 +92,16 @@ function SortableNavItem({ item, onToggle, onEdit, onDelete, sections }) {
             <linkMeta.icon className="w-3 h-3 mr-1" />
             {linkMeta.label}
           </Badge>
-          {item.is_dynamic_page && (
-            <Badge variant="outline" className="text-[10px] border-blue-500/30 text-blue-300">
-              <Sparkles className="w-3 h-3 mr-1" /> PageBuilder
-            </Badge>
-          )}
-          {item.is_auto_generated && (
-            <Badge variant="outline" className="text-[10px] border-emerald-500/30 text-emerald-300">
-              Auto
+          {item.open_in_new_tab && (
+            <Badge variant="outline" className="text-[10px] border-gray-600 text-gray-400">
+              New tab
             </Badge>
           )}
         </div>
         <div className="flex items-center gap-3 text-xs text-gray-500 mt-0.5">
           <span className="truncate">{item.path}</span>
           <span>·</span>
-          <span>Section: {sectionLabel}</span>
+          <span>{sectionLabel}</span>
           {item.visible_to && item.visible_to.length > 0 && (
             <>
               <span>·</span>
@@ -128,20 +118,15 @@ function SortableNavItem({ item, onToggle, onEdit, onDelete, sections }) {
           onClick={() => onToggle(item)}
           className={item.is_active ? 'text-emerald-400 hover:text-emerald-300' : 'text-gray-500 hover:text-gray-300'}
           title={item.is_active ? 'Hide from navigation' : 'Show in navigation'}
-          disabled={isManaged}
         >
           {item.is_active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
         </Button>
-        {!isManaged && (
-          <>
-            <Button size="sm" variant="ghost" onClick={() => onEdit(item)} className="text-gray-300 hover:text-[#D4A836]" title="Edit">
-              <Edit className="w-4 h-4" />
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => onDelete(item)} className="text-red-400 hover:bg-red-500/10" title="Delete">
-              <Trash2 className="w-4 h-4" />
-            </Button>
-          </>
-        )}
+        <Button size="sm" variant="ghost" onClick={() => onEdit(item)} className="text-gray-300 hover:text-[#D4A836]" title="Edit">
+          <Edit className="w-4 h-4" />
+        </Button>
+        <Button size="sm" variant="ghost" onClick={() => onDelete(item)} className="text-red-400 hover:bg-red-500/10" title="Delete">
+          <Trash2 className="w-4 h-4" />
+        </Button>
       </div>
     </div>
   );
@@ -152,7 +137,7 @@ const EMPTY_FORM = {
   link_type: 'internal',
   path: '/',
   icon: 'Link',
-  section_id: 'main',
+  section_id: 'header',
   visible_to: ['all'],
   open_in_new_tab: false,
   sort_order: 100,
@@ -187,27 +172,12 @@ export default function NavigationManager() {
   const fetchItems = useCallback(async () => {
     setLoading(true);
     try {
-      // Admin endpoint returns raw stored items
-      const adminRes = await axios.get(`${API}/navigation`, {
+      const res = await axios.get(`${API}/navigation`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const stored = adminRes.data?.items || [];
-
-      // Public endpoint includes auto-generated/PageBuilder items so we can show them too
-      let dynamic = [];
-      try {
-        const pubRes = await axios.get(`${API}/navigation/public`);
-        const pubItems = pubRes.data?.items || [];
-        // Only keep items that are NOT in the admin stored list (i.e. auto-generated)
-        const storedIds = new Set(stored.map((i) => i.item_id));
-        dynamic = pubItems.filter((i) => !storedIds.has(i.item_id));
-      } catch (e) {
-        // ignore
-      }
-
-      const all = [...stored, ...dynamic];
-      all.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
-      setItems(all);
+      const stored = (res.data?.items || []).slice();
+      stored.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+      setItems(stored);
       setHasChanges(false);
     } catch (e) {
       console.error('Failed to load navigation items:', e);
@@ -252,7 +222,6 @@ export default function NavigationManager() {
 
   // ---- Item operations ------------------------------------------------
   const toggleActive = async (item) => {
-    if (item.is_dynamic_page || item.is_auto_generated) return; // managed items can't be toggled here
     try {
       await axios.patch(`${API}/navigation/${item.item_id}`, { is_active: !item.is_active }, {
         headers: { Authorization: `Bearer ${token}` },
@@ -341,10 +310,7 @@ export default function NavigationManager() {
   const saveOrder = async () => {
     setSaving(true);
     try {
-      // Only persist sort_order for stored items (managed/auto items aren't in collection)
-      const payload = items
-        .filter((i) => !i.is_dynamic_page && !i.is_auto_generated)
-        .map((i, idx) => ({ item_id: i.item_id, sort_order: (idx + 1) * 10 }));
+      const payload = items.map((i, idx) => ({ item_id: i.item_id, sort_order: (idx + 1) * 10 }));
       await axios.post(`${API}/navigation/reorder`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -352,6 +318,23 @@ export default function NavigationManager() {
       setHasChanges(false);
     } catch (e) {
       toast.error('Failed to save order');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const seedDefaults = async () => {
+    if (!window.confirm('Seed default menu items (Blog, Videos, News, About)? Existing items with matching paths will be skipped.')) return;
+    setSaving(true);
+    try {
+      const res = await axios.post(`${API}/navigation/seed-defaults`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const { created, skipped } = res.data;
+      toast.success(`${created} default item(s) added${skipped?.length ? ` · ${skipped.length} already existed` : ''}`);
+      fetchItems();
+    } catch (e) {
+      toast.error(e.response?.data?.detail || 'Failed to seed defaults');
     } finally {
       setSaving(false);
     }
@@ -379,17 +362,25 @@ export default function NavigationManager() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-[#E8DDB5] flex items-center gap-2">
-              <LayoutIcon className="w-6 h-6 text-[#D4A836]" />
-              Navigation Menu Manager
+              <Globe className="w-6 h-6 text-[#D4A836]" />
+              Public Site Navigation
             </h1>
             <p className="text-gray-400 text-sm mt-1">
-              Drag to reorder · Click eye to toggle visibility · Edit or delete custom items
+              Manages the menu visitors see on the public website (header &amp; footer). Drag to reorder, click the eye to toggle visibility.
+            </p>
+            <p className="text-gray-500 text-xs mt-1">
+              Tip: PageBuilder pages are <em>not</em> auto-added here — use "New Item" with link type “CMS Page” to add one.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button onClick={fetchItems} variant="outline" className="border-[#30363D]">
               <RefreshCw className="w-4 h-4 mr-2" /> Refresh
             </Button>
+            {items.length === 0 && !loading && (
+              <Button onClick={seedDefaults} disabled={saving} variant="outline" className="border-[#D4A836]/40 text-[#D4A836] hover:bg-[#D4A836]/10">
+                <Wand2 className="w-4 h-4 mr-2" /> Seed Defaults
+              </Button>
+            )}
             {hasChanges && (
               <Button onClick={saveOrder} disabled={saving} className="bg-[#D4A836] hover:bg-[#C49A30] text-black">
                 {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
@@ -446,10 +437,17 @@ export default function NavigationManager() {
               {filteredItems.length === 0 ? (
                 <div className="text-center py-12 text-gray-400">
                   <LayoutIcon className="w-12 h-12 mx-auto mb-3 text-gray-600" />
-                  <p>No navigation items in this section yet.</p>
-                  <Button onClick={openCreateDialog} className="mt-4 bg-[#D4A836] hover:bg-[#C49A30] text-black">
-                    <Plus className="w-4 h-4 mr-2" /> Add Item
-                  </Button>
+                  <p>No navigation items {sectionFilter !== 'all' ? `in ${sections.find((s) => s.id === sectionFilter)?.label}` : 'yet'}.</p>
+                  <div className="flex items-center justify-center gap-2 mt-4 flex-wrap">
+                    {items.length === 0 && (
+                      <Button onClick={seedDefaults} disabled={saving} variant="outline" className="border-[#D4A836]/40 text-[#D4A836] hover:bg-[#D4A836]/10">
+                        <Wand2 className="w-4 h-4 mr-2" /> Seed Defaults (Blog, Videos, News, About)
+                      </Button>
+                    )}
+                    <Button onClick={openCreateDialog} className="bg-[#D4A836] hover:bg-[#C49A30] text-black">
+                      <Plus className="w-4 h-4 mr-2" /> Add Item
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <DndContext
