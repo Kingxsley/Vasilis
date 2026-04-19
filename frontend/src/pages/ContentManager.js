@@ -273,8 +273,9 @@ function PagesTab({ token, user }) {
           </CardContent>
         </Card>
       ) : (
+        <>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {tiles.map(tile => {
+          {tiles.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map(tile => {
             const IconComp = getIconComponent(tile.icon);
             return (
               <Card key={tile.tile_id} className="bg-[#161B22] border-[#30363D] hover:border-[#D4A836]/50 transition-colors">
@@ -348,6 +349,54 @@ function PagesTab({ token, user }) {
             );
           })}
         </div>
+        
+        {/* Pagination */}
+        {tiles.length > itemsPerPage && (
+          <div className="flex items-center justify-between border-t border-[#30363D] pt-4">
+            <div className="text-sm text-gray-400">
+              Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, tiles.length)} of {tiles.length} pages
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="border-[#30363D] text-gray-400 hover:text-white"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Previous
+              </Button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.ceil(tiles.length / itemsPerPage) }, (_, i) => i + 1).map(page => (
+                  <Button
+                    key={page}
+                    variant={currentPage === page ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage(page)}
+                    className={currentPage === page 
+                      ? "bg-[#D4A836] text-black hover:bg-[#B8922E]" 
+                      : "border-[#30363D] text-gray-400 hover:text-white"
+                    }
+                  >
+                    {page}
+                  </Button>
+                ))}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.min(Math.ceil(tiles.length / itemsPerPage), p + 1))}
+                disabled={currentPage === Math.ceil(tiles.length / itemsPerPage)}
+                className="border-[#30363D] text-gray-400 hover:text-white"
+              >
+                Next
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
+          </div>
+        )}
+        </>
       )}
     </div>
   );
@@ -544,7 +593,7 @@ export default function ContentManager() {
   const [blogPage, setBlogPage] = useState(1);
   const [blogTotal, setBlogTotal] = useState(0);
   const [blogSearch, setBlogSearch] = useState('');
-  const BLOG_LIMIT = 10;
+  const BLOG_LIMIT = 20; // Max 20 items per page as per requirement
   
   // News state with pagination
   const [news, setNews] = useState([]);
@@ -553,7 +602,7 @@ export default function ContentManager() {
   const [newsPage, setNewsPage] = useState(1);
   const [newsTotal, setNewsTotal] = useState(0);
   const [newsSearch, setNewsSearch] = useState('');
-  const NEWS_LIMIT = 15;
+  const NEWS_LIMIT = 20; // Max 20 items per page as per requirement
   
   // RSS Feeds state
   const [rssFeeds, setRssFeeds] = useState([]);

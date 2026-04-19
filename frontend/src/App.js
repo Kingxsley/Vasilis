@@ -517,6 +517,11 @@ const DynamicRouteHandler = () => {
 const AppRouter = () => {
   const location = useLocation();
 
+  // Scroll to top on route change or page reload
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   // Reload page on browser back/forward navigation (popstate)
   useEffect(() => {
     const handlePopState = () => {

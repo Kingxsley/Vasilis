@@ -23,6 +23,7 @@ from middleware.security import (
     RateLimitMiddleware, 
     SecurityHeadersMiddleware,
     account_lockout,
+    ip_login_limiter,
     PasswordPolicy,
     AuditLogger,
     get_client_ip
@@ -285,6 +286,26 @@ async def register(data: UserRegister):
 async def login(data: UserLogin, request: Request):
     client_ip = get_client_ip(request)
     
+    # PENTEST FIX 1: IP-based rate limiting (max 10 requests per 15 min)
+    # Check if IP is blocked due to too many requests
+    ip_blocked, ip_seconds_remaining = ip_login_limiter.is_blocked(client_ip)
+    if ip_blocked:
+        await audit_logger.log(
+            action="login_blocked_ip_rate_limit",
+            ip_address=client_ip,
+            severity="warning",
+            details={"reason": "Too many login requests from IP"}
+        )
+        raise HTTPException(
+            status_code=429,
+            detail=f"Too many login requests from this IP. Try again in {ip_seconds_remaining // 60} minutes.",
+            headers={"Retry-After": "900"}  # 15 minutes in seconds
+        )
+    
+    # Record this login attempt for IP tracking
+    ip_login_limiter.record_attempt(client_ip)
+    
+    # PENTEST FIX 2: Per-account lockout (max 5 failed attempts per 15 min)
     # Check if account is locked
     is_locked, seconds_remaining = account_lockout.is_locked(data.email)
     if is_locked:
@@ -295,8 +316,9 @@ async def login(data: UserLogin, request: Request):
             severity="warning"
         )
         raise HTTPException(
-            status_code=429, 
-            detail=f"Account temporarily locked. Try again in {seconds_remaining // 60} minutes."
+            status_code=423,  # 423 Locked for account lockout (per pentest spec)
+            detail=f"Account temporarily locked due to failed login attempts. Try again in {seconds_remaining // 60} minutes.",
+            headers={"Retry-After": str(seconds_remaining)}
         )
     
     user = await db.users.find_one({"email": data.email}, {"_id": 0})
@@ -342,8 +364,9 @@ async def login(data: UserLogin, request: Request):
                 logger.error(f"Failed to send lockout notification: {e}")
             
             raise HTTPException(
-                status_code=429, 
-                detail="Too many failed attempts. Account temporarily locked."
+                status_code=423,  # 423 Locked for account lockout (per pentest spec)
+                detail="Too many failed login attempts. Account temporarily locked for 15 minutes.",
+                headers={"Retry-After": "900"}  # 15 minutes
             )
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
@@ -2715,7 +2738,7 @@ async def get_all_campaigns_analytics(
         try:
             cutoff_start = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
             cutoff_end = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
-        except:
+        except ValueError:
             cutoff_start = datetime.now(timezone.utc) - timedelta(days=days)
             cutoff_end = datetime.now(timezone.utc)
     else:

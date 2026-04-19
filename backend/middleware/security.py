@@ -112,8 +112,10 @@ rate_limiter = RateLimiter()
 
 
 # Rate limit configurations per endpoint
+# NOTE: Login endpoint uses dedicated IP rate limiter in route handler (10/15min → 429)
+# plus per-account lockout (5/15min → 423) as per pentest requirements
 RATE_LIMITS = {
-    "/api/auth/login": {"max_requests": 5, "window_seconds": 60},
+    "/api/auth/login": {"max_requests": 100, "window_seconds": 60},  # Disabled middleware limit for login (handled in route)
     "/api/auth/register": {"max_requests": 3, "window_seconds": 60},
     "/api/auth/forgot-password": {"max_requests": 3, "window_seconds": 60},
     "/api/auth/session": {"max_requests": 10, "window_seconds": 60},
@@ -240,9 +242,9 @@ class AccountLockoutManager:
     def __init__(self):
         self.failed_attempts = defaultdict(list)
         self.locked_accounts = {}
-        self.max_attempts = 3  # Lock after 3 failed attempts per user request
+        self.max_attempts = 5  # Lock after 5 failed attempts per user request (pentest requirement)
         self.lockout_duration_minutes = 15
-        self.attempt_window_minutes = 10
+        self.attempt_window_minutes = 15  # Match pentest requirement: 15 minute window
         self.notification_callback = None  # Set by server.py for admin notifications
     
     def set_notification_callback(self, callback):
@@ -321,6 +323,74 @@ class AccountLockoutManager:
 account_lockout = AccountLockoutManager()
 
 
+# ============== IP-BASED LOGIN RATE LIMITER ==============
+
+class IPLoginRateLimiter:
+    """IP-based rate limiter specifically for login endpoint to prevent brute force attacks.
+    
+    Per pentest requirements:
+    - Max 10 login requests per IP per 15 minutes → HTTP 429
+    - Separate from per-account lockout (HTTP 423)
+    """
+    
+    def __init__(self):
+        self.ip_attempts = defaultdict(list)
+        self.blocked_ips = {}
+        self.max_requests = 10
+        self.window_minutes = 15
+        self.block_duration_minutes = 15
+    
+    def record_attempt(self, ip: str) -> bool:
+        """Record a login attempt from an IP. Returns True if IP should be blocked."""
+        now = time.time()
+        key = ip
+        
+        # Clean old attempts outside the window
+        window = self.window_minutes * 60
+        self.ip_attempts[key] = [t for t in self.ip_attempts[key] if now - t < window]
+        
+        # Record this attempt
+        self.ip_attempts[key].append(now)
+        
+        # Check if limit exceeded (check AFTER recording to include this attempt)
+        if len(self.ip_attempts[key]) >= self.max_requests:
+            self.block_ip(ip)
+            return True
+        
+        return False
+    
+    def block_ip(self, ip: str):
+        """Block an IP for the configured duration."""
+        unlock_time = time.time() + (self.block_duration_minutes * 60)
+        self.blocked_ips[ip] = unlock_time
+        logger.warning(f"IP {ip} blocked for {self.block_duration_minutes} minutes due to excessive login attempts")
+    
+    def is_blocked(self, ip: str) -> tuple[bool, Optional[int]]:
+        """Check if an IP is blocked. Returns (is_blocked, seconds_remaining)."""
+        if ip not in self.blocked_ips:
+            return False, None
+        
+        now = time.time()
+        unlock_time = self.blocked_ips[ip]
+        
+        if now >= unlock_time:
+            del self.blocked_ips[ip]
+            return False, None
+        
+        return True, int(unlock_time - now)
+    
+    def get_remaining_attempts(self, ip: str) -> int:
+        """Get remaining login attempts for an IP before blocking."""
+        now = time.time()
+        window = self.window_minutes * 60
+        attempts = [t for t in self.ip_attempts.get(ip, []) if now - t < window]
+        return max(0, self.max_requests - len(attempts))
+
+
+# Global IP rate limiter for login endpoint
+ip_login_limiter = IPLoginRateLimiter()
+
+
 # ============== PASSWORD POLICY ==============
 
 class PasswordPolicy:
@@ -358,7 +428,7 @@ class PasswordPolicy:
             errors.append("Password must contain at least one number")
         
         if cls.REQUIRE_SPECIAL and not any(c in cls.SPECIAL_CHARS for c in password):
-            errors.append(f"Password must contain at least one special character")
+            errors.append("Password must contain at least one special character")
         
         if password.lower() in cls.COMMON_PASSWORDS:
             errors.append("This password is too common")

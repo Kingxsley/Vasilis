@@ -1,0 +1,48 @@
+{
+  "summary": "Backend-only testing of pentest security fixes: IP-based login rate limiting (HTTP 429 after 10 req/15min), per-account lockout (HTTP 423 after 5 failed attempts/15min), Retry-After headers, and lockout counter clear on successful login. All 5 tests passed (100%). Frontend pagination and scroll-to-top were NOT tested per request (backend-only).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "/api/auth/login",
+        "issue": "Inconsistent 423 behavior on 5th failed attempt: when user email is unknown, the 5th attempt returns 401 (no lockout exception in user-not-found branch) even though account_lockout.record_failed_attempt() returns locked=True. Lockout only applies from the 6th call onward via is_locked() guard. For wrong-password path (existing user), the 5th attempt returns 423 as expected. Behavior is still secure (lockout is enforced), but the 5th response is semantically inconsistent between the two failure paths."
+      },
+      {
+        "endpoint": "/api/auth/login",
+        "issue": "IP rate limiter uses first X-Forwarded-For value, which in multi-hop proxy/egress setups may rotate. In this test environment two egress IPs (34.16.56.64, 35.225.230.28) were observed, so a legitimate attacker behind a NAT pool can effectively double their quota. Consider rate-limiting on /24 subnet or combining IP+User-Agent fingerprint for stricter enforcement."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_pentest_security_fixes.py",
+    "/app/test_reports/pytest/pytest_results_20.xml"
+  ],
+  "action_items": [
+    "OPTIONAL: For consistency, have the user-not-found branch in /api/auth/login also raise 423 when record_failed_attempt() returns True (same as wrong-password path) so the 5th failed attempt returns 423 regardless of account existence.",
+    "OPTIONAL: Consider broader IP scoping (e.g., /24 block) or IP+UA fingerprint for the IP rate limiter to reduce evasion via egress-IP rotation."
+  ],
+  "critical_code_review_comments": [
+    "middleware/security.py IPLoginRateLimiter: correct implementation with 10 req/15 min window; record_attempt sets block when len >= 10 so the 11th request returns 429.",
+    "middleware/security.py AccountLockoutManager: correct 5 attempts/15 min; locks account and clears in-memory counter on lock_account; clear_attempts() on successful login.",
+    "server.py login(): IP check runs before account check - correct precedence. Retry-After headers set on both 429 (900s) and 423 (dynamic seconds_remaining or 900s).",
+    "server.py login(): account_lockout.clear_attempts(email) called after successful password verification - confirmed working via test.",
+    "In-memory state means rate-limit counters reset on backend restart; acceptable for single-worker deployment but would break horizontal scaling (documented limitation)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_pentest_security_fixes.py (new file)"
+  ],
+  "success_rate": {
+    "backend": "100% (5/5)"
+  },
+  "test_credentials": "admin@vasilisnetshield.com / Admin123! (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "None - used existing admin account; test emails are ephemeral fake emails with UUID suffixes.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Backend has single uvicorn worker so in-memory IPLoginRateLimiter/AccountLockoutManager state persists during test runs. Tests use `sudo supervisorctl restart backend` via session/function fixtures to reset state. Test environment egress rotates between 2 IPs (34.16.56.64, 35.225.230.28) so IP-rate-limit tests send extra requests (25-30) to guarantee at least one egress IP exceeds the 10-request threshold. Frontend features (pagination, scroll-to-top) were NOT tested this iteration - main agent confirmed via screenshots.",
+  "rca_of_the_issue": "N/A - no bugs to RCA. Two initial test failures were due to (a) class-scoped fixture causing in-memory state to leak between tests (fixed by adding function-scoped fixture for counter-clear test) and (b) test egress IP load-balancing across two IPs (fixed by raising request count to guarantee threshold crossing on one egress IP)."
+}
