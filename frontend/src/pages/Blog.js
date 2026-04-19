@@ -278,7 +278,7 @@ export function BlogPost() {
     <div className="min-h-screen bg-[#0a0a0f] flex flex-col">
       <PublicNav branding={branding} />
 
-      <main className="container mx-auto px-6 py-12 max-w-4xl flex-1">
+      <article className="blog-post-article">
         <Link to="/blog" className="flex items-center gap-2 mb-8 hover:opacity-80" style={{ color: textColor }}>
           <ArrowLeft className="w-4 h-4" />Back to Blog
         </Link>
@@ -312,7 +312,7 @@ export function BlogPost() {
           className="blog-article-content"
           dangerouslySetInnerHTML={{ __html: sanitizeHTML(post.content) }}
         />
-      </main>
+      </article>
 
       <PublicFooter branding={branding} />
     </div>

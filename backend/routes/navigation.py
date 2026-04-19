@@ -189,20 +189,21 @@ async def get_public_nav_items(request: Request):
     
     # Note: CMS tiles are deprecated - all pages now managed through PageBuilder
     
-    # Add blog link if there are published posts
+    # Note: Blog and News are accessible via public routes but NOT shown in dashboard sidebar
+    # Add News link if configured
     try:
-        blog_count = await db.blog_posts.count_documents({"published": True})
-        if blog_count > 0:
+        news_count = await db.news_feeds.count_documents({})
+        if news_count > 0:
             items.append({
-                "item_id": "blog_auto",
-                "label": "Blog",
+                "item_id": "news_auto",
+                "label": "News",
                 "link_type": "internal",
-                "path": "/blog",
-                "icon": "BookOpen",
+                "path": "/news",
+                "icon": "Newspaper",
                 "section_id": "content",
                 "visible_to": ["all"],
                 "open_in_new_tab": False,
-                "sort_order": 40,
+                "sort_order": 35,
                 "is_active": True,
                 "is_auto_generated": True
             })

@@ -1,8 +1,18 @@
-/* Enterprise-Grade Blog Content Styling */
+/* ENTERPRISE BLOG LAYOUT - FORCED CONSTRAINTS */
+
+/* Main article wrapper */
+article.blog-post-article {
+  max-width: 768px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-left: 2rem !important;
+  padding-right: 2rem !important;
+}
+
+/* Blog content container */
 .blog-article-content {
-  max-width: 48rem !important;
-  margin: 0 auto !important;
-  padding: 0 1rem;
+  max-width: 100% !important;
+  width: 100% !important;
   font-size: 1.125rem;
   line-height: 1.8;
   color: #E8DDB5;
@@ -30,6 +40,7 @@
 .blog-article-content p {
   margin-bottom: 1.5rem;
   line-height: 1.8;
+  color: #E8DDB5;
 }
 
 .blog-article-content ul,
@@ -41,6 +52,7 @@
 .blog-article-content li {
   margin-bottom: 0.875rem;
   line-height: 1.75;
+  color: #E8DDB5;
 }
 
 .blog-article-content li strong {
@@ -68,59 +80,19 @@
   opacity: 0.8;
 }
 
-.blog-article-content blockquote {
-  border-left: 4px solid #D4A836;
-  padding-left: 1.5rem;
-  margin: 2rem 0;
-  font-style: italic;
-  color: #E8DDB5cc;
-}
-
-.blog-article-content code {
-  background-color: #1a1a24;
-  padding: 0.2rem 0.4rem;
-  border-radius: 0.25rem;
-  font-size: 0.9em;
-  color: #D4A836;
-}
-
-.blog-article-content pre {
-  background-color: #1a1a24;
-  padding: 1.5rem;
-  border-radius: 0.5rem;
-  overflow-x: auto;
-  margin: 2rem 0;
-}
-
-.blog-article-content pre code {
-  background: none;
-  padding: 0;
-}
-
-/* Constrain all content */
-.blog-article-content > * {
-  max-width: 100%;
-}
-
-.blog-article-content img {
-  border-radius: 0.5rem;
-  margin: 2rem auto;
-  max-width: 100%;
-  height: auto;
-  display: block;
-}
-
-/* Mobile optimization */
+/* Mobile */
 @media (max-width: 768px) {
+  article.blog-post-article {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
   .blog-article-content {
     font-size: 1rem;
-    line-height: 1.7;
-    padding: 0 1rem;
   }
   
   .blog-article-content h2 {
     font-size: 1.5rem;
-    margin-top: 2rem;
   }
   
   .blog-article-content h3 {

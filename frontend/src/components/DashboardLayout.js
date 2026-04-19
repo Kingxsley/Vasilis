@@ -187,10 +187,16 @@ export const DashboardLayout = ({ children }) => {
     );
   };
 
-  // Get custom items for a section (excluding CMS tiles - they go in Content Manager)
+  // Get custom items for a section - EXCLUDE BLOG AND CONTACT US
   const getCustomItemsForSection = (sectionId) => {
     return customNavItems
-      .filter(item => item.section_id === sectionId && item.is_active && !item.is_cms_tile)
+      .filter(item => {
+        // Filter out Blog and Contact Us from showing in sidebar
+        const excludedPaths = ['/blog', '/contact', '/contact-us'];
+        if (excludedPaths.includes(item.path)) return false;
+        
+        return item.section_id === sectionId && item.is_active && !item.is_cms_tile;
+      })
       .sort((a, b) => a.sort_order - b.sort_order);
   };
 
