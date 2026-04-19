@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { sanitizeHtml } from '../utils/sanitize';
+import { sanitizeHTML } from '../utils/sanitize';
 import { Button } from './ui/button';
 import { ArrowRight, ExternalLink } from 'lucide-react';
 
@@ -135,7 +135,7 @@ export const DynamicSidebar = ({ page, branding }) => {
               <div 
                 className="prose prose-invert prose-sm max-w-none"
                 style={{ color: textColor }}
-                dangerouslySetInnerHTML={createSafeMarkup(sanitizeHtml(section.html_content))}
+                dangerouslySetInnerHTML={createSafeMarkup(sanitizeHTML(section.html_content))}
               />
             )}
           </div>

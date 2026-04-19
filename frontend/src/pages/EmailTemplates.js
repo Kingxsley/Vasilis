@@ -1,7 +1,7 @@
 import React, { useEffect, useState, Suspense, lazy } from 'react';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { useAuth } from '../App';
-import { sanitizeHtml } from '../utils/sanitize';
+import { sanitizeHTML } from '../utils/sanitize';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -1032,7 +1032,7 @@ export default function EmailTemplates() {
                     <div 
                       className="prose prose-invert max-w-none"
                       style={{ fontFamily: 'Arial, sans-serif', color: '#E8DDB5' }}
-                      dangerouslySetInnerHTML={createSafeMarkup(sanitizeHtml(previewData.body))}
+                      dangerouslySetInnerHTML={createSafeMarkup(sanitizeHTML(previewData.body))}
                     />
                   </div>
                 </div>

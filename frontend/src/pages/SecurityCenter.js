@@ -481,7 +481,7 @@ export default function SecurityCenter() {
             <TabsTrigger value="audit-logs">Audit Logs</TabsTrigger>
             <TabsTrigger value="permissions">Permissions</TabsTrigger>
             <TabsTrigger value="2fa">Two-Factor Auth</TabsTrigger>
-          </Tabs>
+          </TabsList>
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-4">

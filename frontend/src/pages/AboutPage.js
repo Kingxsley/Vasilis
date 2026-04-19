@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { sanitizeHtml } from '../utils/sanitize';
+import { sanitizeHTML } from '../utils/sanitize';
 import { Button } from '../components/ui/button';
 import { Loader2, Target, Eye, Award } from 'lucide-react';
 import { PublicNav } from '../components/layout/PublicNav';
@@ -60,7 +60,7 @@ export default function AboutPage() {
             <div 
               className="prose prose-invert prose-lg max-w-none"
               style={{ color: textColor }}
-              dangerouslySetInnerHTML={createSafeMarkup(sanitizeHtml(about.content))}
+              dangerouslySetInnerHTML={createSafeMarkup(sanitizeHTML(about.content))}
             />
           </div>
         )}

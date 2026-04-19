@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { sanitizeHtml } from '../utils/sanitize';
+import { sanitizeHTML } from '../utils/sanitize';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -44,7 +44,7 @@ const BlockRenderer = ({ block, branding }) => {
         <div 
           className="prose prose-invert max-w-none mb-6"
           style={{ color: textColor }}
-          dangerouslySetInnerHTML={createSafeMarkup(sanitizeHtml(content.html))}
+          dangerouslySetInnerHTML={createSafeMarkup(sanitizeHTML(content.html))}
         />
       );
 
@@ -907,7 +907,7 @@ export default function CMSTilePage() {
             <div 
               className="prose prose-invert max-w-none"
               style={{ color: textColor }}
-              dangerouslySetInnerHTML={createSafeMarkup(sanitizeHtml(tile.custom_content))}
+              dangerouslySetInnerHTML={createSafeMarkup(sanitizeHTML(tile.custom_content))}
             />
           );
         }

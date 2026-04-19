@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
-import { sanitizeHtml } from '../utils/sanitize';
+import { sanitizeHTML } from '../utils/sanitize';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Input } from '../components/ui/input';
@@ -310,7 +310,7 @@ export function BlogPost() {
         <div 
           className="prose prose-invert prose-lg max-w-none"
           style={{ color: textColor }}
-          dangerouslySetInnerHTML={createSafeMarkup(sanitizeHtml(post.content))}
+          dangerouslySetInnerHTML={createSafeMarkup(sanitizeHTML(post.content))}
         />
       </main>
 
