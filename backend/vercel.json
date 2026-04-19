@@ -8,6 +8,11 @@
   ],
   "routes": [
     {
+      "src": "/api/(admin|debug|config)/?.*",
+      "status": 404,
+      "dest": "/404"
+    },
+    {
       "src": "/\\.env.*",
       "status": 404,
       "dest": "/404"
@@ -51,10 +56,11 @@
       "src": "/api/(.*)",
       "dest": "server.py",
       "headers": {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+        "Access-Control-Allow-Origin": "https://vasilisnetshield.com",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
         "Access-Control-Allow-Credentials": "true",
+        "Vary": "Origin",
         "X-Frame-Options": "DENY",
         "X-Content-Type-Options": "nosniff",
         "Referrer-Policy": "strict-origin-when-cross-origin",
@@ -70,9 +76,6 @@
       "src": "/(.*)",
       "dest": "server.py",
       "headers": {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
         "X-Frame-Options": "DENY",
         "X-Content-Type-Options": "nosniff",
         "Referrer-Policy": "strict-origin-when-cross-origin",

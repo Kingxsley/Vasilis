@@ -2,6 +2,24 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "headers": [
     {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "https://vasilisnetshield.com" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization" },
+        { "key": "Vary", "value": "Origin" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(), interest-cohort=()" },
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
+        { "key": "Cross-Origin-Resource-Policy", "value": "same-origin" },
+        { "key": "Cross-Origin-Embedder-Policy", "value": "require-corp" },
+        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';" }
+      ]
+    },
+    {
       "source": "/(.*)",
       "headers": [
         { "key": "X-Frame-Options", "value": "DENY" },
@@ -17,6 +35,12 @@
     }
   ],
   "redirects": [
+    { "source": "/api/admin", "destination": "/404", "permanent": false },
+    { "source": "/api/admin/:path*", "destination": "/404", "permanent": false },
+    { "source": "/api/debug", "destination": "/404", "permanent": false },
+    { "source": "/api/debug/:path*", "destination": "/404", "permanent": false },
+    { "source": "/api/config", "destination": "/404", "permanent": false },
+    { "source": "/api/config/:path*", "destination": "/404", "permanent": false },
     { "source": "/.env", "destination": "/404", "permanent": false },
     { "source": "/.env.local", "destination": "/404", "permanent": false },
     { "source": "/.env.production", "destination": "/404", "permanent": false },
