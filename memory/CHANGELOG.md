@@ -66,3 +66,41 @@
 - `/app/frontend/src/pages/Blog.js`, `VideosPage.js`, `NewsAggregator.js`, `AboutPage.js` — added override mount-check
 - `/app/frontend/src/pages/LandingPage.js` — fetches `/api/navigation/public`
 - `/app/backend/routes/navigation.py` — `/public` endpoint merges PageBuilder pages + defaults
+
+## 2026-04-19 (Session 2) — News/RSS Consolidation + Presets + Sidebar Rendering
+
+### Fixed (P0)
+- **RSS feeds weren't showing** on `/news`: the old `RSSFeedManager.js` pointed to a non-existent endpoint `/api/content/news/rss-feeds`. Migrated to the single `/api/news/feeds` implementation.
+- **Merged News Manager + RSS Feeds**: One admin UI at `/dashboard/news-manager` with tabs "Articles" + "RSS Feeds". Sidebar item renamed to "News & RSS". Legacy `/rss-feeds` route redirects here.
+- **Public `/news` mixed feed**: Admin news articles + RSS articles combined in one date-sorted grid via new `GET /api/news/mixed-feed` endpoint. Dedup by link.
+
+### Changed (P1)
+- **Removed default `/videos` and `/about` routes** + nav defaults (per user request — admins create their own via PageBuilder).
+- **Reserved slugs** narrowed to `{blog, news}` in `/api/navigation/public` merge logic.
+
+### New Features (P1)
+- **PageBuilder preset templates** (`/api/pages/presets`) — starter blocks for `news`, `about`, `contact`, `landing`, `blog` page types. When creating a new page and picking a type, starter blocks auto-populate (safe: won't overwrite user blocks).
+- **Reserved-slug seeder** (`POST /api/pages/seed-reserved`) — idempotent. Creates draft `blog` + `news` pages with preset blocks + `show_in_nav=true`. Exposed via "Seed Blog & News" button in Page Builder header.
+- **Sidebar rendering on PageBuilder-overridden public pages** — new public endpoint `GET /api/sidebar-configs/public/{slug}` + `SidebarWidgets` renderer in `PageBuilderRenderer.js`. When an override page has `sidebar_config` set, public page renders as a 2-column grid with widgets on the right.
+
+### RSS Feed Improvements
+- Feeds save even when URL is unreachable (status=`unreachable` + `fetch_error` captured). User retries via Refresh button.
+- Dedupe by URL on POST (400 if duplicate).
+- Auto-populate feed name from RSS title when user leaves name blank.
+- `last_fetched`, `status`, `fetch_error` surfaced in admin UI with clear Badges.
+
+### Backend Testing
+- **21/21 pytest tests passed** (`iteration_27.json`, 100%): all new endpoints + regressions verified.
+
+### Files Modified/Added
+- `/app/backend/routes/news_feeds.py` — FULL REWRITE (unified API)
+- `/app/backend/routes/pages.py` — appended `PAGE_PRESETS` + `/presets` + `/seed-reserved` endpoints
+- `/app/backend/routes/sidebar_configs.py` — added `public/{slug}` endpoint
+- `/app/backend/routes/navigation.py` — shrunk defaults to blog+news
+- `/app/frontend/src/pages/NewsManager.js` — REWRITTEN with tabs (consolidates RSSFeedManager.js)
+- `/app/frontend/src/pages/NewsAggregator.js` — REWRITTEN as mixed feed
+- `/app/frontend/src/pages/PageBuilder.js` — presets wired to page_type Select + "Seed Blog & News" button
+- `/app/frontend/src/pages/Blog.js` — now renders override sidebar
+- `/app/frontend/src/components/PageBuilderRenderer.js` — added `SidebarWidgets` + sidebar fetch in hook
+- `/app/frontend/src/components/DashboardLayout.js` — "News & RSS" (consolidated)
+- `/app/frontend/src/App.js` — removed /videos & /about; /rss-feeds redirects to /dashboard/news-manager
