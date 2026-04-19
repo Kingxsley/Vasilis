@@ -235,55 +235,76 @@ async def get_all_articles(limit: int = 50):
 
 
 @router.get("/mixed-feed")
-async def get_mixed_feed(limit: int = 50):
+async def get_mixed_feed(
+    limit: int = 50,
+    skip: int = 0,
+    source: str = "mixed",  # mixed | articles | rss
+    category: Optional[str] = None,
+    tag: Optional[str] = None,
+    sort: str = "newest",  # newest | oldest
+):
     """Public mixed feed: admin-authored news articles + RSS feeds, sorted by date.
 
-    Used by the public /news page. Each item carries a `source` field
-    (`article` or `rss`) and `link` (internal slug link or external URL).
+    Supports pagination (skip+limit), source filter, category+tag filter,
+    and sort. Used by the public /news page and the PageBuilder `news_feed`
+    dynamic block.
     """
     db = get_db()
 
     # Admin news
-    admin_news = await db.news.find(
-        {"published": True},
-        {"_id": 0, "title": 1, "slug": 1, "excerpt": 1, "featured_image": 1,
-         "tags": 1, "created_at": 1, "author": 1}
-    ).sort("created_at", -1).limit(limit).to_list(limit)
-
-    items = []
-    for n in admin_news:
-        items.append({
-            "title": n.get("title") or "Untitled",
-            "link": f"/news/{n.get('slug')}" if n.get("slug") else None,
-            "description": n.get("excerpt") or "",
-            "published_at": n.get("created_at") or datetime.now(timezone.utc).isoformat(),
-            "featured_image": n.get("featured_image"),
-            "tags": n.get("tags") or [],
-            "author": n.get("author"),
-            "feed_name": "Our News",
-            "source": "article",
-        })
-
-    # RSS articles
-    feeds = await db.news_feeds.find({"is_active": {"$ne": False}}, {"_id": 0}).to_list(20)
-    for feed in feeds:
-        ok, _, entries, _ = await _parse_feed(feed["url"])
-        if not ok:
-            continue
-        for entry in entries[:15]:
+    items: List[dict] = []
+    if source in ("mixed", "articles"):
+        query: dict = {"published": True}
+        if category:
+            query["category"] = category
+        if tag:
+            query["tags"] = tag
+        admin_news = await db.news.find(
+            query,
+            {"_id": 0, "title": 1, "slug": 1, "excerpt": 1, "featured_image": 1,
+             "tags": 1, "category": 1, "created_at": 1, "author": 1}
+        ).sort("created_at", -1).limit(200).to_list(200)
+        for n in admin_news:
             items.append({
-                "title": entry.get("title", "Untitled"),
-                "link": entry.get("link", ""),
-                "description": entry.get("summary", entry.get("description", "")),
-                "published_at": entry.get("published", entry.get("updated", datetime.now(timezone.utc).isoformat())),
-                "featured_image": None,
-                "tags": [],
-                "author": None,
-                "feed_name": feed.get("name") or "RSS",
-                "source": "rss",
+                "title": n.get("title") or "Untitled",
+                "link": f"/news/{n.get('slug')}" if n.get("slug") else None,
+                "description": n.get("excerpt") or "",
+                "published_at": n.get("created_at") or datetime.now(timezone.utc).isoformat(),
+                "featured_image": n.get("featured_image"),
+                "tags": n.get("tags") or [],
+                "category": n.get("category"),
+                "author": n.get("author"),
+                "feed_name": "Our News",
+                "source": "article",
             })
 
-    items.sort(key=lambda x: x.get("published_at") or "", reverse=True)
+    # RSS articles
+    if source in ("mixed", "rss"):
+        feed_query: dict = {"is_active": {"$ne": False}}
+        if category:
+            feed_query["category"] = category
+        feeds = await db.news_feeds.find(feed_query, {"_id": 0}).to_list(20)
+        for feed in feeds:
+            ok, _, entries, _ = await _parse_feed(feed["url"])
+            if not ok:
+                continue
+            for entry in entries[:15]:
+                items.append({
+                    "title": entry.get("title", "Untitled"),
+                    "link": entry.get("link", ""),
+                    "description": entry.get("summary", entry.get("description", "")),
+                    "published_at": entry.get("published", entry.get("updated", datetime.now(timezone.utc).isoformat())),
+                    "featured_image": None,
+                    "tags": [],
+                    "category": feed.get("category"),
+                    "author": None,
+                    "feed_name": feed.get("name") or "RSS",
+                    "source": "rss",
+                })
+
+    reverse = sort != "oldest"
+    items.sort(key=lambda x: x.get("published_at") or "", reverse=reverse)
+
     # Dedupe by link (same article can appear in multiple feeds)
     seen = set()
     deduped = []
@@ -294,4 +315,7 @@ async def get_mixed_feed(limit: int = 50):
         if key:
             seen.add(key)
         deduped.append(it)
-    return {"items": deduped[:limit]}
+
+    total = len(deduped)
+    paged = deduped[skip: skip + limit]
+    return {"items": paged, "total": total, "skip": skip, "limit": limit}

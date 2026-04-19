@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
+import { Badge } from './ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Shield, Lock, Key, Calendar, MapPin, Mail, Check, Loader2 } from 'lucide-react';
+import { Shield, Lock, Key, Calendar, Mail, Check, Loader2, User, Search, Rss, Newspaper, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -197,6 +199,276 @@ const CardsBlock = ({ content }) => {
   );
 };
 
+// ---- Dynamic list blocks ---------------------------------------------------
+
+const gridColClass = (cols) => ({
+  1: 'grid-cols-1',
+  2: 'grid-cols-1 md:grid-cols-2',
+  3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
+  4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
+}[cols] || 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3');
+
+const BlogListBlock = ({ content }) => {
+  const {
+    items_per_page = 9,
+    columns = 3,
+    layout = 'grid',
+    category_filter = '',
+    tag_filter = '',
+    sort = 'newest',
+    show_date = true,
+    show_author = true,
+    show_excerpt = true,
+    show_search = true,
+    featured_first = false,
+  } = content || {};
+
+  const [posts, setPosts] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [query, setQuery] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  const skip = (page - 1) * items_per_page;
+  const totalPages = Math.max(1, Math.ceil(total / items_per_page));
+
+  useEffect(() => {
+    let cancelled = false;
+    const fetchPosts = async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams({
+          published_only: 'true',
+          limit: String(items_per_page),
+          skip: String(skip),
+          sort,
+        });
+        if (query) params.set('search', query);
+        if (tag_filter) params.set('tag', tag_filter);
+        const res = await axios.get(`${API}/content/blog?${params.toString()}`);
+        if (cancelled) return;
+        let list = res.data.posts || [];
+        if (category_filter) {
+          list = list.filter((p) => p.category === category_filter);
+        }
+        if (featured_first) {
+          list = [...list].sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
+        }
+        setPosts(list);
+        setTotal(res.data.total || list.length);
+      } catch (err) {
+        if (!cancelled) { setPosts([]); setTotal(0); }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    fetchPosts();
+    return () => { cancelled = true; };
+  }, [skip, items_per_page, sort, query, tag_filter, category_filter, featured_first]);
+
+  const fmtDate = (iso) => {
+    try { return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }); }
+    catch { return iso; }
+  };
+
+  return (
+    <div data-testid="block-blog-list" className="space-y-6">
+      {show_search && (
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+          <Input
+            placeholder="Search posts..."
+            value={query}
+            onChange={(e) => { setPage(1); setQuery(e.target.value); }}
+            className="pl-10 bg-[#1a1a24] border-[#30363D] text-white"
+            data-testid="block-blog-search"
+          />
+        </div>
+      )}
+
+      {loading ? (
+        <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 animate-spin text-[#D4A836]" /></div>
+      ) : posts.length === 0 ? (
+        <p className="text-gray-400 text-center py-8">No posts yet.</p>
+      ) : (
+        <div className={layout === 'list' ? 'space-y-4' : `grid ${gridColClass(columns)} gap-6`}>
+          {posts.map((post) => (
+            <Link
+              key={post.post_id}
+              to={`/blog/${post.slug}`}
+              className="block"
+              data-testid={`block-blog-card-${post.slug}`}
+            >
+              <Card className="bg-[#0f0f15] border-[#D4A836]/20 hover:border-[#D4A836]/50 transition-all h-full">
+                {post.featured_image && layout === 'grid' && (
+                  <div className="aspect-video overflow-hidden rounded-t-lg bg-[#1a1a24]">
+                    <img src={post.featured_image} alt={post.title} className="w-full h-full object-cover" />
+                  </div>
+                )}
+                <CardContent className="pt-4 space-y-3">
+                  {Array.isArray(post.tags) && post.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {post.tags.slice(0, 3).map((t) => (
+                        <Badge key={t} variant="outline" className="border-[#D4A836]/30 text-[#D4A836] text-xs">{t}</Badge>
+                      ))}
+                    </div>
+                  )}
+                  <h3 className="text-lg font-semibold text-[#E8DDB5] line-clamp-2 leading-snug">{post.title}</h3>
+                  {show_excerpt && post.excerpt && (
+                    <p className="text-sm text-gray-400 line-clamp-3">{post.excerpt}</p>
+                  )}
+                  <div className="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
+                    {show_date && post.created_at && (
+                      <span className="inline-flex items-center gap-1"><Calendar className="w-3 h-3" />{fmtDate(post.created_at)}</span>
+                    )}
+                    {show_author && post.author && (
+                      <span className="inline-flex items-center gap-1"><User className="w-3 h-3" />{post.author}</span>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-4" data-testid="block-blog-pagination">
+          <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage(page - 1)} className="border-[#D4A836]/30">
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+          <span className="text-sm text-gray-400 px-3">Page {page} of {totalPages}</span>
+          <Button size="sm" variant="outline" disabled={page >= totalPages} onClick={() => setPage(page + 1)} className="border-[#D4A836]/30">
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const NewsFeedBlock = ({ content }) => {
+  const {
+    source = 'mixed',
+    items_per_page = 9,
+    columns = 3,
+    category_filter = '',
+    tag_filter = '',
+    sort = 'newest',
+    show_date = true,
+    show_author = true,
+    show_excerpt = true,
+    show_source_badge = true,
+  } = content || {};
+
+  const [items, setItems] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+
+  const skip = (page - 1) * items_per_page;
+  const totalPages = Math.max(1, Math.ceil(total / items_per_page));
+
+  useEffect(() => {
+    let cancelled = false;
+    const fetchItems = async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams({
+          source,
+          limit: String(items_per_page),
+          skip: String(skip),
+          sort,
+        });
+        if (category_filter) params.set('category', category_filter);
+        if (tag_filter) params.set('tag', tag_filter);
+        const res = await axios.get(`${API}/news/mixed-feed?${params.toString()}`);
+        if (cancelled) return;
+        setItems(res.data.items || []);
+        setTotal(res.data.total || 0);
+      } catch (err) {
+        if (!cancelled) { setItems([]); setTotal(0); }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    fetchItems();
+    return () => { cancelled = true; };
+  }, [skip, items_per_page, sort, source, category_filter, tag_filter]);
+
+  const fmtDate = (iso) => {
+    try { return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }); }
+    catch { return iso; }
+  };
+
+  return (
+    <div data-testid="block-news-feed" className="space-y-6">
+      {loading ? (
+        <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 animate-spin text-[#D4A836]" /></div>
+      ) : items.length === 0 ? (
+        <p className="text-gray-400 text-center py-8">No news yet.</p>
+      ) : (
+        <div className={`grid ${gridColClass(columns)} gap-6`}>
+          {items.map((item, idx) => {
+            const isRSS = item.source === 'rss';
+            const href = item.link || '#';
+            const external = isRSS || href.startsWith('http');
+            const Wrapper = external
+              ? ({ children }) => <a href={href} target="_blank" rel="noopener noreferrer" className="block">{children}</a>
+              : ({ children }) => <Link to={href} className="block">{children}</Link>;
+            return (
+              <Wrapper key={`${href}-${idx}`}>
+                <Card className="bg-[#0f0f15] border-[#D4A836]/20 hover:border-[#D4A836]/50 transition-all h-full" data-testid={`block-news-card-${item.source}`}>
+                  {item.featured_image && (
+                    <div className="aspect-video overflow-hidden rounded-t-lg bg-[#1a1a24]">
+                      <img src={item.featured_image} alt={item.title} className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <CardContent className="pt-4 space-y-3">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {show_source_badge && (
+                        <Badge variant="outline" className={isRSS ? 'border-blue-500/30 text-blue-300 text-xs' : 'border-[#D4A836]/40 text-[#D4A836] text-xs'}>
+                          {isRSS ? <Rss className="w-3 h-3 mr-1" /> : <Newspaper className="w-3 h-3 mr-1" />}
+                          {item.feed_name || (isRSS ? 'RSS' : 'Our News')}
+                        </Badge>
+                      )}
+                      {show_date && (
+                        <span className="text-xs text-gray-500 inline-flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {fmtDate(item.published_at)}
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="text-lg font-semibold text-[#E8DDB5] line-clamp-2 leading-snug">{item.title}</h3>
+                    {show_excerpt && item.description && (
+                      <p className="text-sm text-gray-400 line-clamp-3" dangerouslySetInnerHTML={{ __html: item.description }} />
+                    )}
+                    {external && (
+                      <div className="text-xs flex items-center gap-1 text-[#D4A836]">Read more <ExternalLink className="w-3 h-3" /></div>
+                    )}
+                  </CardContent>
+                </Card>
+              </Wrapper>
+            );
+          })}
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-4" data-testid="block-news-pagination">
+          <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage(page - 1)} className="border-[#D4A836]/30">
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+          <span className="text-sm text-gray-400 px-3">Page {page} of {totalPages}</span>
+          <Button size="sm" variant="outline" disabled={page >= totalPages} onClick={() => setPage(page + 1)} className="border-[#D4A836]/30">
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ---- Main component --------------------------------------------------------
 
 const COMPONENTS = {
@@ -208,6 +480,8 @@ const COMPONENTS = {
   hero: HeroBlock,
   contact_form: ContactFormBlock,
   cards: CardsBlock,
+  blog_list: BlogListBlock,
+  news_feed: NewsFeedBlock,
 };
 
 /**

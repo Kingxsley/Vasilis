@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -7,11 +7,12 @@ import { Textarea } from '../components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { PublicNav } from '../components/layout/PublicNav';
 import { PublicFooter } from '../components/layout/PublicFooter';
-import { 
-  Shield, Lock, Key, Calendar, MapPin, Mail, Check, Loader2, 
+import {
+  Shield, Lock, Key, Calendar, MapPin, Mail, Check, Loader2,
   ArrowLeft, AlertTriangle
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { PageBuilderBlocks, SidebarWidgets } from '../components/PageBuilderRenderer';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -372,9 +373,14 @@ const CardsBlock = ({ content }) => {
 
 // Main component
 export default function CustomPage() {
-  const { slug } = useParams();
+  const params = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
+  // Resolve slug: either from /page/:slug or from the top-level pathname
+  // (e.g. /privacy-policy, /cookie-policy). Strips leading "/".
+  const slug = params.slug || location.pathname.replace(/^\/+/, '');
   const [page, setPage] = useState(null);
+  const [sidebar, setSidebar] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [branding, setBranding] = useState(null);
@@ -397,6 +403,13 @@ export default function CustomPage() {
     try {
       const res = await axios.get(`${API}/pages/custom/${slug}`);
       setPage(res.data);
+      // Fetch sidebar config if attached
+      if (res.data?.sidebar_config) {
+        try {
+          const sb = await axios.get(`${API}/sidebar-configs/public/${res.data.sidebar_config}`);
+          setSidebar(sb.data);
+        } catch (_) { setSidebar(null); }
+      }
     } catch (err) {
       setError(err.response?.status === 404 ? 'Page not found' : 'Failed to load page');
     } finally {
@@ -456,16 +469,27 @@ export default function CustomPage() {
       <PublicNav branding={branding} />
 
       {/* Content */}
-      <main className="flex-1 max-w-5xl mx-auto px-4 py-8 w-full">
-        {/* Page Title */}
-        <h1 className="text-3xl md:text-4xl font-bold text-[#E8DDB5] mb-8 text-center">
-          {page.title}
-        </h1>
-        
+      <main className="flex-1 max-w-6xl mx-auto px-4 py-8 w-full">
+        {/* Page Title (hidden if first block is already a hero/heading) */}
+        {(() => {
+          const first = page.blocks?.[0]?.type;
+          const showTitle = !['hero', 'heading'].includes(first);
+          return showTitle ? (
+            <h1 className="text-3xl md:text-4xl font-bold text-[#E8DDB5] mb-8 text-center">
+              {page.title}
+            </h1>
+          ) : null;
+        })()}
+
         {page.blocks && page.blocks.length > 0 ? (
-          <div className="space-y-6">
-            {page.blocks.sort((a, b) => a.order - b.order).map(renderBlock)}
-          </div>
+          sidebar && sidebar.widgets && sidebar.widgets.length > 0 ? (
+            <div className="grid lg:grid-cols-[1fr_320px] gap-8">
+              <div><PageBuilderBlocks blocks={page.blocks} /></div>
+              <SidebarWidgets sidebar={sidebar} />
+            </div>
+          ) : (
+            <PageBuilderBlocks blocks={page.blocks} />
+          )
         ) : (
           <div className="text-center py-16 text-gray-400">
             <p>This page has no content yet.</p>

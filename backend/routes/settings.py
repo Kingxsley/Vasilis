@@ -736,3 +736,79 @@ async def get_public_seo_settings():
             "site_description": "Human + AI Powered Security Training",
             "google_analytics_id": None
         }
+
+
+# ============================================================================
+# Cookie Consent Settings
+# ============================================================================
+
+COOKIE_DEFAULT = {
+    "enabled": True,
+    "title": "We value your privacy",
+    "message": "We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic. Click 'Accept All' to consent, or customize your preferences.",
+    "accept_all_text": "Accept All",
+    "reject_all_text": "Reject All",
+    "customize_text": "Customize",
+    "save_text": "Save Preferences",
+    "policy_url": "/cookie-policy",
+    "policy_link_text": "Learn more",
+    "categories": [
+        {"key": "essential", "label": "Essential",  "description": "Required for core functionality (authentication, security).", "required": True},
+        {"key": "analytics", "label": "Analytics", "description": "Help us understand how visitors use our site.",                  "required": False},
+        {"key": "marketing", "label": "Marketing", "description": "Used to show relevant content and measure campaigns.",           "required": False},
+    ],
+    "position": "bottom",  # bottom | bottom-right | center
+    "theme": "dark",
+}
+
+
+class CookieConsentUpdate(BaseModel):
+    enabled: Optional[bool] = None
+    title: Optional[str] = None
+    message: Optional[str] = None
+    accept_all_text: Optional[str] = None
+    reject_all_text: Optional[str] = None
+    customize_text: Optional[str] = None
+    save_text: Optional[str] = None
+    policy_url: Optional[str] = None
+    policy_link_text: Optional[str] = None
+    categories: Optional[List[dict]] = None
+    position: Optional[str] = None
+    theme: Optional[str] = None
+
+
+async def _require_admin(request: Request):
+    from utils import get_current_user as _get_current_user, security
+    credentials = await security(request)
+    user = await _get_current_user(request, credentials)
+    if user.get("role") != "super_admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return user
+
+
+@router.get("/cookie-consent")
+async def get_cookie_consent_settings():
+    """Public endpoint — cookie banner config. Merged with defaults."""
+    from server import db
+    doc = await db.settings.find_one({"type": "cookie_consent"}, {"_id": 0})
+    merged = {**COOKIE_DEFAULT, **(doc or {})}
+    merged.pop("type", None)
+    return merged
+
+
+@router.patch("/cookie-consent")
+async def update_cookie_consent_settings(data: CookieConsentUpdate, request: Request):
+    """Admin-only. Update cookie consent banner configuration."""
+    await _require_admin(request)
+    from server import db
+    update = {k: v for k, v in data.model_dump().items() if v is not None}
+    if not update:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    update["type"] = "cookie_consent"
+    update["updated_at"] = datetime.now(timezone.utc).isoformat()
+    await db.settings.update_one(
+        {"type": "cookie_consent"},
+        {"$set": update},
+        upsert=True,
+    )
+    return await get_cookie_consent_settings()

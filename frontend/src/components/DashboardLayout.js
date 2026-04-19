@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import { 
   LayoutDashboard, Building2, Users, 
-  BookOpen, BarChart3, LogOut, Menu, X, ChevronDown, ChevronRight, Mail, Monitor, Upload, Award, FileText, Settings, Layout, Crosshair, GraduationCap, Cog, ShieldAlert, TrendingUp, Mail as MailIcon, PanelLeftClose, PanelLeft, MessageSquare, Image, Search, ExternalLink, Activity, Wand2, HelpCircle, Key, AlertTriangle, KeyRound, Presentation, CalendarDays, Newspaper
+  BookOpen, BarChart3, LogOut, Menu, X, ChevronDown, ChevronRight, Mail, Monitor, Upload, Award, FileText, Settings, Layout, Crosshair, GraduationCap, Cog, ShieldAlert, TrendingUp, Mail as MailIcon, PanelLeftClose, PanelLeft, MessageSquare, Image, Search, ExternalLink, Activity, Wand2, HelpCircle, Key, AlertTriangle, KeyRound, Presentation, CalendarDays, Newspaper, Cookie
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import {
@@ -105,6 +105,7 @@ const navGroups = [
       { path: '/media-library', label: 'Media Library', icon: Image, contentManager: true },
       { path: '/events', label: 'Events', icon: CalendarDays, superAdminOnly: true },
       { path: '/dashboard/navigation-menu', label: 'Public Navigation', icon: Menu, superAdminOnly: true },
+      { path: '/dashboard/cookie-settings', label: 'Cookie Consent', icon: Cookie, superAdminOnly: true },
     ]
   },
   {

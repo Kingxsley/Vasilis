@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useRef } from 'r
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Toaster } from './components/ui/sonner';
 import { GoogleAnalytics } from './components/common/GoogleAnalytics';
+import CookieConsent from './components/CookieConsent';
 import axios from 'axios';
 import { getStoredToken, setStoredToken, clearStoredToken } from './utils/tokenStorage';
 
@@ -355,6 +356,7 @@ const ExecutiveTraining = React.lazy(() => import('./pages/ExecutiveTraining'));
 const CMSTiles = React.lazy(() => import('./pages/CMSTiles'));
 // RSSFeedManager for managing multiple RSS feeds
 const RSSFeedManager = React.lazy(() => import('./pages/RSSFeedManager'));
+const CookieSettings = React.lazy(() => import('./pages/CookieSettings'));
 // FormSubmissions for viewing contact form and access request submissions
 const FormSubmissions = React.lazy(() => import('./pages/FormSubmissions'));
 // EventsPage for events management with calendar, RSVP, and ICS support
@@ -555,6 +557,8 @@ const AppRouter = () => {
         <Route path="/blog" element={<BlogListPage />} />
         <Route path="/blog/:slug" element={<BlogPostPage />} />
         <Route path="/news" element={<NewsPage />} />
+        <Route path="/privacy-policy" element={<CustomPage />} />
+        <Route path="/cookie-policy" element={<CustomPage />} />
         <Route path="/page/:slug" element={<CustomPage />} />
         {/* Public certificate verification */}
         <Route path="/verify/:certificateId" element={<CertificateVerify />} />
@@ -903,6 +907,14 @@ const AppRouter = () => {
           element={<Navigate to="/dashboard/news-manager" replace />}
         />
         <Route
+          path="/dashboard/cookie-settings"
+          element={
+            <ProtectedRoute adminOnly>
+              <CookieSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/form-submissions"
           element={
             <ProtectedRoute adminOnly>
@@ -948,6 +960,7 @@ function App() {
       <AuthProvider>
         <AppRouter />
         <Toaster position="top-right" richColors closeButton duration={3000} />
+        <CookieConsent />
       </AuthProvider>
     </BrowserRouter>
   );

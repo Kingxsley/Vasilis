@@ -324,7 +324,7 @@ export default function NavigationManager() {
   };
 
   const seedDefaults = async () => {
-    if (!window.confirm('Seed default menu items (Blog, Videos, News, About)? Existing items with matching paths will be skipped.')) return;
+    if (!window.confirm('Seed default public menu items (Blog, News)? Existing items with matching paths will be skipped. Create other pages via Page Builder.')) return;
     setSaving(true);
     try {
       const res = await axios.post(`${API}/navigation/seed-defaults`, {}, {

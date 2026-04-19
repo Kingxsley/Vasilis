@@ -104,13 +104,19 @@ export function BlogList() {
   }
 
   if (override) {
+    // If the override already starts with a hero/heading block, skip the
+    // outer duplicate title so admins fully control the page header.
+    const firstBlock = override.blocks?.[0]?.type;
+    const showOuterTitle = !['hero', 'heading'].includes(firstBlock);
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex flex-col">
         <PublicNav branding={branding} />
         <main className="container mx-auto px-6 py-12 flex-1 max-w-6xl">
-          <h1 className="text-3xl md:text-4xl font-bold text-[#E8DDB5] mb-8 text-center">
-            {override.title}
-          </h1>
+          {showOuterTitle && (
+            <h1 className="text-3xl md:text-4xl font-bold text-[#E8DDB5] mb-8 text-center">
+              {override.title}
+            </h1>
+          )}
           {sidebar && sidebar.widgets && sidebar.widgets.length > 0 ? (
             <div className="grid lg:grid-cols-[1fr_320px] gap-8">
               <div><PageBuilderBlocks blocks={override.blocks} /></div>

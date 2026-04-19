@@ -26,7 +26,7 @@ import {
   Plus, Edit, Trash2, Loader2, Eye, EyeOff, FileText, Layout, 
   Type, Image, Mail, Calendar, LayoutGrid, Minus, MousePointerClick,
   GripVertical, ArrowUp, ArrowDown, ExternalLink, Save, X, Globe,
-  Smartphone, Tablet, Monitor, Lock
+  Smartphone, Tablet, Monitor, Lock, RefreshCw, Newspaper
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../App';
@@ -43,6 +43,8 @@ const BLOCK_ICONS = {
   contact_form: Mail,
   event_registration: Calendar,
   cards: LayoutGrid,
+  blog_list: FileText,
+  news_feed: Newspaper,
 };
 
 // ============================================================================
@@ -413,6 +415,19 @@ export default function PageBuilder() {
     }
   };
 
+  const handleResetToPreset = async (page) => {
+    if (!window.confirm(`Reset "${page.title}" to the latest preset? This replaces all blocks with the defaults. Title, slug, and publish flags stay the same.`)) return;
+    try {
+      await axios.post(`${API}/pages/${page.page_id}/reset-to-preset`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success(`"${page.title}" reset to preset`);
+      fetchPages();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to reset page');
+    }
+  };
+
   const handleTogglePublish = async (page) => {
     try {
       await axios.patch(`${API}/pages/custom/${page.page_id}`, {
@@ -708,6 +723,133 @@ export default function PageBuilder() {
           </div>
         );
 
+      case 'blog_list':
+      case 'news_feed': {
+        const isNews = blockForm.type === 'news_feed';
+        return (
+          <div className="space-y-4">
+            <p className="text-xs text-gray-500">
+              {isNews
+                ? 'Dynamically lists admin news articles + active RSS feeds, with pagination.'
+                : 'Dynamically lists published blog posts, with pagination + search.'}
+            </p>
+            {isNews && (
+              <div>
+                <Label>Source</Label>
+                <Select
+                  value={blockForm.content.source || 'mixed'}
+                  onValueChange={(v) => setBlockForm({ ...blockForm, content: { ...blockForm.content, source: v } })}
+                >
+                  <SelectTrigger className="bg-[#1a1a24] border-[#30363D] text-white"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="mixed">Mixed (articles + RSS)</SelectItem>
+                    <SelectItem value="articles">Admin articles only</SelectItem>
+                    <SelectItem value="rss">RSS feeds only</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Items per page</Label>
+                <Input
+                  type="number" min="3" max="24"
+                  value={blockForm.content.items_per_page ?? 9}
+                  onChange={(e) => setBlockForm({ ...blockForm, content: { ...blockForm.content, items_per_page: parseInt(e.target.value, 10) || 9 } })}
+                  className="bg-[#1a1a24] border-[#30363D] text-white"
+                />
+              </div>
+              <div>
+                <Label>Columns</Label>
+                <Select
+                  value={String(blockForm.content.columns ?? 3)}
+                  onValueChange={(v) => setBlockForm({ ...blockForm, content: { ...blockForm.content, columns: parseInt(v, 10) } })}
+                >
+                  <SelectTrigger className="bg-[#1a1a24] border-[#30363D] text-white"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1</SelectItem>
+                    <SelectItem value="2">2</SelectItem>
+                    <SelectItem value="3">3</SelectItem>
+                    <SelectItem value="4">4</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Sort</Label>
+                <Select
+                  value={blockForm.content.sort || 'newest'}
+                  onValueChange={(v) => setBlockForm({ ...blockForm, content: { ...blockForm.content, sort: v } })}
+                >
+                  <SelectTrigger className="bg-[#1a1a24] border-[#30363D] text-white"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="newest">Newest first</SelectItem>
+                    <SelectItem value="oldest">Oldest first</SelectItem>
+                    {!isNews && <SelectItem value="title">By title</SelectItem>}
+                  </SelectContent>
+                </Select>
+              </div>
+              {!isNews && (
+                <div>
+                  <Label>Layout</Label>
+                  <Select
+                    value={blockForm.content.layout || 'grid'}
+                    onValueChange={(v) => setBlockForm({ ...blockForm, content: { ...blockForm.content, layout: v } })}
+                  >
+                    <SelectTrigger className="bg-[#1a1a24] border-[#30363D] text-white"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="grid">Grid</SelectItem>
+                      <SelectItem value="list">List</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Category filter (optional)</Label>
+                <Input
+                  value={blockForm.content.category_filter || ''}
+                  onChange={(e) => setBlockForm({ ...blockForm, content: { ...blockForm.content, category_filter: e.target.value } })}
+                  placeholder="e.g. cybersecurity"
+                  className="bg-[#1a1a24] border-[#30363D] text-white"
+                />
+              </div>
+              <div>
+                <Label>Tag filter (optional)</Label>
+                <Input
+                  value={blockForm.content.tag_filter || ''}
+                  onChange={(e) => setBlockForm({ ...blockForm, content: { ...blockForm.content, tag_filter: e.target.value } })}
+                  placeholder="e.g. tutorial"
+                  className="bg-[#1a1a24] border-[#30363D] text-white"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                ['show_date', 'Show date'],
+                ['show_author', 'Show author'],
+                ['show_excerpt', 'Show excerpt'],
+                !isNews && ['show_search', 'Show search bar'],
+                !isNews && ['featured_first', 'Featured posts first'],
+                isNews && ['show_source_badge', 'Show source badge (Our News / RSS)'],
+              ].filter(Boolean).map(([key, label]) => (
+                <label key={key} className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={blockForm.content[key] !== false}
+                    onChange={(e) => setBlockForm({ ...blockForm, content: { ...blockForm.content, [key]: e.target.checked } })}
+                    className="w-4 h-4 accent-[#D4A836]"
+                  />
+                  <span className="text-sm text-gray-300">{label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
       default:
         return (
           <div className="text-gray-400 text-sm">
@@ -830,10 +972,29 @@ export default function PageBuilder() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => window.open(`/page/${page.slug}`, '_blank')}
+                        onClick={() => {
+                          const reserved = ['blog', 'news', 'privacy-policy', 'cookie-policy'];
+                          const href = reserved.includes(page.slug)
+                            ? `/${page.slug}`
+                            : `/page/${page.slug}`;
+                          window.open(href, '_blank');
+                        }}
                         className="text-gray-400 hover:text-[#D4A836]"
+                        title="Open live page"
                       >
                         <ExternalLink className="w-4 h-4" />
+                      </Button>
+                    )}
+                    {page.is_system && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleResetToPreset(page)}
+                        className="text-gray-400 hover:text-[#D4A836]"
+                        title="Reset to preset (restore default blocks)"
+                        data-testid={`reset-preset-${page.slug}`}
+                      >
+                        <RefreshCw className="w-4 h-4" />
                       </Button>
                     )}
                     <Button

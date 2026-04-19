@@ -537,6 +537,41 @@ async def get_block_templates(request: Request):
                     ],
                     "columns": 3
                 }
+            },
+            {
+                "type": "blog_list",
+                "name": "Blog Posts (dynamic)",
+                "icon": "FileText",
+                "default_content": {
+                    "items_per_page": 9,
+                    "columns": 3,
+                    "layout": "grid",
+                    "category_filter": "",
+                    "tag_filter": "",
+                    "sort": "newest",
+                    "show_date": True,
+                    "show_author": True,
+                    "show_excerpt": True,
+                    "show_search": True,
+                    "featured_first": False
+                }
+            },
+            {
+                "type": "news_feed",
+                "name": "News Feed (dynamic)",
+                "icon": "Newspaper",
+                "default_content": {
+                    "source": "mixed",
+                    "items_per_page": 9,
+                    "columns": 3,
+                    "category_filter": "",
+                    "tag_filter": "",
+                    "sort": "newest",
+                    "show_date": True,
+                    "show_author": True,
+                    "show_excerpt": True,
+                    "show_source_badge": True
+                }
             }
         ]
     }
@@ -553,13 +588,23 @@ PAGE_PRESETS = {
     "news": [
         {"type": "hero", "content": {
             "title": "News & Insights",
-            "subtitle": "Stay up to date with our announcements, product updates, and industry news.",
-            "button_text": "Subscribe",
-            "button_url": "#subscribe",
+            "subtitle": "Our updates and curated industry news — all in one place.",
+            "button_text": "",
+            "button_url": "",
             "background_color": "#0f0f15",
         }},
-        {"type": "heading", "content": {"text": "Latest Stories", "level": "h2", "align": "left"}},
-        {"type": "text", "content": {"text": "Here are our most recent posts. Add an RSS feed or publish a news article from the admin News Manager.", "align": "left"}},
+        {"type": "news_feed", "content": {
+            "source": "mixed",
+            "items_per_page": 9,
+            "columns": 3,
+            "category_filter": "",
+            "tag_filter": "",
+            "sort": "newest",
+            "show_date": True,
+            "show_author": True,
+            "show_excerpt": True,
+            "show_source_badge": True,
+        }},
     ],
     "about": [
         {"type": "hero", "content": {
@@ -611,14 +656,58 @@ PAGE_PRESETS = {
     ],
     "blog": [
         {"type": "hero", "content": {
-            "title": "Our Blog",
-            "subtitle": "Insights, tutorials, and updates from our team.",
+            "title": "Blog",
+            "subtitle": "Insights and updates from our team.",
             "button_text": "",
             "button_url": "",
             "background_color": "#0f0f15",
         }},
-        {"type": "heading", "content": {"text": "Featured Posts", "level": "h2", "align": "left"}},
-        {"type": "text", "content": {"text": "Replace this with your featured blog posts or leave the block empty to render a list.", "align": "left"}},
+        {"type": "blog_list", "content": {
+            "items_per_page": 9,
+            "columns": 3,
+            "layout": "grid",
+            "category_filter": "",
+            "tag_filter": "",
+            "sort": "newest",
+            "show_date": True,
+            "show_author": True,
+            "show_excerpt": True,
+            "show_search": True,
+            "featured_first": False,
+        }},
+    ],
+    "privacy-policy": [
+        {"type": "heading", "content": {"text": "Privacy Policy", "level": "h1", "align": "left"}},
+        {"type": "text", "content": {"text": "Last updated: " + datetime.now(timezone.utc).strftime("%B %d, %Y") + "\n\nThis Privacy Policy describes how we collect, use, and protect your personal information when you use our website and services.", "align": "left"}},
+        {"type": "heading", "content": {"text": "1. Information We Collect", "level": "h2", "align": "left"}},
+        {"type": "text", "content": {"text": "We collect information you provide directly (such as when you create an account or contact us) and information collected automatically (such as usage data, device information, and cookies).", "align": "left"}},
+        {"type": "heading", "content": {"text": "2. How We Use Your Information", "level": "h2", "align": "left"}},
+        {"type": "text", "content": {"text": "We use your information to:\n• Provide and improve our services\n• Communicate with you\n• Ensure security and prevent fraud\n• Comply with legal obligations", "align": "left"}},
+        {"type": "heading", "content": {"text": "3. Sharing Your Information", "level": "h2", "align": "left"}},
+        {"type": "text", "content": {"text": "We do not sell your personal information. We may share your information with trusted service providers, when required by law, or to protect our rights.", "align": "left"}},
+        {"type": "heading", "content": {"text": "4. Your Rights", "level": "h2", "align": "left"}},
+        {"type": "text", "content": {"text": "You have the right to access, correct, delete, or export your personal data. You can also object to certain processing activities. Contact us to exercise these rights.", "align": "left"}},
+        {"type": "heading", "content": {"text": "5. Cookies", "level": "h2", "align": "left"}},
+        {"type": "text", "content": {"text": "We use cookies to enhance your experience. See our Cookie Policy for details about the categories we use and how to manage your preferences.", "align": "left"}},
+        {"type": "heading", "content": {"text": "6. Contact Us", "level": "h2", "align": "left"}},
+        {"type": "text", "content": {"text": "For privacy-related inquiries, please contact us at privacy@yourcompany.com.", "align": "left"}},
+    ],
+    "cookie-policy": [
+        {"type": "heading", "content": {"text": "Cookie Policy", "level": "h1", "align": "left"}},
+        {"type": "text", "content": {"text": "Last updated: " + datetime.now(timezone.utc).strftime("%B %d, %Y") + "\n\nThis Cookie Policy explains what cookies are, which cookies we use, and how you can manage your preferences.", "align": "left"}},
+        {"type": "heading", "content": {"text": "What are cookies?", "level": "h2", "align": "left"}},
+        {"type": "text", "content": {"text": "Cookies are small text files stored on your device when you visit a website. They help the site remember your preferences, keep you logged in, and understand how you use it.", "align": "left"}},
+        {"type": "heading", "content": {"text": "Categories we use", "level": "h2", "align": "left"}},
+        {"type": "cards", "content": {
+            "columns": 3,
+            "cards": [
+                {"title": "Essential",  "description": "Required for core functionality like authentication and security. Cannot be disabled.", "icon": "Shield"},
+                {"title": "Analytics",  "description": "Help us understand how visitors use our site so we can improve performance and features.",        "icon": "Lock"},
+                {"title": "Marketing",  "description": "Used to show relevant content and measure the effectiveness of campaigns.",                          "icon": "Key"},
+            ],
+        }},
+        {"type": "heading", "content": {"text": "Managing your preferences", "level": "h2", "align": "left"}},
+        {"type": "text", "content": {"text": "You can change your cookie preferences at any time by clicking the 'Cookie Settings' link in the footer. You can also block cookies through your browser settings.", "align": "left"}},
     ],
 }
 
@@ -647,6 +736,8 @@ async def seed_reserved_pages(request: Request):
     reserved = [
         ("blog", "Blog", "blog"),
         ("news", "News", "news"),
+        ("privacy-policy", "Privacy Policy", "privacy-policy"),
+        ("cookie-policy", "Cookie Policy", "cookie-policy"),
     ]
     created = []
     skipped = []
@@ -664,6 +755,8 @@ async def seed_reserved_pages(request: Request):
                 "content": b["content"],
                 "order": i,
             })
+        # Privacy/cookie policy pages don't belong in the main nav by default
+        show_in_nav = slug not in ("privacy-policy", "cookie-policy")
         page_doc = {
             "page_id": f"page_{uuid.uuid4().hex[:12]}",
             "title": title,
@@ -671,7 +764,7 @@ async def seed_reserved_pages(request: Request):
             "description": f"Reserved system page for /{slug}. Customize via Page Builder.",
             "page_type": page_type,
             "blocks": blocks,
-            "show_in_nav": True,
+            "show_in_nav": show_in_nav,
             "nav_section": "header",
             "is_published": False,
             "is_system": True,
@@ -683,3 +776,43 @@ async def seed_reserved_pages(request: Request):
         created.append(slug)
 
     return {"created": created, "skipped": skipped}
+
+
+@router.post("/{page_id}/reset-to-preset")
+async def reset_page_to_preset(page_id: str, request: Request):
+    """Reset a reserved page's blocks back to the latest preset.
+
+    Useful when presets evolve (e.g., new dynamic blocks) and admins want to
+    pick up the new defaults without rebuilding manually. Only touches blocks
+    — preserves title/slug/show_in_nav/published flags/sidebar_config.
+    """
+    await require_admin(request)
+    db = get_db()
+
+    page = await db.custom_pages.find_one({"page_id": page_id})
+    if not page:
+        raise HTTPException(status_code=404, detail="Page not found")
+
+    page_type = page.get("page_type") or page.get("slug")
+    presets = PAGE_PRESETS.get(page_type)
+    if not presets:
+        raise HTTPException(status_code=400, detail=f"No preset defined for page_type='{page_type}'")
+
+    blocks = []
+    for i, b in enumerate(presets):
+        blocks.append({
+            "block_id": f"block_{uuid.uuid4().hex[:8]}",
+            "type": b["type"],
+            "content": b["content"],
+            "order": i,
+        })
+
+    await db.custom_pages.update_one(
+        {"page_id": page_id},
+        {"$set": {
+            "blocks": blocks,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }},
+    )
+    updated = await db.custom_pages.find_one({"page_id": page_id}, {"_id": 0})
+    return {"message": "Page reset to preset", "page": updated}
