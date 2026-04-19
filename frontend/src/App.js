@@ -303,6 +303,7 @@ const BlogManager = React.lazy(() => import('./pages/BlogManager'));
 const SidebarManager = React.lazy(() => import('./pages/SidebarManager'));
 const NavigationManager = React.lazy(() => import('./pages/NavigationManager'));
 const NewsManager = React.lazy(() => import('./pages/NewsManager'));
+const NewsAggregator = React.lazy(() => import('./pages/NewsAggregator'));
 const SecurityDashboard = React.lazy(() => import('./pages/SecurityDashboard'));
 const EmailTemplates = React.lazy(() => import('./pages/EmailTemplates'));
 const SystemEmailTemplates = React.lazy(() => import('./pages/SystemEmailTemplates'));
@@ -321,7 +322,7 @@ const BlogListPage = React.lazy(() => import('./pages/Blog').then(m => ({ defaul
 const BlogPostPage = React.lazy(() => import('./pages/Blog').then(m => ({ default: m.BlogPost })));
 const VideosPage = React.lazy(() => import('./pages/VideosPage'));
 const AboutPage = React.lazy(() => import('./pages/AboutPage'));
-const NewsPage = React.lazy(() => import('./pages/NewsPage'));
+const NewsPage = React.lazy(() => import('./pages/NewsAggregator'));
 const MediaLibrary = React.lazy(() => import('./pages/MediaLibrary'));
 const SEOSettings = React.lazy(() => import('./pages/SEOSettings'));
 const SidebarCustomizer = React.lazy(() => import('./pages/SidebarCustomizer'));

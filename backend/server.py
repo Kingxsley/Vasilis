@@ -3390,6 +3390,7 @@ from routes.sidebar_widgets import router as sidebar_widgets_router
 from routes.sidebar_configs import router as sidebar_configs_router
 from routes.blog_rss import router as blog_rss_router
 from routes.news import router as news_router
+from routes.news_feeds import router as news_feeds_router
 from routes.news_rss import router as news_rss_router
 from routes.granular_permissions import router as granular_permissions_router
 from routes.sitemap import router as sitemap_router
@@ -3450,6 +3451,7 @@ api_router.include_router(sidebar_widgets_router)
 api_router.include_router(sidebar_configs_router)
 api_router.include_router(blog_rss_router)
 api_router.include_router(news_router)
+api_router.include_router(news_feeds_router)
 api_router.include_router(news_rss_router)
 api_router.include_router(sitemap_router)
 api_router.include_router(security_center_router)

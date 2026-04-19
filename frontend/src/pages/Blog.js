@@ -10,6 +10,7 @@ import { PublicNav } from '../components/layout/PublicNav';
 import { PublicFooter } from '../components/layout/PublicFooter';
 import { DynamicSidebar } from '../components/layout/DynamicSidebar';
 import { PublicPagination } from '../components/common/Pagination';
+import '../styles/blog-optimized.css';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -308,8 +309,7 @@ export function BlogPost() {
         )}
 
         <div 
-          className="prose prose-invert prose-lg max-w-none"
-          style={{ color: textColor }}
+          className="blog-article-content"
           dangerouslySetInnerHTML={{ __html: sanitizeHTML(post.content) }}
         />
       </main>

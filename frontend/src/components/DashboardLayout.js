@@ -100,7 +100,6 @@ const navGroups = [
     items: [
       { path: '/dashboard/page-builder', label: 'Page Builder', icon: Layout, superAdminOnly: true },
       { path: '/dashboard/blog-manager', label: 'Blog Manager', icon: FileText, superAdminOnly: true },
-      { path: '/dashboard/news-manager', label: 'News Manager', icon: Newspaper, superAdminOnly: true },
       { path: '/dashboard/sidebar-manager', label: 'Sidebar Manager', icon: PanelLeft, superAdminOnly: true },
       { path: '/dashboard/navigation-menu', label: 'Navigation Menu', icon: Menu, superAdminOnly: true },
       { path: '/events', label: 'Events', icon: CalendarDays, superAdminOnly: true },
