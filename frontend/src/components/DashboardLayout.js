@@ -120,18 +120,9 @@ const navGroups = [
     superAdminOnly: true,
     items: [
       { path: '/settings', label: 'Settings', icon: Settings, superAdminOnly: true },
-      { path: '/security-hub', label: 'Security & Logs', icon: ShieldAlert, superAdminOnly: true },
+      { path: '/security-center', label: 'Security Center', icon: ShieldAlert, superAdminOnly: true },
       { path: '/email-templates', label: 'Email Templates', icon: MailIcon, superAdminOnly: true },
-      { path: '/permissions', label: 'Permissions', icon: ShieldAlert, superAdminOnly: true },
       { path: '/seo-settings', label: 'SEO', icon: Search, superAdminOnly: true },
-    ]
-  },
-  {
-    id: 'account',
-    label: 'Account',
-    icon: Key,
-    items: [
-      { path: '/my-security', label: 'Two-Factor Auth', icon: Key, adminOnly: false },
     ]
   },
 ];
