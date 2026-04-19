@@ -98,7 +98,9 @@ const navGroups = [
     icon: FileText,
     contentManager: true,
     items: [
-      { path: '/content', label: 'Content Manager', icon: FileText, contentManager: true },
+      { path: '/dashboard/page-builder', label: 'Page Builder', icon: Layout, superAdminOnly: true },
+      { path: '/dashboard/blog-manager', label: 'Blog Manager', icon: BookOpen, superAdminOnly: true },
+      { path: '/dashboard/sidebar-manager', label: 'Sidebar Manager', icon: PanelLeft, superAdminOnly: true },
       { path: '/events', label: 'Events', icon: CalendarDays, superAdminOnly: true },
       { path: '/media-library', label: 'Media Library', icon: Image, contentManager: true },
     ]
