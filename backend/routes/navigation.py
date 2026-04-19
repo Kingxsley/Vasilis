@@ -140,14 +140,11 @@ async def get_custom_nav_items(request: Request):
 
 
 @router.get("/public")
-async def get_public_nav_items(request: Request):
-    """Get navigation items visible to the current user, including published pages and CMS tiles"""
-    user = await get_current_user(request)
-    user_role = user.get("role", "trainee")
-    
+async def get_public_nav_items():
+    """Get navigation items visible publicly (NO AUTH)"""
     db = get_db()
     
-    # Get active custom navigation items (publicly visible)
+    # Get active navigation items
     items = await db.navigation_items.find(
         {"is_active": True},
         {"_id": 0}
@@ -204,7 +201,7 @@ async def get_public_nav_items(request: Request):
     except:
         pass
     
-    return {"items": items, "user_role": user_role}
+    return {"items": items}
 
 
 @router.post("")
