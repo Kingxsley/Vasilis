@@ -159,9 +159,9 @@ async def get_public_nav_items(request: Request):
         {"_id": 0}
     ).sort("sort_order", 1).to_list(100)
     
-    # Fetch published pages with show_in_nav=true
+    # Fetch published pages from PageBuilder with show_in_nav=true
     try:
-        published_pages = await db.pages.find(
+        published_pages = await db.custom_pages.find(
             {
                 "is_published": True,
                 "show_in_nav": True
@@ -187,40 +187,7 @@ async def get_public_nav_items(request: Request):
     except Exception as e:
         logger.warning(f"Failed to fetch pages for navigation: {e}")
     
-    # Also fetch published CMS tiles
-    try:
-        cms_tiles = await db.cms_tiles.find(
-            {"published": True},
-            {"_id": 0}
-        ).sort("sort_order", 1).to_list(100)
-        
-        for tile in cms_tiles:
-            if tile.get("route_type") == "external" and tile.get("external_url"):
-                path = tile["external_url"]
-                link_type = "external"
-            elif tile.get("route_type") == "custom":
-                path = f"/page/{tile['slug']}"
-                link_type = "internal"
-            else:
-                path = f"/{tile['slug']}"
-                link_type = "internal"
-            
-            nav_item = {
-                "item_id": f"cms_{tile['tile_id']}",
-                "label": tile["name"],
-                "link_type": link_type,
-                "path": path,
-                "icon": tile.get("icon", "FileText"),
-                "section_id": "content",
-                "visible_to": ["all"],
-                "open_in_new_tab": tile.get("route_type") == "external",
-                "sort_order": 50 + tile.get("sort_order", 100),
-                "is_active": True,
-                "is_cms_tile": True
-            }
-            items.append(nav_item)
-    except Exception as e:
-        logger.warning(f"Failed to fetch CMS tiles for navigation: {e}")
+    # Note: CMS tiles are deprecated - all pages now managed through PageBuilder
     
     # Add blog link if there are published posts
     try:
