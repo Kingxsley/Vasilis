@@ -69,7 +69,7 @@
         "Cross-Origin-Resource-Policy": "same-origin",
         "Cross-Origin-Embedder-Policy": "require-corp",
         "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
-        "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
+        "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://vasilisnetshield.com https://www.vasilisnetshield.com https://api.vasilisnetshield.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
       }
     },
     {
@@ -84,7 +84,7 @@
         "Cross-Origin-Resource-Policy": "same-origin",
         "Cross-Origin-Embedder-Policy": "require-corp",
         "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
-        "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
+        "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://vasilisnetshield.com https://www.vasilisnetshield.com https://api.vasilisnetshield.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
       }
     }
   ]
