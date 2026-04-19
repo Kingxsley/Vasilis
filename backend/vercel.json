@@ -8,13 +8,62 @@
   ],
   "routes": [
     {
+      "src": "/\\.env.*",
+      "status": 404,
+      "dest": "/404"
+    },
+    {
+      "src": "/\\.git.*",
+      "status": 404,
+      "dest": "/404"
+    },
+    {
+      "src": "/package(-lock)?\\.json",
+      "status": 404,
+      "dest": "/404"
+    },
+    {
+      "src": "/yarn\\.lock",
+      "status": 404,
+      "dest": "/404"
+    },
+    {
+      "src": "/next\\.config\\.(js|mjs|ts)",
+      "status": 404,
+      "dest": "/404"
+    },
+    {
+      "src": "/craco\\.config\\.js",
+      "status": 404,
+      "dest": "/404"
+    },
+    {
+      "src": "/\\.gitignore",
+      "status": 404,
+      "dest": "/404"
+    },
+    {
+      "src": "/vercel\\.json",
+      "status": 404,
+      "dest": "/404"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "server.py",
       "headers": {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
-        "Access-Control-Allow-Credentials": "true"
+        "Access-Control-Allow-Credentials": "true",
+        "X-Frame-Options": "DENY",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Permissions-Policy": "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+        "Cross-Origin-Opener-Policy": "same-origin",
+        "Cross-Origin-Resource-Policy": "same-origin",
+        "Cross-Origin-Embedder-Policy": "require-corp",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
+        "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
       }
     },
     {
@@ -23,7 +72,16 @@
       "headers": {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With"
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+        "X-Frame-Options": "DENY",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Permissions-Policy": "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+        "Cross-Origin-Opener-Policy": "same-origin",
+        "Cross-Origin-Resource-Policy": "same-origin",
+        "Cross-Origin-Embedder-Policy": "require-corp",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
+        "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
       }
     }
   ]

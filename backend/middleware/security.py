@@ -161,31 +161,74 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 # ============== SECURITY HEADERS ==============
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
-    """Add security headers to all responses"""
-    
+    """Add security headers to all responses.
+
+    Covers the full set required by the pentest remediation spec:
+      - X-Frame-Options: DENY                       (clickjacking)
+      - X-Content-Type-Options: nosniff             (MIME sniffing)
+      - Referrer-Policy: strict-origin-when-cross-origin
+      - Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
+      - Cross-Origin-Opener-Policy: same-origin     (COOP)
+      - Cross-Origin-Resource-Policy: same-origin   (CORP)
+      - Cross-Origin-Embedder-Policy: require-corp  (COEP)
+      - Strict-Transport-Security: 2-year preload   (HSTS)
+      - Content-Security-Policy with frame-ancestors 'none' (clickjacking + defense-in-depth)
+
+    Also strips fingerprinting headers (X-Powered-By, Server) that
+    may be injected by an upstream runtime.
+    """
+
+    CSP_VALUE = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data: https:; "
+        "font-src 'self' data:; "
+        "connect-src 'self'; "
+        "frame-ancestors 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self';"
+    )
+
     async def dispatch(self, request: Request, call_next: Callable):
         response = await call_next(request)
-        
-        # Prevent clickjacking
+
+        # Clickjacking protection (legacy + modern)
         response.headers["X-Frame-Options"] = "DENY"
-        
-        # Prevent MIME type sniffing
+
+        # MIME sniffing protection
         response.headers["X-Content-Type-Options"] = "nosniff"
-        
-        # Enable XSS filter
+
+        # Legacy XSS filter (harmless, kept for older browsers)
         response.headers["X-XSS-Protection"] = "1; mode=block"
-        
+
         # Referrer policy
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        
-        # Permissions policy
-        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
-        
-        # HSTS - Enabled by default for production
-        # Forces HTTPS for 1 year with subdomains
+
+        # Permissions policy (includes FLoC opt-out via interest-cohort=())
+        response.headers["Permissions-Policy"] = (
+            "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+        )
+
+        # Cross-Origin isolation headers (COOP / CORP / COEP)
+        response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
+        response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
+        response.headers["Cross-Origin-Embedder-Policy"] = "require-corp"
+
+        # Content Security Policy (covers clickjacking via frame-ancestors 'none')
+        response.headers["Content-Security-Policy"] = self.CSP_VALUE
+
+        # HSTS - 2 years with subdomains + preload (can be disabled via env for local)
         if os.environ.get("DISABLE_HSTS", "").lower() != "true":
-            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
-        
+            response.headers["Strict-Transport-Security"] = (
+                "max-age=63072000; includeSubDomains; preload"
+            )
+
+        # Strip fingerprinting headers if any upstream layer added them
+        for fp_header in ("X-Powered-By", "Server"):
+            if fp_header in response.headers:
+                del response.headers[fp_header]
+
         return response
 
 
