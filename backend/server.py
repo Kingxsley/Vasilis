@@ -3350,6 +3350,7 @@ from routes.executive_training import router as executive_training_router
 from routes.cms_tiles import router as cms_tiles_router
 from routes.contact import router as contact_router
 from routes.events import router as events_router
+from routes.cms_admin import router as cms_admin_router
 
 # Import RBAC manager
 from middleware.rbac import rbac_manager
@@ -3400,6 +3401,7 @@ api_router.include_router(executive_training_router)
 api_router.include_router(cms_tiles_router)
 api_router.include_router(contact_router)
 api_router.include_router(events_router)
+api_router.include_router(cms_admin_router)
 
 
 async def _handle_phishing_tracking(campaign_id: str, u: str = None, request: Request = None):

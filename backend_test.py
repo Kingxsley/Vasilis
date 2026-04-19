@@ -1,482 +1,338 @@
 #!/usr/bin/env python3
 """
-Backend API Testing for VasilisNetShield
-Testing the specific endpoints mentioned in the review request
+Backend test script for Phase 1 CMS Admin endpoints.
+
+Tests the 3 new CMS admin endpoints:
+1. GET /api/admin/cms/status
+2. POST /api/admin/cms/reset  
+3. POST /api/admin/cms/restore
+
+Test matrix:
+- Authentication enforcement (401, 403, 200)
+- Happy-path behavior as super_admin
+- Safety checks (dry-run behavior)
 """
 
-import requests
+import asyncio
 import json
 import sys
-from datetime import datetime
-import uuid
+from typing import Dict, Any, Optional
 
-class VasilisNetShieldTester:
-    def __init__(self, base_url="https://security-hardening-28.preview.emergentagent.com"):
-        self.base_url = base_url.rstrip('/')
-        self.api_base = f"{self.base_url}/api"
-        self.token = None
-        self.user_data = None
-        self.tests_run = 0
-        self.tests_passed = 0
-        self.test_results = []
+import httpx
 
-    def log_test(self, name, success, message="", response_data=None):
-        """Log test results"""
-        self.tests_run += 1
-        if success:
-            self.tests_passed += 1
-            status = "PASS"
-            print(f"✅ {name}: {message}")
-        else:
-            status = "FAIL"
-            print(f"❌ {name}: {message}")
-        
-        self.test_results.append({
-            "test": name,
-            "status": status,
-            "message": message,
-            "response_data": response_data
-        })
+# Backend URL from frontend .env
+BACKEND_URL = "https://security-hardening-28.preview.emergentagent.com/api"
 
-    def make_request(self, method, endpoint, data=None, headers=None, allow_redirects=True):
-        """Make HTTP request with error handling"""
-        url = f"{self.api_base}/{endpoint.lstrip('/')}"
-        
-        if headers is None:
-            headers = {}
-        
-        if self.token:
-            headers['Authorization'] = f'Bearer {self.token}'
-        
-        headers['Content-Type'] = 'application/json'
-        
+# Test credentials
+ADMIN_EMAIL = "admin@vasilisnetshield.com"
+ADMIN_PASSWORD = "Admin123!"
+
+# Expected CMS collections
+EXPECTED_CMS_COLLECTIONS = [
+    "pages", "cms_tiles", "news", "events", "blog_posts", 
+    "contact_submissions", "sidebar_configs", "navigation_items", "landing_layouts"
+]
+
+class TestResult:
+    def __init__(self):
+        self.passed = 0
+        self.failed = 0
+        self.errors = []
+    
+    def success(self, test_name: str):
+        self.passed += 1
+        print(f"✅ {test_name}")
+    
+    def failure(self, test_name: str, error: str):
+        self.failed += 1
+        self.errors.append(f"{test_name}: {error}")
+        print(f"❌ {test_name}: {error}")
+    
+    def summary(self):
+        total = self.passed + self.failed
+        print(f"\n=== TEST SUMMARY ===")
+        print(f"Total: {total}, Passed: {self.passed}, Failed: {self.failed}")
+        if self.errors:
+            print("\nFAILURES:")
+            for error in self.errors:
+                print(f"  - {error}")
+        return self.failed == 0
+
+async def login_admin() -> Optional[str]:
+    """Login as super admin and return JWT token"""
+    async with httpx.AsyncClient() as client:
         try:
-            if method.upper() == 'GET':
-                response = requests.get(url, headers=headers, timeout=15, allow_redirects=allow_redirects)
-            elif method.upper() == 'POST':
-                response = requests.post(url, json=data, headers=headers, timeout=15, allow_redirects=allow_redirects)
-            elif method.upper() == 'PATCH':
-                response = requests.patch(url, json=data, headers=headers, timeout=15, allow_redirects=allow_redirects)
-            elif method.upper() == 'DELETE':
-                response = requests.delete(url, headers=headers, timeout=15, allow_redirects=allow_redirects)
+            response = await client.post(
+                f"{BACKEND_URL}/auth/login",
+                json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD},
+                timeout=30.0
+            )
+            if response.status_code == 200:
+                data = response.json()
+                return data.get("token")
             else:
-                raise ValueError(f"Unsupported method: {method}")
-            
-            return response
-            
-        except requests.exceptions.RequestException as e:
-            print(f"Request failed: {e}")
+                print(f"Admin login failed: {response.status_code} - {response.text}")
+                return None
+        except Exception as e:
+            print(f"Admin login error: {e}")
             return None
 
-    def test_login(self):
-        """Test login with provided admin credentials"""
-        print("\n🔍 Testing Admin Login...")
-        login_data = {
-            "email": "admin@vasilisnetshield.com",
-            "password": "Admin123!"
-        }
-        
-        response = self.make_request('POST', '/auth/login', login_data)
-        
-        if response is None:
-            self.log_test("Admin Login", False, "Request failed")
-            return False
-            
-        if response.status_code == 200:
-            try:
-                data = response.json()
-                self.token = data.get('token')
-                self.user_data = data.get('user')
-                
-                if self.token and self.user_data:
-                    self.log_test("Admin Login", True, f"Successfully logged in as {self.user_data['email']} with role {self.user_data.get('role', 'unknown')}")
-                    return True
-                else:
-                    self.log_test("Admin Login", False, f"Missing token or user data: {data}")
-                    return False
-            except:
-                self.log_test("Admin Login", False, f"Invalid JSON response: {response.text}")
-                return False
-        else:
-            self.log_test("Admin Login", False, f"Expected 200, got {response.status_code}: {response.text}")
-            return False
-
-    def test_dashboard_stats(self):
-        """Test dashboard stats endpoint with and without organization_id parameter"""
-        print("\n🔍 Testing Dashboard Stats...")
-        if not self.token:
-            self.log_test("Dashboard Stats", False, "No auth token available")
-            return False
-        
-        # Test without organization_id
-        response = self.make_request('GET', '/dashboard/stats')
-        
-        if response is None:
-            self.log_test("Dashboard Stats (no org)", False, "Request failed")
-            return False
-            
-        if response.status_code == 200:
-            try:
-                data = response.json()
-                if isinstance(data, dict) and 'total_users' in data:
-                    self.log_test("Dashboard Stats (no org)", True, f"Got stats: {data}")
-                else:
-                    self.log_test("Dashboard Stats (no org)", False, f"Invalid stats format: {data}")
-                    return False
-            except:
-                self.log_test("Dashboard Stats (no org)", False, f"Invalid JSON response: {response.text}")
-                return False
-        else:
-            self.log_test("Dashboard Stats (no org)", False, f"Expected 200, got {response.status_code}: {response.text}")
-            return False
-        
-        # Test with organization_id parameter
-        response = self.make_request('GET', '/dashboard/stats?organization_id=test_org')
-        
-        if response is None:
-            self.log_test("Dashboard Stats (with org)", False, "Request failed")
-            return False
-            
-        if response.status_code == 200:
-            try:
-                data = response.json()
-                if isinstance(data, dict):
-                    self.log_test("Dashboard Stats (with org)", True, f"Got filtered stats: {data}")
-                    return True
-                else:
-                    self.log_test("Dashboard Stats (with org)", False, f"Invalid stats format: {data}")
-                    return False
-            except:
-                self.log_test("Dashboard Stats (with org)", False, f"Invalid JSON response: {response.text}")
-                return False
-        else:
-            self.log_test("Dashboard Stats (with org)", False, f"Expected 200, got {response.status_code}: {response.text}")
-            return False
-
-    def test_organizations(self):
-        """Test fetching organizations"""
-        print("\n🔍 Testing Organizations...")
-        if not self.token:
-            self.log_test("Organizations", False, "No auth token available")
-            return False
-        
-        response = self.make_request('GET', '/organizations')
-        
-        if response is None:
-            self.log_test("Organizations", False, "Request failed")
-            return False
-            
-        if response.status_code == 200:
-            try:
-                data = response.json()
-                if isinstance(data, list):
-                    self.log_test("Organizations", True, f"Got {len(data)} organizations")
-                    return True
-                else:
-                    self.log_test("Organizations", False, f"Expected list, got: {type(data)}")
-                    return False
-            except:
-                self.log_test("Organizations", False, f"Invalid JSON response: {response.text}")
-                return False
-        else:
-            self.log_test("Organizations", False, f"Expected 200, got {response.status_code}: {response.text}")
-            return False
-
-    def test_cms_tiles(self):
-        """Test fetching CMS tiles"""
-        print("\n🔍 Testing CMS Tiles...")
-        if not self.token:
-            self.log_test("CMS Tiles", False, "No auth token available")
-            return False
-        
-        response = self.make_request('GET', '/cms-tiles')
-        
-        if response is None:
-            self.log_test("CMS Tiles", False, "Request failed")
-            return False
-            
-        if response.status_code == 200:
-            try:
-                data = response.json()
-                if isinstance(data, dict) and 'tiles' in data:
-                    tiles = data['tiles']
-                    self.log_test("CMS Tiles", True, f"Got {len(tiles)} CMS tiles")
-                    return True
-                else:
-                    self.log_test("CMS Tiles", False, f"Expected dict with 'tiles' key, got: {data}")
-                    return False
-            except:
-                self.log_test("CMS Tiles", False, f"Invalid JSON response: {response.text}")
-                return False
-        else:
-            self.log_test("CMS Tiles", False, f"Expected 200, got {response.status_code}: {response.text}")
-            return False
-
-    def test_cms_public_page(self):
-        """Test public CMS page endpoint (should 404 if not found)"""
-        print("\n🔍 Testing CMS Public Page...")
-        
-        # Test with a non-existent slug (should 404)
-        response = self.make_request('GET', '/cms-tiles/public/page/test-slug')
-        
-        if response is None:
-            self.log_test("CMS Public Page (404)", False, "Request failed")
-            return False
-            
-        if response.status_code == 404:
-            self.log_test("CMS Public Page (404)", True, "Correctly returns 404 for non-existent page")
-            return True
-        elif response.status_code == 200:
-            try:
-                data = response.json()
-                self.log_test("CMS Public Page (found)", True, f"Found public page: {data.get('name', 'Unknown')}")
-                return True
-            except:
-                self.log_test("CMS Public Page (found)", False, f"Invalid JSON response: {response.text}")
-                return False
-        else:
-            self.log_test("CMS Public Page", False, f"Unexpected status code: {response.status_code}")
-            return False
-
-    def test_analytics_training(self):
-        """Test analytics training endpoint"""
-        print("\n🔍 Testing Analytics Training...")
-        if not self.token:
-            self.log_test("Analytics Training", False, "No auth token available")
-            return False
-        
-        response = self.make_request('GET', '/analytics/training')
-        
-        if response is None:
-            self.log_test("Analytics Training", False, "Request failed")
-            return False
-            
-        if response.status_code == 200:
-            try:
-                data = response.json()
-                self.log_test("Analytics Training", True, f"Got training analytics: {type(data)}")
-                return True
-            except:
-                self.log_test("Analytics Training", False, f"Invalid JSON response: {response.text}")
-                return False
-        else:
-            self.log_test("Analytics Training", False, f"Expected 200, got {response.status_code}: {response.text}")
-            return False
-
-    def test_security_dashboard(self):
-        """Test security dashboard endpoint"""
-        print("\n🔍 Testing Security Dashboard...")
-        if not self.token:
-            self.log_test("Security Dashboard", False, "No auth token available")
-            return False
-        
-        response = self.make_request('GET', '/security/dashboard')
-        
-        if response is None:
-            self.log_test("Security Dashboard", False, "Request failed")
-            return False
-            
-        if response.status_code == 200:
-            try:
-                data = response.json()
-                self.log_test("Security Dashboard", True, f"Got security dashboard: {type(data)}")
-                return True
-            except:
-                self.log_test("Security Dashboard", False, f"Invalid JSON response: {response.text}")
-                return False
-        else:
-            self.log_test("Security Dashboard", False, f"Expected 200, got {response.status_code}: {response.text}")
-            return False
-
-    def test_audit_logs(self):
-        """Test audit logs endpoint"""
-        print("\n🔍 Testing Audit Logs...")
-        if not self.token:
-            self.log_test("Audit Logs", False, "No auth token available")
-            return False
-        
-        response = self.make_request('GET', '/security/audit-logs')
-        
-        if response is None:
-            self.log_test("Audit Logs", False, "Request failed")
-            return False
-            
-        if response.status_code == 200:
-            try:
-                data = response.json()
-                if isinstance(data, list):
-                    self.log_test("Audit Logs", True, f"Got {len(data)} audit logs")
-                    return True
-                elif isinstance(data, dict) and 'logs' in data:
-                    logs = data['logs']
-                    self.log_test("Audit Logs", True, f"Got {len(logs)} audit logs")
-                    return True
-                else:
-                    self.log_test("Audit Logs", True, f"Got audit logs response: {type(data)}")
-                    return True
-            except:
-                self.log_test("Audit Logs", False, f"Invalid JSON response: {response.text}")
-                return False
-        else:
-            self.log_test("Audit Logs", False, f"Expected 200, got {response.status_code}: {response.text}")
-            return False
-
-    def test_activity_logs(self):
-        """Test activity logs endpoint"""
-        print("\n🔍 Testing Activity Logs...")
-        if not self.token:
-            self.log_test("Activity Logs", False, "No auth token available")
-            return False
-        
-        response = self.make_request('GET', '/activity-logs')
-        
-        if response is None:
-            self.log_test("Activity Logs", False, "Request failed")
-            return False
-            
-        if response.status_code == 200:
-            try:
-                data = response.json()
-                if isinstance(data, list):
-                    self.log_test("Activity Logs", True, f"Got {len(data)} activity logs")
-                    return True
-                elif isinstance(data, dict) and 'logs' in data:
-                    logs = data['logs']
-                    self.log_test("Activity Logs", True, f"Got {len(logs)} activity logs")
-                    return True
-                else:
-                    self.log_test("Activity Logs", True, f"Got activity logs response: {type(data)}")
-                    return True
-            except:
-                self.log_test("Activity Logs", False, f"Invalid JSON response: {response.text}")
-                return False
-        else:
-            self.log_test("Activity Logs", False, f"Expected 200, got {response.status_code}: {response.text}")
-            return False
-
-    def test_users_list(self):
-        """Test users list endpoint with limit parameter"""
-        print("\n🔍 Testing Users List...")
-        if not self.token:
-            self.log_test("Users List", False, "No auth token available")
-            return False
-        
-        response = self.make_request('GET', '/users?limit=10')
-        
-        if response is None:
-            self.log_test("Users List", False, "Request failed")
-            return False
-            
-        if response.status_code == 200:
-            try:
-                data = response.json()
-                if isinstance(data, list):
-                    self.log_test("Users List", True, f"Got {len(data)} users")
-                    return True
-                else:
-                    self.log_test("Users List", False, f"Expected list, got: {type(data)}")
-                    return False
-            except:
-                self.log_test("Users List", False, f"Invalid JSON response: {response.text}")
-                return False
-        else:
-            self.log_test("Users List", False, f"Expected 200, got {response.status_code}: {response.text}")
-            return False
-
-    def test_password_policy(self):
-        """Test password policy endpoint"""
-        print("\n🔍 Testing Password Policy...")
-        if not self.token:
-            self.log_test("Password Policy", False, "No auth token available")
-            return False
-        
-        response = self.make_request('GET', '/settings/password-policy')
-        
-        if response is None:
-            self.log_test("Password Policy", False, "Request failed")
-            return False
-            
-        if response.status_code == 200:
-            try:
-                data = response.json()
-                self.log_test("Password Policy", True, f"Got password policy: {type(data)}")
-                return True
-            except:
-                self.log_test("Password Policy", False, f"Invalid JSON response: {response.text}")
-                return False
-        else:
-            self.log_test("Password Policy", False, f"Expected 200, got {response.status_code}: {response.text}")
-            return False
-
-    def run_all_tests(self):
-        """Run all backend tests"""
-        print("🚀 Starting VasilisNetShield Backend API Tests")
-        print("Testing endpoints from review request")
-        print("=" * 70)
-        
-        # Test 1: Login with provided credentials
-        if not self.test_login():
-            print("❌ Cannot continue without login")
-            return False
-        
-        # Test 2: Dashboard stats (with and without org_id)
-        self.test_dashboard_stats()
-        
-        # Test 3: Organizations
-        self.test_organizations()
-        
-        # Test 4: CMS tiles
-        self.test_cms_tiles()
-        
-        # Test 5: CMS public page (should 404 for test-slug)
-        self.test_cms_public_page()
-        
-        # Test 6: Analytics training
-        self.test_analytics_training()
-        
-        # Test 7: Security dashboard
-        self.test_security_dashboard()
-        
-        # Test 8: Audit logs
-        self.test_audit_logs()
-        
-        # Test 9: Activity logs
-        self.test_activity_logs()
-        
-        # Test 10: Users list with limit
-        self.test_users_list()
-        
-        # Test 11: Password policy
-        self.test_password_policy()
-        
-        print("\n" + "=" * 70)
-        print(f"📊 Test Results: {self.tests_passed}/{self.tests_run} passed")
-        
-        if self.tests_passed == self.tests_run:
-            print("🎉 All tests passed!")
-            return True
-        else:
-            print(f"❌ {self.tests_run - self.tests_passed} test(s) failed")
-            return False
-
-def main():
-    """Main test runner"""
-    tester = VasilisNetShieldTester()
+async def register_trainee() -> Optional[str]:
+    """Register a trainee user and return JWT token"""
+    import time
+    unique_email = f"testtrainee{int(time.time())}@example.com"
     
-    try:
-        success = tester.run_all_tests()
+    async with httpx.AsyncClient() as client:
+        try:
+            # Register trainee
+            response = await client.post(
+                f"{BACKEND_URL}/auth/register",
+                json={
+                    "email": unique_email,
+                    "password": "Test123!",
+                    "name": "Test Trainee"
+                },
+                timeout=30.0
+            )
+            if response.status_code == 200:
+                data = response.json()
+                return data.get("token")
+            else:
+                print(f"Trainee registration failed: {response.status_code} - {response.text}")
+                return None
+        except Exception as e:
+            print(f"Trainee registration error: {e}")
+            return None
+
+async def test_unauthenticated_requests(result: TestResult):
+    """Test that unauthenticated requests return 401"""
+    async with httpx.AsyncClient() as client:
+        endpoints = [
+            ("GET", "/admin/cms/status"),
+            ("POST", "/admin/cms/reset"),
+            ("POST", "/admin/cms/restore?backup_stamp=test&confirm=false")
+        ]
         
-        # Print detailed results for debugging
-        print("\n📋 Detailed Test Results:")
-        for result in tester.test_results:
-            status_symbol = "✅" if result["status"] == "PASS" else "❌"
-            print(f"{status_symbol} {result['test']}: {result['message']}")
+        for method, endpoint in endpoints:
+            try:
+                if method == "GET":
+                    response = await client.get(f"{BACKEND_URL}{endpoint}", timeout=30.0)
+                else:
+                    response = await client.post(
+                        f"{BACKEND_URL}{endpoint}",
+                        json={"confirm": False, "i_understand_data_loss": False} if "reset" in endpoint else {},
+                        timeout=30.0
+                    )
+                
+                if response.status_code == 401:
+                    data = response.json()
+                    if data.get("detail") == "Unauthorized":
+                        result.success(f"Unauthenticated {method} {endpoint} → 401")
+                    else:
+                        result.failure(f"Unauthenticated {method} {endpoint}", f"Wrong error message: {data}")
+                else:
+                    result.failure(f"Unauthenticated {method} {endpoint}", f"Expected 401, got {response.status_code}")
+            except Exception as e:
+                result.failure(f"Unauthenticated {method} {endpoint}", f"Request error: {e}")
+
+async def test_non_super_admin_requests(result: TestResult):
+    """Test that non-super-admin requests return 403"""
+    trainee_token = await register_trainee()
+    if not trainee_token:
+        result.failure("Non-super-admin auth setup", "Failed to register trainee user")
+        return
+    
+    headers = {"Authorization": f"Bearer {trainee_token}"}
+    
+    async with httpx.AsyncClient() as client:
+        endpoints = [
+            ("GET", "/admin/cms/status"),
+            ("POST", "/admin/cms/reset"),
+            ("POST", "/admin/cms/restore?backup_stamp=test&confirm=false")
+        ]
         
-        return 0 if success else 1
+        for method, endpoint in endpoints:
+            try:
+                if method == "GET":
+                    response = await client.get(f"{BACKEND_URL}{endpoint}", headers=headers, timeout=30.0)
+                else:
+                    response = await client.post(
+                        f"{BACKEND_URL}{endpoint}",
+                        json={"confirm": False, "i_understand_data_loss": False} if "reset" in endpoint else {},
+                        headers=headers,
+                        timeout=30.0
+                    )
+                
+                if response.status_code == 403:
+                    data = response.json()
+                    if "Access denied. Required level: super_admin" in data.get("detail", ""):
+                        result.success(f"Non-super-admin {method} {endpoint} → 403")
+                    else:
+                        result.failure(f"Non-super-admin {method} {endpoint}", f"Wrong error message: {data}")
+                else:
+                    result.failure(f"Non-super-admin {method} {endpoint}", f"Expected 403, got {response.status_code}")
+            except Exception as e:
+                result.failure(f"Non-super-admin {method} {endpoint}", f"Request error: {e}")
+
+async def test_super_admin_status(result: TestResult, admin_token: str):
+    """Test GET /api/admin/cms/status as super_admin"""
+    headers = {"Authorization": f"Bearer {admin_token}"}
+    
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(f"{BACKEND_URL}/admin/cms/status", headers=headers, timeout=30.0)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check required fields
+                if not data.get("dry_run"):
+                    result.failure("Super-admin status", "Missing or false dry_run field")
+                    return
+                
+                before_counts = data.get("before_counts", {})
+                if not isinstance(before_counts, dict):
+                    result.failure("Super-admin status", "before_counts is not a dict")
+                    return
+                
+                # Check all 9 expected collections are present
+                missing_collections = []
+                for collection in EXPECTED_CMS_COLLECTIONS:
+                    if collection not in before_counts:
+                        missing_collections.append(collection)
+                    elif not isinstance(before_counts[collection], int) or before_counts[collection] < 0:
+                        result.failure("Super-admin status", f"Invalid count for {collection}: {before_counts[collection]}")
+                        return
+                
+                if missing_collections:
+                    result.failure("Super-admin status", f"Missing collections: {missing_collections}")
+                    return
+                
+                # Check no extra collections
+                extra_collections = set(before_counts.keys()) - set(EXPECTED_CMS_COLLECTIONS)
+                if extra_collections:
+                    result.failure("Super-admin status", f"Unexpected collections: {extra_collections}")
+                    return
+                
+                result.success("Super-admin GET /admin/cms/status → 200 with correct structure")
+            else:
+                result.failure("Super-admin status", f"Expected 200, got {response.status_code}: {response.text}")
+        except Exception as e:
+            result.failure("Super-admin status", f"Request error: {e}")
+
+async def test_super_admin_reset_dry_run(result: TestResult, admin_token: str):
+    """Test POST /api/admin/cms/reset with dry-run scenarios"""
+    headers = {"Authorization": f"Bearer {admin_token}"}
+    
+    async with httpx.AsyncClient() as client:
+        # Test 1: confirm=false, i_understand_data_loss=false (dry-run)
+        try:
+            response = await client.post(
+                f"{BACKEND_URL}/admin/cms/reset",
+                json={"confirm": False, "i_understand_data_loss": False},
+                headers=headers,
+                timeout=30.0
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if not data.get("dry_run"):
+                    result.failure("Reset dry-run (false,false)", "Expected dry_run=true")
+                    return
+                
+                if data.get("backup_stamp") is not None:
+                    result.failure("Reset dry-run (false,false)", f"Expected backup_stamp=null, got {data.get('backup_stamp')}")
+                    return
+                
+                before_counts = data.get("before_counts", {})
+                if not isinstance(before_counts, dict) or len(before_counts) != 9:
+                    result.failure("Reset dry-run (false,false)", f"Invalid before_counts: {before_counts}")
+                    return
+                
+                backed_up = data.get("backed_up", {})
+                deleted = data.get("deleted", {})
+                if backed_up != {} or deleted != {}:
+                    result.failure("Reset dry-run (false,false)", f"Expected empty backed_up/deleted, got {backed_up}/{deleted}")
+                    return
+                
+                result.success("Reset dry-run (confirm=false, i_understand_data_loss=false) → 200 dry-run")
+            else:
+                result.failure("Reset dry-run (false,false)", f"Expected 200, got {response.status_code}: {response.text}")
+        except Exception as e:
+            result.failure("Reset dry-run (false,false)", f"Request error: {e}")
         
-    except Exception as e:
-        print(f"💥 Test runner failed: {e}")
-        return 1
+        # Test 2: confirm=true, i_understand_data_loss=false (still dry-run)
+        try:
+            response = await client.post(
+                f"{BACKEND_URL}/admin/cms/reset",
+                json={"confirm": True, "i_understand_data_loss": False},
+                headers=headers,
+                timeout=30.0
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if not data.get("dry_run"):
+                    result.failure("Reset dry-run (true,false)", "Expected dry_run=true (BOTH flags required)")
+                    return
+                
+                result.success("Reset dry-run (confirm=true, i_understand_data_loss=false) → 200 dry-run")
+            else:
+                result.failure("Reset dry-run (true,false)", f"Expected 200, got {response.status_code}: {response.text}")
+        except Exception as e:
+            result.failure("Reset dry-run (true,false)", f"Request error: {e}")
+
+async def test_super_admin_restore_404(result: TestResult, admin_token: str):
+    """Test POST /api/admin/cms/restore with non-existent backup"""
+    headers = {"Authorization": f"Bearer {admin_token}"}
+    
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                f"{BACKEND_URL}/admin/cms/restore?backup_stamp=nonexistent&confirm=false",
+                headers=headers,
+                timeout=30.0
+            )
+            
+            if response.status_code == 404:
+                data = response.json()
+                expected_detail = "No backup found with stamp 'nonexistent'"
+                if data.get("detail") == expected_detail:
+                    result.success("Restore non-existent backup → 404")
+                else:
+                    result.failure("Restore non-existent backup", f"Wrong error message: {data.get('detail')}")
+            else:
+                result.failure("Restore non-existent backup", f"Expected 404, got {response.status_code}: {response.text}")
+        except Exception as e:
+            result.failure("Restore non-existent backup", f"Request error: {e}")
+
+async def main():
+    print("=== CMS Admin Endpoints Test ===")
+    print(f"Backend URL: {BACKEND_URL}")
+    print()
+    
+    result = TestResult()
+    
+    # Test authentication enforcement
+    print("Testing authentication enforcement...")
+    await test_unauthenticated_requests(result)
+    await test_non_super_admin_requests(result)
+    
+    # Get admin token for super_admin tests
+    admin_token = await login_admin()
+    if not admin_token:
+        result.failure("Admin login", "Failed to login as super admin")
+        return result.summary()
+    
+    print("\nTesting super_admin happy-path behavior...")
+    await test_super_admin_status(result, admin_token)
+    await test_super_admin_reset_dry_run(result, admin_token)
+    await test_super_admin_restore_404(result, admin_token)
+    
+    return result.summary()
 
 if __name__ == "__main__":
-    sys.exit(main())
+    success = asyncio.run(main())
+    sys.exit(0 if success else 1)

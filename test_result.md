@@ -138,6 +138,21 @@ backend:
         - agent: "testing"
         - comment: "Post-modularization testing completed successfully. CMS tiles endpoint working correctly, returning 4 tiles. Public page endpoint properly handles 404 for non-existent pages. All CMS functionality intact after models extraction."
 
+  - task: "Phase 1 CMS Admin endpoints (status/reset/restore)"
+    implemented: true
+    working: true
+    file: "routes/cms_admin.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "main"
+        - comment: "Implemented 3 new super_admin-only endpoints: GET /api/admin/cms/status (returns doc counts for 9 CMS collections), POST /api/admin/cms/reset (backup + wipe with dry-run safety), POST /api/admin/cms/restore (restore from backup). Added auth_levels.py with 5-level auth system. Router registered in server.py."
+        - working: true
+        - agent: "testing"
+        - comment: "Comprehensive testing completed successfully. Fixed auth_levels.py dependency injection issue and created missing admin user. All 3 endpoints working correctly: (1) GET /api/admin/cms/status returns proper structure with 9 CMS collection counts (all 0 in test DB), (2) POST /api/admin/cms/reset enforces dry-run safety requiring BOTH confirm=true AND i_understand_data_loss=true, (3) POST /api/admin/cms/restore returns 404 for non-existent backups. Authentication enforcement verified: unauthenticated → 401, non-super-admin → 403, super-admin → 200. All safety checks working - dry-run prevents accidental data loss."
+
 frontend:
   - task: "Simplified navigation (9 groups -> 6 groups)"
     implemented: true
@@ -253,13 +268,14 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Phase 1 — CMS reset foundation: auth_levels.py + cms_admin routes + reset_cms.py"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
     - agent: "main"
-    - message: "Simplified certificate template editor: replaced drag-and-drop with form-based editor + live HTML preview. Backend unchanged - all template CRUD, preview PDF, org assignment APIs already working. Test: 1) POST /api/certificate-templates/seed-presets 2) GET /api/certificate-templates 3) POST /api/certificate-templates 4) PATCH /api/certificate-templates/{id} 5) GET /api/certificate-templates/{id}/preview 6) DELETE /api/certificate-templates/{id} 7) Organization cert template assignment via PATCH /api/organizations/{id} with certificate_template_id. Login: admin@vasilisnetshield.com / Admin123!"
+    - message: "Phase 1 of CMS rebuild delivered. New files: backend/auth_levels.py (5-level auth enum + require_auth_level dependency factory), backend/routes/cms_admin.py (GET /api/admin/cms/status + POST /api/admin/cms/reset + POST /api/admin/cms/restore — all super_admin only), scripts/reset_cms.py (standalone dry-run-by-default migration with auto-backup). Also registered the router in server.py and added ADMIN_EMAIL=kingsley@vasilisnetshield.com to .env. Please test ONLY these 3 new endpoints: (1) GET /api/admin/cms/status, (2) POST /api/admin/cms/reset with confirm=false dry-run, (3) POST /api/admin/cms/restore non-existent backup should 404. Login with admin@vasilisnetshield.com / Admin123!. Verify unauthenticated requests → 401, non-super-admin requests → 403 (create a trainee user if needed), super_admin requests → 200. Do NOT actually run the destructive reset with confirm=true+i_understand_data_loss=true — we want to verify the dry-run path works correctly first. Pre-existing tasks from prior sessions are out of scope for this Phase 1 test."
     - agent: "testing"
-    - message: "Certificate template backend testing completed successfully. All 12 endpoints tested and working: 1) POST /api/auth/login (admin login successful), 2) POST /api/certificate-templates/seed-presets (preset seeding working, 9 templates already exist), 3) GET /api/certificate-templates (returns array with template_id, name, elements), 4) POST /api/certificate-templates (creates new template successfully), 5) PATCH /api/certificate-templates/{id} (updates template with elements array), 6) GET /api/certificate-templates/{id}/preview (generates PDF preview correctly), 7) DELETE /api/certificate-templates/{id} (deletes template), 8) GET /api/certificate-templates/assets/signatures (returns signatures array), 9) GET /api/certificate-templates/assets/certifying-bodies (returns certifying bodies array), 10) POST /api/organizations (creates org with certificate_template_id assignment), 11) GET /api/organizations (shows certificate_template_id in response), 12) PATCH /api/organizations/{id} (updates org certificate template assignment). All CRUD operations, PDF generation, and organization template assignment working correctly. No issues found."
+    - message: "Phase 1 CMS Admin endpoints testing completed successfully. Fixed auth_levels.py dependency injection issue and created missing admin user. All 3 new endpoints tested comprehensively: (1) GET /api/admin/cms/status returns correct structure with 9 CMS collection counts, (2) POST /api/admin/cms/reset properly enforces dry-run safety (requires BOTH confirm=true AND i_understand_data_loss=true), (3) POST /api/admin/cms/restore correctly returns 404 for non-existent backups. Authentication enforcement working: unauthenticated requests → 401, non-super-admin requests → 403, super-admin requests → 200. All safety checks verified - dry-run behavior prevents accidental data loss. Ready for Phase 2 implementation."
