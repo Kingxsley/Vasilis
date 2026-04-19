@@ -1445,7 +1445,7 @@ export default function CredentialHarvest() {
                         <p className="text-sm text-[#E8DDB5] mb-3 font-medium">Live Preview</p>
                         <div className="bg-white rounded-lg p-4 min-h-[300px] max-h-[400px] overflow-y-auto">
                           <div 
-                            dangerouslySetInnerHTML={{ __html: sanitizeHtml(newTemplate.body_html || '<p style="color:#999;text-align:center;padding:40px 20px;">Click buttons on the left to add email elements.<br/><br/>Use the CTA Button to add your phishing link.</p>') }}
+                            dangerouslySetInnerHTML={createSafeMarkup(sanitizeHtml(newTemplate.body_html || '<p style="color:#999;text-align:center;padding:40px 20px;">Click buttons on the left to add email elements.<br/><br/>Use the CTA Button to add your phishing link.</p>'))}
                             className="prose prose-sm max-w-none"
                           />
                         </div>
@@ -1713,7 +1713,7 @@ export default function CredentialHarvest() {
                           <p className="text-sm text-[#E8DDB5] mb-3 font-medium">Live Preview</p>
                           <div className="bg-white rounded-lg p-4 min-h-[250px] max-h-[350px] overflow-y-auto">
                             <div 
-                              dangerouslySetInnerHTML={{ __html: sanitizeHtml(editingTemplate.body_html || '<p style="color:#999;text-align:center;padding:40px 20px;">Click buttons on the left to add email elements.</p>') }}
+                              dangerouslySetInnerHTML={createSafeMarkup(sanitizeHtml(editingTemplate.body_html || '<p style="color:#999;text-align:center;padding:40px 20px;">Click buttons on the left to add email elements.</p>'))}
                               className="prose prose-sm max-w-none"
                             />
                           </div>

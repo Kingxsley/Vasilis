@@ -100,7 +100,7 @@ export default function PublicCmsPage() {
           <div 
             className="prose prose-invert max-w-none"
             style={{ color: textColor }}
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(page.custom_content) }}
+            dangerouslySetInnerHTML={createSafeMarkup(sanitizeHtml(page.custom_content))}
           />
         ) : (
           <p className="text-gray-500 text-center py-12">This page has no content yet.</p>
@@ -129,7 +129,7 @@ function PublicBlockRenderer({ block, branding }) {
     }
     case 'text':
       return (
-        <div className="prose prose-invert max-w-none mb-4" style={{ color: textColor }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(content.html) }} />
+        <div className="prose prose-invert max-w-none mb-4" style={{ color: textColor }} dangerouslySetInnerHTML={createSafeMarkup(sanitizeHtml(content.html))} />
       );
     case 'image':
       return (

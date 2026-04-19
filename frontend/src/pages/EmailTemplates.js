@@ -1032,7 +1032,7 @@ export default function EmailTemplates() {
                     <div 
                       className="prose prose-invert max-w-none"
                       style={{ fontFamily: 'Arial, sans-serif', color: '#E8DDB5' }}
-                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(previewData.body) }}
+                      dangerouslySetInnerHTML={createSafeMarkup(sanitizeHtml(previewData.body))}
                     />
                   </div>
                 </div>

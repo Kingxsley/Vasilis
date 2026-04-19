@@ -135,7 +135,7 @@ export const DynamicSidebar = ({ page, branding }) => {
               <div 
                 className="prose prose-invert prose-sm max-w-none"
                 style={{ color: textColor }}
-                dangerouslySetInnerHTML={{ __html: sanitizeHtml(section.html_content) }}
+                dangerouslySetInnerHTML={createSafeMarkup(sanitizeHtml(section.html_content))}
               />
             )}
           </div>

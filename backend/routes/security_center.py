@@ -12,8 +12,14 @@ router = APIRouter(prefix="/security-center", tags=["Security Center"])
 
 
 def get_db():
-    from server import db
-    return db
+    """Lazy import to avoid circular dependency"""
+    from motor.motor_asyncio import AsyncIOMotorClient
+    import os
+    
+    mongo_url = os.getenv('MONGO_URL', 'mongodb://localhost:27017')
+    db_name = os.getenv('DB_NAME', 'test_database')
+    client = AsyncIOMotorClient(mongo_url)
+    return client[db_name]
 
 
 class UserRole:
@@ -21,6 +27,7 @@ class UserRole:
 
 
 async def get_current_user(request: Request) -> dict:
+    """Lazy import to avoid circular dependency"""
     from server import get_current_user as _get_current_user, security
     credentials = await security(request)
     return await _get_current_user(request, credentials)

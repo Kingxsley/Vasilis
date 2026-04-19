@@ -44,7 +44,7 @@ const BlockRenderer = ({ block, branding }) => {
         <div 
           className="prose prose-invert max-w-none mb-6"
           style={{ color: textColor }}
-          dangerouslySetInnerHTML={{ __html: sanitizeHtml(content.html) }}
+          dangerouslySetInnerHTML={createSafeMarkup(sanitizeHtml(content.html))}
         />
       );
 
@@ -907,7 +907,7 @@ export default function CMSTilePage() {
             <div 
               className="prose prose-invert max-w-none"
               style={{ color: textColor }}
-              dangerouslySetInnerHTML={{ __html: sanitizeHtml(tile.custom_content) }}
+              dangerouslySetInnerHTML={createSafeMarkup(sanitizeHtml(tile.custom_content))}
             />
           );
         }

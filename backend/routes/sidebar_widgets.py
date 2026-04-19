@@ -1,12 +1,6 @@
 """
 Sidebar Widgets System for CMS
-Provides dynamic widgets that can be added to any page's sidebar:
-- recent_posts: Display recent blog posts
-- upcoming_events: Display upcoming events
-- tags: Display tag cloud
-- newsletter: Newsletter signup form
-- contact_cta: Contact us call-to-action
-- custom_rich_text: Rich text content
+Provides dynamic widgets that can be added to any page's sidebar
 """
 from fastapi import APIRouter, HTTPException, Request, Depends
 from pydantic import BaseModel, Field
@@ -18,8 +12,14 @@ router = APIRouter(prefix="/sidebar-widgets", tags=["Sidebar Widgets"])
 
 
 def get_db():
-    from server import db
-    return db
+    """Lazy import to avoid circular dependency"""
+    from motor.motor_asyncio import AsyncIOMotorClient
+    import os
+    
+    mongo_url = os.getenv('MONGO_URL', 'mongodb://localhost:27017')
+    db_name = os.getenv('DB_NAME', 'test_database')
+    client = AsyncIOMotorClient(mongo_url)
+    return client[db_name]
 
 
 class UserRole:
@@ -297,3 +297,4 @@ async def render_page_sidebar_widgets(page_slug: str):
     rendered_widgets.sort(key=lambda w: w["order"])
     
     return {"widgets": rendered_widgets}
+ts}

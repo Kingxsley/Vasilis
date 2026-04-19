@@ -114,7 +114,7 @@ export default function AdTracker() {
 
   return (
     <div
-      dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
+      dangerouslySetInnerHTML={createSafeMarkup(sanitizeHtml(content))}
       style={{ minHeight: '100vh' }}
     />
   );

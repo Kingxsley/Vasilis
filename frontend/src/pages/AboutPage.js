@@ -60,7 +60,7 @@ export default function AboutPage() {
             <div 
               className="prose prose-invert prose-lg max-w-none"
               style={{ color: textColor }}
-              dangerouslySetInnerHTML={{ __html: sanitizeHtml(about.content) }}
+              dangerouslySetInnerHTML={createSafeMarkup(sanitizeHtml(about.content))}
             />
           </div>
         )}

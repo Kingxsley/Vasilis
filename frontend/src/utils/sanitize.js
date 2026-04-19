@@ -1,24 +1,39 @@
 import DOMPurify from 'dompurify';
 
 /**
- * Sanitize HTML content to prevent XSS attacks.
- * Allows safe tags like formatting, links, images, and tables.
+ * Sanitize HTML to prevent XSS attacks
+ * @param {string} dirty - Untrusted HTML string
+ * @param {object} options - DOMPurify configuration options
+ * @returns {string} - Sanitized HTML safe for rendering
  */
-export function sanitizeHtml(dirty) {
+export const sanitizeHTML = (dirty, options = {}) => {
   if (!dirty) return '';
-  return DOMPurify.sanitize(dirty, {
+  
+  const defaultOptions = {
     ALLOWED_TAGS: [
-      'p', 'br', 'b', 'i', 'em', 'strong', 'u', 'a', 'img',
-      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-      'ul', 'ol', 'li', 'blockquote', 'pre', 'code',
-      'table', 'thead', 'tbody', 'tr', 'th', 'td',
-      'div', 'span', 'hr', 'sub', 'sup',
-      'style', 'section', 'article', 'header', 'footer',
+      'p', 'br', 'strong', 'em', 'u', 's', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'ul', 'ol', 'li', 'a', 'img', 'blockquote', 'code', 'pre', 'hr',
+      'table', 'thead', 'tbody', 'tr', 'th', 'td', 'div', 'span'
     ],
     ALLOWED_ATTR: [
-      'href', 'target', 'rel', 'src', 'alt', 'title', 'width', 'height',
-      'class', 'id', 'style', 'colspan', 'rowspan', 'align', 'valign',
+      'href', 'src', 'alt', 'title', 'class', 'id', 'target', 'rel',
+      'width', 'height', 'style'
     ],
     ALLOW_DATA_ATTR: false,
-  });
-}
+    ADD_ATTR: ['target'],
+    ...options
+  };
+  
+  return DOMPurify.sanitize(dirty, defaultOptions);
+};
+
+/**
+ * Create safe dangerouslySetInnerHTML prop
+ * @param {string} html - HTML string to sanitize
+ * @returns {object} - Object with __html property for React
+ */
+export const createSafeMarkup = (html) => {
+  return { __html: sanitizeHTML(html) };
+};
+
+export default sanitizeHTML;
