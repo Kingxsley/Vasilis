@@ -331,6 +331,12 @@ async def login(data: UserLogin, request: Request):
             ip_address=client_ip,
             severity="warning"
         )
+        if locked:
+            raise HTTPException(
+                status_code=423,
+                detail="Too many failed login attempts. Account temporarily locked for 15 minutes.",
+                headers={"Retry-After": "900"}
+            )
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
     if not verify_password(data.password, user.get("password_hash", "")):
