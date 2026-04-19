@@ -14,11 +14,11 @@ import {
   DialogTitle,
   DialogFooter,
 } from '../components/ui/dialog';
-import { Plus, Edit, Trash2, Loader2, Eye, Newspaper } from 'lucide-react';
+import { Plus, Edit, Trash2, Loader2, Newspaper } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../App';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -161,7 +161,7 @@ export default function NewsManager() {
     return (
       <DashboardLayout>
         <div className="p-6 text-center">
-          <p className="text-gray-400">Access denied. Super admin only.</p>
+          <p className="text-gray-400">Access denied.</p>
         </div>
       </DashboardLayout>
     );
@@ -173,7 +173,7 @@ export default function NewsManager() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-[#E8DDB5]">News Manager</h1>
-            <p className="text-gray-400">Create and manage news articles</p>
+            <p className="text-gray-400">Manage news articles</p>
           </div>
           <Button 
             onClick={() => { resetForm(); setShowDialog(true); }}
@@ -193,13 +193,13 @@ export default function NewsManager() {
             <CardContent className="py-16 text-center">
               <Newspaper className="w-16 h-16 mx-auto mb-4 text-gray-600" />
               <h3 className="text-xl font-semibold text-[#E8DDB5] mb-2">No News Yet</h3>
-              <p className="text-gray-400 mb-6">Create your first news article</p>
+              <p className="text-gray-400 mb-6">Create your first article</p>
               <Button 
                 onClick={() => { resetForm(); setShowDialog(true); }}
                 className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Create News Article
+                Create Article
               </Button>
             </CardContent>
           </Card>
@@ -257,7 +257,7 @@ export default function NewsManager() {
                   <Input
                     value={newsForm.title}
                     onChange={(e) => setNewsForm({ ...newsForm, title: e.target.value })}
-                    placeholder="Breaking: Major Security Update..."
+                    placeholder="Breaking News: ..."
                     className="bg-[#1a1a24] border-[#30363D] text-white"
                     required
                   />
@@ -324,7 +324,7 @@ export default function NewsManager() {
                   <Input
                     value={newsForm.tags}
                     onChange={(e) => setNewsForm({ ...newsForm, tags: e.target.value })}
-                    placeholder="security, updates, tips"
+                    placeholder="security, updates"
                     className="bg-[#1a1a24] border-[#30363D] text-white"
                   />
                 </div>

@@ -5,14 +5,14 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
 } from '../components/ui/dialog';
 import {
@@ -22,11 +22,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { Plus, Edit, Trash2, Loader2, Eye, FileText, Upload } from 'lucide-react';
+import { Plus, Edit, Trash2, Loader2, Eye, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../App';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -49,6 +49,7 @@ export default function BlogManager() {
   const [showDialog, setShowDialog] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
   const [useHtml, setUseHtml] = useState(false);
+  const [filter, setFilter] = useState('all');
   
   const [postForm, setPostForm] = useState({
     title: '',
@@ -66,7 +67,6 @@ export default function BlogManager() {
     fetchPosts();
   }, []);
 
-  // Auto-generate slug from title
   useEffect(() => {
     if (postForm.title && !editingPost) {
       const slug = postForm.title
@@ -85,8 +85,7 @@ export default function BlogManager() {
       });
       setPosts(res.data.posts || []);
     } catch (error) {
-      console.error('Failed to load posts:', error);
-      toast.error('Failed to load blog posts');
+      toast.error('Failed to load posts');
     } finally {
       setLoading(false);
     }
@@ -105,6 +104,7 @@ export default function BlogManager() {
       featured_image: ''
     });
     setEditingPost(null);
+    setUseHtml(false);
   };
 
   const handleCreateOrUpdate = async (e) => {
@@ -121,12 +121,12 @@ export default function BlogManager() {
         await axios.patch(`${API}/content/blog/${editingPost.post_id}`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        toast.success('Blog post updated');
+        toast.success('Post updated');
       } else {
         await axios.post(`${API}/content/blog`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        toast.success('Blog post created');
+        toast.success('Post created');
       }
       
       setShowDialog(false);
@@ -156,7 +156,7 @@ export default function BlogManager() {
   };
 
   const handleDelete = async (postId) => {
-    if (!window.confirm('Are you sure you want to delete this post?')) return;
+    if (!window.confirm('Delete this post?')) return;
     
     try {
       await axios.delete(`${API}/content/blog/${postId}`, {
@@ -165,23 +165,16 @@ export default function BlogManager() {
       toast.success('Post deleted');
       fetchPosts();
     } catch (error) {
-      toast.error('Failed to delete post');
+      toast.error('Failed to delete');
     }
   };
 
-  const handleTogglePublish = async (post) => {
-    try {
-      await axios.patch(`${API}/content/blog/${post.post_id}`, {
-        published: !post.published
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      toast.success(post.published ? 'Post unpublished' : 'Post published');
-      fetchPosts();
-    } catch (error) {
-      toast.error('Failed to update post');
-    }
-  };
+  const filteredPosts = posts.filter(post => {
+    if (filter === 'all') return true;
+    if (filter === 'published') return post.published === true;
+    if (filter === 'draft') return post.published === false;
+    return true;
+  });
 
   if (user?.role !== 'super_admin') {
     return (
@@ -196,11 +189,10 @@ export default function BlogManager() {
   return (
     <DashboardLayout>
       <div className="p-4 lg:p-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-[#E8DDB5]">Blog Manager</h1>
-            <p className="text-gray-400">Create, edit, and manage blog posts</p>
+            <p className="text-gray-400">Create and manage blog posts</p>
           </div>
           <Button 
             onClick={() => { resetForm(); setShowDialog(true); }}
@@ -211,106 +203,102 @@ export default function BlogManager() {
           </Button>
         </div>
 
-        {/* Posts List */}
-        {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loader2 className="w-8 h-8 animate-spin text-[#D4A836]" />
-          </div>
-        ) : posts.length === 0 ? (
-          <Card className="bg-[#0f0f15] border-[#D4A836]/20">
-            <CardContent className="py-16 text-center">
-              <FileText className="w-16 h-16 mx-auto mb-4 text-gray-600" />
-              <h3 className="text-xl font-semibold text-[#E8DDB5] mb-2">No Blog Posts Yet</h3>
-              <p className="text-gray-400 mb-6">Create your first post to get started</p>
-              <Button 
-                onClick={() => { resetForm(); setShowDialog(true); }}
-                className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Create Your First Post
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {posts.map((post) => (
-              <Card key={post.post_id} className="bg-[#0f0f15] border-[#D4A836]/20 hover:border-[#D4A836]/40 transition-colors">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-[#E8DDB5] text-lg line-clamp-2">{post.title}</CardTitle>
-                      <CardDescription className="text-gray-500 text-sm mt-1">
-                        /{post.slug}
-                      </CardDescription>
-                    </div>
-                    <Badge className={post.published ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}>
-                      {post.published ? 'Published' : 'Draft'}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {post.excerpt && (
-                    <p className="text-gray-400 text-sm mb-4 line-clamp-3">{post.excerpt}</p>
-                  )}
-                  <div className="flex items-center gap-2 mb-4 flex-wrap">
-                    <Badge variant="outline" className="text-xs border-[#D4A836]/30 text-[#D4A836]">
-                      {post.audience}
-                    </Badge>
-                    {post.tags && post.tags.slice(0, 2).map((tag, i) => (
-                      <Badge key={i} variant="outline" className="text-xs border-gray-600 text-gray-400">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => handleEdit(post)}
-                      className="flex-1 border-[#D4A836]/30 text-[#E8DDB5] hover:bg-[#D4A836]/10"
-                    >
-                      <Edit className="w-4 h-4 mr-1" />
-                      Edit
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleTogglePublish(post)}
-                      className="text-gray-400 hover:text-[#E8DDB5]"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleDelete(post.post_id)}
-                      className="text-gray-400 hover:text-red-400"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
+        <Tabs value={filter} onValueChange={setFilter} className="w-full">
+          <TabsList className="bg-[#1a1a24] border border-[#30363D]">
+            <TabsTrigger value="all" className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">
+              All ({posts.length})
+            </TabsTrigger>
+            <TabsTrigger value="published" className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">
+              Published ({posts.filter(p => p.published).length})
+            </TabsTrigger>
+            <TabsTrigger value="draft" className="data-[state=active]:bg-[#D4A836] data-[state=active]:text-black">
+              Drafts ({posts.filter(p => !p.published).length})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value={filter} className="mt-6">
+            {loading ? (
+              <div className="flex items-center justify-center h-64">
+                <Loader2 className="w-8 h-8 animate-spin text-[#D4A836]" />
+              </div>
+            ) : filteredPosts.length === 0 ? (
+              <Card className="bg-[#0f0f15] border-[#D4A836]/20">
+                <CardContent className="py-16 text-center">
+                  <FileText className="w-16 h-16 mx-auto mb-4 text-gray-600" />
+                  <h3 className="text-xl font-semibold text-[#E8DDB5] mb-2">No {filter === 'draft' ? 'Draft' : filter === 'published' ? 'Published' : ''} Posts</h3>
+                  <p className="text-gray-400 mb-6">Create your first post</p>
+                  <Button 
+                    onClick={() => { resetForm(); setShowDialog(true); }}
+                    className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Post
+                  </Button>
                 </CardContent>
               </Card>
-            ))}
-          </div>
-        )}
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredPosts.map((post) => (
+                  <Card key={post.post_id} className="bg-[#0f0f15] border-[#D4A836]/20">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <CardTitle className="text-[#E8DDB5] text-lg line-clamp-2 flex-1">{post.title}</CardTitle>
+                        <Badge className={post.published ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}>
+                          {post.published ? 'Published' : 'Draft'}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      {post.excerpt && <p className="text-gray-400 text-sm mb-4 line-clamp-3">{post.excerpt}</p>}
+                      <div className="flex items-center gap-2 mb-4 flex-wrap">
+                        <Badge variant="outline" className="text-xs border-[#D4A836]/30 text-[#D4A836]">
+                          {post.audience}
+                        </Badge>
+                        {post.tags && post.tags.slice(0, 2).map((tag, i) => (
+                          <Badge key={i} variant="outline" className="text-xs border-gray-600 text-gray-400">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleEdit(post)}
+                          className="flex-1 border-[#D4A836]/30"
+                        >
+                          <Edit className="w-4 h-4 mr-1" />
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDelete(post.post_id)}
+                          className="text-red-400"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
 
-        {/* Create/Edit Dialog */}
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
           <DialogContent className="bg-[#0f0f15] border-[#D4A836]/20 max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-[#E8DDB5]">
-                {editingPost ? 'Edit Blog Post' : 'Create New Blog Post'}
+                {editingPost ? 'Edit Post' : 'Create Post'}
               </DialogTitle>
-              <DialogDescription className="text-gray-400">
-                {editingPost ? 'Update your blog post' : 'Write and publish a new blog post'}
-              </DialogDescription>
             </DialogHeader>
             
             <form onSubmit={handleCreateOrUpdate} className="space-y-4 mt-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-gray-400">Post Title</Label>
+                  <Label>Title</Label>
                   <Input
                     value={postForm.title}
                     onChange={(e) => setPostForm({ ...postForm, title: e.target.value })}
@@ -320,11 +308,10 @@ export default function BlogManager() {
                   />
                 </div>
                 <div>
-                  <Label className="text-gray-400">URL Slug (auto-filled)</Label>
+                  <Label>URL Slug (auto-filled)</Label>
                   <Input
                     value={postForm.slug}
                     onChange={(e) => setPostForm({ ...postForm, slug: e.target.value })}
-                    placeholder="how-to-secure-your-website"
                     className="bg-[#1a1a24] border-[#30363D] text-white"
                     required
                   />
@@ -332,11 +319,11 @@ export default function BlogManager() {
               </div>
 
               <div>
-                <Label className="text-gray-400">Excerpt (Short Summary)</Label>
+                <Label>Excerpt</Label>
                 <Textarea
                   value={postForm.excerpt}
                   onChange={(e) => setPostForm({ ...postForm, excerpt: e.target.value })}
-                  placeholder="Brief description that appears in listings..."
+                  placeholder="Brief description..."
                   className="bg-[#1a1a24] border-[#30363D] text-white"
                   rows={2}
                 />
@@ -344,7 +331,7 @@ export default function BlogManager() {
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Label className="text-gray-400">Content</Label>
+                  <Label>Content</Label>
                   <Button
                     type="button"
                     size="sm"
@@ -359,7 +346,7 @@ export default function BlogManager() {
                   <Textarea
                     value={postForm.content}
                     onChange={(e) => setPostForm({ ...postForm, content: e.target.value })}
-                    placeholder="<h2>Introduction</h2><p>Your content here...</p>"
+                    placeholder="<h2>Your content...</h2>"
                     className="bg-[#1a1a24] border-[#30363D] text-white min-h-[300px] font-mono text-sm"
                     required
                   />
@@ -378,7 +365,7 @@ export default function BlogManager() {
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-gray-400">Audience</Label>
+                  <Label>Audience</Label>
                   <Select value={postForm.audience} onValueChange={(v) => setPostForm({ ...postForm, audience: v })}>
                     <SelectTrigger className="bg-[#1a1a24] border-[#30363D] text-white">
                       <SelectValue />
@@ -386,43 +373,33 @@ export default function BlogManager() {
                     <SelectContent>
                       <SelectItem value="general">General</SelectItem>
                       <SelectItem value="end_user">End Users</SelectItem>
-                      <SelectItem value="manager">Managers/Decision Makers</SelectItem>
-                      <SelectItem value="technical">Technical/IT</SelectItem>
+                      <SelectItem value="manager">Managers</SelectItem>
+                      <SelectItem value="technical">Technical</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-gray-400">Tags (comma-separated)</Label>
+                  <Label>Tags (comma-separated)</Label>
                   <Input
                     value={postForm.tags}
                     onChange={(e) => setPostForm({ ...postForm, tags: e.target.value })}
-                    placeholder="security, phishing, tips"
+                    placeholder="security, tips, guides"
                     className="bg-[#1a1a24] border-[#30363D] text-white"
                   />
                 </div>
               </div>
 
               <div>
-                <Label className="text-gray-400">SEO Meta Description (150-160 chars)</Label>
+                <Label>SEO Meta Description (150-160 chars)</Label>
                 <Textarea
                   value={postForm.meta_description}
                   onChange={(e) => setPostForm({ ...postForm, meta_description: e.target.value })}
-                  placeholder="SEO-optimized description for search engines..."
+                  placeholder="SEO description..."
                   className="bg-[#1a1a24] border-[#30363D] text-white"
                   rows={2}
                   maxLength={160}
                 />
-                <p className="text-xs text-gray-500 mt-1">{postForm.meta_description.length}/160 characters</p>
-              </div>
-
-              <div>
-                <Label className="text-gray-400">Featured Image URL (optional)</Label>
-                <Input
-                  value={postForm.featured_image}
-                  onChange={(e) => setPostForm({ ...postForm, featured_image: e.target.value })}
-                  placeholder="https://..."
-                  className="bg-[#1a1a24] border-[#30363D] text-white"
-                />
+                <p className="text-xs text-gray-500 mt-1">{postForm.meta_description.length}/160</p>
               </div>
 
               <div className="flex items-center gap-2">
@@ -432,15 +409,15 @@ export default function BlogManager() {
                   onChange={(e) => setPostForm({ ...postForm, published: e.target.checked })}
                   className="w-4 h-4"
                 />
-                <Label className="text-gray-400">Publish immediately</Label>
+                <Label>Publish immediately</Label>
               </div>
 
-              <DialogFooter className="gap-2">
+              <DialogFooter>
                 <Button 
                   type="button" 
                   variant="outline" 
                   onClick={() => setShowDialog(false)}
-                  className="border-[#30363D] text-gray-400"
+                  className="border-[#30363D]"
                 >
                   Cancel
                 </Button>
@@ -449,8 +426,8 @@ export default function BlogManager() {
                   disabled={saving}
                   className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
                 >
-                  {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
-                  {editingPost ? 'Update Post' : 'Create Post'}
+                  {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                  {editingPost ? 'Update' : 'Create'}
                 </Button>
               </DialogFooter>
             </form>
