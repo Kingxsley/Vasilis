@@ -554,8 +554,6 @@ const AppRouter = () => {
         {/* Public content pages */}
         <Route path="/blog" element={<BlogListPage />} />
         <Route path="/blog/:slug" element={<BlogPostPage />} />
-        <Route path="/videos" element={<VideosPage />} />
-        <Route path="/about" element={<AboutPage />} />
         <Route path="/news" element={<NewsPage />} />
         <Route path="/page/:slug" element={<CustomPage />} />
         {/* Public certificate verification */}
@@ -902,11 +900,7 @@ const AppRouter = () => {
         <Route path="/events" element={<EventsPage />} />
         <Route
           path="/rss-feeds"
-          element={
-            <ProtectedRoute adminOnly>
-              <RSSFeedManager />
-            </ProtectedRoute>
-          }
+          element={<Navigate to="/dashboard/news-manager" replace />}
         />
         <Route
           path="/form-submissions"

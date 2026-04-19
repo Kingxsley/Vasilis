@@ -195,6 +195,8 @@ export default function PageBuilder() {
   const [sidebarConfigs, setSidebarConfigs] = useState([]);
   const [availableWidgets, setAvailableWidgets] = useState([]);
   const [showSidebarDialog, setShowSidebarDialog] = useState(false);
+  const [presets, setPresets] = useState({});
+  const [seeding, setSeeding] = useState(false);
   
   // Form states
   const [pageForm, setPageForm] = useState({
@@ -235,7 +237,59 @@ export default function PageBuilder() {
     fetchBlockTemplates();
     fetchSidebarConfigs();
     fetchAvailableWidgets();
+    fetchPresets();
   }, []);
+
+  const fetchPresets = async () => {
+    try {
+      const res = await axios.get(`${API}/pages/presets`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPresets(res.data.presets || {});
+    } catch (error) {
+      // Non-critical
+    }
+  };
+
+  const seedReservedPages = async () => {
+    setSeeding(true);
+    try {
+      const res = await axios.post(`${API}/pages/seed-reserved`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const created = res.data.created || [];
+      const skipped = res.data.skipped || [];
+      if (created.length > 0) {
+        toast.success(`Seeded ${created.length} reserved page(s): ${created.join(', ')}`);
+      } else {
+        toast.info(`All reserved pages already exist: ${skipped.join(', ')}`);
+      }
+      fetchPages();
+    } catch (error) {
+      toast.error('Failed to seed reserved pages');
+    } finally {
+      setSeeding(false);
+    }
+  };
+
+  // Apply preset blocks when user picks a page_type during creation.
+  // Only applies if the current page has no custom blocks yet (avoid
+  // wiping user work). Always safe during editing because we match against
+  // the `editingPage` flag in the setter.
+  const applyPresetForType = (pageType) => {
+    if (editingPage) return;
+    const presetBlocks = (presets[pageType] || []).map((b, i) => ({
+      block_id: `block_${Date.now()}_${i}`,
+      type: b.type,
+      content: b.content,
+      order: i,
+    }));
+    setPageForm((prev) => {
+      // Don't overwrite user blocks if they already added any
+      if (prev.blocks && prev.blocks.length > 0) return { ...prev, page_type: pageType };
+      return { ...prev, page_type: pageType, blocks: presetBlocks };
+    });
+  };
 
   const fetchPages = async () => {
     try {
@@ -682,6 +736,18 @@ export default function PageBuilder() {
             <h1 className="text-2xl font-bold text-[#E8DDB5]">Page Builder</h1>
             <p className="text-gray-400">Create and manage custom pages without code</p>
           </div>
+          <div className="flex items-center gap-2 flex-wrap">
+          <Button
+            onClick={seedReservedPages}
+            disabled={seeding}
+            variant="outline"
+            className="border-[#D4A836]/40 text-[#E8DDB5] hover:bg-[#D4A836]/10"
+            data-testid="seed-reserved-btn"
+            title="Creates draft Blog & News pages you can customize. Idempotent."
+          >
+            {seeding ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
+            Seed Blog &amp; News
+          </Button>
           <Button 
             onClick={() => { resetPageForm(); setShowPageDialog(true); }}
             className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
@@ -690,6 +756,7 @@ export default function PageBuilder() {
             <Plus className="w-4 h-4 mr-2" />
             Create Page
           </Button>
+          </div>
         </div>
 
         {/* Pages List */}
@@ -836,8 +903,8 @@ export default function PageBuilder() {
 
               <div className="grid md:grid-cols-3 gap-4">
                 <div>
-                  <Label className="text-gray-400">Page Type</Label>
-                  <Select value={pageForm.page_type} onValueChange={(v) => setPageForm({ ...pageForm, page_type: v })}>
+                  <Label className="text-gray-400">Page Type {!editingPage && Object.keys(presets).length > 0 && <span className="text-xs text-[#D4A836]">(applies starter blocks)</span>}</Label>
+                  <Select value={pageForm.page_type} onValueChange={(v) => applyPresetForType(v)}>
                     <SelectTrigger className="bg-[#1a1a24] border-[#30363D] text-white">
                       <SelectValue />
                     </SelectTrigger>

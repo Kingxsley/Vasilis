@@ -540,3 +540,146 @@ async def get_block_templates(request: Request):
             }
         ]
     }
+
+
+# ============================================================================
+# Page Preset Templates + Reserved-Slug Seeder
+# ============================================================================
+
+# Presets keyed by page_type. When the admin creates a new PageBuilder page
+# with one of these types, the frontend will pre-populate `blocks` with these
+# starter sections so they're not staring at an empty canvas.
+PAGE_PRESETS = {
+    "news": [
+        {"type": "hero", "content": {
+            "title": "News & Insights",
+            "subtitle": "Stay up to date with our announcements, product updates, and industry news.",
+            "button_text": "Subscribe",
+            "button_url": "#subscribe",
+            "background_color": "#0f0f15",
+        }},
+        {"type": "heading", "content": {"text": "Latest Stories", "level": "h2", "align": "left"}},
+        {"type": "text", "content": {"text": "Here are our most recent posts. Add an RSS feed or publish a news article from the admin News Manager.", "align": "left"}},
+    ],
+    "about": [
+        {"type": "hero", "content": {
+            "title": "About Us",
+            "subtitle": "Our mission, our team, and why we do what we do.",
+            "button_text": "Get in touch",
+            "button_url": "/contact",
+            "background_color": "#0f0f15",
+        }},
+        {"type": "heading", "content": {"text": "Our Mission", "level": "h2", "align": "left"}},
+        {"type": "text", "content": {"text": "Write a paragraph about your company mission here.", "align": "left"}},
+        {"type": "divider", "content": {"style": "line"}},
+        {"type": "cards", "content": {
+            "columns": 3,
+            "cards": [
+                {"title": "Innovation", "description": "Constantly improving our platform.", "icon": "Shield"},
+                {"title": "Trust", "description": "Security and privacy first.",            "icon": "Lock"},
+                {"title": "Community", "description": "We grow with our customers.",         "icon": "Key"},
+            ],
+        }},
+    ],
+    "contact": [
+        {"type": "heading", "content": {"text": "Contact Us", "level": "h1", "align": "center"}},
+        {"type": "text", "content": {"text": "We'd love to hear from you. Fill out the form below and we'll get back to you within one business day.", "align": "center"}},
+        {"type": "contact_form", "content": {
+            "title": "Send us a message",
+            "fields": ["name", "email", "message"],
+            "submit_text": "Send Message",
+            "success_message": "Thank you for your message!",
+        }},
+    ],
+    "landing": [
+        {"type": "hero", "content": {
+            "title": "Your product, reimagined",
+            "subtitle": "A short, punchy value proposition that sells your solution.",
+            "button_text": "Get Started",
+            "button_url": "/auth",
+            "background_color": "#0f0f15",
+        }},
+        {"type": "heading", "content": {"text": "Why choose us?", "level": "h2", "align": "center"}},
+        {"type": "cards", "content": {
+            "columns": 3,
+            "cards": [
+                {"title": "Fast",   "description": "Deploy in minutes, not weeks.",        "icon": "Shield"},
+                {"title": "Secure", "description": "Enterprise-grade security baked in.",  "icon": "Lock"},
+                {"title": "Loved",  "description": "Trusted by thousands of teams.",       "icon": "Key"},
+            ],
+        }},
+    ],
+    "blog": [
+        {"type": "hero", "content": {
+            "title": "Our Blog",
+            "subtitle": "Insights, tutorials, and updates from our team.",
+            "button_text": "",
+            "button_url": "",
+            "background_color": "#0f0f15",
+        }},
+        {"type": "heading", "content": {"text": "Featured Posts", "level": "h2", "align": "left"}},
+        {"type": "text", "content": {"text": "Replace this with your featured blog posts or leave the block empty to render a list.", "align": "left"}},
+    ],
+}
+
+
+@router.get("/presets")
+async def list_presets(request: Request):
+    """Return the starter block templates, keyed by page_type."""
+    await require_admin(request)
+    return {"presets": PAGE_PRESETS}
+
+
+@router.post("/seed-reserved")
+async def seed_reserved_pages(request: Request):
+    """Seed draft PageBuilder pages for reserved slugs (blog, news).
+
+    Idempotent: skips slugs that already exist. Default state:
+      - is_published: False (admin must publish to go live)
+      - show_in_nav: True so they appear in navigation auto-sync
+      - auth_levels: ['public']
+      - blocks: populated from PAGE_PRESETS for the matching page_type
+    Returns {created: [...], skipped: [...]}.
+    """
+    await require_admin(request)
+    db = get_db()
+
+    reserved = [
+        ("blog", "Blog", "blog"),
+        ("news", "News", "news"),
+    ]
+    created = []
+    skipped = []
+    for slug, title, page_type in reserved:
+        existing = await db.custom_pages.find_one({"slug": slug})
+        if existing:
+            skipped.append(slug)
+            continue
+        presets = PAGE_PRESETS.get(page_type, [])
+        blocks = []
+        for i, b in enumerate(presets):
+            blocks.append({
+                "block_id": f"block_{uuid.uuid4().hex[:8]}",
+                "type": b["type"],
+                "content": b["content"],
+                "order": i,
+            })
+        page_doc = {
+            "page_id": f"page_{uuid.uuid4().hex[:12]}",
+            "title": title,
+            "slug": slug,
+            "description": f"Reserved system page for /{slug}. Customize via Page Builder.",
+            "page_type": page_type,
+            "blocks": blocks,
+            "show_in_nav": True,
+            "nav_section": "header",
+            "is_published": False,
+            "is_system": True,
+            "auth_levels": ["public"],
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }
+        await db.custom_pages.insert_one(page_doc)
+        created.append(slug)
+
+    return {"created": created, "skipped": skipped}

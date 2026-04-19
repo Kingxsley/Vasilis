@@ -10,7 +10,7 @@ import { PublicNav } from '../components/layout/PublicNav';
 import { PublicFooter } from '../components/layout/PublicFooter';
 import { DynamicSidebar } from '../components/layout/DynamicSidebar';
 import { PublicPagination } from '../components/common/Pagination';
-import { PageBuilderBlocks, usePageBuilderOverride } from '../components/PageBuilderRenderer';
+import { PageBuilderBlocks, SidebarWidgets, usePageBuilderOverride } from '../components/PageBuilderRenderer';
 import '../styles/blog-optimized.css';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -93,7 +93,7 @@ export function BlogList() {
   // PageBuilder override — if an admin created a custom_page with slug "blog"
   // and published it with blocks, render those blocks instead of the default
   // blog listing. This lets admins fully customize the /blog page.
-  const { override, loading: overrideLoading } = usePageBuilderOverride('blog');
+  const { override, sidebar, loading: overrideLoading } = usePageBuilderOverride('blog');
 
   if (overrideLoading) {
     return (
@@ -107,11 +107,18 @@ export function BlogList() {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex flex-col">
         <PublicNav branding={branding} />
-        <main className="container mx-auto px-6 py-12 flex-1 max-w-5xl">
+        <main className="container mx-auto px-6 py-12 flex-1 max-w-6xl">
           <h1 className="text-3xl md:text-4xl font-bold text-[#E8DDB5] mb-8 text-center">
             {override.title}
           </h1>
-          <PageBuilderBlocks blocks={override.blocks} />
+          {sidebar && sidebar.widgets && sidebar.widgets.length > 0 ? (
+            <div className="grid lg:grid-cols-[1fr_320px] gap-8">
+              <div><PageBuilderBlocks blocks={override.blocks} /></div>
+              <SidebarWidgets sidebar={sidebar} />
+            </div>
+          ) : (
+            <PageBuilderBlocks blocks={override.blocks} />
+          )}
         </main>
         <PublicFooter branding={branding} />
       </div>

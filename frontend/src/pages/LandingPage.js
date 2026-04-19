@@ -189,9 +189,7 @@ export default function LandingPage() {
     // System pages with their visibility from branding
     const systemPages = [
       { id: 'blog', to: '/blog', label: 'Blog', visible: branding?.show_blog },
-      { id: 'videos', to: '/videos', label: 'Videos', visible: branding?.show_videos },
       { id: 'news', to: '/news', label: 'News', visible: branding?.show_news !== false },
-      { id: 'about', to: '/about', label: 'About', visible: branding?.show_about },
     ];
     
     // CMS tiles (custom pages)

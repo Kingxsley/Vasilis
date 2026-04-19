@@ -60,6 +60,26 @@ async def get_sidebar_configs(user: dict = Depends(require_admin)):
     return configs
 
 
+@router.get("/public/{config_slug}")
+async def get_sidebar_config_public(config_slug: str):
+    """Public endpoint — fetch sidebar config for rendering on public pages.
+
+    No auth required. Only returns the enabled widgets. Used by
+    PageBuilder-overridden public pages to render their attached sidebar.
+    """
+    db = get_db()
+
+    config = await db.sidebar_configs.find_one({"page_slug": config_slug}, {"_id": 0})
+    if not config:
+        raise HTTPException(status_code=404, detail="Sidebar config not found")
+
+    # Filter only enabled widgets and sort by order
+    widgets = [w for w in (config.get("widgets") or []) if w.get("enabled", True)]
+    widgets.sort(key=lambda w: w.get("order", 0))
+    config["widgets"] = widgets
+    return config
+
+
 @router.get("/{config_slug}")
 async def get_sidebar_config(config_slug: str, user: dict = Depends(require_admin)):
     """Get a specific sidebar configuration"""

@@ -66,10 +66,8 @@ LEGACY_SECTION_IDS = {"main", "management", "simulations", "content", "training"
 
 # Default items for a fresh install — public-facing pages only.
 DEFAULT_NAV_ITEMS = [
-    {"label": "Blog",   "link_type": "internal", "path": "/blog",   "icon": "FileText",  "section_id": "header", "sort_order": 10},
-    {"label": "Videos", "link_type": "internal", "path": "/videos", "icon": "Video",     "section_id": "header", "sort_order": 20},
-    {"label": "News",   "link_type": "internal", "path": "/news",   "icon": "Newspaper", "section_id": "header", "sort_order": 30},
-    {"label": "About",  "link_type": "internal", "path": "/about",  "icon": "Users",     "section_id": "header", "sort_order": 40},
+    {"label": "Blog", "link_type": "internal", "path": "/blog", "icon": "FileText",  "section_id": "header", "sort_order": 10},
+    {"label": "News", "link_type": "internal", "path": "/news", "icon": "Newspaper", "section_id": "header", "sort_order": 20},
 ]
 
 # Available roles for visibility control
@@ -177,16 +175,12 @@ async def get_public_nav_items():
     ).sort("sort_order", 1).to_list(200)
 
     existing_paths = {i.get("path") for i in items if i.get("path")}
-    # Default public nav items (Blog, Videos, News, About) that route to
-    # PageBuilder-overridable public pages. We auto-include them so the
-    # public menu is never empty, even before the admin seeds defaults.
-    # Entries whose path is already covered (by either an explicit nav item
-    # OR a PageBuilder page with the same slug) are skipped.
+    # Default public nav items (Blog, News) that route to PageBuilder-
+    # overridable public pages. Videos/About were intentionally removed —
+    # admins create their own via the PageBuilder when needed.
     public_defaults = [
-        {"label": "Blog",   "path": "/blog",   "icon": "FileText",  "section_id": "header", "sort_order": 10},
-        {"label": "Videos", "path": "/videos", "icon": "Video",     "section_id": "header", "sort_order": 20},
-        {"label": "News",   "path": "/news",   "icon": "Newspaper", "section_id": "header", "sort_order": 30},
-        {"label": "About",  "path": "/about",  "icon": "Users",     "section_id": "header", "sort_order": 40},
+        {"label": "Blog", "path": "/blog", "icon": "FileText",  "section_id": "header", "sort_order": 10},
+        {"label": "News", "path": "/news", "icon": "Newspaper", "section_id": "header", "sort_order": 20},
     ]
 
     # 2. PageBuilder pages that opted into the public nav
@@ -209,9 +203,9 @@ async def get_public_nav_items():
         slug = p.get("slug")
         if not slug:
             continue
-        # Reserved slugs map to top-level public routes (/blog, /news, etc.)
+        # Reserved slugs map to top-level public routes (/blog, /news)
         # so that PageBuilder pages can override those built-in sections.
-        reserved = {"blog", "videos", "news", "about"}
+        reserved = {"blog", "news"}
         path = f"/{slug}" if slug in reserved else f"/page/{slug}"
         if path in existing_paths:
             continue

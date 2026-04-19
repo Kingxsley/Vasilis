@@ -2,108 +2,53 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { PublicNav } from '../components/layout/PublicNav';
 import { PublicFooter } from '../components/layout/PublicFooter';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Card, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Rss, ExternalLink, Calendar, Loader2, Plus, Trash2 } from 'lucide-react';
-import { useAuth } from '../App';
-import { PageBuilderBlocks, usePageBuilderOverride } from '../components/PageBuilderRenderer';
+import { Rss, ExternalLink, Calendar, Loader2, Newspaper } from 'lucide-react';
+import { PageBuilderBlocks, SidebarWidgets, usePageBuilderOverride } from '../components/PageBuilderRenderer';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+/**
+ * Public /news page.
+ *
+ * Renders a mixed timeline of admin-authored news articles (source=article)
+ * and external RSS feed entries (source=rss), sorted by publish date. If an
+ * admin published a PageBuilder page with slug="news", that overrides this
+ * default view entirely.
+ */
 export default function NewsAggregator() {
-  const { token, user } = useAuth();
   const [branding, setBranding] = useState(null);
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [feeds, setFeeds] = useState([]);
-  const [articles, setArticles] = useState([]);
-  const [newFeedUrl, setNewFeedUrl] = useState('');
-  const [adding, setAdding] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+
+  // PageBuilder override — admin-customized /news page
+  const { override, sidebar, loading: overrideLoading } = usePageBuilderOverride('news');
 
   useEffect(() => {
-    fetchBranding();
-    fetchFeeds();
-    setIsAdmin(user?.role === 'super_admin');
-  }, [user]);
+    axios.get(`${API}/settings/branding`).then((r) => setBranding(r.data)).catch(() => {});
+  }, []);
 
-  const fetchBranding = async () => {
-    try {
-      const res = await axios.get(`${API}/public/branding`);
-      setBranding(res.data);
-    } catch (err) {
-      console.error('Failed to load branding:', err);
-    }
-  };
-
-  const fetchFeeds = async () => {
-    try {
-      const res = await axios.get(`${API}/news/feeds`);
-      setFeeds(res.data.feeds || []);
-      
-      // Fetch articles from all feeds
-      const allArticles = [];
-      for (const feed of res.data.feeds || []) {
-        try {
-          const articlesRes = await axios.get(`${API}/news/feed/${feed.feed_id}/articles`);
-          allArticles.push(...articlesRes.data.articles.map(a => ({ ...a, feedName: feed.name })));
-        } catch (err) {
-          console.error(`Failed to fetch articles for ${feed.name}:`, err);
-        }
+  useEffect(() => {
+    if (override || overrideLoading) return; // skip fetch if override wins
+    let cancelled = false;
+    const fetchFeed = async () => {
+      try {
+        const res = await axios.get(`${API}/news/mixed-feed?limit=50`);
+        if (!cancelled) setItems(res.data.items || []);
+      } catch (err) {
+        if (!cancelled) setItems([]);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      
-      // Sort by date
-      allArticles.sort((a, b) => new Date(b.published_at) - new Date(a.published_at));
-      setArticles(allArticles);
-    } catch (err) {
-      console.error('Failed to load feeds:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAddFeed = async () => {
-    if (!newFeedUrl.trim() || !isAdmin) return;
-    
-    setAdding(true);
-    try {
-      await axios.post(
-        `${API}/news/feeds`,
-        { url: newFeedUrl },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
-      setNewFeedUrl('');
-      fetchFeeds();
-    } catch (err) {
-      console.error('Failed to add feed:', err);
-      alert('Failed to add RSS feed. Please check the URL.');
-    } finally {
-      setAdding(false);
-    }
-  };
-
-  const handleDeleteFeed = async (feedId) => {
-    if (!isAdmin || !window.confirm('Delete this RSS feed?')) return;
-    
-    try {
-      await axios.delete(`${API}/news/feeds/${feedId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      fetchFeeds();
-    } catch (err) {
-      console.error('Failed to delete feed:', err);
-    }
-  };
+    };
+    fetchFeed();
+    return () => { cancelled = true; };
+  }, [override, overrideLoading]);
 
   const primaryColor = branding?.primary_color || '#D4A836';
-  const bgColor = branding?.background_color || '#0f0f15';
+  const bgColor = '#0a0a0f';
   const textColor = branding?.text_color || '#E8DDB5';
-
-  // PageBuilder override for /news
-  const { override, loading: overrideLoading } = usePageBuilderOverride('news');
 
   if (overrideLoading) {
     return (
@@ -117,136 +62,113 @@ export default function NewsAggregator() {
     return (
       <div className="min-h-screen flex flex-col" style={{ backgroundColor: bgColor, color: textColor }}>
         <PublicNav branding={branding} />
-        <main className="container mx-auto px-6 py-12 flex-1 max-w-5xl">
+        <main className="container mx-auto px-6 py-12 flex-1 max-w-6xl">
           <h1 className="text-3xl md:text-4xl font-bold text-[#E8DDB5] mb-8 text-center">
             {override.title}
           </h1>
-          <PageBuilderBlocks blocks={override.blocks} />
+          {sidebar && sidebar.widgets && sidebar.widgets.length > 0 ? (
+            <div className="grid lg:grid-cols-[1fr_320px] gap-8">
+              <div><PageBuilderBlocks blocks={override.blocks} /></div>
+              <SidebarWidgets sidebar={sidebar} />
+            </div>
+          ) : (
+            <PageBuilderBlocks blocks={override.blocks} />
+          )}
         </main>
         <PublicFooter branding={branding} />
       </div>
     );
   }
 
+  const fmtDate = (iso) => {
+    try { return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }); }
+    catch { return iso; }
+  };
+
   return (
-    <div className="min-h-screen" style={{ backgroundColor: bgColor, color: textColor }}>
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: bgColor, color: textColor }}>
       <PublicNav branding={branding} />
 
-      <main className="container mx-auto px-4 py-12" style={{ paddingTop: '120px' }}>
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-12">
-            <h1 className="text-5xl font-bold mb-4" style={{ color: primaryColor, fontFamily: 'Chivo, sans-serif' }}>
-              Industry News & Updates
-            </h1>
-            <p className="text-xl" style={{ color: textColor + 'cc' }}>
-              Curated cybersecurity news from leading industry sources
-            </p>
-          </div>
-
-          {/* Admin: Add Feed */}
-          {isAdmin && (
-            <Card className="mb-8 bg-[#1a1a24] border-[#D4A836]/30">
-              <CardHeader>
-                <CardTitle className="text-[#E8DDB5] flex items-center gap-2">
-                  <Rss className="w-5 h-5" />
-                  Manage RSS Feeds
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex gap-2 mb-4">
-                  <Input
-                    value={newFeedUrl}
-                    onChange={(e) => setNewFeedUrl(e.target.value)}
-                    placeholder="Enter RSS feed URL (e.g., https://example.com/feed.xml)"
-                    className="bg-[#0f0f15] border-[#30363D]"
-                  />
-                  <Button
-                    onClick={handleAddFeed}
-                    disabled={adding || !newFeedUrl.trim()}
-                    className="bg-[#D4A836] hover:bg-[#B8922E] text-black whitespace-nowrap"
-                  >
-                    {adding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
-                    Add Feed
-                  </Button>
-                </div>
-                
-                {/* Current Feeds */}
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-400">Active Feeds ({feeds.length}/10):</p>
-                  {feeds.map(feed => (
-                    <div key={feed.feed_id} className="flex items-center justify-between p-2 bg-[#0f0f15] rounded">
-                      <span className="text-sm">{feed.name}</span>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleDeleteFeed(feed.feed_id)}
-                        className="text-red-400 hover:text-red-300"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Articles Grid */}
-          {loading ? (
-            <div className="flex justify-center py-20">
-              <Loader2 className="w-8 h-8 animate-spin" style={{ color: primaryColor }} />
-            </div>
-          ) : articles.length === 0 ? (
-            <Card className="bg-[#1a1a24] border-[#30363D]">
-              <CardContent className="py-12 text-center">
-                <Rss className="w-16 h-16 mx-auto mb-4 text-gray-600" />
-                <p className="text-gray-400">No news articles available yet.</p>
-                {isAdmin && (
-                  <p className="text-sm text-gray-500 mt-2">Add RSS feeds above to start aggregating news.</p>
-                )}
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {articles.map((article, idx) => (
-                <Card key={idx} className="bg-[#1a1a24] border-[#30363D] hover:border-[#D4A836]/50 transition-all">
-                  <CardHeader>
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <Badge variant="outline" className="text-xs">
-                        {article.feedName}
-                      </Badge>
-                      {article.published_at && (
-                        <span className="text-xs text-gray-500 flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          {new Date(article.published_at).toLocaleDateString()}
-                        </span>
-                      )}
-                    </div>
-                    <CardTitle className="text-lg" style={{ color: textColor }}>
-                      {article.title}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {article.description && (
-                      <p className="text-sm text-gray-400 mb-4 line-clamp-3">
-                        {article.description.replace(/<[^>]*>/g, '')}
-                      </p>
-                    )}
-                    <a
-                      href={article.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-sm hover:opacity-80 transition-opacity"
-                      style={{ color: primaryColor }}
-                    >
-                      Read Article <ExternalLink className="w-4 h-4" />
-                    </a>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+      <main className="container mx-auto px-4 py-12 flex-1 max-w-6xl">
+        <div className="mb-10">
+          <h1 className="text-4xl md:text-5xl font-bold mb-3" style={{ color: primaryColor, fontFamily: 'Chivo, sans-serif' }}>
+            News
+          </h1>
+          <p className="text-lg" style={{ color: textColor + 'cc' }}>
+            Our updates and curated industry news — all in one place.
+          </p>
         </div>
+
+        {loading ? (
+          <div className="flex justify-center py-16">
+            <Loader2 className="w-8 h-8 animate-spin" style={{ color: primaryColor }} />
+          </div>
+        ) : items.length === 0 ? (
+          <Card className="bg-[#0f0f15] border-[#D4A836]/20">
+            <CardContent className="py-16 text-center">
+              <Newspaper className="w-16 h-16 mx-auto mb-4 text-gray-600" />
+              <h3 className="text-xl font-semibold text-[#E8DDB5] mb-2">No news yet</h3>
+              <p className="text-gray-400 text-sm">Once your team publishes articles or adds RSS feeds, they'll appear here.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="news-mixed-feed">
+            {items.map((item, idx) => {
+              const isRSS = item.source === 'rss';
+              const href = item.link || '#';
+              const external = isRSS || (href.startsWith('http'));
+              const Wrapper = ({ children }) =>
+                external
+                  ? <a href={href} target="_blank" rel="noopener noreferrer" className="block">{children}</a>
+                  : <a href={href} className="block">{children}</a>;
+              return (
+                <Wrapper key={`${item.link}-${idx}`}>
+                  <Card
+                    className="bg-[#0f0f15] border-[#D4A836]/20 hover:border-[#D4A836]/50 transition-all h-full"
+                    data-testid={`news-card-${item.source}`}
+                  >
+                    {item.featured_image && (
+                      <div className="aspect-video overflow-hidden rounded-t-lg bg-[#1a1a24]">
+                        <img src={item.featured_image} alt={item.title} className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                    <CardContent className="pt-4 space-y-3">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge
+                          variant="outline"
+                          className={isRSS
+                            ? 'border-blue-500/30 text-blue-300 text-xs'
+                            : 'border-[#D4A836]/40 text-[#D4A836] text-xs'}
+                        >
+                          {isRSS ? <Rss className="w-3 h-3 mr-1" /> : <Newspaper className="w-3 h-3 mr-1" />}
+                          {item.feed_name || (isRSS ? 'RSS' : 'Our News')}
+                        </Badge>
+                        <span className="text-xs text-gray-500 inline-flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {fmtDate(item.published_at)}
+                        </span>
+                      </div>
+                      <h3 className="text-lg font-semibold text-[#E8DDB5] line-clamp-2 leading-snug">
+                        {item.title}
+                      </h3>
+                      {item.description && (
+                        <p
+                          className="text-sm text-gray-400 line-clamp-3"
+                          dangerouslySetInnerHTML={{ __html: item.description }}
+                        />
+                      )}
+                      {external && (
+                        <div className="text-xs flex items-center gap-1" style={{ color: primaryColor }}>
+                          Read more <ExternalLink className="w-3 h-3" />
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Wrapper>
+              );
+            })}
+          </div>
+        )}
       </main>
 
       <PublicFooter branding={branding} />

@@ -211,6 +211,75 @@ const COMPONENTS = {
 };
 
 /**
+ * Renders sidebar widgets attached to a PageBuilder page via `sidebar_config`.
+ * Supported widget_type values: recent_posts, popular_tags, newsletter,
+ * social_links, about_widget, custom_html, cta. Unknown types are ignored.
+ */
+export const SidebarWidgets = ({ sidebar }) => {
+  if (!sidebar || !sidebar.widgets || sidebar.widgets.length === 0) return null;
+  return (
+    <aside className="space-y-6" data-testid="pagebuilder-sidebar">
+      {sidebar.widgets.map((w) => {
+        const cfg = w.config || {};
+        const title = w.title || '';
+        return (
+          <Card key={w.widget_id} className="bg-[#0f0f15] border-[#D4A836]/20">
+            {title && (
+              <CardHeader className="pb-2">
+                <CardTitle className="text-[#E8DDB5] text-base">{title}</CardTitle>
+              </CardHeader>
+            )}
+            <CardContent className="pt-3">
+              {w.widget_type === 'custom_html' && (
+                <div className="text-gray-300 text-sm" dangerouslySetInnerHTML={{ __html: cfg.html || '' }} />
+              )}
+              {w.widget_type === 'newsletter' && (
+                <div className="space-y-2">
+                  {cfg.description && <p className="text-xs text-gray-400">{cfg.description}</p>}
+                  <Input placeholder="you@example.com" className="bg-[#1a1a24] border-[#30363D] text-white" />
+                  <Button className="w-full bg-[#D4A836] hover:bg-[#C49A30] text-black">
+                    {cfg.button_text || 'Subscribe'}
+                  </Button>
+                </div>
+              )}
+              {w.widget_type === 'cta' && (
+                <div className="space-y-2">
+                  {cfg.description && <p className="text-gray-300 text-sm">{cfg.description}</p>}
+                  {cfg.button_text && cfg.button_url && (
+                    <Button
+                      onClick={() => (window.location.href = cfg.button_url)}
+                      className="w-full bg-[#D4A836] hover:bg-[#C49A30] text-black"
+                    >
+                      {cfg.button_text}
+                    </Button>
+                  )}
+                </div>
+              )}
+              {w.widget_type === 'social_links' && Array.isArray(cfg.links) && (
+                <div className="flex flex-wrap gap-2">
+                  {cfg.links.map((l, i) => (
+                    <a key={i} href={l.url} target="_blank" rel="noopener noreferrer"
+                       className="text-[#D4A836] hover:underline text-sm">
+                      {l.label || l.url}
+                    </a>
+                  ))}
+                </div>
+              )}
+              {w.widget_type === 'about_widget' && (
+                <p className="text-gray-300 text-sm whitespace-pre-wrap">{cfg.text || ''}</p>
+              )}
+              {!['custom_html','newsletter','cta','social_links','about_widget'].includes(w.widget_type) && (
+                <p className="text-xs text-gray-500">Widget: {w.widget_type}</p>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })}
+    </aside>
+  );
+};
+
+/**
  * Renders a list of PageBuilder blocks (from custom_pages.blocks).
  */
 export const PageBuilderBlocks = ({ blocks }) => {
@@ -228,15 +297,18 @@ export const PageBuilderBlocks = ({ blocks }) => {
 };
 
 /**
- * Hook that fetches a PageBuilder override for a reserved slug (blog, videos,
- * news, about). Returns:
- *   { override: custom_page | null, loading: boolean }
+ * Hook that fetches a PageBuilder override for a reserved slug (blog, news).
+ * Returns:
+ *   { override: custom_page | null, sidebar: sidebar_config | null, loading: boolean }
  *
  * When an override exists AND is published AND contains blocks, callers
  * should render the override's blocks instead of the default page content.
+ * If the page has `sidebar_config` set, the hook also fetches the matching
+ * widget list so the renderer can show a right-column sidebar.
  */
 export function usePageBuilderOverride(slug) {
   const [override, setOverride] = useState(null);
+  const [sidebar, setSidebar] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -247,12 +319,21 @@ export function usePageBuilderOverride(slug) {
         const page = res.data;
         if (!cancelled && page && page.is_published && Array.isArray(page.blocks) && page.blocks.length > 0) {
           setOverride(page);
+          // If the override has a sidebar_config attached, fetch its widgets
+          if (page.sidebar_config) {
+            try {
+              const sbRes = await axios.get(`${API}/sidebar-configs/public/${page.sidebar_config}`);
+              if (!cancelled) setSidebar(sbRes.data);
+            } catch (_) {
+              if (!cancelled) setSidebar(null);
+            }
+          }
         } else if (!cancelled) {
           setOverride(null);
+          setSidebar(null);
         }
       } catch (err) {
-        // 404 = no override, which is fine
-        if (!cancelled) setOverride(null);
+        if (!cancelled) { setOverride(null); setSidebar(null); }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -261,5 +342,5 @@ export function usePageBuilderOverride(slug) {
     return () => { cancelled = true; };
   }, [slug]);
 
-  return { override, loading };
+  return { override, sidebar, loading };
 }
