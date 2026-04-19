@@ -147,15 +147,9 @@ async def get_public_nav_items(request: Request):
     
     db = get_db()
     
-    # Get active custom navigation items
+    # Get active custom navigation items (publicly visible)
     items = await db.navigation_items.find(
-        {
-            "is_active": True,
-            "$or": [
-                {"visible_to": "all"},
-                {"visible_to": user_role}
-            ]
-        },
+        {"is_active": True},
         {"_id": 0}
     ).sort("sort_order", 1).to_list(100)
     
