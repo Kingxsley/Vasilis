@@ -275,12 +275,16 @@ export default function SecurityCenter() {
 
   const updateUserRole = async (userId, newRole) => {
     try {
-      await axios.patch(`${API}/permissions/user/${userId}/role`, { role: newRole }, { headers });
+      await axios.put(`${API}/permissions/role`, { user_id: userId, role: newRole }, { headers });
       toast.success('Role updated');
       fetchPermissionsData();
-      setPermissionsDialogOpen(false);
+      // Refresh the selected user's permissions
+      if (selectedUser) {
+        const res = await axios.get(`${API}/permissions/user/${userId}`, { headers });
+        setUserPermissions(res.data);
+      }
     } catch (err) {
-      toast.error('Failed to update role');
+      toast.error(err.response?.data?.detail || 'Failed to update role');
     }
   };
 

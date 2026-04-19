@@ -769,13 +769,10 @@ const AppRouter = () => {
             </ProtectedRoute>
           }
         />
+        {/* Content Manager - Redirect to Page Builder */}
         <Route
           path="/content"
-          element={
-            <ProtectedRoute contentManager>
-              <ContentManager />
-            </ProtectedRoute>
-          }
+          element={<Navigate to="/dashboard/page-builder" replace />}
         />
         <Route
           path="/page-editor"
@@ -787,6 +784,10 @@ const AppRouter = () => {
         />
         <Route
           path="/page-builder"
+          element={<Navigate to="/dashboard/page-builder" replace />}
+        />
+        <Route
+          path="/dashboard/page-builder"
           element={
             <ProtectedRoute adminOnly>
               <PageBuilder />
