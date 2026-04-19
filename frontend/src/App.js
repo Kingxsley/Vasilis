@@ -299,6 +299,8 @@ const Settings = React.lazy(() => import('./pages/Settings'));
 const ContentManager = React.lazy(() => import('./pages/ContentManager'));
 const PageEditor = React.lazy(() => import('./pages/PageEditor'));
 const PageBuilder = React.lazy(() => import('./pages/PageBuilder'));
+const BlogManager = React.lazy(() => import('./pages/BlogManager'));
+const SidebarManager = React.lazy(() => import('./pages/SidebarManager'));
 const SecurityDashboard = React.lazy(() => import('./pages/SecurityDashboard'));
 const EmailTemplates = React.lazy(() => import('./pages/EmailTemplates'));
 const SystemEmailTemplates = React.lazy(() => import('./pages/SystemEmailTemplates'));
@@ -798,7 +800,7 @@ const AppRouter = () => {
           path="/dashboard/blog-manager"
           element={
             <ProtectedRoute adminOnly>
-              <React.lazy(() => import('./pages/BlogManager')).type />
+              <BlogManager />
             </ProtectedRoute>
           }
         />
@@ -806,7 +808,7 @@ const AppRouter = () => {
           path="/dashboard/sidebar-manager"
           element={
             <ProtectedRoute adminOnly>
-              <React.lazy(() => import('./pages/SidebarManager')).type />
+              <SidebarManager />
             </ProtectedRoute>
           }
         />
