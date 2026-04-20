@@ -165,3 +165,36 @@
 - `/app/frontend/src/pages/NavigationManager.js` — custom page options show `/slug` (not `/page/slug`).
 - `/app/frontend/src/App.js` — `LegacyPageRedirect` for `/page/:slug`; `DynamicRouteHandler` now checks PageBuilder pages first.
 - `/app/backend/routes/navigation.py` — all PageBuilder pages return clean `/<slug>` paths (no `/page/` prefix).
+
+## 2026-04-19 (Session 5) — Full Backlog Sweep
+
+### New Features
+- **Background RSS refresh scheduler** — `refresh_all_feeds_loop()` runs as an asyncio task from FastAPI startup. Every 5 minutes it scans all active feeds and refreshes any where `now - last_fetched >= refresh_interval` (default 1h). Errors are caught so the loop survives transient failures. Log line: `RSS refresh loop online - checking every 5 minutes`.
+- **POST `/api/news/feeds/refresh-all`** — admin-only endpoint for manual/cron-triggered full refresh. Returns `{ok, failed, total, details[]}`.
+- **Hero block background image picker** — new "Background Image (optional)" + Media Library button in the hero block editor. Renderer uses a dark gradient overlay on top of the image so titles stay legible. Falls back to `background_color` when no image.
+- **`columns` block (nested blocks)** — new block type added to `block-templates` + `PageBuilderRenderer`. Supports 1–4 columns, `gap` (tight/medium/loose), each column holds its own array of blocks (rendered recursively via `PageBuilderBlocks`). Admin editor lets you paste JSON block arrays per column.
+- **Analytics gated by cookie consent** — `useGoogleAnalytics` now:
+  - Reads `localStorage.cookie_consent_v1.categories.analytics` before loading `gtag`.
+  - Listens for `cookieConsentChange` events so the GA script loads the moment the user opts in (no refresh required).
+  - Short-circuits `trackPageView`/`trackEvent` when `analytics: false`.
+- **Preview mode for unpublished pages** — admins can open any draft at `/<slug>?preview=1`:
+  - `usePageBuilderOverride(slug)` and `CustomPage.fetchPage()` both detect `?preview=1` + attach the admin JWT from `localStorage.token`.
+  - Gold "Preview mode" banner renders at the top of previewed drafts with `data-testid="preview-banner"`.
+  - Page Builder now shows the ExternalLink button for both published AND draft pages; drafts open with `?preview=1` automatically.
+
+### Testing
+- **11/11 pytest tests passed** (`iteration_29.json`, 100%). Verified:
+  - Refresh-all admin contract + ok/failed aggregation
+  - Background loop export + startup log presence
+  - `columns` block template schema
+  - Preview flow: draft 404 without auth, 200 with admin auth, published 200 without auth
+  - Regressions: seed-reserved idempotent, navigation/public clean slugs, mixed-feed pagination
+
+### Files Modified/Added
+- `/app/backend/server.py` — startup schedules `refresh_all_feeds_loop` task
+- `/app/backend/routes/news_feeds.py` — new loop function + `/feeds/refresh-all` endpoint
+- `/app/backend/routes/pages.py` — `columns` block template
+- `/app/frontend/src/components/PageBuilderRenderer.js` — `ColumnsBlock` renderer + preview-aware `usePageBuilderOverride` + hero bg image support
+- `/app/frontend/src/components/GoogleAnalytics.js` — consent-aware loading
+- `/app/frontend/src/pages/CustomPage.js` — preview fetch + banner
+- `/app/frontend/src/pages/PageBuilder.js` — hero bg image picker, columns editor, ExternalLink always shown with preview URL for drafts
