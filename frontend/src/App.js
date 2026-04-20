@@ -451,15 +451,33 @@ const LoadingFallback = () => (
 // Ad Tracker Wrapper - routes campaign IDs to AdTracker
 // Dynamic route handler - checks for CMS tiles first, then ad campaigns
 // If neither, redirects to home. Public CMS pages render without auth.
+// Legacy /page/<slug> URLs redirect to /<slug> (we dropped the /page/ prefix)
+const LegacyPageRedirect = () => {
+  const { slug } = useParams();
+  return <Navigate to={`/${slug}`} replace />;
+};
+
+
 const DynamicRouteHandler = () => {
   const params = useParams();
   const slug = params.slug;
-  const [routeType, setRouteType] = useState(null); // 'cms_public', 'cms', 'ad', 'not_found'
+  const [routeType, setRouteType] = useState(null); // 'cms_public', 'cms', 'ad', 'pagebuilder', 'not_found'
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkRoute = async () => {
-      // First, check if this is a public CMS page (no auth needed)
+      // 1. PageBuilder custom_pages (e.g., /privacy-policy, /cookie-policy, /about, etc.)
+      //    Published pages with auth_levels including 'public' return 200 here.
+      try {
+        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/pages/custom/${slug}`);
+        if (res.ok) {
+          setRouteType('pagebuilder');
+          setLoading(false);
+          return;
+        }
+      } catch (e) { /* not a PageBuilder page */ }
+
+      // 2. Public CMS page (legacy tile system)
       try {
         const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/cms-tiles/public/page/${slug}`);
         if (res.ok) {
@@ -469,7 +487,7 @@ const DynamicRouteHandler = () => {
         }
       } catch (e) { /* not a public page */ }
 
-      // Next, check if this is a CMS tile (may need auth)
+      // 3. CMS tile (may need auth)
       try {
         const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/cms-tiles/${slug}`);
         if (res.ok) {
@@ -479,9 +497,9 @@ const DynamicRouteHandler = () => {
         }
       } catch (e) { /* not a CMS tile */ }
 
-      // Check if this looks like a valid campaign ID
+      // 4. Ad campaign IDs
       if (slug && (
-        slug.startsWith('adcamp_') || 
+        slug.startsWith('adcamp_') ||
         slug.startsWith('adcmp_') ||
         slug.startsWith('phish_')
       )) {
@@ -490,7 +508,7 @@ const DynamicRouteHandler = () => {
         return;
       }
 
-      // Neither CMS tile nor ad campaign
+      // Not found - redirect to home
       setRouteType('not_found');
       setLoading(false);
     };
@@ -504,6 +522,10 @@ const DynamicRouteHandler = () => {
         <div className="w-8 h-8 border-2 border-[#D4A836] border-t-transparent rounded-full animate-spin" />
       </div>
     );
+  }
+
+  if (routeType === 'pagebuilder') {
+    return <CustomPage />;
   }
 
   if (routeType === 'cms_public') {
@@ -559,7 +581,7 @@ const AppRouter = () => {
         <Route path="/news" element={<NewsPage />} />
         <Route path="/privacy-policy" element={<CustomPage />} />
         <Route path="/cookie-policy" element={<CustomPage />} />
-        <Route path="/page/:slug" element={<CustomPage />} />
+        <Route path="/page/:slug" element={<LegacyPageRedirect />} />
         {/* Public certificate verification */}
         <Route path="/verify/:certificateId" element={<CertificateVerify />} />
         <Route

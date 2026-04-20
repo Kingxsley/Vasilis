@@ -972,13 +972,7 @@ export default function PageBuilder() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => {
-                          const reserved = ['blog', 'news', 'privacy-policy', 'cookie-policy'];
-                          const href = reserved.includes(page.slug)
-                            ? `/${page.slug}`
-                            : `/page/${page.slug}`;
-                          window.open(href, '_blank');
-                        }}
+                        onClick={() => window.open(`/${page.slug}`, '_blank')}
                         className="text-gray-400 hover:text-[#D4A836]"
                         title="Open live page"
                       >
@@ -1040,7 +1034,7 @@ export default function PageBuilder() {
                 <div>
                   <Label className="text-gray-400">URL Slug</Label>
                   <div className="flex">
-                    <span className="bg-[#2a2a34] border border-r-0 border-[#30363D] px-3 py-2 text-gray-500 rounded-l-md">/page/</span>
+                    <span className="bg-[#2a2a34] border border-r-0 border-[#30363D] px-3 py-2 text-gray-500 rounded-l-md">/</span>
                     <Input
                       value={pageForm.slug}
                       onChange={(e) => setPageForm({ ...pageForm, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}

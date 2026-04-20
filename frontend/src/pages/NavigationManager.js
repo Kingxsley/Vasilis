@@ -540,8 +540,8 @@ export default function NavigationManager() {
                     </SelectTrigger>
                     <SelectContent>
                       {cmsPages.map((p) => (
-                        <SelectItem key={p.id} value={`/page/${p.slug}`}>
-                          {p.title} (/page/{p.slug})
+                        <SelectItem key={p.id} value={`/${p.slug}`}>
+                          {p.title} (/{p.slug})
                         </SelectItem>
                       ))}
                     </SelectContent>
