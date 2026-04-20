@@ -400,8 +400,17 @@ export default function CustomPage() {
   };
 
   const fetchPage = async () => {
+    // Preview mode: admins can view unpublished pages by appending ?preview=1
+    const isPreview = (() => {
+      try { return new URLSearchParams(window.location.search).get('preview') === '1'; }
+      catch { return false; }
+    })();
+    const token = (() => {
+      try { return localStorage.getItem('token'); } catch { return null; }
+    })();
+    const headers = isPreview && token ? { Authorization: `Bearer ${token}` } : undefined;
     try {
-      const res = await axios.get(`${API}/pages/custom/${slug}`);
+      const res = await axios.get(`${API}/pages/custom/${slug}`, { headers });
       setPage(res.data);
       // Fetch sidebar config if attached
       if (res.data?.sidebar_config) {
@@ -465,6 +474,21 @@ export default function CustomPage() {
 
   return (
     <div className="min-h-screen bg-[#0B0E14] flex flex-col">
+      {/* Preview banner (only visible when admin is previewing a draft) */}
+      {(() => {
+        const isPreview = (() => {
+          try { return new URLSearchParams(window.location.search).get('preview') === '1'; }
+          catch { return false; }
+        })();
+        if (!isPreview || page?.is_published) return null;
+        return (
+          <div className="bg-[#D4A836] text-black px-4 py-2 text-center text-sm font-medium" data-testid="preview-banner">
+            <AlertTriangle className="w-4 h-4 inline mr-2" />
+            Preview mode — this draft is not yet published
+          </div>
+        );
+      })()}
+
       {/* Public Navigation - same as landing page */}
       <PublicNav branding={branding} />
 

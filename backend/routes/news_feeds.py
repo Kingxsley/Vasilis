@@ -319,3 +319,84 @@ async def get_mixed_feed(
     total = len(deduped)
     paged = deduped[skip: skip + limit]
     return {"items": paged, "total": total, "skip": skip, "limit": limit}
+
+
+# ---- Background Refresh Scheduler ------------------------------------------
+
+async def refresh_all_feeds_loop(db):
+    """Background task that periodically refreshes all active RSS feeds.
+
+    Runs forever. Every feed is refreshed according to its own
+    `refresh_interval` seconds (default 3600). Checks every 5 minutes to see
+    which feeds are due. Safe to run alongside the manual Refresh button in
+    the admin UI — they update the same `last_fetched` / `status` fields.
+    """
+    import asyncio as _asyncio
+    logger.info("RSS refresh loop online - checking every 5 minutes")
+    # Initial small delay so app startup isn't blocked on network I/O
+    await _asyncio.sleep(30)
+    while True:
+        try:
+            now = datetime.now(timezone.utc)
+            feeds = await db.news_feeds.find(
+                {"is_active": {"$ne": False}},
+                {"_id": 0, "feed_id": 1, "url": 1, "refresh_interval": 1,
+                 "last_fetched": 1, "name": 1}
+            ).to_list(50)
+            for feed in feeds:
+                interval = int(feed.get("refresh_interval") or 3600)
+                last = feed.get("last_fetched")
+                last_dt = None
+                if last:
+                    try:
+                        last_dt = datetime.fromisoformat(last.replace("Z", "+00:00"))
+                    except Exception:
+                        last_dt = None
+                due = (last_dt is None) or (now - last_dt).total_seconds() >= interval
+                if not due:
+                    continue
+                ok, parsed_title, _entries, err = await _parse_feed(feed["url"])
+                update = {
+                    "last_fetched": now.isoformat() if ok else feed.get("last_fetched"),
+                    "fetch_error": None if ok else err,
+                    "status": "ok" if ok else "unreachable",
+                }
+                if ok and parsed_title and (not feed.get("name") or feed["name"] == "Untitled Feed"):
+                    update["name"] = parsed_title
+                await db.news_feeds.update_one({"feed_id": feed["feed_id"]}, {"$set": update})
+                logger.info("RSS refresh %s -> %s", feed.get("name"), "ok" if ok else "fail")
+        except Exception as e:
+            logger.warning("RSS refresh loop error: %s", e)
+        # Sleep 5 minutes between passes
+        await _asyncio.sleep(300)
+
+
+@router.post("/feeds/refresh-all")
+async def refresh_all_feeds(request: Request):
+    """Cron/trigger endpoint: refresh every active feed once."""
+    await require_admin(request)
+    db = get_db()
+    feeds = await db.news_feeds.find({"is_active": {"$ne": False}}, {"_id": 0}).to_list(50)
+    results = {"ok": 0, "failed": 0, "total": len(feeds), "details": []}
+    for feed in feeds:
+        ok, parsed_title, _entries, err = await _parse_feed(feed["url"])
+        update = {
+            "last_fetched": datetime.now(timezone.utc).isoformat() if ok else feed.get("last_fetched"),
+            "fetch_error": None if ok else err,
+            "status": "ok" if ok else "unreachable",
+        }
+        if ok and parsed_title and (not feed.get("name") or feed["name"] == "Untitled Feed"):
+            update["name"] = parsed_title
+        await db.news_feeds.update_one({"feed_id": feed["feed_id"]}, {"$set": update})
+        if ok:
+            results["ok"] += 1
+        else:
+            results["failed"] += 1
+        results["details"].append({
+            "feed_id": feed["feed_id"],
+            "name": feed.get("name"),
+            "ok": ok,
+            "error": err,
+        })
+    return results
+

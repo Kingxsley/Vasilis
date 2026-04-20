@@ -3879,6 +3879,11 @@ async def startup_event():
     global audit_logger
     audit_logger.db = db
     logger.info("Audit logger initialized with database connection")
+    # Start background RSS refresh loop
+    import asyncio as _asyncio
+    from routes.news_feeds import refresh_all_feeds_loop
+    _asyncio.create_task(refresh_all_feeds_loop(db))
+    logger.info("RSS background refresh loop started")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

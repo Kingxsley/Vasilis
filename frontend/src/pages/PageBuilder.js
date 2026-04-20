@@ -26,7 +26,7 @@ import {
   Plus, Edit, Trash2, Loader2, Eye, EyeOff, FileText, Layout, 
   Type, Image, Mail, Calendar, LayoutGrid, Minus, MousePointerClick,
   ExternalLink, Save, X, Globe,
-  Smartphone, Tablet, Monitor, Lock, RefreshCw, Newspaper
+  Smartphone, Tablet, Monitor, Lock, RefreshCw, Newspaper, Columns
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../App';
@@ -47,6 +47,7 @@ const BLOCK_ICONS = {
   cards: LayoutGrid,
   blog_list: FileText,
   news_feed: Newspaper,
+  columns: Columns,
 };
 
 // ============================================================================
@@ -625,6 +626,42 @@ export default function PageBuilder() {
                 />
               </div>
             </div>
+            <div>
+              <Label>Background Image (optional)</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={blockForm.content.background_image || ''}
+                  onChange={(e) => setBlockForm({ ...blockForm, content: { ...blockForm.content, background_image: e.target.value } })}
+                  placeholder="https://... or pick from Media Library"
+                  className="bg-[#1a1a24] border-[#30363D] text-white flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => { setMediaPickerTarget('background_image'); setShowMediaPicker(true); }}
+                  className="border-[#D4A836]/40 text-[#D4A836] hover:bg-[#D4A836]/10 whitespace-nowrap"
+                  data-testid="block-hero-bg-media-btn"
+                >
+                  <Image className="w-4 h-4 mr-2" />
+                  Media Library
+                </Button>
+              </div>
+              {blockForm.content.background_image && (
+                <div className="mt-2 rounded-lg overflow-hidden border border-[#30363D] bg-[#1a1a24]">
+                  <img src={blockForm.content.background_image} alt="" className="max-h-32 w-full object-cover" />
+                </div>
+              )}
+            </div>
+            <div>
+              <Label>Background Color (used if no image)</Label>
+              <Input
+                type="text"
+                value={blockForm.content.background_color || '#0f0f15'}
+                onChange={(e) => setBlockForm({ ...blockForm, content: { ...blockForm.content, background_color: e.target.value } })}
+                placeholder="#0f0f15"
+                className="bg-[#1a1a24] border-[#30363D] text-white"
+              />
+            </div>
           </div>
         );
 
@@ -746,6 +783,81 @@ export default function PageBuilder() {
             </div>
           </div>
         );
+
+      case 'columns': {
+        const colsCount = blockForm.content.columns_count || 2;
+        const cols = (blockForm.content.columns && blockForm.content.columns.length === colsCount)
+          ? blockForm.content.columns
+          : Array.from({ length: colsCount }, (_, i) => blockForm.content.columns?.[i] || { blocks: [] });
+        return (
+          <div className="space-y-4">
+            <p className="text-xs text-gray-500">
+              A multi-column grid. Each column can hold its own blocks. Use the inline "+ Add block" button inside each column preview to nest content.
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Number of columns</Label>
+                <Select
+                  value={String(colsCount)}
+                  onValueChange={(v) => {
+                    const n = parseInt(v, 10);
+                    const nextCols = Array.from({ length: n }, (_, i) => cols[i] || { blocks: [] });
+                    setBlockForm({ ...blockForm, content: { ...blockForm.content, columns_count: n, columns: nextCols } });
+                  }}
+                >
+                  <SelectTrigger className="bg-[#1a1a24] border-[#30363D] text-white"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1</SelectItem>
+                    <SelectItem value="2">2</SelectItem>
+                    <SelectItem value="3">3</SelectItem>
+                    <SelectItem value="4">4</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Gap</Label>
+                <Select
+                  value={blockForm.content.gap || 'medium'}
+                  onValueChange={(v) => setBlockForm({ ...blockForm, content: { ...blockForm.content, gap: v } })}
+                >
+                  <SelectTrigger className="bg-[#1a1a24] border-[#30363D] text-white"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="tight">Tight</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="loose">Loose</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div>
+              <Label className="text-gray-400">Column contents</Label>
+              <p className="text-xs text-gray-500 mb-2">Paste JSON block arrays for each column, or save and use the quick-add helpers on the page preview.</p>
+              <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${Math.min(colsCount, 4)}, 1fr)` }}>
+                {cols.map((col, i) => (
+                  <div key={i} className="bg-[#1a1a24] border border-[#30363D] rounded-md p-3">
+                    <div className="text-xs text-gray-500 mb-1">Column {i + 1} — {(col.blocks || []).length} block(s)</div>
+                    <Textarea
+                      value={JSON.stringify(col.blocks || [], null, 2)}
+                      onChange={(e) => {
+                        try {
+                          const parsed = JSON.parse(e.target.value);
+                          if (!Array.isArray(parsed)) return;
+                          const next = [...cols];
+                          next[i] = { blocks: parsed };
+                          setBlockForm({ ...blockForm, content: { ...blockForm.content, columns: next } });
+                        } catch (_) { /* ignore while typing */ }
+                      }}
+                      rows={6}
+                      className="bg-[#0f0f15] border-[#30363D] text-white font-mono text-xs"
+                      placeholder='[{"type":"text","content":{"text":"..."}}]'
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      }
 
       case 'blog_list':
       case 'news_feed': {
@@ -992,17 +1104,16 @@ export default function PageBuilder() {
                     >
                       {page.is_published ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </Button>
-                    {page.is_published && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => window.open(`/${page.slug}`, '_blank')}
-                        className="text-gray-400 hover:text-[#D4A836]"
-                        title="Open live page"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                      </Button>
-                    )}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => window.open(`/${page.slug}${page.is_published ? '' : '?preview=1'}`, '_blank')}
+                      className="text-gray-400 hover:text-[#D4A836]"
+                      title={page.is_published ? 'Open live page' : 'Preview draft'}
+                      data-testid={`preview-${page.slug}`}
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </Button>
                     {page.is_system && (
                       <Button
                         size="sm"

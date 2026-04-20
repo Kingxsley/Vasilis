@@ -71,25 +71,35 @@ const ImageBlock = ({ content }) => (
 
 const DividerBlock = () => <hr className="border-[#D4A836]/30 my-8" />;
 
-const HeroBlock = ({ content }) => (
-  <div
-    className="py-16 px-6 rounded-xl text-center mb-8"
-    style={{ backgroundColor: content.background_color || '#0f0f15' }}
-  >
-    <h1 className="text-4xl md:text-5xl font-bold text-[#E8DDB5] mb-4">{content.title}</h1>
-    {content.subtitle && (
-      <p className="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">{content.subtitle}</p>
-    )}
-    {content.button_text && (
-      <Button
-        onClick={() => content.button_url && (window.location.href = content.button_url)}
-        className="bg-[#D4A836] hover:bg-[#C49A30] text-black px-8 py-3 text-lg"
-      >
-        {content.button_text}
-      </Button>
-    )}
-  </div>
-);
+const HeroBlock = ({ content }) => {
+  const bgImage = content.background_image;
+  const styles = bgImage
+    ? {
+        backgroundImage: `linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url("${bgImage}")`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }
+    : { backgroundColor: content.background_color || '#0f0f15' };
+  return (
+    <div
+      className="py-16 px-6 rounded-xl text-center mb-8"
+      style={styles}
+    >
+      <h1 className="text-4xl md:text-5xl font-bold text-[#E8DDB5] mb-4">{content.title}</h1>
+      {content.subtitle && (
+        <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">{content.subtitle}</p>
+      )}
+      {content.button_text && (
+        <Button
+          onClick={() => content.button_url && (window.location.href = content.button_url)}
+          className="bg-[#D4A836] hover:bg-[#C49A30] text-black px-8 py-3 text-lg"
+        >
+          {content.button_text}
+        </Button>
+      )}
+    </div>
+  );
+};
 
 const ContactFormBlock = ({ content }) => {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
@@ -207,6 +217,25 @@ const gridColClass = (cols) => ({
   3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
   4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
 }[cols] || 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3');
+
+const ColumnsBlock = ({ content }) => {
+  const cols = Math.max(1, Math.min(4, content.columns_count || 2));
+  const gap = { tight: 'gap-3', medium: 'gap-6', loose: 'gap-10' }[content.gap || 'medium'] || 'gap-6';
+  const columns = (content.columns && content.columns.length === cols)
+    ? content.columns
+    : Array.from({ length: cols }, (_, i) => content.columns?.[i] || { blocks: [] });
+  return (
+    <div className={`grid ${gridColClass(cols)} ${gap}`} data-testid="block-columns">
+      {columns.map((col, i) => (
+        <div key={i} className="space-y-4" data-testid={`block-columns-col-${i}`}>
+          <PageBuilderBlocks blocks={col.blocks || []} />
+        </div>
+      ))}
+    </div>
+  );
+};
+
+
 
 const BlogListBlock = ({ content }) => {
   const {
@@ -482,6 +511,7 @@ const COMPONENTS = {
   cards: CardsBlock,
   blog_list: BlogListBlock,
   news_feed: NewsFeedBlock,
+  columns: ColumnsBlock,
 };
 
 /**
@@ -579,6 +609,10 @@ export const PageBuilderBlocks = ({ blocks }) => {
  * should render the override's blocks instead of the default page content.
  * If the page has `sidebar_config` set, the hook also fetches the matching
  * widget list so the renderer can show a right-column sidebar.
+ *
+ * Preview mode: if the URL contains `?preview=1` AND an auth token is
+ * present, the hook accepts unpublished pages too — so admins can preview
+ * drafts from the real public URL before hitting Publish.
  */
 export function usePageBuilderOverride(slug) {
   const [override, setOverride] = useState(null);
@@ -587,13 +621,23 @@ export function usePageBuilderOverride(slug) {
 
   useEffect(() => {
     let cancelled = false;
+    const isPreview = (() => {
+      try { return new URLSearchParams(window.location.search).get('preview') === '1'; }
+      catch { return false; }
+    })();
+    const token = (() => {
+      try { return localStorage.getItem('token'); } catch { return null; }
+    })();
+    const headers = isPreview && token ? { Authorization: `Bearer ${token}` } : undefined;
+
     const fetchOverride = async () => {
       try {
-        const res = await axios.get(`${API}/pages/custom/${slug}`);
+        const res = await axios.get(`${API}/pages/custom/${slug}`, { headers });
         const page = res.data;
-        if (!cancelled && page && page.is_published && Array.isArray(page.blocks) && page.blocks.length > 0) {
+        const hasBlocks = Array.isArray(page?.blocks) && page.blocks.length > 0;
+        const allowUnpublished = isPreview && !!token;
+        if (!cancelled && page && (page.is_published || allowUnpublished) && hasBlocks) {
           setOverride(page);
-          // If the override has a sidebar_config attached, fetch its widgets
           if (page.sidebar_config) {
             try {
               const sbRes = await axios.get(`${API}/sidebar-configs/public/${page.sidebar_config}`);

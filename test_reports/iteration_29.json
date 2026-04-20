@@ -1,0 +1,36 @@
+{
+  "summary": "Iteration 29 — Backend backlog cleanup verification. All 11 pytest cases passed (100%). Covered: (a) POST /api/news/feeds/refresh-all admin-only contract + valid/invalid feed aggregation, (b) background RSS refresh loop wired on startup (function import + 'RSS refresh loop online' log phrase found in supervisor logs), (c) block-templates includes new 'columns' template with columns_count=2 and 2 empty column slots, (d) PAGE_PRESETS has exactly 7 keys (news/about/contact/landing/blog/privacy-policy/cookie-policy), (e) unpublished custom page preview flow — 404 without auth, 200 with admin, 200 when published, (f) seed-reserved idempotent and produces 4 pages, (g) navigation/public has no '/page/' prefixes, (h) mixed-feed pagination + source filter works.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration_29_backlog.py",
+    "/app/test_reports/pytest/iteration_29.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "refresh-all endpoint does sequential _parse_feed calls inside the request handler — if admin has 10 feeds and one is slow, the request can block for 60s+. Consider running feeds in parallel via asyncio.gather on the thread-pool executor, or return immediately and process in a background task.",
+    "Background refresh_all_feeds_loop logs every feed attempt at INFO. With 10 feeds x 288 cycles/day that's 2880 log lines/day just for RSS — consider DEBUG for success, INFO only on failure or state change.",
+    "routes/pages.py is ~830 lines and mixes landing-page CRUD, custom-page CRUD, block templates, presets, seeder, and reset-to-preset. Beyond the 700-line guideline — recommend splitting into pages_landing.py, pages_custom.py, and pages_presets.py.",
+    "get_custom_page preview gating does `await require_admin(request)` after already calling get_current_user — two token validations per unpublished fetch. Minor perf/latency double-hit.",
+    "In refresh_all_feeds_loop: `last_fetched` stored as ISO string and parsed back each cycle — fine, but if any legacy docs have a naive datetime string without tz suffix, fromisoformat + replace('Z','+00:00') still works, but tzinfo comparison with `now` (aware) would raise. Consider wrapping the subtraction in a try/except to avoid killing the loop on a single bad doc."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration_29_backlog.py"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "not tested (backend-only request)"
+  },
+  "test_credentials": "admin@vasilisnetshield.com / Admin123! (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "Transient TEST_valid_* and TEST_invalid_* RSS feeds + one draft cms-enterprise-<hash> custom page created per test and cleaned up in finally blocks. No residual data.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Iteration 29 test file /app/backend/tests/test_iteration_29_backlog.py covers all backlog cleanup additions from iteration 29 (refresh-all endpoint, background RSS loop, columns block template, preview flow, regression on seed-reserved/navigation/mixed-feed). REACT_APP_BACKEND_URL is read from /app/frontend/.env as a fallback since it is not in backend shell env. All tests are self-cleaning. Background loop runs every 5 min inside FastAPI process — log phrase 'RSS refresh loop online' appears in /var/log/supervisor/backend.*.log on every startup."
+}

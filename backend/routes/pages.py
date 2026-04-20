@@ -572,6 +572,19 @@ async def get_block_templates(request: Request):
                     "show_excerpt": True,
                     "show_source_badge": True
                 }
+            },
+            {
+                "type": "columns",
+                "name": "Columns Layout",
+                "icon": "Columns",
+                "default_content": {
+                    "columns_count": 2,
+                    "gap": "medium",
+                    "columns": [
+                        {"blocks": []},
+                        {"blocks": []}
+                    ]
+                }
             }
         ]
     }
