@@ -198,3 +198,31 @@
 - `/app/frontend/src/components/GoogleAnalytics.js` — consent-aware loading
 - `/app/frontend/src/pages/CustomPage.js` — preview fetch + banner
 - `/app/frontend/src/pages/PageBuilder.js` — hero bg image picker, columns editor, ExternalLink always shown with preview URL for drafts
+
+## 2026-04-19 (Session 6) — Media Optimization + Nested DnD + Media Everywhere
+
+### New Features
+- **Aggressive image optimization** — JPEG/PNG now converted to WebP with ~85-90% size reduction (tested: 12.9KB → 1.5KB = 88.6% savings). PNG alpha preserved via WebP transparency. Max input raised from 10MB to 20MB.
+- **GIF animation preserved** — animated GIFs go through multi-frame Pillow processing, thumbnail down to 800x800 if oversized, palette optimized, but animation and loop count are fully preserved.
+- **SVG passthrough** — vector images saved as-is.
+- **Auto-generated thumbnails** — every upload now stores a compact WebP `thumb_url` (max 400x400) used by the Media Library grid for fast rendering.
+- **Batch upload** — `POST /api/media/upload-batch` accepts `List[UploadFile]`. Each file is optimized independently; partial failures are reported per-file. Used by MediaPicker's new `multiple` file input.
+- **MediaPicker everywhere**:
+  - **Blog Manager** — featured image picker + "Insert image from Library" button above the Quill editor (inserts `<img>` at cursor position).
+  - **News Manager** — same pattern as Blog Manager.
+  - **PageBuilder hero + image blocks** — already wired from Session 4, now benefit from batch + thumbnails.
+- **Visual DnD for nested columns** — new `ColumnBlockEditor` component replaces the JSON textarea inside `columns` block editor. Each column now has:
+  - Drag-and-drop reorder (via `@dnd-kit/sortable`)
+  - "+ Add block" dropdown (heading/text/button/image/divider)
+  - Inline edit/delete per nested block
+
+### Testing
+- **13/13 pytest tests passed** (`iteration_30.json`, 100%). Covered: JPEG→WebP conversion, PNG alpha preservation, animated GIF preservation, SVG passthrough, batch upload success, batch partial failures, 20MB limit enforcement, thumb_url generation, list/delete regression, columns block regression, refresh-all regression.
+
+### Files Modified/Added
+- `/app/backend/routes/media.py` — rewrote `optimize_image` for GIF/PNG-alpha support; added `make_thumbnail` + `_upload_one` helper + `upload-batch` endpoint; 20MB limit.
+- `/app/frontend/src/components/MediaPicker.js` — batch upload, uses `thumb_url` for grid preview.
+- `/app/frontend/src/components/ColumnBlockEditor.js` — NEW visual editor for nested column blocks.
+- `/app/frontend/src/pages/BlogManager.js` — Featured Image + "Insert image from Library" above Quill + MediaPicker mount.
+- `/app/frontend/src/pages/NewsManager.js` — same pattern as BlogManager.
+- `/app/frontend/src/pages/PageBuilder.js` — columns editor uses `ColumnBlockEditor` (no more JSON textareas).
