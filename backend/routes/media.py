@@ -32,36 +32,95 @@ async def require_admin(request: Request) -> dict:
     return user
 
 
-def optimize_image(image_data: bytes, max_size: tuple = (1200, 1200), quality: int = 85) -> tuple:
-    """Optimize an image for web display."""
+def optimize_image(image_data: bytes, content_type: str, max_size: tuple = (1600, 1600), quality: int = 82) -> tuple:
+    """Optimize an image for web display.
+
+    - JPEG/PNG/WebP: downscale to max_size, convert to WebP (85% quality) for
+      big wins on photos; preserve PNG when alpha channel is actually used.
+    - GIFs: preserve animation. Passes through all frames, strips metadata,
+      reduces to max 800x800 if larger (keeps animation).
+    - SVG: passthrough (vector).
+
+    Returns (optimized_bytes, mime_type).
+    """
     try:
-        img = Image.open(io.BytesIO(image_data))
-        
-        # Convert RGBA to RGB if no transparency needed
-        if img.mode == 'RGBA':
-            if img.split()[3].getextrema()[0] < 255:
-                pass  # Has transparency - keep RGBA
+        if content_type == "image/svg+xml":
+            return image_data, content_type
+
+        if content_type == "image/gif":
+            # Preserve animation but downscale if huge
+            img = Image.open(io.BytesIO(image_data))
+            if not getattr(img, "is_animated", False):
+                # Static GIF — treat as a regular image
+                img = img.convert("RGBA" if "A" in img.mode else "RGB")
+            frames = []
+            durations = []
+            try:
+                while True:
+                    frame = img.copy()
+                    frame.thumbnail((800, 800), Image.Resampling.LANCZOS)
+                    frames.append(frame)
+                    durations.append(img.info.get("duration", 100))
+                    img.seek(img.tell() + 1)
+            except EOFError:
+                pass
+            out = io.BytesIO()
+            if len(frames) > 1:
+                frames[0].save(
+                    out,
+                    format="GIF",
+                    save_all=True,
+                    append_images=frames[1:],
+                    duration=durations,
+                    loop=img.info.get("loop", 0),
+                    optimize=True,
+                    disposal=2,
+                )
             else:
-                img = img.convert('RGB')
-        elif img.mode != 'RGB':
-            img = img.convert('RGB')
-        
-        # Resize if larger than max_size
+                frames[0].save(out, format="GIF", optimize=True)
+            return out.getvalue(), "image/gif"
+
+        img = Image.open(io.BytesIO(image_data))
+
+        # Preserve alpha only when actually used
+        has_alpha = False
+        if img.mode in ("RGBA", "LA", "P"):
+            img = img.convert("RGBA")
+            alpha = img.split()[-1]
+            has_alpha = alpha.getextrema()[0] < 255
+            if not has_alpha:
+                img = img.convert("RGB")
+        elif img.mode != "RGB":
+            img = img.convert("RGB")
+
         img.thumbnail(max_size, Image.Resampling.LANCZOS)
-        
-        # Save to bytes
+
         output = io.BytesIO()
-        if img.mode == 'RGBA':
-            img.save(output, format='PNG', optimize=True)
-            mime_type = 'image/png'
+        if has_alpha:
+            # WebP handles alpha beautifully and is much smaller than PNG
+            img.save(output, format="WEBP", quality=quality, method=6)
+            mime_type = "image/webp"
         else:
-            img.save(output, format='WEBP', quality=quality, optimize=True)
-            mime_type = 'image/webp'
-        
+            img.save(output, format="WEBP", quality=quality, method=6)
+            mime_type = "image/webp"
         return output.getvalue(), mime_type
     except Exception as e:
         print(f"Image optimization failed: {e}")
-        return image_data, 'image/png'
+        return image_data, content_type or "image/png"
+
+
+def make_thumbnail(image_data: bytes, content_type: str, max_size: tuple = (400, 400)) -> tuple:
+    """Create a small WebP thumbnail (strips animation for GIFs)."""
+    try:
+        img = Image.open(io.BytesIO(image_data))
+        if img.mode not in ("RGB", "RGBA"):
+            img = img.convert("RGBA") if "A" in img.mode else img.convert("RGB")
+        img.thumbnail(max_size, Image.Resampling.LANCZOS)
+        out = io.BytesIO()
+        img.save(out, format="WEBP", quality=70, method=6)
+        return out.getvalue(), "image/webp"
+    except Exception:
+        return image_data, content_type
 
 
 class MediaItem(BaseModel):
@@ -98,67 +157,89 @@ async def upload_media(
     category: Optional[str] = Form("general"),
     alt_text: Optional[str] = Form(None)
 ):
-    """Upload a new media file with automatic optimization"""
+    """Upload a single image. Auto-optimizes (JPEG/PNG/WebP → WebP, GIFs preserve animation)."""
     user = await require_admin(request)
     db = get_db()
-    
-    # Validate file type
+
+    item = await _upload_one(file, category, alt_text, user)
+    await db.media.insert_one({**item})
+    item.pop("_id", None)
+    savings = round((1 - item["size"] / item["original_size"]) * 100, 1) if item["original_size"] > 0 else 0
+    return {"message": "Media uploaded successfully", "media": item, "savings_percent": savings}
+
+
+@router.post("/upload-batch")
+async def upload_media_batch(
+    request: Request,
+    files: List[UploadFile] = File(...),
+    category: Optional[str] = Form("general"),
+):
+    """Upload multiple images at once. Each file is optimized independently.
+
+    Returns {uploaded: [...], failed: [{filename, error}], total, ok, errors}.
+    """
+    user = await require_admin(request)
+    db = get_db()
+
+    uploaded = []
+    failed = []
+    for file in files:
+        try:
+            item = await _upload_one(file, category, None, user)
+            await db.media.insert_one({**item})
+            item.pop("_id", None)
+            uploaded.append(item)
+        except HTTPException as he:
+            failed.append({"filename": getattr(file, "filename", "?"), "error": he.detail})
+        except Exception as e:
+            failed.append({"filename": getattr(file, "filename", "?"), "error": str(e)})
+
+    return {
+        "uploaded": uploaded,
+        "failed": failed,
+        "total": len(files),
+        "ok": len(uploaded),
+        "errors": len(failed),
+    }
+
+
+async def _upload_one(file: UploadFile, category: Optional[str], alt_text: Optional[str], user: dict) -> dict:
+    """Shared single-file upload helper. Raises HTTPException on bad input."""
     allowed_types = ["image/png", "image/jpeg", "image/jpg", "image/svg+xml", "image/webp", "image/gif"]
     if file.content_type not in allowed_types:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid file type. Allowed: PNG, JPEG, SVG, WebP, GIF"
-        )
-    
-    # Read file contents
+        raise HTTPException(status_code=400, detail=f"Invalid file type: {file.content_type}. Allowed: PNG, JPEG, SVG, WebP, GIF")
+
     contents = await file.read()
     original_size = len(contents)
-    
-    # Check file size (max 10MB before optimization)
-    if original_size > 10 * 1024 * 1024:
-        raise HTTPException(status_code=400, detail="File too large. Max 10MB")
-    
-    # Optimize image (skip for SVG and GIF)
-    if file.content_type in ["image/svg+xml", "image/gif"]:
-        base64_data = base64.b64encode(contents).decode('utf-8')
-        data_url = f"data:{file.content_type};base64,{base64_data}"
-        optimized_size = original_size
-        mime_type = file.content_type
-    else:
-        optimized_contents, mime_type = optimize_image(contents)
-        optimized_size = len(optimized_contents)
-        base64_data = base64.b64encode(optimized_contents).decode('utf-8')
-        data_url = f"data:{mime_type};base64,{base64_data}"
-    
-    # Generate unique ID
+    if original_size > 20 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File too large. Max 20MB")
+
+    # Optimize — always, including GIFs (preserves animation)
+    optimized_contents, mime_type = optimize_image(contents, file.content_type)
+    optimized_size = len(optimized_contents)
+
+    # Generate thumbnail (small WebP, strips GIF animation for grid previews)
+    thumb_contents, thumb_mime = make_thumbnail(contents, file.content_type)
+
+    base64_data = base64.b64encode(optimized_contents).decode("utf-8")
+    data_url = f"data:{mime_type};base64,{base64_data}"
+    thumb_b64 = base64.b64encode(thumb_contents).decode("utf-8")
+    thumb_url = f"data:{thumb_mime};base64,{thumb_b64}"
+
     media_id = str(uuid.uuid4())[:8]
-    
-    # Create media record
-    media_item = {
+    return {
         "media_id": media_id,
         "filename": file.filename,
         "mime_type": mime_type,
+        "original_mime_type": file.content_type,
         "original_size": original_size,
         "size": optimized_size,
         "data_url": data_url,
+        "thumb_url": thumb_url,
         "category": category,
         "alt_text": alt_text or file.filename,
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "created_by": user["user_id"]
-    }
-    
-    await db.media.insert_one(media_item)
-    
-    # Remove _id for response
-    media_item.pop("_id", None)
-    
-    # Calculate savings
-    savings_percent = round((1 - optimized_size / original_size) * 100, 1) if original_size > 0 else 0
-    
-    return {
-        "message": "Media uploaded successfully",
-        "media": media_item,
-        "savings_percent": savings_percent
+        "created_by": user["user_id"],
     }
 
 

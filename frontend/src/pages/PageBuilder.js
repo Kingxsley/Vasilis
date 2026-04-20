@@ -32,6 +32,7 @@ import { toast } from 'sonner';
 import { useAuth } from '../App';
 import MediaPicker from '../components/MediaPicker';
 import { SortableBlockList } from '../components/SortableBlockList';
+import ColumnBlockEditor from '../components/ColumnBlockEditor';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -831,25 +832,18 @@ export default function PageBuilder() {
             </div>
             <div>
               <Label className="text-gray-400">Column contents</Label>
-              <p className="text-xs text-gray-500 mb-2">Paste JSON block arrays for each column, or save and use the quick-add helpers on the page preview.</p>
+              <p className="text-xs text-gray-500 mb-2">Drag blocks to reorder. Use "+ Add block" inside each column to add heading, text, button, image, or divider.</p>
               <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${Math.min(colsCount, 4)}, 1fr)` }}>
                 {cols.map((col, i) => (
-                  <div key={i} className="bg-[#1a1a24] border border-[#30363D] rounded-md p-3">
-                    <div className="text-xs text-gray-500 mb-1">Column {i + 1} — {(col.blocks || []).length} block(s)</div>
-                    <Textarea
-                      value={JSON.stringify(col.blocks || [], null, 2)}
-                      onChange={(e) => {
-                        try {
-                          const parsed = JSON.parse(e.target.value);
-                          if (!Array.isArray(parsed)) return;
-                          const next = [...cols];
-                          next[i] = { blocks: parsed };
-                          setBlockForm({ ...blockForm, content: { ...blockForm.content, columns: next } });
-                        } catch (_) { /* ignore while typing */ }
+                  <div key={i} className="bg-[#1a1a24] border border-[#30363D] rounded-md p-2">
+                    <div className="text-xs text-gray-500 mb-2 font-medium">Column {i + 1}</div>
+                    <ColumnBlockEditor
+                      blocks={col.blocks || []}
+                      onChange={(nextBlocks) => {
+                        const nextCols = [...cols];
+                        nextCols[i] = { ...col, blocks: nextBlocks };
+                        setBlockForm({ ...blockForm, content: { ...blockForm.content, columns: nextCols } });
                       }}
-                      rows={6}
-                      className="bg-[#0f0f15] border-[#30363D] text-white font-mono text-xs"
-                      placeholder='[{"type":"text","content":{"text":"..."}}]'
                     />
                   </div>
                 ))}

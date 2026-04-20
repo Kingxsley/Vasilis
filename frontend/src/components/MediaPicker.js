@@ -46,31 +46,45 @@ export default function MediaPicker({ open, onClose, onSelect }) {
   };
 
   const handleUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      toast.error('Only image files are supported');
-      return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    // Validate types + sizes client-side to avoid wasted round-trips
+    const invalid = files.filter((f) => !f.type.startsWith('image/'));
+    if (invalid.length > 0) {
+      toast.error(`Skipped ${invalid.length} non-image file(s)`);
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Max file size is 5MB');
-      return;
-    }
-    const form = new FormData();
-    form.append('file', file);
-    form.append('category', 'general');
+    const valid = files.filter((f) => f.type.startsWith('image/') && f.size <= 20 * 1024 * 1024);
+    if (valid.length === 0) return;
+
     setUploading(true);
     try {
-      const res = await axios.post(`${API}/media/upload`, form, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      toast.success('Uploaded');
-      const newItem = res.data.media || res.data;
-      setItems((prev) => [newItem, ...prev]);
-      setSelected(newItem);
+      if (valid.length === 1) {
+        const form = new FormData();
+        form.append('file', valid[0]);
+        form.append('category', 'general');
+        const res = await axios.post(`${API}/media/upload`, form, {
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+        });
+        toast.success(`Uploaded (saved ${res.data.savings_percent}%)`);
+        const newItem = res.data.media || res.data;
+        setItems((prev) => [newItem, ...prev]);
+        setSelected(newItem);
+      } else {
+        const form = new FormData();
+        valid.forEach((f) => form.append('files', f));
+        form.append('category', 'general');
+        const res = await axios.post(`${API}/media/upload-batch`, form, {
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+        });
+        const { uploaded = [], failed = [], ok, errors } = res.data;
+        if (ok > 0) toast.success(`Uploaded ${ok} image${ok > 1 ? 's' : ''}`);
+        if (errors > 0) toast.error(`${errors} upload${errors > 1 ? 's' : ''} failed`);
+        setItems((prev) => [...uploaded, ...prev]);
+        if (uploaded[0]) setSelected(uploaded[0]);
+        if (failed.length) {
+          failed.slice(0, 3).forEach((f) => console.warn('upload failed:', f));
+        }
+      }
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Upload failed');
     } finally {
@@ -129,6 +143,7 @@ export default function MediaPicker({ open, onClose, onSelect }) {
             ref={fileInputRef}
             type="file"
             accept="image/*"
+            multiple
             onChange={handleUpload}
             className="hidden"
             data-testid="media-picker-file-input"
@@ -141,7 +156,7 @@ export default function MediaPicker({ open, onClose, onSelect }) {
             data-testid="media-picker-upload-btn"
           >
             {uploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
-            Upload
+            {uploading ? 'Uploading...' : 'Upload (batch)'}
           </Button>
         </div>
 
@@ -160,7 +175,7 @@ export default function MediaPicker({ open, onClose, onSelect }) {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
               {filtered.map((m) => {
                 const isSelected = selected?.media_id === m.media_id;
-                const thumbUrl = m.url || m.data_url || m.src || '';
+                const thumbUrl = m.thumb_url || m.url || m.data_url || m.src || '';
                 return (
                   <button
                     key={m.media_id}

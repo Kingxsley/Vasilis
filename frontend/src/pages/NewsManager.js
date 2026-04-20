@@ -24,6 +24,7 @@ import { useAuth } from '../App';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import '../styles/quill-dark.css';
+import MediaPicker from '../components/MediaPicker';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -51,6 +52,9 @@ function ArticlesTab({ token }) {
   const [useHtml, setUseHtml] = useState(false);
   const [selected, setSelected] = useState(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [showMediaPicker, setShowMediaPicker] = useState(false);
+  const [mediaPickerTarget, setMediaPickerTarget] = useState('featured_image');
+  const quillRef = React.useRef(null);
 
   const [newsForm, setNewsForm] = useState({
     title: '',
@@ -350,14 +354,27 @@ function ArticlesTab({ token }) {
                   required
                 />
               ) : (
-                <div className="bg-white rounded-lg">
-                  <ReactQuill
-                    theme="snow"
-                    value={newsForm.content}
-                    onChange={(content) => setNewsForm({ ...newsForm, content })}
-                    modules={quillModules}
-                    style={{ minHeight: '300px' }}
-                  />
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Button
+                      type="button" size="sm" variant="outline"
+                      onClick={() => { setMediaPickerTarget('content'); setShowMediaPicker(true); }}
+                      className="border-[#D4A836]/40 text-[#D4A836] hover:bg-[#D4A836]/10"
+                      data-testid="news-content-media-btn"
+                    >
+                      Insert image from Library
+                    </Button>
+                  </div>
+                  <div className="bg-white rounded-lg">
+                    <ReactQuill
+                      ref={quillRef}
+                      theme="snow"
+                      value={newsForm.content}
+                      onChange={(content) => setNewsForm({ ...newsForm, content })}
+                      modules={quillModules}
+                      style={{ minHeight: '300px' }}
+                    />
+                  </div>
                 </div>
               )}
             </div>
@@ -372,12 +389,23 @@ function ArticlesTab({ token }) {
                 />
               </div>
               <div>
-                <Label>Featured Image URL</Label>
-                <Input
-                  value={newsForm.featured_image}
-                  onChange={(e) => setNewsForm({ ...newsForm, featured_image: e.target.value })}
-                  className="bg-[#1a1a24] border-[#30363D] text-white"
-                />
+                <Label>Featured Image</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={newsForm.featured_image}
+                    onChange={(e) => setNewsForm({ ...newsForm, featured_image: e.target.value })}
+                    placeholder="https://... or pick from Media Library"
+                    className="bg-[#1a1a24] border-[#30363D] text-white flex-1"
+                  />
+                  <Button
+                    type="button" variant="outline"
+                    onClick={() => { setMediaPickerTarget('featured_image'); setShowMediaPicker(true); }}
+                    className="border-[#D4A836]/40 text-[#D4A836] hover:bg-[#D4A836]/10 whitespace-nowrap"
+                    data-testid="news-featured-image-media-btn"
+                  >
+                    Media
+                  </Button>
+                </div>
               </div>
             </div>
 
@@ -403,6 +431,33 @@ function ArticlesTab({ token }) {
           </form>
         </DialogContent>
       </Dialog>
+
+      <MediaPicker
+        open={showMediaPicker}
+        onClose={() => setShowMediaPicker(false)}
+        onSelect={(url, meta) => {
+          if (mediaPickerTarget === 'featured_image') {
+            setNewsForm((prev) => ({ ...prev, featured_image: url }));
+            return;
+          }
+          if (mediaPickerTarget === 'content') {
+            const alt = meta?.alt_text || '';
+            const imgTag = `<p><img src="${url}" alt="${alt}" style="max-width:100%;height:auto;" /></p>`;
+            try {
+              const editor = quillRef.current?.getEditor?.();
+              if (editor) {
+                const range = editor.getSelection(true);
+                const insertAt = range ? range.index : editor.getLength();
+                editor.clipboard.dangerouslyPasteHTML(insertAt, imgTag);
+              } else {
+                setNewsForm((prev) => ({ ...prev, content: (prev.content || '') + imgTag }));
+              }
+            } catch (_) {
+              setNewsForm((prev) => ({ ...prev, content: (prev.content || '') + imgTag }));
+            }
+          }
+        }}
+      />
     </div>
   );
 }

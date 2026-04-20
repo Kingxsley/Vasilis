@@ -25,13 +25,14 @@ import {
 import {
   Plus, Edit, Trash2, Loader2, FileText, Search, X, Copy, Archive,
   ArchiveRestore, Eye, EyeOff, MoreVertical, ChevronLeft, ChevronRight,
-  CheckCircle2, FileEdit, FileX, Tag as TagIcon, Calendar, User,
+  CheckCircle2, FileEdit, FileX, Tag as TagIcon, Calendar, User, Image as ImageIcon,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../App';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import '../styles/quill-dark.css';
+import MediaPicker from '../components/MediaPicker';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const PAGE_SIZE = 20;
@@ -108,6 +109,9 @@ export default function BlogManager() {
   const [page, setPage] = useState(1);
 
   const [selectedIds, setSelectedIds] = useState(new Set());
+  const [showMediaPicker, setShowMediaPicker] = useState(false);
+  const [mediaPickerTarget, setMediaPickerTarget] = useState('featured_image');
+  const quillRef = useRef(null);
 
   const [postForm, setPostForm] = useState({
     title: '', slug: '', excerpt: '', content: '',
@@ -660,14 +664,29 @@ export default function BlogManager() {
                     required
                   />
                 ) : (
-                  <div className="bg-white rounded-lg">
-                    <ReactQuill
-                      theme="snow"
-                      value={postForm.content}
-                      onChange={(content) => setPostForm({ ...postForm, content })}
-                      modules={quillModules}
-                      style={{ minHeight: '300px' }}
-                    />
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Button
+                        type="button" size="sm" variant="outline"
+                        onClick={() => { setMediaPickerTarget('content'); setShowMediaPicker(true); }}
+                        className="border-[#D4A836]/40 text-[#D4A836] hover:bg-[#D4A836]/10"
+                        data-testid="blog-content-media-btn"
+                      >
+                        <ImageIcon className="w-4 h-4 mr-1" />
+                        Insert image from Library
+                      </Button>
+                      <span className="text-xs text-gray-500">(inserts at cursor, or at the end of the article)</span>
+                    </div>
+                    <div className="bg-white rounded-lg">
+                      <ReactQuill
+                        ref={quillRef}
+                        theme="snow"
+                        value={postForm.content}
+                        onChange={(content) => setPostForm({ ...postForm, content })}
+                        modules={quillModules}
+                        style={{ minHeight: '300px' }}
+                      />
+                    </div>
                   </div>
                 )}
               </div>
@@ -712,6 +731,34 @@ export default function BlogManager() {
               </div>
 
               <div>
+                <Label>Featured Image</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={postForm.featured_image}
+                    onChange={(e) => setPostForm({ ...postForm, featured_image: e.target.value })}
+                    placeholder="https://... or pick from Media Library"
+                    className="bg-[#1a1a24] border-[#30363D] text-white flex-1"
+                    data-testid="blog-featured-image-input"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => { setMediaPickerTarget('featured_image'); setShowMediaPicker(true); }}
+                    className="border-[#D4A836]/40 text-[#D4A836] hover:bg-[#D4A836]/10"
+                    data-testid="blog-featured-image-media-btn"
+                  >
+                    <ImageIcon className="w-4 h-4 mr-2" />
+                    Media Library
+                  </Button>
+                </div>
+                {postForm.featured_image && (
+                  <div className="mt-2 rounded-lg overflow-hidden border border-[#30363D] bg-[#1a1a24]">
+                    <img src={postForm.featured_image} alt="Featured preview" className="max-h-40 w-full object-cover" />
+                  </div>
+                )}
+              </div>
+
+              <div>
                 <Label>SEO Meta Description (150–160 chars)</Label>
                 <Textarea
                   value={postForm.meta_description}
@@ -736,6 +783,34 @@ export default function BlogManager() {
             </form>
           </DialogContent>
         </Dialog>
+
+        {/* Media Library Picker for featured image + Quill content insertion */}
+        <MediaPicker
+          open={showMediaPicker}
+          onClose={() => setShowMediaPicker(false)}
+          onSelect={(url, meta) => {
+            if (mediaPickerTarget === 'featured_image') {
+              setPostForm((prev) => ({ ...prev, featured_image: url }));
+              return;
+            }
+            if (mediaPickerTarget === 'content') {
+              const alt = meta?.alt_text || '';
+              const imgTag = `<p><img src="${url}" alt="${alt}" style="max-width:100%;height:auto;" /></p>`;
+              try {
+                const editor = quillRef.current?.getEditor?.();
+                if (editor) {
+                  const range = editor.getSelection(true);
+                  const insertAt = range ? range.index : editor.getLength();
+                  editor.clipboard.dangerouslyPasteHTML(insertAt, imgTag);
+                } else {
+                  setPostForm((prev) => ({ ...prev, content: (prev.content || '') + imgTag }));
+                }
+              } catch (_) {
+                setPostForm((prev) => ({ ...prev, content: (prev.content || '') + imgTag }));
+              }
+            }
+          }}
+        />
       </div>
     </DashboardLayout>
   );
