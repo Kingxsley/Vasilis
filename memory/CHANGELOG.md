@@ -104,3 +104,42 @@
 - `/app/frontend/src/components/PageBuilderRenderer.js` — added `SidebarWidgets` + sidebar fetch in hook
 - `/app/frontend/src/components/DashboardLayout.js` — "News & RSS" (consolidated)
 - `/app/frontend/src/App.js` — removed /videos & /about; /rss-feeds redirects to /dashboard/news-manager
+
+## 2026-04-19 (Session 3) — Dynamic Blocks + Privacy + Granular Cookie Consent
+
+### Fixed (P0)
+- **"Blog and news pages no longer show contents"**: previously the PageBuilder override with only static preset blocks replaced the dynamic feed entirely. Introduced **dynamic blocks** (`blog_list`, `news_feed`) so the preset now = hero + dynamic list. Admins customize the hero text; dynamic list keeps working.
+- **Subscribe button removed** from news hero preset.
+- **"Create defaults" confusion** fixed in NavigationManager — confirmation text now matches the new Blog+News defaults.
+- **Duplicate H1** on override pages: outer title skipped when first block is a `hero` or `heading`.
+- **Reserved-slug URLs**: fixed `Open live` button in PageBuilder to use `/<slug>` for reserved pages (blog, news, privacy-policy, cookie-policy) instead of `/page/<slug>`.
+
+### New Features (P1)
+- **Dynamic `blog_list` block**: full-control config — items_per_page (3–24), columns (1–4), layout (grid/list), sort (newest/oldest/title), category filter, tag filter, show date/author/excerpt/search toggles, featured-first toggle. Built-in pagination.
+- **Dynamic `news_feed` block**: source selector (mixed/articles/rss), items_per_page, columns, sort, category/tag filter, show date/author/excerpt/source-badge toggles. Built-in pagination.
+- **GET /api/news/mixed-feed** extended with `?source`, `?skip`, `?limit`, `?category`, `?tag`, `?sort` params (returns `{items, total, skip, limit}`).
+- **Privacy Policy preset** (+ `/privacy-policy` route) — full 6-section starter content, editable via PageBuilder.
+- **Cookie Policy preset** (+ `/cookie-policy` route) — includes categories cards.
+- **Reset-to-preset**: new `POST /api/pages/{page_id}/reset-to-preset` endpoint + button in Page Builder (for system pages) to restore latest defaults.
+- **Granular Cookie Consent (GDPR)**:
+  - Component: `/app/frontend/src/components/CookieConsent.js` mounted globally in `App.js`.
+  - Two-view banner: quick (Accept All / Reject All / Customize) + customize (per-category toggles).
+  - Admin UI: `/dashboard/cookie-settings` (new sidebar link, Cookie icon) — enable toggle, title/message/button text, policy URL, 3 positions, editable categories with per-category label/description/required.
+  - API: `GET /api/settings/cookie-consent` (public), `PATCH /api/settings/cookie-consent` (admin only).
+  - Emits `window.cookieConsentChange` event + `localStorage` (`cookie_consent_v1`).
+
+### Backend Testing
+- **18/18 pytest tests passed** (`iteration_28.json`). All new endpoints + dynamic blocks + regressions verified.
+
+### Files Modified/Added
+- `/app/backend/routes/pages.py` — PAGE_PRESETS now has 7 keys (news/about/contact/landing/blog/privacy-policy/cookie-policy); added `blog_list` + `news_feed` to block-templates; added `POST /{page_id}/reset-to-preset`; `seed-reserved` extended to 4 slugs.
+- `/app/backend/routes/news_feeds.py` — `/mixed-feed` supports pagination + filters.
+- `/app/backend/routes/settings.py` — added `/cookie-consent` GET + PATCH + COOKIE_DEFAULT.
+- `/app/frontend/src/components/CookieConsent.js` — NEW.
+- `/app/frontend/src/components/PageBuilderRenderer.js` — added `BlogListBlock` + `NewsFeedBlock` dynamic renderers.
+- `/app/frontend/src/pages/CookieSettings.js` — NEW admin page.
+- `/app/frontend/src/pages/CustomPage.js` — renders `/privacy-policy`, `/cookie-policy` via shared renderer; adds sidebar column.
+- `/app/frontend/src/pages/PageBuilder.js` — block editor UI for blog_list/news_feed; "Reset to preset" button on system pages.
+- `/app/frontend/src/pages/NavigationManager.js` — fixed stale confirmation text.
+- `/app/frontend/src/App.js` — routes for `/privacy-policy`, `/cookie-policy`, `/dashboard/cookie-settings`; global `<CookieConsent />`.
+- `/app/frontend/src/components/DashboardLayout.js` — added Cookie Consent sidebar link.
