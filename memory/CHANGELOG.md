@@ -143,3 +143,25 @@
 - `/app/frontend/src/pages/NavigationManager.js` — fixed stale confirmation text.
 - `/app/frontend/src/App.js` — routes for `/privacy-policy`, `/cookie-policy`, `/dashboard/cookie-settings`; global `<CookieConsent />`.
 - `/app/frontend/src/components/DashboardLayout.js` — added Cookie Consent sidebar link.
+
+## 2026-04-19 (Session 4) — Clean URLs + DnD + Media Picker + Bulk Delete
+
+### Fixed (P0)
+- **Visibility stuck at Public**: the `disabled={publicSelected && lvl.key !== 'public'}` guard prevented admins from switching to role-specific visibility. Fixed so toggling any role auto-removes `public` and vice-versa. Also added `data-testid="visibility-{key}"` on each chip.
+- **`/page/` URL prefix dropped**: PageBuilder custom pages now use `/<slug>` directly (e.g., `/contact-us`, `/about-us`). Legacy `/page/:slug` URLs redirect to `/:slug` for backwards compat. `DynamicRouteHandler` now checks `custom_pages` first before CMS tiles/ad campaigns, so any published public PageBuilder page is reachable at its slug.
+
+### New Features (P1/P2)
+- **Cookie Preferences link in footer** — dedicated `data-testid="footer-cookie-settings-btn"` button clears `localStorage.cookie_consent_v1` and reloads so the granular banner reappears. Also added Privacy Policy + Cookie Policy footer links.
+- **Media Library picker inside image block editor** — new `MediaPicker` component (`/app/frontend/src/components/MediaPicker.js`) modal with search, inline upload, selection highlight, double-click-to-confirm. Wired into PageBuilder image block via "Media Library" button next to URL input.
+- **PageBuilder drag-and-drop block reorder** — new `SortableBlockList` component (`/app/frontend/src/components/SortableBlockList.js`) using `@dnd-kit/sortable`. Replaces the up/down arrow buttons with a proper drag handle (only the handle is a drop zone, preserving click-ability of Edit/Delete). Auto-updates `block.order`.
+- **Bulk select + delete articles** in News Manager — per-card checkbox, "Select all" toggle, "Delete N" bulk action with confirmation + summary toasts (success/fail count), `data-testid`s for testing.
+
+### Files Modified/Added
+- `/app/frontend/src/components/MediaPicker.js` — NEW.
+- `/app/frontend/src/components/SortableBlockList.js` — NEW.
+- `/app/frontend/src/components/PublicFooter.js` — added policy + cookie preferences row.
+- `/app/frontend/src/pages/PageBuilder.js` — visibility toggle fix, DnD wiring, MediaPicker mount, Image icon on media btn.
+- `/app/frontend/src/pages/NewsManager.js` — bulk select/delete in Articles tab.
+- `/app/frontend/src/pages/NavigationManager.js` — custom page options show `/slug` (not `/page/slug`).
+- `/app/frontend/src/App.js` — `LegacyPageRedirect` for `/page/:slug`; `DynamicRouteHandler` now checks PageBuilder pages first.
+- `/app/backend/routes/navigation.py` — all PageBuilder pages return clean `/<slug>` paths (no `/page/` prefix).

@@ -25,11 +25,13 @@ import {
 import { 
   Plus, Edit, Trash2, Loader2, Eye, EyeOff, FileText, Layout, 
   Type, Image, Mail, Calendar, LayoutGrid, Minus, MousePointerClick,
-  GripVertical, ArrowUp, ArrowDown, ExternalLink, Save, X, Globe,
+  ExternalLink, Save, X, Globe,
   Smartphone, Tablet, Monitor, Lock, RefreshCw, Newspaper
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../App';
+import MediaPicker from '../components/MediaPicker';
+import { SortableBlockList } from '../components/SortableBlockList';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -199,6 +201,8 @@ export default function PageBuilder() {
   const [showSidebarDialog, setShowSidebarDialog] = useState(false);
   const [presets, setPresets] = useState({});
   const [seeding, setSeeding] = useState(false);
+  const [showMediaPicker, setShowMediaPicker] = useState(false);
+  const [mediaPickerTarget, setMediaPickerTarget] = useState('url'); // which block content field
   
   // Form states
   const [pageForm, setPageForm] = useState({
@@ -488,6 +492,9 @@ export default function PageBuilder() {
     [newBlocks[index], newBlocks[newIndex]] = [newBlocks[newIndex], newBlocks[index]];
     setPageForm({ ...pageForm, blocks: newBlocks });
   };
+  // Keep handleMoveBlock exported on component scope in case we want keyboard
+  // fallback shortcuts later. Currently reorder happens via drag-and-drop.
+  void handleMoveBlock;
 
   const getBlockIcon = (type) => {
     const IconComponent = BLOCK_ICONS[type] || FileText;
@@ -697,12 +704,29 @@ export default function PageBuilder() {
           <div className="space-y-4">
             <div>
               <Label>Image URL</Label>
-              <Input
-                value={blockForm.content.url || ''}
-                onChange={(e) => setBlockForm({ ...blockForm, content: { ...blockForm.content, url: e.target.value } })}
-                className="bg-[#1a1a24] border-[#30363D] text-white"
-                placeholder="https://..."
-              />
+              <div className="flex gap-2">
+                <Input
+                  value={blockForm.content.url || ''}
+                  onChange={(e) => setBlockForm({ ...blockForm, content: { ...blockForm.content, url: e.target.value } })}
+                  className="bg-[#1a1a24] border-[#30363D] text-white flex-1"
+                  placeholder="https://... or pick from Media Library"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => { setMediaPickerTarget('url'); setShowMediaPicker(true); }}
+                  className="border-[#D4A836]/40 text-[#D4A836] hover:bg-[#D4A836]/10 whitespace-nowrap"
+                  data-testid="block-image-media-btn"
+                >
+                  <Image className="w-4 h-4 mr-2" />
+                  Media Library
+                </Button>
+              </div>
+              {blockForm.content.url && (
+                <div className="mt-3 rounded-lg overflow-hidden border border-[#30363D] bg-[#1a1a24]">
+                  <img src={blockForm.content.url} alt="" className="max-h-48 w-full object-contain" />
+                </div>
+              )}
             </div>
             <div>
               <Label>Alt Text</Label>
@@ -1130,16 +1154,15 @@ export default function PageBuilder() {
                     { key: 'super_admin', label: 'Super admin',      hint: 'Super admins only' },
                   ];
                   const has = (k) => (pageForm.auth_levels || []).includes(k);
-                  const publicSelected = has('public');
 
                   const toggle = (key) => {
                     let next;
                     if (key === 'public') {
-                      // Public dominates — clicking it clears others; unclick
-                      // leaves an empty list which falls back to ['public'].
+                      // Toggle 'public' on its own. When activating 'public',
+                      // clear role-specific selections (they become redundant).
                       next = has('public') ? [] : ['public'];
                     } else {
-                      // Selecting a specific role removes 'public' implicitly.
+                      // Selecting any role removes 'public' implicitly.
                       const current = (pageForm.auth_levels || []).filter(x => x !== 'public');
                       if (current.includes(key)) {
                         next = current.filter(x => x !== key);
@@ -1147,6 +1170,8 @@ export default function PageBuilder() {
                         next = [...current, key];
                       }
                     }
+                    // Empty means "no one can see it" which isn't valid — fall back
+                    // to public so the page stays visible.
                     if (next.length === 0) next = ['public'];
                     setPageForm({ ...pageForm, auth_levels: next });
                   };
@@ -1154,21 +1179,19 @@ export default function PageBuilder() {
                   return (
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
                       {levels.map((lvl) => {
-                        const disabled = publicSelected && lvl.key !== 'public';
                         const active = has(lvl.key);
                         return (
                           <button
                             type="button"
                             key={lvl.key}
                             onClick={() => toggle(lvl.key)}
-                            disabled={disabled}
                             title={lvl.hint}
+                            data-testid={`visibility-${lvl.key}`}
                             className={[
-                              'rounded-md border px-3 py-2 text-left transition text-sm',
+                              'rounded-md border px-3 py-2 text-left transition text-sm cursor-pointer',
                               active
                                 ? 'bg-[#D4A836]/20 border-[#D4A836] text-[#E8DDB5]'
                                 : 'bg-[#1a1a24] border-[#30363D] text-gray-400 hover:border-[#D4A836]/40',
-                              disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer',
                             ].join(' ')}
                           >
                             <div className="flex items-center gap-2">
@@ -1308,19 +1331,23 @@ export default function PageBuilder() {
                     <p className="text-gray-500">No blocks added yet. Click "Add Block" to start building.</p>
                   </div>
                 ) : (
-                  <div className="space-y-2">
-                    {pageForm.blocks.map((block, index) => (
-                      <div 
-                        key={block.block_id || index} 
-                        className="flex items-center gap-2 bg-[#1a1a24] border border-[#30363D] rounded-lg p-3"
-                      >
-                        <GripVertical className="w-4 h-4 text-gray-600" />
-                        <div className="flex items-center gap-2 flex-1">
+                  <SortableBlockList
+                    items={pageForm.blocks}
+                    onReorder={(next) => setPageForm({ ...pageForm, blocks: next })}
+                    renderItem={(block, index, dragHandle) => (
+                      <div className="flex items-center gap-2 bg-[#1a1a24] border border-[#30363D] rounded-lg p-3">
+                        {dragHandle}
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
                           {getBlockIcon(block.type)}
                           <span className="text-[#E8DDB5] capitalize">{block.type.replace('_', ' ')}</span>
                           {block.content?.text && (
                             <span className="text-gray-500 text-sm truncate max-w-[200px]">
                               - {block.content.text.substring(0, 30)}...
+                            </span>
+                          )}
+                          {block.content?.title && !block.content?.text && (
+                            <span className="text-gray-500 text-sm truncate max-w-[200px]">
+                              - {block.content.title.substring(0, 30)}
                             </span>
                           )}
                         </div>
@@ -1329,28 +1356,9 @@ export default function PageBuilder() {
                             type="button"
                             size="sm"
                             variant="ghost"
-                            onClick={() => handleMoveBlock(index, 'up')}
-                            disabled={index === 0}
-                            className="text-gray-400 hover:text-[#E8DDB5] h-8 w-8 p-0"
-                          >
-                            <ArrowUp className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleMoveBlock(index, 'down')}
-                            disabled={index === pageForm.blocks.length - 1}
-                            className="text-gray-400 hover:text-[#E8DDB5] h-8 w-8 p-0"
-                          >
-                            <ArrowDown className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="ghost"
                             onClick={() => openEditBlockDialog(block, index)}
                             className="text-gray-400 hover:text-[#D4A836] h-8 w-8 p-0"
+                            data-testid={`edit-block-${index}`}
                           >
                             <Edit className="w-4 h-4" />
                           </Button>
@@ -1360,13 +1368,14 @@ export default function PageBuilder() {
                             variant="ghost"
                             onClick={() => handleDeleteBlock(index)}
                             className="text-gray-400 hover:text-red-400 h-8 w-8 p-0"
+                            data-testid={`delete-block-${index}`}
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    )}
+                  />
                 )}
               </div>
 
@@ -1456,6 +1465,18 @@ export default function PageBuilder() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Media Library Picker — used by image blocks */}
+        <MediaPicker
+          open={showMediaPicker}
+          onClose={() => setShowMediaPicker(false)}
+          onSelect={(url) => {
+            setBlockForm((prev) => ({
+              ...prev,
+              content: { ...prev.content, [mediaPickerTarget]: url },
+            }));
+          }}
+        />
       </div>
     </DashboardLayout>
   );

@@ -203,9 +203,8 @@ async def get_public_nav_items():
         slug = p.get("slug")
         if not slug:
             continue
-        # Reserved slugs map to top-level public routes (/blog, /news)
-        # so that PageBuilder pages can override those built-in sections.
-        reserved = {"blog", "news"}
+        # All PageBuilder custom pages now use /<slug> directly (the /page/
+        # prefix was dropped in favour of clean top-level URLs).
         path = f"/{slug}"
         if path in existing_paths:
             continue

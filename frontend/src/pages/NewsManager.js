@@ -49,6 +49,8 @@ function ArticlesTab({ token }) {
   const [showDialog, setShowDialog] = useState(false);
   const [editingNews, setEditingNews] = useState(null);
   const [useHtml, setUseHtml] = useState(false);
+  const [selected, setSelected] = useState(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const [newsForm, setNewsForm] = useState({
     title: '',
@@ -153,17 +155,77 @@ function ArticlesTab({ token }) {
     }
   };
 
+  const toggleSelect = (id) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selected.size === news.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(news.map((n) => n.news_id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selected.size === 0) return;
+    if (!window.confirm(`Delete ${selected.size} selected article${selected.size > 1 ? 's' : ''}? This cannot be undone.`)) return;
+    setBulkDeleting(true);
+    const ids = Array.from(selected);
+    const results = await Promise.allSettled(
+      ids.map((id) => axios.delete(`${API}/content/news/${id}`, { headers: { Authorization: `Bearer ${token}` } }))
+    );
+    const ok = results.filter((r) => r.status === 'fulfilled').length;
+    const failed = results.length - ok;
+    if (ok > 0) toast.success(`Deleted ${ok} article${ok > 1 ? 's' : ''}`);
+    if (failed > 0) toast.error(`${failed} failed to delete`);
+    setSelected(new Set());
+    setBulkDeleting(false);
+    fetchNews();
+  };
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <p className="text-gray-400 text-sm">Write and publish news articles. They appear on the public /news page.</p>
-        <Button
-          onClick={() => { resetForm(); setShowDialog(true); }}
-          className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
-          data-testid="news-add-article-btn"
-        >
-          <Plus className="w-4 h-4 mr-2" /> New Article
-        </Button>
+        <div className="flex items-center gap-2">
+          {news.length > 0 && (
+            <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-300" data-testid="news-select-all">
+              <input
+                type="checkbox"
+                checked={selected.size > 0 && selected.size === news.length}
+                ref={(el) => { if (el) el.indeterminate = selected.size > 0 && selected.size < news.length; }}
+                onChange={toggleSelectAll}
+                className="w-4 h-4 accent-[#D4A836]"
+              />
+              {selected.size > 0 ? `${selected.size} selected` : 'Select all'}
+            </label>
+          )}
+          {selected.size > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleBulkDelete}
+              disabled={bulkDeleting}
+              className="border-red-500/40 text-red-400 hover:bg-red-500/10"
+              data-testid="news-bulk-delete-btn"
+            >
+              {bulkDeleting ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Trash2 className="w-4 h-4 mr-1" />}
+              Delete {selected.size}
+            </Button>
+          )}
+          <Button
+            onClick={() => { resetForm(); setShowDialog(true); }}
+            className="bg-[#D4A836] hover:bg-[#C49A30] text-black"
+            data-testid="news-add-article-btn"
+          >
+            <Plus className="w-4 h-4 mr-2" /> New Article
+          </Button>
+        </div>
       </div>
 
       {loading ? (
@@ -186,10 +248,26 @@ function ArticlesTab({ token }) {
         </Card>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {news.map((item) => (
-            <Card key={item.news_id} className="bg-[#0f0f15] border-[#D4A836]/20">
+          {news.map((item) => {
+            const isSelected = selected.has(item.news_id);
+            return (
+            <Card
+              key={item.news_id}
+              className={`bg-[#0f0f15] transition-colors ${isSelected ? 'border-[#D4A836] ring-1 ring-[#D4A836]/40' : 'border-[#D4A836]/20'}`}
+              data-testid={`news-card-${item.news_id}`}
+            >
               <CardHeader>
-                <CardTitle className="text-[#E8DDB5] text-lg line-clamp-2">{item.title}</CardTitle>
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => toggleSelect(item.news_id)}
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-4 h-4 accent-[#D4A836] mt-1.5 flex-shrink-0"
+                    data-testid={`news-select-${item.news_id}`}
+                  />
+                  <CardTitle className="text-[#E8DDB5] text-lg line-clamp-2 flex-1">{item.title}</CardTitle>
+                </div>
               </CardHeader>
               <CardContent>
                 {item.excerpt && <p className="text-gray-400 text-sm mb-4 line-clamp-3">{item.excerpt}</p>}
@@ -208,7 +286,8 @@ function ArticlesTab({ token }) {
                 </div>
               </CardContent>
             </Card>
-          ))}
+            );
+          })}
         </div>
       )}
 
