@@ -175,13 +175,22 @@ async def get_public_nav_items():
     ).sort("sort_order", 1).to_list(200)
 
     existing_paths = {i.get("path") for i in items if i.get("path")}
-    # Default public nav items (Blog, News) that route to PageBuilder-
-    # overridable public pages. Videos/About were intentionally removed —
-    # admins create their own via the PageBuilder when needed.
+
+    # Default public nav items (Blog, News). These are only injected when no
+    # admin has explicitly managed that path. If an admin toggled off Blog
+    # (is_active=False), the item still exists in the DB — we must NOT
+    # re-inject the default, otherwise toggling has no visible effect.
     public_defaults = [
         {"label": "Blog", "path": "/blog", "icon": "FileText",  "section_id": "header", "sort_order": 10},
         {"label": "News", "path": "/news", "icon": "Newspaper", "section_id": "header", "sort_order": 20},
     ]
+
+    # Fetch ALL managed paths regardless of is_active so toggled-off items
+    # are not re-injected as defaults below.
+    all_managed = await db.navigation_items.find(
+        {}, {"_id": 0, "path": 1}
+    ).to_list(500)
+    managed_paths = {i.get("path") for i in all_managed if i.get("path")}
 
     # 2. PageBuilder pages that opted into the public nav
     try:
@@ -223,9 +232,10 @@ async def get_public_nav_items():
             "is_pagebuilder": True,
         })
 
-    # Seed public defaults if path not already present
+    # Seed public defaults only when no admin has ever managed that path
+    # (active OR inactive). This ensures toggling off works correctly.
     for idx, d in enumerate(public_defaults):
-        if d["path"] in existing_paths:
+        if d["path"] in existing_paths or d["path"] in managed_paths:
             continue
         existing_paths.add(d["path"])
         items.append({
