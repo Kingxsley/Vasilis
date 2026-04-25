@@ -192,6 +192,22 @@ async def get_public_nav_items():
     ).to_list(500)
     managed_paths = {i.get("path") for i in all_managed if i.get("path")}
 
+    # Also block defaults for any PageBuilder page that exists with the same
+    # slug — regardless of published/draft status or show_in_nav flag.
+    # This prevents e.g. a Draft /blog page from being overridden by the
+    # hardcoded Blog default when the admin has not toggled Blog in the
+    # Navigation Manager.
+    try:
+        all_pb_pages = await db.custom_pages.find(
+            {}, {"_id": 0, "slug": 1}
+        ).to_list(500)
+        for pb in all_pb_pages:
+            slug = pb.get("slug")
+            if slug:
+                managed_paths.add(f"/{slug}")
+    except Exception:
+        pass
+
     # 2. PageBuilder pages that opted into the public nav
     try:
         pb_pages = await db.custom_pages.find(
