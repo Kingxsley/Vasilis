@@ -98,6 +98,7 @@ export default function BlogManager() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [seeding, setSeeding] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
   const [useHtml, setUseHtml] = useState(false);
@@ -157,6 +158,24 @@ export default function BlogManager() {
 
   useEffect(() => { fetchPosts(); }, [fetchPosts]);
   useEffect(() => { fetchStats(); }, [fetchStats]);
+
+  const seedBlogPosts = async () => {
+    if (!window.confirm('Seed 30 SEO-rich blog posts? Existing slugs will be skipped.')) return;
+    setSeeding(true);
+    try {
+      const res = await axios.post(`${API}/content/blog/seed`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const { created, skipped, errors } = res.data;
+      toast.success(`✓ Created ${created} posts · Skipped ${skipped} · Errors ${errors}`);
+      fetchPosts();
+      fetchStats();
+    } catch (e) {
+      toast.error(e.response?.data?.detail || 'Seed failed');
+    } finally {
+      setSeeding(false);
+    }
+  };
 
   // Reset to page 1 when filters/search change
   useEffect(() => { setPage(1); }, [statusFilter, search, sort]);
@@ -338,13 +357,27 @@ export default function BlogManager() {
               Create, edit and manage individual blog articles. {total} {total === 1 ? 'post' : 'posts'} matching current filter.
             </p>
           </div>
-          <Button
-            onClick={() => { resetForm(); setShowDialog(true); }}
-            className="bg-[#D4A836] hover:bg-[#C49A30] text-black font-semibold"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            New Post
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={seedBlogPosts}
+              disabled={seeding}
+              variant="outline"
+              className="border-[#D4A836]/40 text-[#D4A836] hover:bg-[#D4A836]/10"
+            >
+              {seeding ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Seeding…</>
+              ) : (
+                <><FileText className="w-4 h-4 mr-2" />Seed 30 Blog Posts</>
+              )}
+            </Button>
+            <Button
+              onClick={() => { resetForm(); setShowDialog(true); }}
+              className="bg-[#D4A836] hover:bg-[#C49A30] text-black font-semibold"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              New Post
+            </Button>
+          </div>
         </div>
 
         {/* Stats / status filter tiles */}
