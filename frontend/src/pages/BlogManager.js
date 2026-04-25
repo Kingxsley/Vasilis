@@ -26,6 +26,7 @@ import {
   Plus, Edit, Trash2, Loader2, FileText, Search, X, Copy, Archive,
   ArchiveRestore, Eye, EyeOff, MoreVertical, ChevronLeft, ChevronRight,
   CheckCircle2, FileEdit, FileX, Tag as TagIcon, Calendar, User, Image as ImageIcon,
+  Upload, AlertCircle, CheckCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../App';
@@ -99,6 +100,11 @@ export default function BlogManager() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [seeding, setSeeding] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [importPosts, setImportPosts] = useState([]);  // parsed queue
+  const [importUploading, setImportUploading] = useState(false);
+  const [importProgress, setImportProgress] = useState({ done: 0, total: 0 });
+  const [importResults, setImportResults] = useState([]); // {title, status, msg}
   const [showDialog, setShowDialog] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
   const [useHtml, setUseHtml] = useState(false);
@@ -175,6 +181,125 @@ export default function BlogManager() {
     } finally {
       setSeeding(false);
     }
+  };
+
+  // ── HTML Batch Import ──
+  const slugify = (str) =>
+    str.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-').substring(0, 80);
+
+  const extractBodyHtml = (raw) => {
+    const bodyMatch = raw.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+    if (bodyMatch) return bodyMatch[1].trim();
+    return raw.replace(/<head[\s\S]*?<\/head>/gi, '').replace(/<\/?html[^>]*>/gi, '').replace(/<\/?body[^>]*>/gi, '').trim();
+  };
+
+  const parseHtmlPosts = (raw) => {
+    // Try JSON array first
+    try {
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) {
+        return arr.filter(p => p.title && p.content).map(p => ({
+          title: p.title,
+          slug: p.slug || slugify(p.title),
+          excerpt: p.excerpt || '',
+          content: p.content,
+          tags: Array.isArray(p.tags) ? p.tags.join(', ') : (p.tags || ''),
+          audience: p.audience || 'general',
+          meta_title: p.meta_title || p.title.substring(0, 60),
+          meta_description: p.meta_description || p.excerpt || '',
+          status: 'ready',
+        }));
+      }
+    } catch (_) {}
+
+    // Try splitting by delimiter <!-- POST --> or === POST ===
+    const delimiter = /<!--\s*POST\s*-->|={3,}\s*POST\s*={3,}/gi;
+    const chunks = raw.split(delimiter).map(c => c.trim()).filter(Boolean);
+
+    if (chunks.length > 1) {
+      return chunks.map((chunk) => {
+        const titleMatch = chunk.match(/<h1[^>]*>([^<]+)<\/h1>/i) || chunk.match(/^#\s+(.+)$/m);
+        const title = titleMatch ? titleMatch[1].trim() : 'Untitled Post';
+        const content = extractBodyHtml(chunk);
+        return {
+          title, slug: slugify(title), excerpt: '', content,
+          tags: '', audience: 'general',
+          meta_title: title.substring(0, 60), meta_description: '',
+          status: 'ready',
+        };
+      });
+    }
+
+    // Single HTML post — treat entire paste as one post
+    const titleMatch = raw.match(/<h1[^>]*>([^<]+)<\/h1>/i) || raw.match(/<title>([^<]+)<\/title>/i);
+    const title = titleMatch ? titleMatch[1].trim() : 'Imported Post';
+    const content = extractBodyHtml(raw);
+    return [{ title, slug: slugify(title), excerpt: '', content, tags: '', audience: 'general', meta_title: title.substring(0, 60), meta_description: '', status: 'ready' }];
+  };
+
+  const handleImportPaste = (e) => {
+    const raw = e.target.value;
+    if (!raw.trim()) { setImportPosts([]); return; }
+    try {
+      const parsed = parseHtmlPosts(raw);
+      setImportPosts(parsed.map((p, i) => ({ ...p, id: i })));
+      setImportResults([]);
+    } catch (err) {
+      toast.error('Could not parse content: ' + err.message);
+    }
+  };
+
+  const updateImportPost = (idx, field, value) => {
+    setImportPosts(prev => prev.map((p, i) => i === idx ? { ...p, [field]: value } : p));
+  };
+
+  const removeImportPost = (idx) => {
+    setImportPosts(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const runBatchUpload = async () => {
+    if (importPosts.length === 0) return;
+    setImportUploading(true);
+    setImportResults([]);
+    setImportProgress({ done: 0, total: importPosts.length });
+    const results = [];
+    for (let i = 0; i < importPosts.length; i++) {
+      const p = importPosts[i];
+      try {
+        const payload = {
+          title: p.title, slug: p.slug, excerpt: p.excerpt, content: p.content,
+          tags: typeof p.tags === 'string' ? p.tags.split(',').map(t => t.trim()).filter(Boolean) : p.tags,
+          audience: p.audience,
+          meta_title: p.meta_title, meta_description: p.meta_description,
+          published: true, status: 'published',
+        };
+        const res = await axios.post(`${API}/content/blog`, payload, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        results.push({ title: p.title, status: 'success', msg: 'Created' });
+      } catch (e) {
+        const detail = e.response?.data?.detail || e.message;
+        const isSkip = detail?.toLowerCase().includes('slug') || e.response?.status === 409;
+        results.push({ title: p.title, status: isSkip ? 'skipped' : 'error', msg: detail });
+      }
+      setImportProgress({ done: i + 1, total: importPosts.length });
+      setImportResults([...results]);
+      await new Promise(r => setTimeout(r, 120));
+    }
+    setImportUploading(false);
+    const created = results.filter(r => r.status === 'success').length;
+    const skipped = results.filter(r => r.status === 'skipped').length;
+    const errors  = results.filter(r => r.status === 'error').length;
+    toast.success(`Upload complete: ${created} created · ${skipped} skipped · ${errors} errors`);
+    fetchPosts(); fetchStats();
+  };
+
+  // Reset import dialog
+  const openImportDialog = () => {
+    setImportPosts([]);
+    setImportResults([]);
+    setImportProgress({ done: 0, total: 0 });
+    setShowImportDialog(true);
   };
 
   // Reset to page 1 when filters/search change
@@ -358,6 +483,14 @@ export default function BlogManager() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              onClick={openImportDialog}
+              variant="outline"
+              className="border-[#30363D] text-[#E8DDB5] hover:bg-white/5"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Import HTML
+            </Button>
             <Button
               onClick={seedBlogPosts}
               disabled={seeding}
@@ -845,6 +978,192 @@ export default function BlogManager() {
           }}
         />
       </div>
+      {/* ── HTML Batch Import Dialog ── */}
+      <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+        <DialogContent className="bg-[#0f0f15] border-[#30363D] text-[#E8DDB5] max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-[#E8DDB5] flex items-center gap-2">
+              <Upload className="w-5 h-5 text-[#D4A836]" />
+              Batch Import HTML Blog Posts
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+            {/* Instructions */}
+            <div className="bg-[#D4A836]/8 border border-[#D4A836]/20 rounded-lg p-3 text-xs text-[#E8DDB5]/70 space-y-1">
+              <p><strong className="text-[#D4A836]">Supported formats:</strong></p>
+              <p>• <strong>Single HTML post</strong> — paste any HTML page, Word export, or Notion export</p>
+              <p>• <strong>Multiple posts</strong> — separate each post with <code className="bg-black/30 px-1 rounded">&lt;!-- POST --&gt;</code> on its own line</p>
+              <p>• <strong>JSON array</strong> — paste a JSON array with title, content, slug, tags, excerpt fields</p>
+            </div>
+
+            {/* Paste area */}
+            <div className="space-y-1">
+              <Label className="text-xs text-gray-400">Paste HTML / JSON content</Label>
+              <textarea
+                className="w-full h-48 bg-[#09090f] border border-[#30363D] rounded-lg p-3 text-xs text-[#E8DDB5] font-mono resize-none outline-none focus:border-[#D4A836] transition-colors"
+                placeholder={'Paste HTML, Word export, Notion export, or JSON array here...\n\nFor multiple posts, separate with:\n<!-- POST -->\n\nOr paste a JSON array: [{"title":"...","content":"..."}]'}
+                onChange={handleImportPaste}
+              />
+              {importPosts.length > 0 && (
+                <p className="text-xs text-[#D4A836]">✓ Detected {importPosts.length} post{importPosts.length !== 1 ? 's' : ''} — review below before uploading</p>
+              )}
+            </div>
+
+            {/* Parsed post queue */}
+            {importPosts.length > 0 && importResults.length === 0 && (
+              <div className="space-y-3">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Review & Edit Before Upload</p>
+                {importPosts.map((p, idx) => (
+                  <div key={p.id} className="bg-[#16161f] border border-[#30363D] rounded-lg p-3 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-bold text-[#D4A836]">Post {idx + 1}</span>
+                      <button
+                        onClick={() => removeImportPost(idx)}
+                        className="text-gray-500 hover:text-red-400 text-xs"
+                      >✕ Remove</button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <Label className="text-xs text-gray-400">Title *</Label>
+                        <Input
+                          value={p.title}
+                          onChange={e => updateImportPost(idx, 'title', e.target.value)}
+                          className="bg-[#09090f] border-[#30363D] text-[#E8DDB5] text-xs h-8"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-gray-400">Slug</Label>
+                        <Input
+                          value={p.slug}
+                          onChange={e => updateImportPost(idx, 'slug', e.target.value)}
+                          className="bg-[#09090f] border-[#30363D] text-[#E8DDB5] text-xs h-8 font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-gray-400">Excerpt</Label>
+                        <Input
+                          value={p.excerpt}
+                          onChange={e => updateImportPost(idx, 'excerpt', e.target.value)}
+                          placeholder="Short summary..."
+                          className="bg-[#09090f] border-[#30363D] text-[#E8DDB5] text-xs h-8"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-gray-400">Tags (comma-separated)</Label>
+                        <Input
+                          value={p.tags}
+                          onChange={e => updateImportPost(idx, 'tags', e.target.value)}
+                          placeholder="security, phishing, training"
+                          className="bg-[#09090f] border-[#30363D] text-[#E8DDB5] text-xs h-8"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-gray-400">Audience</Label>
+                        <select
+                          value={p.audience}
+                          onChange={e => updateImportPost(idx, 'audience', e.target.value)}
+                          className="w-full bg-[#09090f] border border-[#30363D] rounded text-[#E8DDB5] text-xs h-8 px-2"
+                        >
+                          <option value="general">General</option>
+                          <option value="manager">Manager / Executive</option>
+                          <option value="technical">Technical</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-gray-400">Meta Title (SEO)</Label>
+                        <Input
+                          value={p.meta_title}
+                          onChange={e => updateImportPost(idx, 'meta_title', e.target.value)}
+                          placeholder="60-char SEO title"
+                          className="bg-[#09090f] border-[#30363D] text-[#E8DDB5] text-xs h-8"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-gray-400">Meta Description (SEO)</Label>
+                      <Input
+                        value={p.meta_description}
+                        onChange={e => updateImportPost(idx, 'meta_description', e.target.value)}
+                        placeholder="155-char description for search results"
+                        className="bg-[#09090f] border-[#30363D] text-[#E8DDB5] text-xs h-8"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-gray-400">Content preview</Label>
+                      <div className="bg-[#09090f] border border-[#30363D] rounded p-2 text-xs text-gray-500 max-h-16 overflow-hidden font-mono">
+                        {p.content.replace(/<[^>]+>/g, ' ').substring(0, 200)}…
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Upload progress & results */}
+            {importResults.length > 0 && (
+              <div className="space-y-2">
+                {importUploading && (
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs text-gray-400">
+                      <span>Uploading…</span>
+                      <span>{importProgress.done}/{importProgress.total}</span>
+                    </div>
+                    <div className="w-full bg-[#1a1a24] rounded-full h-1.5">
+                      <div
+                        className="bg-[#D4A836] h-1.5 rounded-full transition-all"
+                        style={{ width: `${(importProgress.done / importProgress.total) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+                <div className="space-y-1 max-h-48 overflow-y-auto">
+                  {importResults.map((r, i) => (
+                    <div key={i} className={`flex items-center gap-2 text-xs px-2 py-1 rounded ${
+                      r.status === 'success' ? 'bg-emerald-500/10 text-emerald-300' :
+                      r.status === 'skipped' ? 'bg-amber-500/10 text-amber-300' :
+                      'bg-red-500/10 text-red-300'
+                    }`}>
+                      {r.status === 'success' ? <CheckCircle className="w-3 h-3 shrink-0" /> :
+                       r.status === 'skipped' ? <AlertCircle className="w-3 h-3 shrink-0" /> :
+                       <X className="w-3 h-3 shrink-0" />}
+                      <span className="truncate font-medium">{r.title}</span>
+                      <span className="ml-auto shrink-0 opacity-70">{r.msg}</span>
+                    </div>
+                  ))}
+                </div>
+                {!importUploading && (
+                  <p className="text-xs text-center text-gray-400">
+                    ✓ {importResults.filter(r=>r.status==='success').length} created &nbsp;·&nbsp;
+                    ~ {importResults.filter(r=>r.status==='skipped').length} skipped &nbsp;·&nbsp;
+                    ✗ {importResults.filter(r=>r.status==='error').length} errors
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="border-t border-[#30363D] pt-3 mt-2 flex items-center justify-between gap-2">
+            <p className="text-xs text-gray-500">{importPosts.length} post{importPosts.length !== 1 ? 's' : ''} in queue</p>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setShowImportDialog(false)} className="border-[#30363D] text-gray-400 hover:text-white text-sm">
+                Close
+              </Button>
+              <Button
+                onClick={runBatchUpload}
+                disabled={importPosts.length === 0 || importUploading}
+                className="bg-[#D4A836] hover:bg-[#C49A30] text-black font-semibold text-sm"
+              >
+                {importUploading
+                  ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Uploading {importProgress.done}/{importProgress.total}…</>
+                  : <><Upload className="w-4 h-4 mr-2" />Upload {importPosts.length} Post{importPosts.length !== 1 ? 's' : ''}</>
+                }
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </DashboardLayout>
   );
 }
