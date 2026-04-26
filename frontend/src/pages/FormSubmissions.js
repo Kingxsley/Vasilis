@@ -202,23 +202,33 @@ export default function FormSubmissions() {
     
     setSending(true);
     try {
-      await axios.post(`${API}/contact/reply`, {
-        submission_id: selectedItem.submission_id || selectedItem.request_id,
-        email: selectedItem.email,
-        message: replyText,
-        subject: `Re: ${selectedItem.subject || 'Your inquiry'}`
-      }, { headers });
+      const subject = `Re: ${selectedItem.subject || selectedItem.message?.slice(0, 50) || 'Your inquiry'}`;
+      
+      if (selectedItem.inquiry_id) {
+        // Access request — use inquiries reply endpoint
+        await axios.post(`${API}/inquiries/${selectedItem.inquiry_id}/reply`, {
+          inquiry_id: selectedItem.inquiry_id,
+          email: selectedItem.email,
+          message: replyText,
+          subject
+        }, { headers });
+      } else {
+        // Contact form submission — use contact reply endpoint
+        await axios.post(`${API}/contact/reply`, {
+          submission_id: selectedItem.submission_id,
+          email: selectedItem.email,
+          message: replyText,
+          subject
+        }, { headers });
+      }
       
       toast.success('Reply sent successfully');
       setReplyText('');
       setShowDetail(false);
-      
-      // Update status to responded
-      const type = selectedItem.submission_id ? 'contact' : 'access';
-      const id = selectedItem.submission_id || selectedItem.request_id;
-      await updateStatus(id, 'responded', type);
+      fetchData();
     } catch (err) {
-      toast.error('Failed to send reply');
+      const msg = err.response?.data?.detail || 'Failed to send reply';
+      toast.error(msg);
     } finally {
       setSending(false);
     }
