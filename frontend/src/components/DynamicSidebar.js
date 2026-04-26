@@ -7,6 +7,9 @@ import { ArrowRight, ExternalLink } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+// Helper: wrap sanitized HTML for dangerouslySetInnerHTML
+const createSafeMarkup = (html) => ({ __html: html || '' });
+
 export const DynamicSidebar = ({ page, branding }) => {
   const [config, setConfig] = useState(null);
   const [loading, setLoading] = useState(true);
