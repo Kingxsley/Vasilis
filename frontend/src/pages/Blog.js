@@ -247,18 +247,17 @@ export function BlogList() {
                     ))}
                   </div>
 
-                  {/* Pagination */}
-                  {total > pageSize && (
-                    <PublicPagination
-                      total={total}
-                      page={page}
-                      pageSize={pageSize}
-                      onPageChange={handlePageChange}
-                      onPageSizeChange={handlePageSizeChange}
-                      accentColor={primaryColor}
-                      className="mt-8 border-t border-[#2a2a34] pt-6"
-                    />
-                  )}
+                  {/* Pagination - always show selector, show page controls when needed */}
+                  <PublicPagination
+                    total={total}
+                    page={page}
+                    pageSize={pageSize}
+                    onPageChange={handlePageChange}
+                    onPageSizeChange={handlePageSizeChange}
+                    pageSizeOptions={[5, 10, 15, 25, 50]}
+                    accentColor={primaryColor}
+                    className="mt-8 border-t border-[#2a2a34] pt-6"
+                  />
                 </>
               )}
             </div>
