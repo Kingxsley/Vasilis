@@ -125,21 +125,13 @@ const ContactFormBlock = ({ content }) => {
     setSubmitting(true);
     
     try {
-      // Post to both inquiries (legacy) and contact endpoints
-      await Promise.all([
-        axios.post(`${API}/inquiries`, {
-          name: formData.name,
-          email: formData.email,
-          message: formData.message,
-          source: 'custom_page_contact_form'
-        }),
-        axios.post(`${API}/contact`, {
-          name: formData.name,
-          email: formData.email,
-          message: formData.message,
-          subject: 'Contact Form Submission'
-        }).catch(() => {}) // Silently fail if contact endpoint doesn't exist
-      ]);
+      // Post to contact submissions endpoint (not inquiries — that's for access requests)
+      await axios.post(`${API}/contact`, {
+        name: formData.name,
+        email: formData.email,
+        message: formData.message,
+        subject: content.subject || 'Contact Form Submission'
+      });
       setSubmitted(true);
       toast.success(content.success_message || 'Thank you for your message!');
     } catch (error) {
