@@ -160,12 +160,23 @@ Message:
 View this submission in the admin dashboard.
     """
     
-    background_tasks.add_task(
-        send_notification_email,
-        ADMIN_EMAIL,
-        f"New Contact Form: {data.subject or 'Contact Inquiry'}",
-        email_body
-    )
+    # Notify admin via email_service (HTML email with reply-to set to sender)
+    async def notify_admin():
+        try:
+            from services.email_service import send_contact_form_submission
+            await send_contact_form_submission(
+                name=data.name,
+                email=data.email,
+                message=data.message,
+                phone=data.phone,
+                db=db
+            )
+        except Exception as e:
+            logger.error(f"Admin notification email failed: {e}")
+            # Fallback to simple email
+            await send_notification_email(ADMIN_EMAIL, f"New Contact Form: {data.subject or 'Contact Inquiry'}", email_body)
+    
+    background_tasks.add_task(notify_admin)
     
     # Send Discord notification to super admins
     background_tasks.add_task(
@@ -252,14 +263,36 @@ async def send_reply(data: ContactReply, request: Request, background_tasks: Bac
     user = await require_admin(request)
     db = get_db()
     
-    # Send email
-    success = await send_notification_email(data.email, data.subject, data.message)
+    # Build HTML email for the reply
+    html_content = f"""
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0f0f15;padding:30px;border-radius:10px;border:1px solid #D4A836;">
+        <h2 style="color:#D4A836;margin-top:0;">Response from Vasilis NetShield</h2>
+        <div style="background:#1a1a24;padding:20px;border-radius:8px;margin:20px 0;white-space:pre-wrap;color:#E8DDB5;">
+{data.message}
+        </div>
+        <p style="color:#888;font-size:12px;margin-top:20px;">This is a direct reply from our team. You can reply to this email to continue the conversation.</p>
+    </div>
+    """
     
-    if not success:
-        # Still save the reply attempt even if email fails
-        logger.warning(f"Email may not have been sent to {data.email}")
+    # Send via email service for proper HTML delivery
+    try:
+        from services.email_service import send_test_email
+        result = await send_test_email(
+            to_email=data.email,
+            subject=data.subject,
+            html_content=html_content,
+            from_name=user.get("name", "Vasilis NetShield Team")
+        )
+        success = result.get("success", False)
+        if not success:
+            raise HTTPException(status_code=502, detail=f"Email delivery failed: {result.get('error', 'Unknown error')}")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to send reply email: {e}")
+        raise HTTPException(status_code=502, detail=f"Email delivery failed: {str(e)}")
     
-    # Update submission with reply
+    # Update submission with reply record
     await db.contact_submissions.update_one(
         {"submission_id": data.submission_id},
         {
@@ -267,6 +300,7 @@ async def send_reply(data: ContactReply, request: Request, background_tasks: Bac
             "$push": {
                 "replies": {
                     "message": data.message,
+                    "subject": data.subject,
                     "sent_by": user.get("email"),
                     "sent_at": datetime.now(timezone.utc).isoformat()
                 }
@@ -274,4 +308,4 @@ async def send_reply(data: ContactReply, request: Request, background_tasks: Bac
         }
     )
     
-    return {"message": "Reply sent", "email_sent": success}
+    return {"message": "Reply sent successfully", "email_sent": True}
