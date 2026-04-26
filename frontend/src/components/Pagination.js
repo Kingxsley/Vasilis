@@ -164,7 +164,7 @@ export function PublicPagination({
   pageSize,
   onPageChange,
   onPageSizeChange,
-  pageSizeOptions = [10, 20, 50],
+  pageSizeOptions = [5, 10, 15, 25, 50],
   accentColor = '#D4A836',
   className = ''
 }) {
