@@ -686,6 +686,71 @@ async def list_admins_for_assignment(request: Request):
     return {"admins": admins}
 
 
+
+
+class InquiryReply(BaseModel):
+    inquiry_id: str
+    email: str
+    subject: str
+    message: str
+
+
+@router.post("/{inquiry_id}/reply")
+async def reply_to_inquiry(inquiry_id: str, data: InquiryReply, request: Request):
+    """Send an email reply to an inquiry submitter"""
+    user = await require_admin(request)
+    db = get_db()
+
+    inquiry = await db.inquiries.find_one({"inquiry_id": inquiry_id}, {"_id": 0})
+    if not inquiry:
+        raise HTTPException(status_code=404, detail="Inquiry not found")
+
+    # Build HTML email
+    html_content = f"""
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0f0f15;padding:30px;border-radius:10px;border:1px solid #D4A836;">
+        <h2 style="color:#D4A836;margin-top:0;">Response from Vasilis NetShield</h2>
+        <div style="background:#1a1a24;padding:20px;border-radius:8px;margin:20px 0;white-space:pre-wrap;color:#E8DDB5;">
+{data.message}
+        </div>
+        <p style="color:#888;font-size:12px;margin-top:20px;">This is a direct reply from our team. You can reply to this email to continue the conversation.</p>
+    </div>
+    """
+
+    try:
+        from services.email_service import send_test_email
+        result = await send_test_email(
+            to_email=data.email,
+            subject=data.subject,
+            html_content=html_content,
+            from_name=user.get("name", "Vasilis NetShield Team")
+        )
+        success = result.get("success", False)
+        if not success:
+            raise HTTPException(status_code=502, detail=f"Email delivery failed: {result.get('error', 'Unknown error')}")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to send inquiry reply: {e}")
+        raise HTTPException(status_code=502, detail=f"Email delivery failed: {str(e)}")
+
+    # Record reply and update status
+    await db.inquiries.update_one(
+        {"inquiry_id": inquiry_id},
+        {
+            "$set": {"status": "contacted", "updated_at": datetime.now(timezone.utc).isoformat()},
+            "$push": {
+                "replies": {
+                    "message": data.message,
+                    "subject": data.subject,
+                    "sent_by": user.get("email"),
+                    "sent_at": datetime.now(timezone.utc).isoformat()
+                }
+            }
+        }
+    )
+
+    return {"message": "Reply sent successfully", "email_sent": True}
+
 @router.delete("/{inquiry_id}")
 async def delete_inquiry(inquiry_id: str, request: Request):
     """Delete an inquiry (admin only)"""
