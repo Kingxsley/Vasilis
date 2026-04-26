@@ -41,10 +41,27 @@ export const PublicNav = ({ branding }) => {
   const textColor = branding?.text_color || '#E8DDB5';
   const primaryColor = branding?.primary_color || '#D4A836';
 
-  // Fetch navigation items from the central /api/navigation/public endpoint.
-  // This endpoint returns BOTH admin-authored navigation items AND
-  // PageBuilder pages that opted into the public nav via "Show in Navigation".
+  // Fetch navigation items — load from cache first so nav appears instantly,
+  // then refresh silently from the API in the background.
   useEffect(() => {
+    const CACHE_KEY = 'vns_nav_cache';
+    const CACHE_TTL = 60 * 1000; // 1 minute
+
+    // Immediately render from cache if available
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const { items, ts } = JSON.parse(cached);
+        if (Date.now() - ts < CACHE_TTL) {
+          setNavItems(items);
+          return; // Fresh enough — skip network fetch
+        }
+        // Stale but show it while we fetch
+        setNavItems(items);
+      }
+    } catch (_) {}
+
+    // Fetch fresh data in the background
     const fetchNav = async () => {
       try {
         const res = await axios.get(`${API}/navigation/public`);
@@ -53,9 +70,11 @@ export const PublicNav = ({ branding }) => {
           .filter((i) => (i.section_id || 'header') === 'header')
           .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
         setNavItems(items);
+        try {
+          localStorage.setItem(CACHE_KEY, JSON.stringify({ items, ts: Date.now() }));
+        } catch (_) {}
       } catch (error) {
         console.error('Failed to fetch public nav:', error);
-        setNavItems([]);
       }
     };
     fetchNav();
