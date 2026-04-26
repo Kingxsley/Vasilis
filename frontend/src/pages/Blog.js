@@ -25,7 +25,7 @@ export function BlogList() {
   
   // Pagination state from URL params
   const page = parseInt(searchParams.get('page')) || 1;
-  const pageSize = parseInt(searchParams.get('limit')) || 10;
+  const pageSize = parseInt(searchParams.get('limit')) || 15;
   const searchQuery = searchParams.get('q') || '';
   const [searchInput, setSearchInput] = useState(searchQuery);
 
@@ -76,7 +76,7 @@ export function BlogList() {
   };
 
   const handlePageSizeChange = (newSize) => {
-    updateParams({ limit: newSize !== 10 ? newSize : null, page: null });
+    updateParams({ limit: newSize !== 15 ? newSize : null, page: null });
   };
 
   const handleSearch = (e) => {
