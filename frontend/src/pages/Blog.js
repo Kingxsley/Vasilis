@@ -111,7 +111,7 @@ export function BlogList() {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex flex-col">
         <PublicNav branding={branding} />
-        <main className="container mx-auto px-6 py-12 flex-1 max-w-6xl">
+        <main className="container mx-auto px-4 sm:px-6 py-12 flex-1 max-w-6xl overflow-hidden">
           {showOuterTitle && (
             <h1 className="text-3xl md:text-4xl font-bold text-[#E8DDB5] mb-8 text-center">
               {override.title}
@@ -135,7 +135,7 @@ export function BlogList() {
     <div className="min-h-screen bg-[#0a0a0f] flex flex-col">
       <PublicNav branding={branding} />
 
-      <main className="container mx-auto px-6 py-12 flex-1">
+      <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-12 flex-1 overflow-x-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-4xl font-bold mb-2" style={{ color: headingColor, fontFamily: 'Chivo, sans-serif' }}>
@@ -191,9 +191,9 @@ export function BlogList() {
             <Loader2 className="w-8 h-8 animate-spin" style={{ color: primaryColor }} />
           </div>
         ) : (
-          <div className="grid lg:grid-cols-3 gap-8">
+          <div className="grid lg:grid-cols-[minmax(0,1fr)_280px] gap-8 items-start overflow-x-hidden">
             {/* Main Blog Grid */}
-            <div className="lg:col-span-2">
+            <div className="min-w-0 overflow-hidden">
               {posts.length === 0 ? (
                 <div className="text-center py-12">
                   <p className="text-gray-500">
@@ -207,38 +207,38 @@ export function BlogList() {
                       <Link 
                         key={post.post_id} 
                         to={`/blog/${post.slug}`} 
-                        className="group bg-[#0f0f15] border rounded-xl overflow-hidden hover:border-opacity-80 transition-all"
-                        style={{ borderColor: `${primaryColor}33` }}
+                        className="group bg-[#0f0f15] border rounded-xl overflow-hidden hover:border-opacity-80 transition-all flex flex-col min-w-0 max-w-full"
+                        style={{ borderColor: `${primaryColor}33`, wordBreak: 'break-word' }}
                       >
                         {post.featured_image && (
-                          <div className="aspect-video bg-[#1a1a24]">
+                          <div className="aspect-video bg-[#1a1a24] shrink-0 overflow-hidden">
                             <img src={post.featured_image} alt={post.title} className="w-full h-full object-cover" />
                           </div>
                         )}
-                        <div className="p-5">
-                          <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
-                            <Calendar className="w-3 h-3" />
-                            {new Date(post.created_at).toLocaleDateString()}
-                            <span className="mx-1">•</span>
-                            <User className="w-3 h-3" />
-                            {post.author_name}
+                        <div className="p-5 flex flex-col flex-1 min-w-0 overflow-hidden">
+                          <div className="flex items-center gap-2 text-xs text-gray-500 mb-3 flex-wrap">
+                            <Calendar className="w-3 h-3 shrink-0" />
+                            <span className="shrink-0">{new Date(post.created_at).toLocaleDateString()}</span>
+                            <span className="mx-1 shrink-0">•</span>
+                            <User className="w-3 h-3 shrink-0" />
+                            <span className="truncate max-w-[120px]">{post.author_name}</span>
                           </div>
                           <h2 
-                            className="text-lg font-bold transition-colors mb-2" 
-                            style={{ color: headingColor }}
+                            className="text-base font-bold transition-colors mb-2 line-clamp-2 overflow-hidden" 
+                            style={{ color: headingColor, wordBreak: 'break-word', overflowWrap: 'anywhere' }}
                           >
                             {post.title}
                           </h2>
                           <p 
-                            className="text-sm line-clamp-2" 
-                            style={{ color: textColor, opacity: 0.7 }}
+                            className="text-sm line-clamp-3 flex-1 overflow-hidden" 
+                            style={{ color: textColor, opacity: 0.7, wordBreak: 'break-word', overflowWrap: 'anywhere' }}
                           >
                             {post.excerpt}
                           </p>
                           {post.tags?.length > 0 && (
                             <div className="flex flex-wrap gap-2 mt-3">
                               {post.tags.slice(0, 2).map((tag) => (
-                                <Badge key={tag} className="text-xs" style={{ backgroundColor: `${accentColor}15`, color: accentColor }}>{tag}</Badge>
+                                <Badge key={tag} className="text-xs truncate max-w-[120px]" style={{ backgroundColor: `${accentColor}15`, color: accentColor }}>{tag}</Badge>
                               ))}
                             </div>
                           )}
