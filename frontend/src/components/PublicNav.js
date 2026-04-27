@@ -35,33 +35,41 @@ const Logo = ({ branding }) => {
 
 export const PublicNav = ({ branding }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [navItems, setNavItems] = useState([]);
   const location = useLocation();
 
   const textColor = branding?.text_color || '#E8DDB5';
   const primaryColor = branding?.primary_color || '#D4A836';
 
-  // Fetch navigation items — load from cache first so nav appears instantly,
-  // then refresh silently from the API in the background.
+  // Default nav items shown immediately — replaced by API data when ready
+  const DEFAULT_NAV_ITEMS = [
+    { item_id: 'blog', label: 'Blog', path: '/blog', link_type: 'internal', is_active: true, sort_order: 1 },
+  ];
+
+  // Load from cache immediately, fetch in background
+  const [navItems, setNavItems] = useState(() => {
+    try {
+      const cached = localStorage.getItem('vns_nav_cache');
+      if (cached) {
+        const { items, ts } = JSON.parse(cached);
+        // Use cached items regardless of age — always refresh in background
+        if (items && items.length > 0) return items;
+      }
+    } catch (_) {}
+    return DEFAULT_NAV_ITEMS;
+  });
+
+  // Fetch fresh nav items in the background — debounced to avoid double-fetching
   useEffect(() => {
     const CACHE_KEY = 'vns_nav_cache';
-    const CACHE_TTL = 60 * 1000; // 1 minute
-
-    // Immediately render from cache if available
+    // Check cache age — skip fetch if fresh (< 60s)
     try {
       const cached = localStorage.getItem(CACHE_KEY);
       if (cached) {
-        const { items, ts } = JSON.parse(cached);
-        if (Date.now() - ts < CACHE_TTL) {
-          setNavItems(items);
-          return; // Fresh enough — skip network fetch
-        }
-        // Stale but show it while we fetch
-        setNavItems(items);
+        const { ts } = JSON.parse(cached);
+        if (Date.now() - ts < 60_000) return; // Cache is fresh, skip fetch
       }
     } catch (_) {}
 
-    // Fetch fresh data in the background
     const fetchNav = async () => {
       try {
         const res = await axios.get(`${API}/navigation/public`);
@@ -69,12 +77,14 @@ export const PublicNav = ({ branding }) => {
           .filter((i) => i.is_active !== false)
           .filter((i) => (i.section_id || 'header') === 'header')
           .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
-        setNavItems(items);
-        try {
-          localStorage.setItem(CACHE_KEY, JSON.stringify({ items, ts: Date.now() }));
-        } catch (_) {}
+        if (items.length > 0) {
+          setNavItems(items);
+          try {
+            localStorage.setItem(CACHE_KEY, JSON.stringify({ items, ts: Date.now() }));
+          } catch (_) {}
+        }
       } catch (error) {
-        console.error('Failed to fetch public nav:', error);
+        // Silently fail — default items already shown
       }
     };
     fetchNav();
