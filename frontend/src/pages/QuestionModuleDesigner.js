@@ -17,7 +17,7 @@ import {
 import {
   Plus, Trash2, GripVertical, Image, MessageSquare, AlertTriangle,
   CheckCircle, Upload, Edit, Save, ArrowLeft, Copy, Eye, X, ChevronUp, ChevronDown,
-  FileText
+  FileText, Download, PackageOpen, AlertCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -266,6 +266,12 @@ export default function QuestionModuleDesigner() {
   const [editingModuleId, setEditingModuleId] = useState(null);
   const [showDesigner, setShowDesigner] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [showBulkImport, setShowBulkImport] = useState(false);
+  const [bulkImporting, setBulkImporting] = useState(false);
+  const [bulkResult, setBulkResult] = useState(null);
+  const [bulkJsonText, setBulkJsonText] = useState('');
+  const [bulkJsonError, setBulkJsonError] = useState('');
+  const bulkFileRef = useRef(null);
 
   const [moduleData, setModuleData] = useState({
     name: '',
@@ -362,6 +368,99 @@ export default function QuestionModuleDesigner() {
       toast.error(err.response?.data?.detail || 'Failed to delete');
     }
   };
+
+  const handleBulkFileLoad = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setBulkJsonText(ev.target.result);
+      setBulkJsonError('');
+      try {
+        JSON.parse(ev.target.result);
+      } catch {
+        setBulkJsonError('Invalid JSON — check the file format.');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const validateBulkJson = (text) => {
+    try {
+      const parsed = JSON.parse(text);
+      // Accept { modules: [...] } or direct array
+      const modules = Array.isArray(parsed) ? parsed : parsed.modules;
+      if (!Array.isArray(modules)) return { error: 'Expected { "modules": [...] } or a JSON array' };
+      if (modules.length === 0) return { error: 'No modules found in JSON' };
+      return { modules };
+    } catch {
+      return { error: 'Invalid JSON syntax' };
+    }
+  };
+
+  const runBulkImport = async () => {
+    const { modules, error } = validateBulkJson(bulkJsonText);
+    if (error) { setBulkJsonError(error); return; }
+    setBulkImporting(true);
+    setBulkResult(null);
+    try {
+      const res = await axios.post(`${API}/training/modules/bulk`, { modules }, { headers });
+      setBulkResult(res.data);
+      fetchData();
+      toast.success(`Import complete: ${res.data.created} created, ${res.data.updated} updated`);
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Bulk import failed');
+    } finally {
+      setBulkImporting(false);
+    }
+  };
+
+  const downloadTemplate = () => {
+    const template = {
+      modules: [
+        {
+          name: "Example Module",
+          module_type: "general",
+          description: "A sample training module",
+          difficulty: "medium",
+          duration_minutes: 25,
+          questions_per_session: 15,
+          pass_percentage: 70,
+          is_active: true,
+          page_content: [
+            { title: "Introduction", body: "Welcome to this module..." }
+          ],
+          questions: [
+            {
+              id: "q_example_001",
+              type: "multiple_choice",
+              title: "What is phishing?",
+              options: ["A fishing technique", "A cyber attack using deceptive emails", "A type of malware", "A network protocol"],
+              correct_answer: "A cyber attack using deceptive emails",
+              explanation: "Phishing uses deceptive emails to steal credentials or install malware."
+            },
+            {
+              id: "q_example_002",
+              type: "true_false",
+              title: "You should click links in unexpected emails to verify they are safe.",
+              options: ["True", "False"],
+              correct_answer: "False",
+              explanation: "Never click links in unexpected emails. Navigate directly to the site instead."
+            }
+          ]
+        }
+      ]
+    };
+    const blob = new Blob([JSON.stringify(template, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'modules_template.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+
 
   // question helpers
   const updateQuestion = (idx, q) => setQuestions((prev) => prev.map((p, i) => (i === idx ? q : p)));
@@ -504,9 +603,14 @@ export default function QuestionModuleDesigner() {
             <h1 className="text-2xl font-bold text-[#E8DDB5]" style={{ fontFamily: 'Chivo, sans-serif' }}>Module Designer</h1>
             <p className="text-sm text-gray-500">Create and manage training modules with custom questions</p>
           </div>
-          <Button onClick={openNew} className="bg-[#D4A836] hover:bg-[#C49A30] text-[#0D1117] font-semibold" data-testid="create-module-btn">
-            <Plus className="w-4 h-4 mr-2" /> New Module
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => { setShowBulkImport(true); setBulkResult(null); setBulkJsonText(''); setBulkJsonError(''); }} className="border-[#D4A836]/40 text-[#D4A836] hover:bg-[#D4A836]/10">
+              <PackageOpen className="w-4 h-4 mr-2" /> Bulk Import
+            </Button>
+            <Button onClick={openNew} className="bg-[#D4A836] hover:bg-[#C49A30] text-[#0D1117] font-semibold" data-testid="create-module-btn">
+              <Plus className="w-4 h-4 mr-2" /> New Module
+            </Button>
+          </div>
         </div>
 
         {modules.length === 0 ? (
@@ -563,6 +667,126 @@ export default function QuestionModuleDesigner() {
           <DialogFooter>
             <Button variant="ghost" onClick={() => setShowDeleteConfirm(null)} className="text-gray-400">Cancel</Button>
             <Button onClick={() => deleteModule(showDeleteConfirm)} className="bg-red-600 hover:bg-red-700 text-white">Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Import Dialog */}
+      <Dialog open={showBulkImport} onOpenChange={(o) => { if (!bulkImporting) setShowBulkImport(o); }}>
+        <DialogContent className="bg-[#161B22] border-[#30363D] max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-[#E8DDB5] flex items-center gap-2">
+              <PackageOpen className="w-5 h-5 text-[#D4A836]" /> Bulk Import Modules
+            </DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Upload a JSON file containing multiple training modules. Existing modules with the same name will be updated.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            {/* Download template */}
+            <div className="flex items-center justify-between p-3 rounded-lg bg-[#0D1117] border border-[#30363D]">
+              <div>
+                <p className="text-sm text-[#E8DDB5] font-medium">JSON Template</p>
+                <p className="text-xs text-gray-500">Download the required format for bulk import</p>
+              </div>
+              <Button size="sm" variant="outline" onClick={downloadTemplate} className="border-[#D4A836]/40 text-[#D4A836] shrink-0">
+                <Download className="w-3 h-3 mr-1" /> Template
+              </Button>
+            </div>
+
+            {/* Download pre-built modules */}
+            <div className="flex items-center justify-between p-3 rounded-lg bg-[#0a1628] border border-blue-500/30">
+              <div>
+                <p className="text-sm text-blue-300 font-medium">🚀 20 Pre-built Security Modules</p>
+                <p className="text-xs text-gray-500">Ready-to-import: phishing, ransomware, MFA, cloud, AI threats &amp; more</p>
+              </div>
+              <Button size="sm" variant="outline" onClick={() => {
+                const a = document.createElement('a');
+                a.href = `${API}/training/modules/prebuilt-template`;
+                a.download = 'netshield_20_modules.json';
+                a.click();
+              }} className="border-blue-500/40 text-blue-400 hover:bg-blue-500/10 shrink-0">
+                <Download className="w-3 h-3 mr-1" /> Download
+              </Button>
+            </div>
+
+            {/* File upload */}
+            <div>
+              <Label className="text-gray-400 text-xs mb-2 block">Upload JSON File</Label>
+              <input ref={bulkFileRef} type="file" accept=".json,application/json" onChange={handleBulkFileLoad} className="hidden" />
+              <Button variant="outline" onClick={() => bulkFileRef.current?.click()} className="w-full border-dashed border-[#30363D] text-gray-400 hover:border-[#D4A836]/50 hover:text-[#D4A836] h-16">
+                <Upload className="w-4 h-4 mr-2" />
+                {bulkJsonText ? 'Replace file…' : 'Click to select JSON file'}
+              </Button>
+            </div>
+
+            {/* Or paste JSON */}
+            <div>
+              <Label className="text-gray-400 text-xs mb-2 block">Or Paste JSON</Label>
+              <Textarea
+                value={bulkJsonText}
+                onChange={(e) => { setBulkJsonText(e.target.value); setBulkJsonError(''); }}
+                placeholder={'{\n  "modules": [\n    { "name": "...", "questions": [...] }\n  ]\n}'}
+                className="bg-[#0D1117] border-[#30363D] text-[#E8DDB5] font-mono text-xs h-40 resize-none"
+              />
+              {bulkJsonError && (
+                <p className="text-xs text-red-400 mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" /> {bulkJsonError}
+                </p>
+              )}
+              {bulkJsonText && !bulkJsonError && (() => {
+                const { modules, error } = validateBulkJson(bulkJsonText);
+                return error ? (
+                  <p className="text-xs text-red-400 mt-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {error}</p>
+                ) : (
+                  <p className="text-xs text-green-400 mt-1 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> {modules.length} module{modules.length !== 1 ? 's' : ''} detected</p>
+                );
+              })()}
+            </div>
+
+            {/* Result */}
+            {bulkResult && (
+              <div className="p-4 rounded-lg bg-[#0D1117] border border-green-500/30 space-y-1">
+                <p className="text-sm font-semibold text-green-400 flex items-center gap-1"><CheckCircle className="w-4 h-4" /> Import Complete</p>
+                <div className="grid grid-cols-3 gap-2 mt-2">
+                  <div className="text-center p-2 rounded bg-green-500/10">
+                    <p className="text-xl font-bold text-green-400">{bulkResult.created}</p>
+                    <p className="text-xs text-gray-400">Created</p>
+                  </div>
+                  <div className="text-center p-2 rounded bg-blue-500/10">
+                    <p className="text-xl font-bold text-blue-400">{bulkResult.updated}</p>
+                    <p className="text-xs text-gray-400">Updated</p>
+                  </div>
+                  <div className="text-center p-2 rounded bg-red-500/10">
+                    <p className="text-xl font-bold text-red-400">{bulkResult.errors?.length || 0}</p>
+                    <p className="text-xs text-gray-400">Errors</p>
+                  </div>
+                </div>
+                {bulkResult.errors?.length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    {bulkResult.errors.map((e, i) => (
+                      <p key={i} className="text-xs text-red-400">• {e}</p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowBulkImport(false)} className="text-gray-400" disabled={bulkImporting}>Close</Button>
+            <Button
+              onClick={runBulkImport}
+              disabled={bulkImporting || !bulkJsonText.trim()}
+              className="bg-[#D4A836] hover:bg-[#C49A30] text-[#0D1117] font-semibold"
+            >
+              {bulkImporting ? (
+                <><Upload className="w-4 h-4 mr-2 animate-pulse" /> Importing…</>
+              ) : (
+                <><PackageOpen className="w-4 h-4 mr-2" /> Import Modules</>
+              )}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
