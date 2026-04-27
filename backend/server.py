@@ -1624,7 +1624,37 @@ async def bulk_upload_modules(
     }
 
 
-@training_router.delete("/sessions/cleanup-orphaned")
+@training_router.get("/modules/prebuilt-template")
+async def download_prebuilt_modules():
+    """
+    Return the 20 pre-built security awareness training modules as a downloadable JSON file.
+    These are ready-to-import modules covering phishing, ransomware, MFA, cloud security, AI threats, etc.
+    """
+    import json as json_lib
+    import os
+    from fastapi.responses import FileResponse, Response
+
+    # Path where we'll store the prebuilt modules JSON
+    prebuilt_path = os.path.join(os.path.dirname(__file__), "data", "prebuilt_modules.json")
+
+    if os.path.exists(prebuilt_path):
+        return FileResponse(
+            prebuilt_path,
+            media_type="application/json",
+            filename="netshield_20_modules.json"
+        )
+
+    # If file doesn't exist, return a helpful message pointing to the admin instructions
+    return Response(
+        content=json_lib.dumps({
+            "error": "Prebuilt modules file not found on server.",
+            "instructions": "Upload netshield_20_modules.json to backend/data/prebuilt_modules.json on the server."
+        }),
+        media_type="application/json",
+        status_code=404
+    )
+
+
 async def cleanup_orphaned_sessions(user: dict = Depends(get_current_user)):
     """
     Delete all training sessions that reference modules that no longer exist.
