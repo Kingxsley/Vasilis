@@ -135,7 +135,7 @@ export function BlogList() {
     <div className="min-h-screen bg-[#0a0a0f] flex flex-col">
       <PublicNav branding={branding} />
 
-      <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-12 flex-1 overflow-x-hidden" style={{ boxSizing: "border-box" }}>
+      <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-12 flex-1 overflow-x-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-4xl font-bold mb-2" style={{ color: headingColor, fontFamily: 'Chivo, sans-serif' }}>
@@ -191,7 +191,7 @@ export function BlogList() {
             <Loader2 className="w-8 h-8 animate-spin" style={{ color: primaryColor }} />
           </div>
         ) : (
-          <div className="w-full grid lg:grid-cols-[minmax(0,1fr)_280px] gap-8 items-start overflow-x-hidden">
+          <div className="grid lg:grid-cols-[minmax(0,1fr)_280px] gap-8 items-start overflow-x-hidden">
             {/* Main Blog Grid */}
             <div className="min-w-0 overflow-hidden">
               {posts.length === 0 ? (
@@ -207,7 +207,7 @@ export function BlogList() {
                       <Link 
                         key={post.post_id} 
                         to={`/blog/${post.slug}`} 
-                        className="group w-full bg-[#0f0f15] border rounded-xl overflow-hidden hover:border-opacity-80 transition-all flex flex-col min-w-0"
+                        className="group bg-[#0f0f15] border rounded-xl overflow-hidden hover:border-opacity-80 transition-all flex flex-col min-w-0 max-w-full"
                         style={{ borderColor: `${primaryColor}33`, wordBreak: 'break-word' }}
                       >
                         {post.featured_image && (
@@ -263,13 +263,14 @@ export function BlogList() {
             </div>
 
             {/* Sidebar */}
-            <aside className="min-w-0 overflow-hidden space-y-6">
+            <div className="space-y-6">
               <DynamicSidebar page="blog" branding={branding} />
-            </aside>
+            </div>
           </div>
         )}
       </main>
 
+      </div>
       <PublicFooter branding={branding} />
     </div>
   );
@@ -316,9 +317,10 @@ export function BlogPost() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex flex-col">
+    <div className="min-h-screen bg-[#0a0a0f] flex flex-col overflow-x-hidden">
       <PublicNav branding={branding} />
 
+      <div className="w-full overflow-x-hidden">
       <article className="blog-post-article">
         <Link to="/blog" className="flex items-center gap-2 mb-8 hover:opacity-80" style={{ color: textColor }}>
           <ArrowLeft className="w-4 h-4" />Back to Blog
@@ -355,6 +357,7 @@ export function BlogPost() {
         />
       </article>
 
+      </div>
       <PublicFooter branding={branding} />
     </div>
   );
