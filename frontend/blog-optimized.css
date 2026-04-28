@@ -1,0 +1,129 @@
+/* ENTERPRISE BLOG LAYOUT - FORCED CONSTRAINTS */
+
+/* Main article wrapper */
+article.blog-post-article {
+  max-width: 768px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-left: 2rem !important;
+  padding-right: 2rem !important;
+}
+
+/* Blog content container */
+.blog-article-content {
+  max-width: 100% !important;
+  width: 100% !important;
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: #E8DDB5;
+}
+
+.blog-article-content h2 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #D4A836;
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.3;
+  font-family: 'Chivo', sans-serif;
+}
+
+.blog-article-content h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #E8DDB5;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.blog-article-content p {
+  margin-bottom: 1.5rem;
+  line-height: 1.8;
+  color: #E8DDB5;
+}
+
+.blog-article-content ul,
+.blog-article-content ol {
+  margin-bottom: 1.75rem;
+  padding-left: 2rem;
+}
+
+.blog-article-content li {
+  margin-bottom: 0.875rem;
+  line-height: 1.75;
+  color: #E8DDB5;
+}
+
+.blog-article-content li strong {
+  color: #D4A836;
+  font-weight: 600;
+}
+
+.blog-article-content strong {
+  color: #D4A836;
+  font-weight: 600;
+}
+
+.blog-article-content em {
+  font-style: italic;
+  color: #E8DDB5;
+}
+
+.blog-article-content a {
+  color: #D4A836;
+  text-decoration: underline;
+  transition: opacity 0.2s;
+}
+
+.blog-article-content a:hover {
+  opacity: 0.8;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  article.blog-post-article {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  .blog-article-content {
+    font-size: 1rem;
+  }
+  
+  .blog-article-content h2 {
+    font-size: 1.5rem;
+  }
+  
+  .blog-article-content h3 {
+    font-size: 1.25rem;
+  }
+}
+
+/* Blog listing page - prevent card overflow */
+.blog-listing-grid {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.blog-listing-grid a,
+.blog-listing-grid > * {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* Ensure images inside cards don't overflow */
+.blog-listing-grid img {
+  max-width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+/* Sidebar constraint */
+.blog-sidebar {
+  min-width: 0;
+  overflow: hidden;
+}
