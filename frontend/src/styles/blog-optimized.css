@@ -3,19 +3,58 @@
 /* Main article wrapper */
 article.blog-post-article {
   max-width: 768px !important;
+  width: 100% !important;
   margin-left: auto !important;
   margin-right: auto !important;
   padding-left: 2rem !important;
   padding-right: 2rem !important;
+  padding-top: 2rem !important;
+  padding-bottom: 4rem !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box !important;
 }
 
 /* Blog content container */
 .blog-article-content {
   max-width: 100% !important;
   width: 100% !important;
+  overflow-x: hidden !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
   font-size: 1.125rem;
   line-height: 1.8;
   color: #E8DDB5;
+}
+
+/* Prevent any child element from overflowing the article */
+.blog-article-content * {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Images always constrained */
+.blog-article-content img {
+  height: auto !important;
+  object-fit: contain !important;
+}
+
+/* Tables scroll horizontally instead of breaking layout */
+.blog-article-content table {
+  display: block !important;
+  overflow-x: auto !important;
+  white-space: nowrap !important;
+}
+
+/* Code blocks wrap or scroll */
+.blog-article-content pre {
+  overflow-x: auto !important;
+  white-space: pre-wrap !important;
+  word-break: break-all !important;
+}
+
+.blog-article-content code {
+  word-break: break-all !important;
+  overflow-wrap: break-word !important;
 }
 
 .blog-article-content h2 {
