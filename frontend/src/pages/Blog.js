@@ -135,7 +135,7 @@ export function BlogList() {
     <div className="min-h-screen bg-[#0a0a0f] flex flex-col">
       <PublicNav branding={branding} />
 
-      <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-12 flex-1 overflow-x-hidden">
+      <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-12 flex-1 overflow-x-hidden" style={{ boxSizing: "border-box" }}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-4xl font-bold mb-2" style={{ color: headingColor, fontFamily: 'Chivo, sans-serif' }}>
@@ -191,7 +191,7 @@ export function BlogList() {
             <Loader2 className="w-8 h-8 animate-spin" style={{ color: primaryColor }} />
           </div>
         ) : (
-          <div className="grid lg:grid-cols-[minmax(0,1fr)_280px] gap-8 items-start overflow-x-hidden">
+          <div className="w-full grid lg:grid-cols-[minmax(0,1fr)_280px] gap-8 items-start overflow-x-hidden">
             {/* Main Blog Grid */}
             <div className="min-w-0 overflow-hidden">
               {posts.length === 0 ? (
@@ -207,7 +207,7 @@ export function BlogList() {
                       <Link 
                         key={post.post_id} 
                         to={`/blog/${post.slug}`} 
-                        className="group bg-[#0f0f15] border rounded-xl overflow-hidden hover:border-opacity-80 transition-all flex flex-col min-w-0 max-w-full"
+                        className="group w-full bg-[#0f0f15] border rounded-xl overflow-hidden hover:border-opacity-80 transition-all flex flex-col min-w-0"
                         style={{ borderColor: `${primaryColor}33`, wordBreak: 'break-word' }}
                       >
                         {post.featured_image && (
@@ -263,9 +263,9 @@ export function BlogList() {
             </div>
 
             {/* Sidebar */}
-            <div className="space-y-6">
+            <aside className="min-w-0 overflow-hidden space-y-6">
               <DynamicSidebar page="blog" branding={branding} />
-            </div>
+            </aside>
           </div>
         )}
       </main>

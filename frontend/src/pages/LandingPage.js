@@ -48,37 +48,42 @@ export default function LandingPage() {
   const [customPages, setCustomPages] = useState([]);
   const [cmsTiles, setCmsTiles] = useState([]);
   const [publicNavItems, setPublicNavItems] = useState([]);
+  // Nav items ready state - separate from full page loading so nav renders immediately
+  const [navReady, setNavReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
+    // Fetch navigation first so nav renders immediately
+    axios.get(`${API}/navigation/public`)
+      .catch(() => ({ data: { items: [] } }))
+      .then((navRes) => {
+        const items = (navRes.data?.items || [])
+          .filter(i => i.is_active !== false)
+          .filter(i => (i.section_id || 'header') === 'header');
+        setPublicNavItems(items);
+        setNavReady(true);
+      });
+    // Fetch the rest of the page data in parallel
     Promise.all([
       axios.get(`${API}/landing-layouts/public`).catch(() => ({ data: null })),
       axios.get(`${API}/settings/branding`).catch(() => ({ data: null })),
       axios.get(`${API}/pages/landing`).catch(() => ({ data: null })),
       axios.get(`${API}/pages/custom`).catch(() => ({ data: { pages: [] } })),
       axios.get(`${API}/cms-tiles/public`).catch(() => ({ data: { tiles: [] } })),
-      axios.get(`${API}/navigation/public`).catch(() => ({ data: { items: [] } }))
     ])
-      .then(([layoutRes, brandingRes, pageRes, customPagesRes, cmsTilesRes, navRes]) => {
+      .then(([layoutRes, brandingRes, pageRes, customPagesRes, cmsTilesRes]) => {
         setLayout(layoutRes.data);
         setBranding(brandingRes.data);
         setPageContent(pageRes.data);
-        // Filter only published pages that should show in nav
         const navPages = (customPagesRes.data?.pages || []).filter(
           p => p.is_published && p.show_in_nav
         );
         setCustomPages(navPages);
-        // Filter published non-system CMS tiles (all returned from /public are published)
         const navTiles = (cmsTilesRes.data?.tiles || []).filter(
-          t => !t.is_system && t.name  // Exclude system tiles and empty names
+          t => !t.is_system && t.name
         );
         setCmsTiles(navTiles);
-        // Central public navigation items (admin-authored + PageBuilder auto-sync)
-        const navItems = (navRes.data?.items || [])
-          .filter(i => i.is_active !== false)
-          .filter(i => (i.section_id || 'header') === 'header');
-        setPublicNavItems(navItems);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
