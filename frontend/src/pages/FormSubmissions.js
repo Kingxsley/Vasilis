@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../App';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -43,7 +44,13 @@ export default function FormSubmissions() {
   const [organizations, setOrganizations] = useState([]);
   const [admins, setAdmins] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('access');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') === 'access' ? 'access' : 'contact');
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setSearchParams({ tab });
+  };
   const [selectedItem, setSelectedItem] = useState(null);
   const [showDetail, setShowDetail] = useState(false);
   const [showApprove, setShowApprove] = useState(false);
@@ -479,10 +486,11 @@ export default function FormSubmissions() {
           <div>
             <h1 className="text-3xl font-bold mb-2 flex items-center gap-3" style={{ fontFamily: 'Chivo, sans-serif' }}>
               <Mail className="w-8 h-8 text-[#D4A836]" />
-              Forms
+              Forms & Requests
             </h1>
             <p className="text-gray-400">
-              View and respond to contact inquiries and access requests
+              <span className="font-medium text-[#E8DDB5]">Contact Us</span> — messages from your public contact form ·{' '}
+              <span className="font-medium text-[#E8DDB5]">Access Requests</span> — sign-up requests from the login page
             </p>
           </div>
           <Button
@@ -556,10 +564,20 @@ export default function FormSubmissions() {
         </div>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <Tabs value={activeTab} onValueChange={handleTabChange}>
           <TabsList className="bg-[#0D1117] border border-[#30363D] mb-6">
-            <TabsTrigger value="contact">Contact Forms ({submissions.length})</TabsTrigger>
-            <TabsTrigger value="access">Access Requests ({accessRequests.length})</TabsTrigger>
+            <TabsTrigger value="contact">
+              <span className="flex items-center gap-1.5">
+                <MessageSquare className="w-4 h-4" />
+                Contact Us ({submissions.length})
+              </span>
+            </TabsTrigger>
+            <TabsTrigger value="access">
+              <span className="flex items-center gap-1.5">
+                <UserPlus className="w-4 h-4" />
+                Access Requests ({accessRequests.length})
+              </span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="contact">

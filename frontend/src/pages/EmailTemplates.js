@@ -2,6 +2,9 @@ import React, { useEffect, useState, Suspense, lazy } from 'react';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { useAuth } from '../App';
 import { sanitizeHTML } from '../utils/sanitize';
+
+// Helper: wraps sanitized HTML for dangerouslySetInnerHTML
+const createSafeMarkup = (html) => ({ __html: html || '' });
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -1027,14 +1030,22 @@ export default function EmailTemplates() {
                   <p className="text-[#E8DDB5] font-medium">{previewData.subject}</p>
                 </div>
 
-                <div className="border border-[#D4A836]/20 rounded-lg overflow-hidden">
-                  <div className="bg-[#1a1a24] p-6">
-                    <div 
-                      className="prose prose-invert max-w-none"
-                      style={{ fontFamily: 'Arial, sans-serif', color: '#E8DDB5' }}
-                      dangerouslySetInnerHTML={createSafeMarkup(sanitizeHTML(previewData.body))}
-                    />
-                  </div>
+                <div className="border border-[#D4A836]/20 rounded-lg overflow-hidden bg-white">
+                  <iframe
+                    srcDoc={sanitizeHTML(previewData.body)}
+                    title="Email Preview"
+                    className="w-full border-0"
+                    style={{ minHeight: '400px', background: 'white' }}
+                    onLoad={(e) => {
+                      try {
+                        const doc = e.target.contentDocument || e.target.contentWindow?.document;
+                        if (doc && doc.body) {
+                          e.target.style.height = (doc.body.scrollHeight + 40) + 'px';
+                        }
+                      } catch {}
+                    }}
+                    sandbox="allow-same-origin"
+                  />
                 </div>
 
                 {/* Test Send Section */}
