@@ -17,7 +17,8 @@ export const sanitizeHTML = (dirty, options = {}) => {
     ],
     ALLOWED_ATTR: [
       'href', 'src', 'alt', 'title', 'class', 'id', 'target', 'rel',
-      'width', 'height', 'style'
+      'width', 'height'
+      // 'style' intentionally excluded — inline styles from pasted content break responsive layout
     ],
     ALLOW_DATA_ATTR: false,
     ADD_ATTR: ['target'],
