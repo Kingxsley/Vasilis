@@ -1,60 +1,82 @@
-/* ENTERPRISE BLOG LAYOUT - FORCED CONSTRAINTS */
+/* ═══════════════════════════════════════════════════
+   VASILIS NETSHIELD — BLOG ARTICLE STYLES
+   Handles both authored and copy-pasted HTML content
+═══════════════════════════════════════════════════ */
 
-/* Main article wrapper */
-article.blog-post-article {
-  max-width: 768px !important;
-  width: 100% !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
-  padding-left: 2rem !important;
-  padding-right: 2rem !important;
-  padding-top: 2rem !important;
-  padding-bottom: 4rem !important;
+/* ── Outer page wrapper ── */
+.blog-post-page {
   overflow-x: hidden !important;
-  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: 100vw !important;
 }
 
-/* Blog content container */
-.blog-article-content {
-  max-width: 100% !important;
+/* ── Article container ── */
+article.blog-post-article {
   width: 100% !important;
+  max-width: 768px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding: 2rem 2rem 4rem !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+}
+
+/* ── Content area: nuclear overflow containment ── */
+.blog-article-content {
+  width: 100% !important;
+  max-width: 100% !important;
   overflow-x: hidden !important;
   overflow-wrap: break-word !important;
   word-break: break-word !important;
+  box-sizing: border-box !important;
   font-size: 1.125rem;
   line-height: 1.8;
   color: #E8DDB5;
 }
 
-/* Prevent any child element from overflowing the article */
-.blog-article-content * {
+/* Every single child element stays inside the box */
+.blog-article-content *,
+.blog-article-content *::before,
+.blog-article-content *::after {
   max-width: 100% !important;
   box-sizing: border-box !important;
-}
-
-/* Images always constrained */
-.blog-article-content img {
+  /* Strip any inline width/height that pasted content may have injected */
+  width: auto !important;
   height: auto !important;
-  object-fit: contain !important;
 }
 
-/* Tables scroll horizontally instead of breaking layout */
-.blog-article-content table {
-  display: block !important;
-  overflow-x: auto !important;
-  white-space: nowrap !important;
-}
-
-/* Code blocks wrap or scroll */
+/* Re-allow full-width for block elements */
+.blog-article-content p,
+.blog-article-content div,
+.blog-article-content section,
+.blog-article-content article,
+.blog-article-content blockquote,
+.blog-article-content figure,
+.blog-article-content ul,
+.blog-article-content ol,
+.blog-article-content li,
+.blog-article-content h1,
+.blog-article-content h2,
+.blog-article-content h3,
+.blog-article-content h4,
+.blog-article-content h5,
+.blog-article-content h6,
 .blog-article-content pre {
-  overflow-x: auto !important;
-  white-space: pre-wrap !important;
-  word-break: break-all !important;
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
-.blog-article-content code {
-  word-break: break-all !important;
-  overflow-wrap: break-word !important;
+/* ── Typography ── */
+.blog-article-content h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+  font-family: 'Chivo', sans-serif;
 }
 
 .blog-article-content h2 {
@@ -68,12 +90,22 @@ article.blog-post-article {
 }
 
 .blog-article-content h3 {
-  font-size: 1.5rem;
+  font-size: 1.375rem;
   font-weight: 600;
   color: #E8DDB5;
   margin-top: 2.5rem;
   margin-bottom: 1rem;
   line-height: 1.4;
+}
+
+.blog-article-content h4,
+.blog-article-content h5,
+.blog-article-content h6 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #E8DDB5;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
 }
 
 .blog-article-content p {
@@ -85,56 +117,135 @@ article.blog-post-article {
 .blog-article-content ul,
 .blog-article-content ol {
   margin-bottom: 1.75rem;
-  padding-left: 2rem;
+  padding-left: 1.75rem;
 }
 
 .blog-article-content li {
-  margin-bottom: 0.875rem;
+  margin-bottom: 0.75rem;
   line-height: 1.75;
   color: #E8DDB5;
 }
 
-.blog-article-content li strong {
-  color: #D4A836;
-  font-weight: 600;
-}
-
-.blog-article-content strong {
-  color: #D4A836;
-  font-weight: 600;
-}
-
-.blog-article-content em {
-  font-style: italic;
-  color: #E8DDB5;
-}
+.blog-article-content li strong { color: #D4A836; font-weight: 600; }
+.blog-article-content strong    { color: #D4A836; font-weight: 600; }
+.blog-article-content em        { font-style: italic; color: #E8DDB5; }
 
 .blog-article-content a {
   color: #D4A836;
   text-decoration: underline;
   transition: opacity 0.2s;
+  word-break: break-all;
+}
+.blog-article-content a:hover { opacity: 0.8; }
+
+/* ── Images ── */
+.blog-article-content img {
+  display: block !important;
+  width: auto !important;
+  max-width: 100% !important;
+  height: auto !important;
+  object-fit: contain !important;
+  margin: 1.5rem auto !important;
+  border-radius: 0.5rem;
 }
 
-.blog-article-content a:hover {
-  opacity: 0.8;
+/* ── Tables: scroll instead of overflow ── */
+.blog-article-content table {
+  width: 100% !important;
+  max-width: 100% !important;
+  display: block !important;
+  overflow-x: auto !important;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
 }
 
-/* Mobile */
+.blog-article-content th,
+.blog-article-content td {
+  width: auto !important;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #30363D;
+  text-align: left;
+  color: #E8DDB5;
+  white-space: normal !important;
+}
+
+.blog-article-content th { background: #21262D; color: #D4A836; font-weight: 600; }
+
+/* ── Code blocks ── */
+.blog-article-content pre {
+  background: #161B22 !important;
+  border: 1px solid #30363D;
+  border-radius: 0.5rem;
+  padding: 1rem 1.25rem;
+  overflow-x: auto !important;
+  white-space: pre-wrap !important;
+  word-break: break-all !important;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.blog-article-content code {
+  background: #21262D;
+  border-radius: 0.25rem;
+  padding: 0.15em 0.4em;
+  font-size: 0.875em;
+  color: #D4A836;
+  word-break: break-all !important;
+  overflow-wrap: break-word !important;
+  white-space: normal !important;
+}
+
+.blog-article-content pre code {
+  background: transparent;
+  padding: 0;
+  color: #E8DDB5;
+}
+
+/* ── Blockquote ── */
+.blog-article-content blockquote {
+  border-left: 4px solid #D4A836;
+  padding: 0.75rem 1.25rem;
+  margin: 1.5rem 0;
+  background: #161B22;
+  border-radius: 0 0.5rem 0.5rem 0;
+  color: #B8A98A;
+  font-style: italic;
+}
+
+/* ── Horizontal rule ── */
+.blog-article-content hr {
+  border: none;
+  border-top: 1px solid #30363D;
+  margin: 2.5rem 0;
+}
+
+/* ══ BLOG LISTING PAGE ══ */
+.blog-listing-grid {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.blog-listing-grid a,
+.blog-listing-grid > * {
+  min-width: 0;
+  max-width: 100%;
+  word-break: break-word;
+}
+
+.blog-listing-grid img {
+  max-width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+/* ══ MOBILE ══ */
 @media (max-width: 768px) {
   article.blog-post-article {
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
+    padding: 1.25rem 1rem 3rem !important;
   }
-  
-  .blog-article-content {
-    font-size: 1rem;
-  }
-  
-  .blog-article-content h2 {
-    font-size: 1.5rem;
-  }
-  
-  .blog-article-content h3 {
-    font-size: 1.25rem;
-  }
+  .blog-article-content      { font-size: 1rem; }
+  .blog-article-content h1   { font-size: 1.625rem; }
+  .blog-article-content h2   { font-size: 1.375rem; }
+  .blog-article-content h3   { font-size: 1.125rem; }
 }
