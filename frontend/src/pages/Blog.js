@@ -132,7 +132,7 @@ export function BlogList() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex flex-col">
+    <div className="min-h-screen bg-[#0a0a0f] flex flex-col overflow-x-hidden">
       <PublicNav branding={branding} />
 
       <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-12 flex-1 overflow-x-hidden">
@@ -270,7 +270,6 @@ export function BlogList() {
         )}
       </main>
 
-      </div>
       <PublicFooter branding={branding} />
     </div>
   );
@@ -320,7 +319,6 @@ export function BlogPost() {
     <div className="min-h-screen bg-[#0a0a0f] flex flex-col overflow-x-hidden">
       <PublicNav branding={branding} />
 
-      <div className="w-full overflow-x-hidden">
       <article className="blog-post-article">
         <Link to="/blog" className="flex items-center gap-2 mb-8 hover:opacity-80" style={{ color: textColor }}>
           <ArrowLeft className="w-4 h-4" />Back to Blog
@@ -357,7 +355,6 @@ export function BlogPost() {
         />
       </article>
 
-      </div>
       <PublicFooter branding={branding} />
     </div>
   );
