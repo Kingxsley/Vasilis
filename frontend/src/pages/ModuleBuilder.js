@@ -615,7 +615,6 @@ export default function ModuleBuilder() {
             )}
           </CardContent>
         </Card>
-        </Card>
         )}
       </div>
     </DashboardLayout>
