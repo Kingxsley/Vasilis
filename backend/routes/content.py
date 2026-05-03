@@ -76,6 +76,8 @@ class BlogPostUpdate(BaseModel):
     audience: Optional[str] = None
     meta_description: Optional[str] = None
     meta_title: Optional[str] = None
+    author_name: Optional[str] = None
+    created_at: Optional[str] = None
 
 
 class BlogStatusUpdate(BaseModel):
