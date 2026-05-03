@@ -132,7 +132,7 @@ export function BlogList() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex flex-col overflow-x-hidden">
+    <div className="w-full min-h-screen bg-[#0a0a0f] flex flex-col overflow-x-hidden">
       <PublicNav branding={branding} />
 
       <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-12 flex-1 overflow-x-hidden">
@@ -316,10 +316,10 @@ export function BlogPost() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex flex-col overflow-x-hidden">
+    <div className="w-full min-h-screen bg-[#0a0a0f] flex flex-col overflow-x-hidden">
       <PublicNav branding={branding} />
 
-      <article className="blog-post-article" style={{overflowX:"hidden",maxWidth:"768px",marginLeft:"auto",marginRight:"auto",width:"100%",boxSizing:"border-box"}}>
+      <article className="blog-post-article">
         <Link to="/blog" className="flex items-center gap-2 mb-8 hover:opacity-80" style={{ color: textColor }}>
           <ArrowLeft className="w-4 h-4" />Back to Blog
         </Link>
@@ -351,7 +351,6 @@ export function BlogPost() {
 
         <div 
           className="blog-article-content"
-          style={{overflowX:"hidden",wordBreak:"break-word",overflowWrap:"break-word"}}
           dangerouslySetInnerHTML={{ __html: sanitizeHTML(post.content) }}
         />
       </article>
