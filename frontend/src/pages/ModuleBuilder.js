@@ -348,6 +348,7 @@ export default function ModuleBuilder() {
         )}
 
         {activeTab === 'designer' && (
+        <>
         <Card className="bg-[#161B22] border-[#30363D]">
           <CardHeader>
             <CardTitle className="text-lg">
@@ -615,6 +616,7 @@ export default function ModuleBuilder() {
             )}
           </CardContent>
         </Card>
+        </>
         )}
       </div>
     </DashboardLayout>
