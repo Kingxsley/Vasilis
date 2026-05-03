@@ -124,6 +124,7 @@ export default function BlogManager() {
     title: '', slug: '', excerpt: '', content: '',
     tags: '', meta_description: '', audience: 'general',
     status: 'draft', featured_image: '',
+    author_name: '', publish_date: '',
   });
 
   const fetchPosts = useCallback(async () => {
@@ -338,6 +339,11 @@ export default function BlogManager() {
         ...postForm,
         tags: postForm.tags.split(',').map((t) => t.trim()).filter(Boolean),
       };
+      // Map publish_date back to created_at ISO string if provided
+      if (postForm.publish_date) {
+        payload.created_at = new Date(postForm.publish_date + 'T00:00:00Z').toISOString();
+      }
+      delete payload.publish_date;
       if (editingPost) {
         await axios.patch(`${API}/content/blog/${editingPost.post_id}`, payload, {
           headers: { Authorization: `Bearer ${token}` },
@@ -372,6 +378,8 @@ export default function BlogManager() {
       audience: post.audience || 'general',
       status: post.status || (post.published ? 'published' : 'draft'),
       featured_image: post.featured_image || '',
+      author_name: post.author_name || '',
+      publish_date: post.created_at ? post.created_at.split('T')[0] : '',
     });
     setShowDialog(true);
   };
@@ -855,6 +863,30 @@ export default function BlogManager() {
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* Author & Date row — only shown when editing */}
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Author / Editor</Label>
+                  <Input
+                    value={postForm.author_name}
+                    onChange={(e) => setPostForm({ ...postForm, author_name: e.target.value })}
+                    placeholder="e.g. Kingsley Ihesiene"
+                    className="bg-[#1a1a24] border-[#30363D] text-white"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Displayed as the post author on the blog</p>
+                </div>
+                <div>
+                  <Label>Publish Date</Label>
+                  <Input
+                    type="date"
+                    value={postForm.publish_date}
+                    onChange={(e) => setPostForm({ ...postForm, publish_date: e.target.value })}
+                    className="bg-[#1a1a24] border-[#30363D] text-white"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Override the displayed post date</p>
+                </div>
               </div>
 
               <div className="grid md:grid-cols-3 gap-4">
