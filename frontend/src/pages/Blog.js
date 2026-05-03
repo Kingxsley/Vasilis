@@ -319,7 +319,7 @@ export function BlogPost() {
     <div className="min-h-screen bg-[#0a0a0f] flex flex-col overflow-x-hidden">
       <PublicNav branding={branding} />
 
-      <article className="blog-post-article">
+      <article className="blog-post-article" style={{overflowX:"hidden",maxWidth:"768px",marginLeft:"auto",marginRight:"auto",width:"100%",boxSizing:"border-box"}}>
         <Link to="/blog" className="flex items-center gap-2 mb-8 hover:opacity-80" style={{ color: textColor }}>
           <ArrowLeft className="w-4 h-4" />Back to Blog
         </Link>
@@ -351,6 +351,7 @@ export function BlogPost() {
 
         <div 
           className="blog-article-content"
+          style={{overflowX:"hidden",wordBreak:"break-word",overflowWrap:"break-word"}}
           dangerouslySetInnerHTML={{ __html: sanitizeHTML(post.content) }}
         />
       </article>
