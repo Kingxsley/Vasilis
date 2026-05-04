@@ -636,107 +636,6 @@ export default function Settings() {
             </CardContent>
           </Card>
 
-          {/* Navigation Menu */}
-          <Card className="bg-[#0f0f15] border-[#D4A836]/20">
-            <CardHeader>
-              <CardTitle className="text-[#E8DDB5] flex items-center gap-2">
-                <Menu className="w-5 h-5" />
-                Navigation Menu
-              </CardTitle>
-              <CardDescription>Arrange menu order and toggle visibility. Changes apply after saving.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {/* Menu Order Section */}
-              <div className="mb-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <GripVertical className="w-4 h-4 text-[#D4A836]" />
-                  <h3 className="font-medium text-[#E8DDB5] text-sm">Menu Order & Visibility</h3>
-                </div>
-                <div className="space-y-2">
-                  {orderedMenuItems.map((item, index) => {
-                    // Get visibility state
-                    const isVisible = item.type === 'system' 
-                      ? (item.id === 'blog' ? branding.show_blog :
-                         item.id === 'videos' ? branding.show_videos :
-                         item.id === 'news' ? branding.show_news !== false :
-                         item.id === 'about' ? branding.show_about : true)
-                      : item.visible;
-                    
-                    return (
-                      <div 
-                        key={item.id}
-                        className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
-                          isVisible 
-                            ? 'border-[#D4A836]/50 bg-[#D4A836]/5' 
-                            : 'border-gray-700 bg-[#1a1a24] opacity-60'
-                        }`}
-                      >
-                        {/* Order controls */}
-                        <div className="flex flex-col gap-0.5">
-                          <button
-                            onClick={() => moveMenuItem(index, 'up')}
-                            disabled={index === 0}
-                            className={`p-1 rounded hover:bg-[#D4A836]/20 transition-colors ${
-                              index === 0 ? 'opacity-30 cursor-not-allowed' : 'text-gray-400 hover:text-[#D4A836]'
-                            }`}
-                          >
-                            <ArrowUp className="w-3 h-3" />
-                          </button>
-                          <button
-                            onClick={() => moveMenuItem(index, 'down')}
-                            disabled={index === orderedMenuItems.length - 1}
-                            className={`p-1 rounded hover:bg-[#D4A836]/20 transition-colors ${
-                              index === orderedMenuItems.length - 1 ? 'opacity-30 cursor-not-allowed' : 'text-gray-400 hover:text-[#D4A836]'
-                            }`}
-                          >
-                            <ArrowDown className="w-3 h-3" />
-                          </button>
-                        </div>
-                        
-                        {/* Position number */}
-                        <span className="text-xs text-gray-500 w-4 text-center">{index + 1}</span>
-                        
-                        {/* Item label */}
-                        <span className={`flex-1 font-medium text-sm ${isVisible ? 'text-[#E8DDB5]' : 'text-gray-500'}`}>
-                          {item.label}
-                        </span>
-                        
-                        {/* Type badge */}
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded ${
-                          item.type === 'system' ? 'bg-blue-500/20 text-blue-400' : 'bg-purple-500/20 text-purple-400'
-                        }`}>
-                          {item.type === 'system' ? 'System' : 'CMS'}
-                        </span>
-                        
-                        {/* Visibility toggle */}
-                        <button
-                          onClick={() => {
-                            if (item.type === 'system') {
-                              const key = `show_${item.id}`;
-                              setBranding(prev => ({ ...prev, [key]: !isVisible }));
-                            } else {
-                              // Toggle CMS tile visibility
-                              const tile = cmsTiles.find(t => `tile_${t.tile_id}` === item.id);
-                              if (tile) toggleTileVisibility(tile);
-                            }
-                          }}
-                          className={`p-1.5 rounded transition-colors ${
-                            isVisible 
-                              ? 'text-[#D4A836] hover:bg-[#D4A836]/20' 
-                              : 'text-gray-500 hover:bg-gray-700'
-                          }`}
-                        >
-                          {isVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-                <p className="text-xs text-gray-500 mt-3">Use arrows to reorder. Click eye icon to toggle visibility.</p>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Footer Settings */}
           <Card className="bg-[#0f0f15] border-[#D4A836]/20">
             <CardHeader>
@@ -998,6 +897,129 @@ export default function Settings() {
                   <li>🔐 <strong>Credential Submissions</strong> - CRITICAL: When users enter credentials</li>
                   <li>🚀 <strong>Campaign Launches</strong> - When new campaigns are started</li>
                 </ul>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* ── Certificate Verification Page ── */}
+          <Card className="bg-[#1a1a2e] border-[#D4A836]/20">
+            <CardHeader>
+              <CardTitle className="text-[#E8DDB5] flex items-center gap-2">
+                <span>🎓</span> Certificate Verification Page
+              </CardTitle>
+              <CardDescription className="text-gray-400">
+                Customise the public page trainees see when they scan or share their certificate QR code.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Verified Badge Text</label>
+                  <Input
+                    value={branding.cert_verify_badge_text || ''}
+                    onChange={(e) => setBranding({ ...branding, cert_verify_badge_text: e.target.value })}
+                    placeholder="Certificate Authenticity Verified"
+                    className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Text inside the green verified badge at the top</p>
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Certificate Heading</label>
+                  <Input
+                    value={branding.cert_verify_heading || ''}
+                    onChange={(e) => setBranding({ ...branding, cert_verify_heading: e.target.value })}
+                    placeholder="Certificate of Achievement"
+                    className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Main heading on the certificate card</p>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Certificate Subheading</label>
+                <Input
+                  value={branding.cert_verify_subheading || ''}
+                  onChange={(e) => setBranding({ ...branding, cert_verify_subheading: e.target.value })}
+                  placeholder="Cybersecurity Awareness Training"
+                  className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]"
+                />
+                <p className="text-xs text-gray-500 mt-1">Shown under "has successfully completed" — defaults to the module name</p>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Body Text</label>
+                <textarea
+                  value={branding.cert_verify_body_text || ''}
+                  onChange={(e) => setBranding({ ...branding, cert_verify_body_text: e.target.value })}
+                  placeholder="This certificate is awarded in recognition of completing the required cybersecurity training programme."
+                  rows={3}
+                  className="w-full rounded-lg bg-[#1a1a24] border border-[#D4A836]/30 text-[#E8DDB5] px-3 py-2 text-sm focus:outline-none focus:border-[#D4A836]/60"
+                />
+                <p className="text-xs text-gray-500 mt-1">Optional paragraph shown below the recipient name</p>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Footer Note</label>
+                <Input
+                  value={branding.cert_verify_footer_text || ''}
+                  onChange={(e) => setBranding({ ...branding, cert_verify_footer_text: e.target.value })}
+                  placeholder="This certificate was issued by Vasilis NetShield and has been verified as authentic."
+                  className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]"
+                />
+                <p className="text-xs text-gray-500 mt-1">Small print at the very bottom of the page</p>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Accent Colour Override</label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={branding.cert_verify_accent_color || branding.primary_color || '#D4A836'}
+                    onChange={(e) => setBranding({ ...branding, cert_verify_accent_color: e.target.value })}
+                    className="h-10 w-16 rounded cursor-pointer border border-[#D4A836]/30 bg-transparent"
+                  />
+                  <Input
+                    value={branding.cert_verify_accent_color || ''}
+                    onChange={(e) => setBranding({ ...branding, cert_verify_accent_color: e.target.value })}
+                    placeholder={branding.primary_color || '#D4A836'}
+                    className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5] flex-1 font-mono"
+                  />
+                  {branding.cert_verify_accent_color && (
+                    <button
+                      type="button"
+                      onClick={() => setBranding({ ...branding, cert_verify_accent_color: '' })}
+                      className="text-xs text-gray-500 hover:text-white transition-colors"
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Leave blank to use your primary brand colour</p>
+              </div>
+              <div className="flex items-center gap-8 pt-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={branding.cert_verify_show_score !== false}
+                    onChange={(e) => setBranding({ ...branding, cert_verify_show_score: e.target.checked })}
+                    className="w-4 h-4 accent-[#D4A836]"
+                  />
+                  <span className="text-sm text-gray-300">Show score ring</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={branding.cert_verify_show_modules !== false}
+                    onChange={(e) => setBranding({ ...branding, cert_verify_show_modules: e.target.checked })}
+                    className="w-4 h-4 accent-[#D4A836]"
+                  />
+                  <span className="text-sm text-gray-300">Show modules list</span>
+                </label>
+              </div>
+              <div className="pt-2 p-3 rounded-lg text-xs text-gray-500 flex items-start gap-2"
+                style={{ background: 'rgba(212,168,54,0.07)', border: '1px solid rgba(212,168,54,0.15)' }}>
+                <span>💡</span>
+                <span>
+                  The verification page is public — anyone with the certificate ID or QR code can view it.
+                  It automatically uses your company name, logo, and brand colours.
+                  Changes take effect immediately after saving.
+                </span>
               </div>
             </CardContent>
           </Card>
