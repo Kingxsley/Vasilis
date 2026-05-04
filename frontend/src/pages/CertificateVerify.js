@@ -49,9 +49,19 @@ export default function CertificateVerify() {
     });
   };
 
-  const accent      = branding?.primary_color || '#D4A836';
-  const companyName = branding?.company_name  || 'Vasilis NetShield';
-  const logoUrl     = branding?.logo_url      || null;
+  // Base branding
+  const accent      = branding?.cert_verify_accent_color || branding?.primary_color || '#D4A836';
+  const companyName = branding?.company_name || 'Vasilis NetShield';
+  const logoUrl     = branding?.logo_url || null;
+
+  // Certificate verify customisation — all fields from Settings → Certificate Verification Page
+  const badgeText   = branding?.cert_verify_badge_text  || 'Certificate Authenticity Verified';
+  const heading     = branding?.cert_verify_heading     || 'Certificate of Achievement';
+  const subheading  = branding?.cert_verify_subheading  || null;   // null = use module name
+  const bodyText    = branding?.cert_verify_body_text   || null;
+  const footerNote  = branding?.cert_verify_footer_text || `Issued by ${companyName} · Verified as authentic`;
+  const showScore   = branding?.cert_verify_show_score  !== false;
+  const showModules = branding?.cert_verify_show_modules !== false;
 
   // ── Loading ───────────────────────────────────────────────────────────────
   if (loading) {
@@ -96,8 +106,18 @@ export default function CertificateVerify() {
   // ── Verified ──────────────────────────────────────────────────────────────
   const completionDate    = formatDate(cert.completion_date);
   const authenticatedDate = formatDate(cert.generated_at || cert.completion_date);
-  // training_name comes from modules_completed[0] on the backend — the actual module name
-  const moduleName = cert.training_name || 'Training';
+  const moduleName        = cert.training_name || 'Training';
+  const displaySubheading = subheading || moduleName;
+
+  // Modules list — cert.modules_completed may be array or bullet string
+  let modulesList = [];
+  if (showModules && cert.modules_completed) {
+    if (Array.isArray(cert.modules_completed)) {
+      modulesList = cert.modules_completed;
+    } else if (typeof cert.modules_completed === 'string') {
+      modulesList = cert.modules_completed.split('•').map(s => s.trim()).filter(Boolean);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#0D1117] flex flex-col">
@@ -119,28 +139,28 @@ export default function CertificateVerify() {
       <div className="flex-1 flex items-start justify-center px-6 py-12">
         <div className="w-full max-w-lg">
 
-          {/* Verified pill */}
+          {/* Verified badge — uses customised badge text */}
           <div className="flex justify-center mb-8">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-950/60 border border-green-700/40">
               <CheckCircle2 className="w-4 h-4 text-green-400" />
-              <span className="text-green-300 text-sm font-medium">Verified</span>
+              <span className="text-green-300 text-sm font-medium">{badgeText}</span>
             </div>
           </div>
 
           {/* Certificate card */}
           <div className="bg-[#161B22] border border-[#30363D] rounded-2xl overflow-hidden">
 
-            {/* Accent top bar */}
+            {/* Accent bar — uses cert_verify_accent_color or primary_color */}
             <div className="h-1" style={{ background: accent }} />
 
             <div className="px-8 py-10 text-center">
 
-              {/* Awarded to label */}
-              <p className="text-xs text-gray-500 uppercase tracking-widest mb-3">
-                Awarded to
+              {/* Customisable heading */}
+              <p className="text-xs uppercase tracking-widest mb-3" style={{ color: accent }}>
+                {heading}
               </p>
 
-              {/* Recipient name — large, white, clearly readable */}
+              {/* Recipient name */}
               <h1 className="text-3xl font-bold text-white mb-1">
                 {cert.user_name}
               </h1>
@@ -150,18 +170,58 @@ export default function CertificateVerify() {
                 <p className="text-sm text-gray-400 mb-2">{cert.organization_name}</p>
               )}
 
+              {/* Optional body text from settings */}
+              {bodyText && (
+                <p className="text-sm text-gray-400 mt-3 mb-1 italic">{bodyText}</p>
+              )}
+
               {/* Divider */}
               <div className="w-12 h-px bg-[#30363D] mx-auto my-6" />
 
-              {/* For completing label */}
+              {/* "For completing" label */}
               <p className="text-xs text-gray-500 uppercase tracking-widest mb-2">
                 For completing
               </p>
 
-              {/* Module name — the actual training module, not generic "Training" */}
-              <p className="text-lg font-semibold text-white mb-8">
-                {moduleName}
+              {/* Subheading — custom text or falls back to actual module name */}
+              <p className="text-lg font-semibold text-white mb-4">
+                {displaySubheading}
               </p>
+
+              {/* Modules list — shown when cert has multiple modules and toggle is on */}
+              {showModules && modulesList.length > 1 && (
+                <ul className="text-sm text-gray-400 space-y-1 mb-6 text-left inline-block">
+                  {modulesList.map((m, i) => (
+                    <li key={i} className="flex items-center gap-2">
+                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" style={{ color: accent }} />
+                      {m}
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {/* Score ring — shown when toggle is on and score exists */}
+              {showScore && cert.average_score != null && (
+                <div className="flex justify-center mb-6">
+                  <div className="relative w-20 h-20">
+                    <svg viewBox="0 0 80 80" className="w-full h-full -rotate-90">
+                      <circle cx="40" cy="40" r="34" fill="none" stroke="#30363D" strokeWidth="6" />
+                      <circle
+                        cx="40" cy="40" r="34" fill="none"
+                        stroke={accent} strokeWidth="6"
+                        strokeLinecap="round"
+                        strokeDasharray={`${2 * Math.PI * 34}`}
+                        strokeDashoffset={`${2 * Math.PI * 34 * (1 - Math.min(cert.average_score, 100) / 100)}`}
+                        style={{ transition: 'stroke-dashoffset 1s ease' }}
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-lg font-bold text-white">{Math.round(cert.average_score)}%</span>
+                      <span className="text-[9px] text-gray-500 uppercase tracking-wide">Score</span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Date boxes */}
               <div className="grid grid-cols-2 gap-3">
@@ -194,10 +254,9 @@ export default function CertificateVerify() {
             </button>
           </div>
 
-          {/* Footer */}
-          <p className="text-center text-xs text-gray-600 mt-6">
-            Issued by {companyName} · Authenticated {authenticatedDate}
-          </p>
+          {/* Footer note — customisable from settings */}
+          <p className="text-center text-xs text-gray-600 mt-6">{footerNote}</p>
+
         </div>
       </div>
     </div>
