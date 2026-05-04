@@ -385,45 +385,106 @@ export function BlogPost() {
     );
   }
 
+  // Estimate reading time
+  const wordCount = post.content ? post.content.replace(/<[^>]+>/g, '').split(/\s+/).length : 0;
+  const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+
   return (
-    <div className="w-full min-h-screen bg-[#0a0a0f] flex flex-col overflow-x-hidden">
+    <div className="w-full min-h-screen flex flex-col" style={{ background: '#0a0a0f' }}>
       <PublicNav branding={branding} />
 
-      <article className="blog-post-article">
-        <Link to="/blog" className="flex items-center gap-2 mb-8 hover:opacity-80" style={{ color: textColor }}>
-          <ArrowLeft className="w-4 h-4" />Back to Blog
-        </Link>
-
-        {post.featured_image && (
-          <div className="aspect-video rounded-xl overflow-hidden mb-8">
-            <img src={post.featured_image} alt={post.title} className="w-full h-full object-cover" />
-          </div>
-        )}
-
-        <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
-          <span className="flex items-center gap-1"><Calendar className="w-4 h-4" />{new Date(post.created_at).toLocaleDateString()}</span>
-          <span className="flex items-center gap-1"><User className="w-4 h-4" />{post.author_name}</span>
+      {/* Hero / Featured Image */}
+      {post.featured_image && (
+        <div className="w-full" style={{ maxHeight: '480px', overflow: 'hidden' }}>
+          <img
+            src={post.featured_image}
+            alt={post.title}
+            style={{ width: '100%', height: '480px', objectFit: 'cover', display: 'block' }}
+          />
         </div>
+      )}
 
-        <h1 className="text-4xl font-bold mb-4" style={{ color: headingColor, fontFamily: 'Chivo, sans-serif' }}>
-          {post.title}
-        </h1>
+      {/* Article */}
+      <div className="blog-article-outer">
+        <article className="blog-article-inner">
 
-        {post.tags?.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-8">
-            {post.tags.map((tag) => (
-              <Badge key={tag} style={{ backgroundColor: `${accentColor}15`, color: accentColor }}>
-                <Tag className="w-3 h-3 mr-1" />{tag}
-              </Badge>
-            ))}
+          {/* Back link */}
+          <Link
+            to="/blog"
+            className="blog-back-link"
+          >
+            <ArrowLeft style={{ width: '16px', height: '16px', flexShrink: 0 }} />
+            Back to Blog
+          </Link>
+
+          {/* Meta row */}
+          <div className="blog-meta-row">
+            <span className="blog-meta-item">
+              <Calendar style={{ width: '14px', height: '14px' }} />
+              {new Date(post.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+            </span>
+            <span className="blog-meta-sep">·</span>
+            <span className="blog-meta-item">
+              <User style={{ width: '14px', height: '14px' }} />
+              {post.author_name}
+            </span>
+            <span className="blog-meta-sep">·</span>
+            <span className="blog-meta-item">{readingTime} min read</span>
           </div>
-        )}
 
-        <div 
-          className="blog-article-content"
-          dangerouslySetInnerHTML={{ __html: sanitizeHTML(post.content) }}
-        />
-      </article>
+          {/* Title */}
+          <h1 className="blog-title" style={{ color: headingColor }}>
+            {post.title}
+          </h1>
+
+          {/* Excerpt / subtitle if present */}
+          {post.excerpt && (
+            <p className="blog-excerpt">{post.excerpt}</p>
+          )}
+
+          {/* Tags */}
+          {post.tags?.length > 0 && (
+            <div className="blog-tags">
+              {post.tags.map((tag) => (
+                <span key={tag} className="blog-tag" style={{ backgroundColor: `${accentColor}18`, color: accentColor, borderColor: `${accentColor}30` }}>
+                  <Tag style={{ width: '11px', height: '11px' }} />
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Divider */}
+          <div className="blog-divider" style={{ borderColor: `${accentColor}25` }} />
+
+          {/* Content */}
+          <div
+            className="blog-article-content"
+            dangerouslySetInnerHTML={{ __html: sanitizeHTML(post.content) }}
+          />
+
+          {/* Bottom tags */}
+          {post.tags?.length > 0 && (
+            <div className="blog-bottom-tags">
+              <span className="blog-bottom-tags-label">Tagged:</span>
+              {post.tags.map((tag) => (
+                <span key={tag} className="blog-tag" style={{ backgroundColor: `${accentColor}18`, color: accentColor, borderColor: `${accentColor}30` }}>
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Back to blog CTA */}
+          <div className="blog-back-cta">
+            <Link to="/blog" className="blog-back-btn" style={{ background: accentColor, color: '#000' }}>
+              <ArrowLeft style={{ width: '16px', height: '16px' }} />
+              Back to Blog
+            </Link>
+          </div>
+
+        </article>
+      </div>
 
       <PublicFooter branding={branding} />
     </div>
