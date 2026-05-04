@@ -1,16 +1,30 @@
-# Allow all crawlers
+# Vasilis NetShield - robots.txt
+# https://vasilisnetshield.com
+
 User-agent: *
-Allow: /
 
-# Sitemap location
-Sitemap: https://vasilisnetshield.net/sitemap.xml
+# Public pages - allow
+Allow: /$
+Allow: /blog/
+Allow: /blog$
+Allow: /news/
+Allow: /news$
+Allow: /about$
+Allow: /contact$
+Allow: /contact-us$
+Allow: /events/
+Allow: /events$
+Allow: /sitemap.xml
+Allow: /.well-known/
 
-# Disallow admin pages
+# Block ALL admin/dashboard routes
 Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /settings
 Disallow: /users
 Disallow: /organizations
-Disallow: /settings
 Disallow: /phishing
+Disallow: /credential-harvest
 Disallow: /ads
 Disallow: /scenarios
 Disallow: /certificates
@@ -24,3 +38,37 @@ Disallow: /landing-editor
 Disallow: /certificate-templates
 Disallow: /page-editor
 Disallow: /sidebar-widgets
+Disallow: /module-builder
+Disallow: /module-designer
+Disallow: /email-templates
+Disallow: /form-submissions
+Disallow: /blog-manager
+Disallow: /content-manager
+Disallow: /media-library
+Disallow: /page-builder
+Disallow: /sidebar-manager
+Disallow: /cms
+Disallow: /seo-settings
+Disallow: /cookie-settings
+Disallow: /navigation
+Disallow: /simulations
+Disallow: /simulation-builder
+Disallow: /exec-training
+Disallow: /vulnerable-users
+Disallow: /activity-logs
+Disallow: /reports
+Disallow: /verify
+
+# Block API entirely
+Disallow: /api/
+
+# Block sensitive static files
+Disallow: /training_modules.json
+Disallow: /docs/
+Disallow: /sitemap.static.xml.bak
+
+# Crawl-delay to be polite
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://vasilisnetshield.com/sitemap.xml
