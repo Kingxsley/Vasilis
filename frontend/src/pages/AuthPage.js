@@ -280,6 +280,7 @@ export default function AuthPage() {
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       className="pl-10 bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] placeholder:text-gray-600 focus:border-[#D4A836] focus:ring-[#D4A836]/20"
+                      maxLength={100}
                       data-testid="inquiry-email-input"
                       required
                     />
@@ -297,6 +298,7 @@ export default function AuthPage() {
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       className="pl-10 bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] placeholder:text-gray-600 focus:border-[#D4A836] focus:ring-[#D4A836]/20"
+                      maxLength={30}
                       data-testid="inquiry-phone-input"
                       required
                     />
@@ -311,11 +313,17 @@ export default function AuthPage() {
                       id="message"
                       placeholder="Tell us about your organization and training needs..."
                       value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      onChange={(e) => setFormData({ ...formData, message: e.target.value.slice(0, 200) })}
+                      maxLength={200}
                       className="pl-10 min-h-[100px] bg-[#0f0f15] border-[#D4A836]/30 text-[#E8DDB5] placeholder:text-gray-600 focus:border-[#D4A836] focus:ring-[#D4A836]/20"
                       data-testid="inquiry-message-input"
                       required
                     />
+                  </div>
+                  <div className="flex justify-end">
+                    <span className={`text-xs ${formData.message.length >= 180 ? 'text-orange-400' : 'text-gray-500'}`}>
+                      {formData.message.length}/200
+                    </span>
                   </div>
                 </div>
               </>

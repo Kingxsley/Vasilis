@@ -169,7 +169,8 @@ const ContactFormBlock = ({ content }) => {
             <Input
               placeholder="Your Name"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value.slice(0, 100) })}
+              maxLength={100}
               className="bg-[#1a1a24] border-[#30363D] text-white"
               required
             />
@@ -179,7 +180,8 @@ const ContactFormBlock = ({ content }) => {
               type="email"
               placeholder="Your Email"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value.slice(0, 100) })}
+              maxLength={100}
               className="bg-[#1a1a24] border-[#30363D] text-white"
               required
             />
@@ -188,10 +190,16 @@ const ContactFormBlock = ({ content }) => {
             <Textarea
               placeholder="Your Message"
               value={formData.message}
-              onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, message: e.target.value.slice(0, 200) })}
+              maxLength={200}
               className="bg-[#1a1a24] border-[#30363D] text-white min-h-[120px]"
               required
             />
+            <div className="flex justify-end mt-1">
+              <span className={`text-xs ${formData.message.length >= 180 ? 'text-orange-400' : 'text-gray-500'}`}>
+                {formData.message.length}/200
+              </span>
+            </div>
           </div>
           <Button 
             type="submit" 
