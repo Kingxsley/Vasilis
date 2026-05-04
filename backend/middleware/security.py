@@ -172,7 +172,6 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
       - Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
       - Cross-Origin-Opener-Policy: same-origin     (COOP)
       - Cross-Origin-Resource-Policy: same-origin   (CORP)
-      - Cross-Origin-Embedder-Policy: require-corp  (COEP)
       - Strict-Transport-Security: 2-year preload   (HSTS)
       - Content-Security-Policy with frame-ancestors 'none' (clickjacking + defense-in-depth)
 
@@ -227,16 +226,16 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "camera=(), microphone=(), geolocation=(), interest-cohort=()"
         )
 
-        # Cross-Origin isolation headers (COOP / CORP / COEP)
+        # COOP: isolates browsing context - safe on API
         response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
-        response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
-        response.headers["Cross-Origin-Embedder-Policy"] = "require-corp"
+        # CORP: same-site allows frontend (vasilisnetshield.com) to read API responses
+        response.headers["Cross-Origin-Resource-Policy"] = "cross-origin"
 
         # Content Security Policy (covers clickjacking via frame-ancestors 'none')
         response.headers["Content-Security-Policy"] = self.CSP_VALUE
         response.headers["Permissions-Policy"] = self.PERMISSIONS_POLICY
         response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
-        response.headers["Cross-Origin-Resource-Policy"] = "same-site"
+        response.headers["Cross-Origin-Resource-Policy"] = "cross-origin"
 
         # HSTS - 2 years with subdomains + preload (can be disabled via env for local)
         if os.environ.get("DISABLE_HSTS", "").lower() != "true":
