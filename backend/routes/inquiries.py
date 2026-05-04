@@ -15,6 +15,21 @@ import aiohttp
 from models import UserRole
 
 logger = logging.getLogger(__name__)
+
+# Input sanitisation
+try:
+    from utils.input_sanitizer import sanitize_field
+except ImportError:
+    import re, html as _html
+    _INJ = re.compile(r"(--|;|/\*|\*/|\$where|\$gt|<script|javascript:|on\w+=)", re.I)
+    def sanitize_field(v, field="default"):
+        v = str(v or "").strip()
+        limits = {"name":100,"email":100,"phone":30,"organization":150,"message":200,"default":200}
+        if len(v) > limits.get(field, 200):
+            raise ValueError(f"Field '{field}' exceeds maximum length.")
+        if _INJ.search(v):
+            raise ValueError(f"Field '{field}' contains disallowed content.")
+        return _html.escape(v, quote=True)
 router = APIRouter(prefix="/inquiries", tags=["Inquiries"])
 
 
@@ -216,12 +231,22 @@ async def notify_super_admins_of_access_request(inquiry_data: dict):
 async def create_inquiry(data: InquiryCreate, request: Request):
     """Submit a new access request / inquiry (public - no auth required)"""
     db = get_db()
-    
+
+    # Sanitise and enforce limits before anything else
+    try:
+        clean_name    = sanitize_field(data.name or "",         "name")
+        clean_email   = sanitize_field(data.email or "",        "email")
+        clean_phone   = sanitize_field(data.phone or "",        "phone")
+        clean_org     = sanitize_field(data.organization or "", "organization")
+        clean_message = sanitize_field(data.message or "",      "message")
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
     # Get client IP for tracking and geolocation
     from middleware.security import get_client_ip, get_ip_geolocation
     client_ip = get_client_ip(request)
     geo_data = await get_ip_geolocation(client_ip)
-    
+
     # Check if email already has a pending inquiry
     existing = await db.inquiries.find_one({
         "email": data.email,
@@ -234,10 +259,10 @@ async def create_inquiry(data: InquiryCreate, request: Request):
             {"inquiry_id": existing["inquiry_id"]},
             {
                 "$set": {
-                    "name": data.name or existing.get("name"),
-                    "phone": data.phone or existing.get("phone"),
-                    "organization": data.organization or existing.get("organization"),
-                    "message": data.message,
+                    "name": clean_name or existing.get("name"),
+                    "phone": clean_phone or existing.get("phone"),
+                    "organization": clean_org or existing.get("organization"),
+                    "message": clean_message,
                     "updated_at": datetime.now(timezone.utc).isoformat()
                 }
             }
@@ -248,11 +273,11 @@ async def create_inquiry(data: InquiryCreate, request: Request):
     
     inquiry_doc = {
         "inquiry_id": inquiry_id,
-        "name": data.name,
-        "email": data.email,
-        "phone": data.phone,
-        "organization": data.organization,
-        "message": data.message,
+        "name": clean_name,
+        "email": clean_email,
+        "phone": clean_phone,
+        "organization": clean_org,
+        "message": clean_message,
         "status": "pending",  # pending, contacted, approved, rejected
         "admin_notes": None,
         "ip_address": client_ip,
