@@ -35,10 +35,26 @@ export const sanitizeHTML = (dirty, options = {}) => {
     }
   });
 
-  const clean = DOMPurify.sanitize(dirty, defaultOptions);
+  let clean = DOMPurify.sanitize(dirty, defaultOptions);
 
   // Remove hook after use so it doesn't persist globally
   DOMPurify.removeHook('afterSanitizeAttributes');
+
+  // Strip orphaned <br> tags that AI-generated content inserts mid-paragraph.
+  // These create the broken mid-word line wrapping visible in blog posts.
+  // Pattern: <br> inside a <p> that already has surrounding text — replace with a space.
+  // Also remove trailing <br> before </p> and standalone <br><br> paragraph breaks.
+  clean = clean
+    // <br> between two text nodes inside a paragraph → single space
+    .replace(/([^>])<br\s*\/?>/gi, '$1 ')
+    // Leading <br> at start of paragraph
+    .replace(/<p[^>]*>\s*(<br\s*\/?>\s*)+/gi, (m) => m.replace(/<br\s*\/?>/gi, ''))
+    // Trailing <br> at end of paragraph
+    .replace(/(<br\s*\/?>\s*)+<\/p>/gi, '</p>')
+    // Multiple consecutive <br> → treated as paragraph break (leave one)
+    .replace(/(<br\s*\/?>\s*){3,}/gi, '<br>')
+    // Clean up any double spaces created
+    .replace(/  +/g, ' ');
 
   return clean;
 };
