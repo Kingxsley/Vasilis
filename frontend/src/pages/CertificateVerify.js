@@ -106,7 +106,11 @@ export default function CertificateVerify() {
   // ── Verified ──────────────────────────────────────────────────────────────
   const completionDate    = formatDate(cert.completion_date);
   const authenticatedDate = formatDate(cert.generated_at || cert.completion_date);
-  const moduleName        = cert.training_name || 'Training';
+  // Append 'Training' to module name if not already present
+  const rawModuleName = cert.training_name || 'Training';
+  const moduleName = rawModuleName.toLowerCase().endsWith('training')
+    ? rawModuleName
+    : `${rawModuleName} Training`;
   const displaySubheading = subheading || moduleName;
 
   // Modules list — cert.modules_completed may be array or bullet string
