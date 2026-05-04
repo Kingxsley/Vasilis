@@ -1,61 +1,196 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-
   "rewrites": [
-    { "source": "/sitemap.xml",         "destination": "https://api.vasilisnetshield.com/api/sitemap/sitemap.xml" },
-    { "source": "/robots.txt",          "destination": "/robots.txt" },
-    { "source": "/.well-known/(.*)",    "destination": "/.well-known/$1" }
+    {
+      "source": "/robots.txt",
+      "destination": "/robots.txt"
+    },
+    {
+      "source": "/.well-known/(.*)",
+      "destination": "/.well-known/$1"
+    }
   ],
-
   "headers": [
     {
       "source": "/api/(.*)",
       "headers": [
-        { "key": "Access-Control-Allow-Origin",      "value": "https://vasilisnetshield.com" },
-        { "key": "Access-Control-Allow-Methods",     "value": "GET, POST, PUT, PATCH, DELETE, OPTIONS" },
-        { "key": "Access-Control-Allow-Headers",     "value": "Content-Type, Authorization" },
-        { "key": "Access-Control-Allow-Credentials", "value": "true" },
-        { "key": "Vary",                             "value": "Origin" },
-        { "key": "X-Frame-Options",                  "value": "DENY" },
-        { "key": "X-Content-Type-Options",           "value": "nosniff" },
-        { "key": "Referrer-Policy",                  "value": "strict-origin-when-cross-origin" },
-        { "key": "Strict-Transport-Security",        "value": "max-age=63072000; includeSubDomains; preload" }
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "https://vasilisnetshield.com"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        },
+        {
+          "key": "Access-Control-Allow-Credentials",
+          "value": "true"
+        },
+        {
+          "key": "Vary",
+          "value": "Origin"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        }
       ]
     },
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Frame-Options",         "value": "DENY" },
-        { "key": "X-Content-Type-Options",  "value": "nosniff" },
-        { "key": "Referrer-Policy",         "value": "strict-origin-when-cross-origin" },
-        { "key": "Strict-Transport-Security","value": "max-age=63072000; includeSubDomains; preload" },
-        { "key": "Permissions-Policy",      "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=()" },
-        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
-        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://vasilisnetshield.com https://www.vasilisnetshield.com https://api.vasilisnetshield.com https://api.anthropic.com; media-src 'self'; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://vasilisnetshield.com; upgrade-insecure-requests;" }
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+        },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://vasilisnetshield.com https://www.vasilisnetshield.com https://api.vasilisnetshield.com https://api.anthropic.com; media-src 'self'; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://vasilisnetshield.com; upgrade-insecure-requests;"
+        }
       ]
     }
   ],
-
   "redirects": [
-    { "source": "/api/admin",           "destination": "/404", "permanent": false },
-    { "source": "/api/admin/:path*",    "destination": "/404", "permanent": false },
-    { "source": "/api/debug",           "destination": "/404", "permanent": false },
-    { "source": "/api/debug/:path*",    "destination": "/404", "permanent": false },
-    { "source": "/api/config",          "destination": "/404", "permanent": false },
-    { "source": "/api/config/:path*",   "destination": "/404", "permanent": false },
-    { "source": "/.env",                "destination": "/404", "permanent": false },
-    { "source": "/.env.local",          "destination": "/404", "permanent": false },
-    { "source": "/.env.production",     "destination": "/404", "permanent": false },
-    { "source": "/.env.development",    "destination": "/404", "permanent": false },
-    { "source": "/.git/config",         "destination": "/404", "permanent": false },
-    { "source": "/.git/HEAD",           "destination": "/404", "permanent": false },
-    { "source": "/.git/:path*",         "destination": "/404", "permanent": false },
-    { "source": "/package.json",        "destination": "/404", "permanent": false },
-    { "source": "/package-lock.json",   "destination": "/404", "permanent": false },
-    { "source": "/yarn.lock",           "destination": "/404", "permanent": false },
-    { "source": "/craco.config.js",     "destination": "/404", "permanent": false },
-    { "source": "/.gitignore",          "destination": "/404", "permanent": false },
-    { "source": "/vercel.json",         "destination": "/404", "permanent": false },
-    { "source": "/training_modules.json","destination": "/404", "permanent": false }
+    {
+      "source": "/sitemap.xml",
+      "destination": "https://api.vasilisnetshield.com/api/sitemap/sitemap.xml",
+      "permanent": false
+    },
+    {
+      "source": "/api/admin",
+      "destination": "/404",
+      "permanent": false
+    },
+    {
+      "source": "/api/admin/:path*",
+      "destination": "/404",
+      "permanent": false
+    },
+    {
+      "source": "/api/debug",
+      "destination": "/404",
+      "permanent": false
+    },
+    {
+      "source": "/api/debug/:path*",
+      "destination": "/404",
+      "permanent": false
+    },
+    {
+      "source": "/api/config",
+      "destination": "/404",
+      "permanent": false
+    },
+    {
+      "source": "/api/config/:path*",
+      "destination": "/404",
+      "permanent": false
+    },
+    {
+      "source": "/.env",
+      "destination": "/404",
+      "permanent": false
+    },
+    {
+      "source": "/.env.local",
+      "destination": "/404",
+      "permanent": false
+    },
+    {
+      "source": "/.env.production",
+      "destination": "/404",
+      "permanent": false
+    },
+    {
+      "source": "/.env.development",
+      "destination": "/404",
+      "permanent": false
+    },
+    {
+      "source": "/.git/config",
+      "destination": "/404",
+      "permanent": false
+    },
+    {
+      "source": "/.git/HEAD",
+      "destination": "/404",
+      "permanent": false
+    },
+    {
+      "source": "/.git/:path*",
+      "destination": "/404",
+      "permanent": false
+    },
+    {
+      "source": "/package.json",
+      "destination": "/404",
+      "permanent": false
+    },
+    {
+      "source": "/package-lock.json",
+      "destination": "/404",
+      "permanent": false
+    },
+    {
+      "source": "/yarn.lock",
+      "destination": "/404",
+      "permanent": false
+    },
+    {
+      "source": "/craco.config.js",
+      "destination": "/404",
+      "permanent": false
+    },
+    {
+      "source": "/.gitignore",
+      "destination": "/404",
+      "permanent": false
+    },
+    {
+      "source": "/vercel.json",
+      "destination": "/404",
+      "permanent": false
+    },
+    {
+      "source": "/training_modules.json",
+      "destination": "/404",
+      "permanent": false
+    }
   ]
 }
