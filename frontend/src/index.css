@@ -327,9 +327,10 @@ details summary:hover {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   BLOG ARTICLE — GLOBAL OVERFLOW FIX
-   Prevents mid-word line breaking on blog post pages.
-   These rules must live in index.css (processed before component CSS)
+   BLOG ARTICLE — CLEAN WORD-WRAP FIX
+   Words always wrap at natural boundaries (spaces), never mid-character.
+   max-width: 740px creates ~75 chars/line at 17px — the sweet spot
+   where the browser has enough room to fit full words per line.
    ═══════════════════════════════════════════════════════════ */
 
 .blog-article-outer {
@@ -337,12 +338,21 @@ details summary:hover {
 }
 
 .blog-article-inner {
-  max-width: 680px !important;
+  max-width: 740px !important;
   overflow-x: hidden !important;
 }
 
-/* Every element inside the article stays within bounds */
-.blog-article-content,
+/* Core: overflow-wrap: normal = only break at word boundaries (spaces/hyphens).
+   word-break: normal = never split a word mid-character.
+   hyphens: none = no automatic hyphenation ever. */
+.blog-article-content {
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+  white-space: normal !important;
+  hyphens: none !important;
+  -webkit-hyphens: none !important;
+}
+
 .blog-article-content p,
 .blog-article-content h1,
 .blog-article-content h2,
@@ -353,8 +363,15 @@ details summary:hover {
 .blog-article-content td,
 .blog-article-content th {
   max-width: 100% !important;
-  overflow-wrap: anywhere !important;
+  overflow-wrap: normal !important;
   word-break: normal !important;
   hyphens: none !important;
   -webkit-hyphens: none !important;
+}
+
+/* Exception: URLs and code should break to avoid overflow */
+.blog-article-content a,
+.blog-article-content code {
+  overflow-wrap: break-word !important;
+  word-break: break-all !important;
 }
