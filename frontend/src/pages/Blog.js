@@ -289,7 +289,77 @@ export function BlogPost() {
     ]).then(([postRes, brandingRes]) => {
       setPost(postRes.data);
       setBranding(brandingRes.data);
+
+      // ── Dynamic SEO for individual blog posts ──────────────────────────
+      const p = postRes.data;
+      if (!p) return;
+      const siteUrl = 'https://vasilisnetshield.com';
+      const postUrl = `${siteUrl}/blog/${p.slug}`;
+
+      // Title
+      document.title = p.meta_title || `${p.title} | Vasilis NetShield`;
+
+      // Meta description
+      const desc = p.meta_description || p.excerpt || p.title;
+      const setMeta = (sel, attr, val) => {
+        let el = document.querySelector(sel);
+        if (!el) { el = document.createElement('meta'); document.head.appendChild(el); }
+        el.setAttribute(attr, val);
+      };
+      setMeta('meta[name="description"]', 'content', desc);
+      setMeta('meta[property="og:title"]', 'content', p.meta_title || p.title);
+      setMeta('meta[property="og:description"]', 'content', desc);
+      setMeta('meta[property="og:url"]', 'content', postUrl);
+      setMeta('meta[property="og:type"]', 'content', 'article');
+      if (p.featured_image) setMeta('meta[property="og:image"]', 'content', p.featured_image);
+      setMeta('meta[name="twitter:title"]', 'content', p.meta_title || p.title);
+      setMeta('meta[name="twitter:description"]', 'content', desc);
+
+      // Canonical
+      let canon = document.querySelector('link[rel="canonical"]');
+      if (!canon) { canon = document.createElement('link'); canon.rel = 'canonical'; document.head.appendChild(canon); }
+      canon.href = postUrl;
+
+      // JSON-LD BlogPosting structured data
+      const existingScript = document.getElementById('blog-post-jsonld');
+      if (existingScript) existingScript.remove();
+      const script = document.createElement('script');
+      script.id = 'blog-post-jsonld';
+      script.type = 'application/ld+json';
+      script.text = JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: p.title,
+        description: desc,
+        url: postUrl,
+        datePublished: p.created_at || p.published_at,
+        dateModified: p.updated_at || p.created_at,
+        author: {
+          '@type': 'Organization',
+          name: postRes.data?.author || 'Vasilis NetShield',
+          url: siteUrl
+        },
+        publisher: {
+          '@type': 'Organization',
+          name: 'Vasilis NetShield',
+          url: siteUrl,
+          logo: { '@type': 'ImageObject', url: `${siteUrl}/favicon.svg` }
+        },
+        mainEntityOfPage: { '@type': 'WebPage', '@id': postUrl },
+        ...(p.featured_image ? { image: p.featured_image } : {}),
+        ...(p.tags ? { keywords: (Array.isArray(p.tags) ? p.tags : p.tags.split(',')).join(', ') } : {})
+      });
+      document.head.appendChild(script);
     }).catch(() => {}).finally(() => setLoading(false));
+
+    // Cleanup on unmount — restore base title and remove post-specific tags
+    return () => {
+      document.title = 'Vasilis NetShield | Cybersecurity Awareness Training Platform';
+      const s = document.getElementById('blog-post-jsonld');
+      if (s) s.remove();
+      const canon = document.querySelector('link[rel="canonical"]');
+      if (canon) canon.href = 'https://vasilisnetshield.com';
+    };
   }, [slug]);
 
   // Dynamic colors
