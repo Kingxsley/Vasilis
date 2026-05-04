@@ -184,12 +184,27 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         "default-src 'self'; "
         "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-        "img-src 'self' data: https:; "
+        "img-src 'self' data: blob: https:; "
         "font-src 'self' data: https://fonts.gstatic.com; "
         "connect-src 'self' https://vasilisnetshield.com https://www.vasilisnetshield.com https://api.vasilisnetshield.com; "
+        "media-src 'self'; "
+        "object-src 'none'; "
+        "frame-src 'none'; "
         "frame-ancestors 'none'; "
         "base-uri 'self'; "
-        "form-action 'self';"
+        "form-action 'self' https://vasilisnetshield.com; "
+        "upgrade-insecure-requests;"
+    )
+
+    PERMISSIONS_POLICY = (
+        "camera=(), "
+        "microphone=(), "
+        "geolocation=(), "
+        "payment=(), "
+        "usb=(), "
+        "magnetometer=(), "
+        "gyroscope=(), "
+        "accelerometer=()"
     )
 
     async def dispatch(self, request: Request, call_next: Callable):
@@ -219,6 +234,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
         # Content Security Policy (covers clickjacking via frame-ancestors 'none')
         response.headers["Content-Security-Policy"] = self.CSP_VALUE
+        response.headers["Permissions-Policy"] = self.PERMISSIONS_POLICY
+        response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
+        response.headers["Cross-Origin-Resource-Policy"] = "same-site"
 
         # HSTS - 2 years with subdomains + preload (can be disabled via env for local)
         if os.environ.get("DISABLE_HSTS", "").lower() != "true":
