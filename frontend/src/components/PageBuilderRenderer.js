@@ -110,11 +110,11 @@ const ContactFormBlock = ({ content }) => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      await axios.post(`${API}/inquiries`, {
+      await axios.post(`${API}/contact`, {
         name: formData.name,
         email: formData.email,
         message: formData.message,
-        source: 'pagebuilder_contact_form',
+        subject: content.subject || 'Contact Form Submission',
       });
       setSubmitted(true);
       toast.success(content.success_message || 'Thank you for your message!');
