@@ -31,10 +31,50 @@
         <link rel="icon" type="image/svg+xml" href="%PUBLIC_URL%/favicon.svg" />
         <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
         
-        <!-- Canonical URL -->
-        <link rel="canonical" href="https://vasilisnetshield.net" />
-        
-        <title>VasilisNetShield | Security Training Platform</title>
+        <!-- Canonical URL — must match actual domain -->
+        <link rel="canonical" href="https://vasilisnetshield.com" />
+
+        <!-- Open Graph image (used by LinkedIn, Facebook, Slack previews) -->
+        <meta property="og:url" content="https://vasilisnetshield.com" />
+        <meta property="og:image" content="https://vasilisnetshield.com/og-image.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta name="twitter:image" content="https://vasilisnetshield.com/og-image.png" />
+
+        <!-- Structured Data: Organization + WebSite (helps Google Knowledge Panel) -->
+        <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              "@id": "https://vasilisnetshield.com/#organization",
+              "name": "Vasilis NetShield",
+              "url": "https://vasilisnetshield.com",
+              "logo": {
+                "@type": "ImageObject",
+                "url": "https://vasilisnetshield.com/favicon.svg"
+              },
+              "description": "Human + AI Powered Cybersecurity Awareness Training. Phishing simulations, social engineering defence, and security awareness programmes.",
+              "sameAs": []
+            },
+            {
+              "@type": "WebSite",
+              "@id": "https://vasilisnetshield.com/#website",
+              "url": "https://vasilisnetshield.com",
+              "name": "Vasilis NetShield",
+              "publisher": { "@id": "https://vasilisnetshield.com/#organization" },
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://vasilisnetshield.com/blog?q={search_term_string}",
+                "query-input": "required name=search_term_string"
+              }
+            }
+          ]
+        }
+        </script>
+
+        <title>Vasilis NetShield | Cybersecurity Awareness Training Platform</title>
         
         <!-- RTL Support CSS -->
         <style>
