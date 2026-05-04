@@ -405,8 +405,8 @@ export function BlogPost() {
       )}
 
       {/* Article */}
-      <div className="blog-article-outer">
-        <article className="blog-article-inner">
+      <div style={{ width: '100%', padding: '3rem 2rem 5rem', boxSizing: 'border-box', overflowX: 'hidden' }}>
+        <article style={{ maxWidth: '740px', width: '100%', margin: '0 auto', boxSizing: 'border-box' }}>
 
           {/* Back link */}
           <Link
@@ -458,8 +458,45 @@ export function BlogPost() {
           <div className="blog-divider" style={{ borderColor: `${accentColor}25` }} />
 
           {/* Content */}
+          {/* Inject CSS for inner elements of dangerouslySetInnerHTML content */}
+          <style>{`
+            .blog-article-content p,
+            .blog-article-content h1,
+            .blog-article-content h2,
+            .blog-article-content h3,
+            .blog-article-content h4,
+            .blog-article-content li,
+            .blog-article-content blockquote,
+            .blog-article-content span,
+            .blog-article-content td {
+              word-break: normal !important;
+              overflow-wrap: normal !important;
+              white-space: normal !important;
+              hyphens: none !important;
+              -webkit-hyphens: none !important;
+              max-width: 100% !important;
+            }
+            .blog-article-content a,
+            .blog-article-content code {
+              word-break: break-all !important;
+              overflow-wrap: break-word !important;
+            }
+          `}</style>
           <div
             className="blog-article-content"
+            style={{
+              fontSize: '1.0625rem',
+              lineHeight: '1.85',
+              color: textColor || '#d4ccb0',
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+              wordBreak: 'normal',
+              overflowWrap: 'normal',
+              whiteSpace: 'normal',
+              hyphens: 'none',
+              WebkitHyphens: 'none',
+              maxWidth: '100%',
+              boxSizing: 'border-box',
+            }}
             dangerouslySetInnerHTML={{ __html: sanitizeHTML(post.content) }}
           />
 
