@@ -13,7 +13,7 @@
 
 /* ── Inner article: constrained readable width ── */
 .blog-article-inner {
-  max-width: 680px;
+  max-width: 740px;
   width: 100%;
   margin: 0 auto;
   box-sizing: border-box;
@@ -108,14 +108,15 @@
 
 .blog-article-content {
   /* Typography */
-  font-size: 1.125rem;
+  font-size: 1.0625rem;
   line-height: 1.85;
   color: #d4ccb0;
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
-  /* THE critical fix — proper word wrapping, NO hyphenation */
-  overflow-wrap: break-word;
+  /* Proper word wrapping — words never split mid-character */
+  overflow-wrap: normal;
   word-break: normal;
+  white-space: normal;
   hyphens: none;
   -webkit-hyphens: none;
   -ms-hyphens: none;
