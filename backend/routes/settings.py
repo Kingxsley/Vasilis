@@ -699,7 +699,7 @@ async def get_seo_settings(request: Request):
             "twitter_title": "Vasilis NetShield",
             "twitter_description": "Human + AI Powered Security Training Platform",
             "twitter_image": logo_url or "",
-            "robots_txt": None  # Served from frontend/public/robots.txt,
+            "robots_txt": None,  # Served from frontend/public/robots.txt
             "google_analytics_id": "",
             "google_search_console": "",
             "canonical_url": "https://vasilisnetshield.com"
