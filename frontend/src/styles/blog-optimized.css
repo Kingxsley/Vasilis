@@ -57,9 +57,10 @@
   letter-spacing: -0.02em;
   margin: 0 0 1.25rem;
   font-family: 'Chivo', Georgia, serif;
-  /* Prevent mid-word breaks */
   overflow-wrap: break-word;
   word-break: break-word;
+  hyphens: none;
+  -webkit-hyphens: none;
 }
 
 /* ── Excerpt / lead ── */
@@ -110,13 +111,12 @@
   color: #d4ccb0;
   font-family: 'Georgia', 'Times New Roman', serif;
 
-  /* THE critical fix — proper word wrapping */
+  /* THE critical fix — proper word wrapping, NO hyphenation */
   overflow-wrap: break-word;
-  word-break: normal;       /* normal, not break-word — avoids aggressive splitting */
-  overflow-wrap: anywhere;  /* only break when absolutely necessary */
-  hyphens: auto;
-  -webkit-hyphens: auto;
-  -ms-hyphens: auto;
+  word-break: normal;
+  hyphens: none;
+  -webkit-hyphens: none;
+  -ms-hyphens: none;
 
   /* Contain width */
   max-width: 100%;
