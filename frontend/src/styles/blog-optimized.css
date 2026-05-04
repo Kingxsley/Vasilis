@@ -2,14 +2,12 @@
    VASILIS NETSHIELD — BLOG ARTICLE STYLES
 ═══════════════════════════════════════════════════ */
 
-/* ── Page wrapper ── */
 .blog-post-page,
 .blog-post-page > * {
   overflow-x: hidden;
   max-width: 100vw;
 }
 
-/* ── Article container ── */
 article.blog-post-article {
   display: block;
   width: 100%;
@@ -17,30 +15,33 @@ article.blog-post-article {
   margin-left: auto;
   margin-right: auto;
   padding: 2rem 2rem 4rem;
-  overflow: hidden;
+  overflow-x: hidden;
   box-sizing: border-box;
-  word-break: break-word;
+  /* overflow-wrap breaks ONLY when a word won't fit — no mid-word cuts */
   overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
-/* ── Content wrapper ── */
 .blog-article-content {
   display: block;
   width: 100%;
   max-width: 100%;
-  overflow: hidden;
-  word-break: break-word;
+  overflow-x: hidden;
   overflow-wrap: break-word;
+  word-wrap: break-word;
+  /* NO word-break: break-all — that cuts mid-word */
   box-sizing: border-box;
   font-size: 1.125rem;
-  line-height: 1.8;
+  line-height: 1.9;
   color: #E8DDB5;
 }
 
-/* ── Contain every child — only max-width, no width:auto fighting ── */
+/* Contain children without forcing mid-word breaks */
 .blog-article-content * {
   max-width: 100%;
   box-sizing: border-box;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
 /* ── Typography ── */
@@ -50,32 +51,33 @@ article.blog-post-article {
   color: #FFFFFF;
   margin-top: 3rem;
   margin-bottom: 1.5rem;
-  line-height: 1.2;
+  line-height: 1.25;
   font-family: 'Chivo', sans-serif;
-  word-break: break-word;
+  hyphens: auto;
 }
 .blog-article-content h2 {
-  font-size: 1.875rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: #D4A836;
   margin-top: 3rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
   line-height: 1.3;
   font-family: 'Chivo', sans-serif;
-  word-break: break-word;
+  hyphens: auto;
 }
 .blog-article-content h3 {
-  font-size: 1.375rem;
+  font-size: 1.25rem;
   font-weight: 600;
   color: #E8DDB5;
   margin-top: 2.5rem;
   margin-bottom: 1rem;
   line-height: 1.4;
+  hyphens: auto;
 }
 .blog-article-content h4,
 .blog-article-content h5,
 .blog-article-content h6 {
-  font-size: 1.125rem;
+  font-size: 1.05rem;
   font-weight: 600;
   color: #E8DDB5;
   margin-top: 2rem;
@@ -83,10 +85,10 @@ article.blog-post-article {
 }
 .blog-article-content p {
   margin-bottom: 1.5rem;
-  line-height: 1.8;
+  line-height: 1.9;
   color: #E8DDB5;
-  word-break: break-word;
   overflow-wrap: break-word;
+  hyphens: auto;
 }
 .blog-article-content ul,
 .blog-article-content ol {
@@ -94,8 +96,8 @@ article.blog-post-article {
   padding-left: 1.75rem;
 }
 .blog-article-content li {
-  margin-bottom: 0.75rem;
-  line-height: 1.75;
+  margin-bottom: 0.6rem;
+  line-height: 1.8;
   color: #E8DDB5;
 }
 .blog-article-content li strong { color: #D4A836; font-weight: 600; }
@@ -104,12 +106,12 @@ article.blog-post-article {
 .blog-article-content a {
   color: #D4A836;
   text-decoration: underline;
-  word-break: break-all;
+  overflow-wrap: break-word;
   transition: opacity 0.2s;
 }
 .blog-article-content a:hover { opacity: 0.8; }
 
-/* ── Images — always responsive ── */
+/* ── Images ── */
 .blog-article-content img {
   display: block;
   max-width: 100%;
@@ -120,7 +122,7 @@ article.blog-post-article {
   border-radius: 0.5rem;
 }
 
-/* ── Tables — scroll horizontally ── */
+/* ── Tables — scroll, don't break layout ── */
 .blog-article-content table {
   display: block;
   width: 100%;
@@ -136,7 +138,7 @@ article.blog-post-article {
   border: 1px solid #30363D;
   color: #E8DDB5;
   white-space: normal;
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 .blog-article-content th {
   background: #21262D;
@@ -144,15 +146,16 @@ article.blog-post-article {
   font-weight: 600;
 }
 
-/* ── Code blocks ── */
+/* ── Code — scroll horizontally, don't break words ── */
 .blog-article-content pre {
   background: #161B22;
   border: 1px solid #30363D;
   border-radius: 0.5rem;
   padding: 1rem 1.25rem;
   overflow-x: auto;
+  /* pre wraps at whitespace only — no mid-word break */
   white-space: pre-wrap;
-  word-break: break-all;
+  overflow-wrap: break-word;
   margin-bottom: 1.5rem;
   font-size: 0.875rem;
   line-height: 1.6;
@@ -163,8 +166,7 @@ article.blog-post-article {
   padding: 0.15em 0.4em;
   font-size: 0.875em;
   color: #D4A836;
-  word-break: break-all;
-  white-space: normal;
+  overflow-wrap: break-word;
 }
 .blog-article-content pre code {
   background: transparent;
@@ -172,7 +174,6 @@ article.blog-post-article {
   color: #E8DDB5;
 }
 
-/* ── Blockquote ── */
 .blog-article-content blockquote {
   border-left: 4px solid #D4A836;
   padding: 0.75rem 1.25rem;
@@ -189,7 +190,7 @@ article.blog-post-article {
   margin: 2.5rem 0;
 }
 
-/* ── BLOG LISTING PAGE ── */
+/* ── BLOG LISTING ── */
 .blog-listing-grid {
   width: 100%;
   overflow-x: hidden;
@@ -198,7 +199,7 @@ article.blog-post-article {
 .blog-listing-grid > * {
   min-width: 0;
   max-width: 100%;
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 .blog-listing-grid img {
   max-width: 100%;
