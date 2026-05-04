@@ -101,6 +101,15 @@ class BrandingSettings(BaseModel):
     discord_webhook_url: Optional[str] = None
     # Navigation menu order - list of menu item IDs in display order
     nav_menu_order: Optional[List[str]] = None
+    # Certificate verification page customisation
+    cert_verify_heading: Optional[str] = None          # e.g. "Certificate of Achievement"
+    cert_verify_subheading: Optional[str] = None       # e.g. "Cybersecurity Awareness Training"
+    cert_verify_body_text: Optional[str] = None        # Paragraph shown under recipient name
+    cert_verify_footer_text: Optional[str] = None      # Small print at bottom
+    cert_verify_badge_text: Optional[str] = None       # Text inside the verified badge
+    cert_verify_show_score: Optional[bool] = True      # Show/hide score ring
+    cert_verify_show_modules: Optional[bool] = True    # Show/hide modules list
+    cert_verify_accent_color: Optional[str] = None     # Override accent for cert page
 
 
 class BrandingUpdate(BaseModel):
@@ -126,6 +135,15 @@ class BrandingUpdate(BaseModel):
     discord_webhook_url: Optional[str] = None
     # Navigation menu order - list of menu item IDs in display order
     nav_menu_order: Optional[List[str]] = None
+    # Certificate verification page customisation
+    cert_verify_heading: Optional[str] = None
+    cert_verify_subheading: Optional[str] = None
+    cert_verify_body_text: Optional[str] = None
+    cert_verify_footer_text: Optional[str] = None
+    cert_verify_badge_text: Optional[str] = None
+    cert_verify_show_score: Optional[bool] = None
+    cert_verify_show_modules: Optional[bool] = None
+    cert_verify_accent_color: Optional[str] = None
 
 
 # ============== ROUTES ==============
@@ -209,7 +227,15 @@ async def get_branding():
             "social_instagram": settings.get("social_instagram"),
             "social_youtube": settings.get("social_youtube"),
             "discord_webhook_url": settings.get("discord_webhook_url"),
-            "nav_menu_order": settings.get("nav_menu_order", [])
+            "nav_menu_order": settings.get("nav_menu_order", []),
+            "cert_verify_heading": settings.get("cert_verify_heading"),
+            "cert_verify_subheading": settings.get("cert_verify_subheading"),
+            "cert_verify_body_text": settings.get("cert_verify_body_text"),
+            "cert_verify_footer_text": settings.get("cert_verify_footer_text"),
+            "cert_verify_badge_text": settings.get("cert_verify_badge_text"),
+            "cert_verify_show_score": settings.get("cert_verify_show_score", True),
+            "cert_verify_show_modules": settings.get("cert_verify_show_modules", True),
+            "cert_verify_accent_color": settings.get("cert_verify_accent_color")
         }
     except Exception as e:
         # On any error, return defaults instead of 500
