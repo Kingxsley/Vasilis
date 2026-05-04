@@ -458,30 +458,6 @@ export function BlogPost() {
           <div className="blog-divider" style={{ borderColor: `${accentColor}25` }} />
 
           {/* Content */}
-          {/* Inject CSS for inner elements of dangerouslySetInnerHTML content */}
-          <style>{`
-            .blog-article-content p,
-            .blog-article-content h1,
-            .blog-article-content h2,
-            .blog-article-content h3,
-            .blog-article-content h4,
-            .blog-article-content li,
-            .blog-article-content blockquote,
-            .blog-article-content span,
-            .blog-article-content td {
-              word-break: normal !important;
-              overflow-wrap: normal !important;
-              white-space: normal !important;
-              hyphens: none !important;
-              -webkit-hyphens: none !important;
-              max-width: 100% !important;
-            }
-            .blog-article-content a,
-            .blog-article-content code {
-              word-break: break-all !important;
-              overflow-wrap: break-word !important;
-            }
-          `}</style>
           <div
             className="blog-article-content"
             style={{
