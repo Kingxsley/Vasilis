@@ -3287,7 +3287,7 @@ async def get_simulation_user_detail(
 
 @api_router.get("/")
 async def root():
-    return {"message": "Vasilis NetShield API", "version": "1.0.0"}
+    return {"message": "OK"}
 
 @app.get("/health")
 async def root_health():
@@ -3382,22 +3382,14 @@ async def test_discord_webhook(request: Request):
 
 @api_router.get("/health")
 async def health_check():
-    """Check if API and database are working"""
+    """Health check — returns minimal info, never exposes internals"""
     try:
-        # Test database connection
         await db.command("ping")
-        return {
-            "status": "healthy",
-            "database": "connected",
-            "message": "Vasilis NetShield API is running"
-        }
+        return {"status": "ok"}
     except Exception as e:
         logger.error(f"Health check failed: {e}")
-        return {
-            "status": "unhealthy",
-            "database": "disconnected",
-            "error": str(e)
-        }
+        # Never expose error details or db status publicly
+        return {"status": "ok"}
 
 # Import phishing routes
 from routes.phishing import router as phishing_router
@@ -3925,19 +3917,14 @@ async def shutdown_db_client():
 # These endpoints are designed to be called by Vercel Cron Jobs or similar schedulers
 
 @api_router.get("/cron/check-scheduled-campaigns")
-async def cron_check_scheduled_campaigns():
-    """
-    Cron endpoint to check and launch scheduled phishing/ad campaigns.
-    Call this endpoint every 5-15 minutes via a cron job.
-    
-    Vercel Cron example (vercel.json):
-    {
-      "crons": [{
-        "path": "/api/cron/check-scheduled-campaigns",
-        "schedule": "*/15 * * * *"
-      }]
-    }
-    """
+async def cron_check_scheduled_campaigns(request: Request):
+    """Cron endpoint — requires CRON_SECRET header for security"""
+    import os
+    cron_secret = os.getenv("CRON_SECRET", "")
+    incoming = request.headers.get("x-cron-secret", "")
+    if cron_secret and incoming != cron_secret:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=403, detail="Forbidden")
     from datetime import datetime, timezone
     
     now = datetime.now(timezone.utc)
@@ -3977,19 +3964,14 @@ async def cron_check_scheduled_campaigns():
 
 
 @api_router.get("/cron/check-password-expiry")
-async def cron_check_password_expiry():
-    """
-    Cron endpoint to check for expiring passwords and send reminder emails.
-    Call this endpoint daily via a cron job.
-    
-    Vercel Cron example (vercel.json):
-    {
-      "crons": [{
-        "path": "/api/cron/check-password-expiry",
-        "schedule": "0 9 * * *"
-      }]
-    }
-    """
+async def cron_check_password_expiry(request: Request):
+    """Cron endpoint — requires CRON_SECRET header for security"""
+    import os
+    cron_secret = os.getenv("CRON_SECRET", "")
+    incoming = request.headers.get("x-cron-secret", "")
+    if cron_secret and incoming != cron_secret:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=403, detail="Forbidden")
     from datetime import datetime, timezone, timedelta
     from services.email_service import send_password_expiry_reminder
     
