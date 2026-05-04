@@ -63,15 +63,25 @@ async def generate_user_certificate(user_id: str, request: Request):
     total_score = sum(s.get("score", 0) for s in sessions)
     avg_score = total_score / len(sessions) if sessions else 0
     
-    # Map module IDs to names
-    module_names = {
+    # Fetch real module names from DB (covers all modules, not just legacy hardcoded IDs)
+    module_ids = list(set(s.get("module_id") for s in sessions if s.get("module_id")))
+    db_modules = await db.training_modules.find(
+        {"module_id": {"$in": module_ids}},
+        {"_id": 0, "module_id": 1, "name": 1}
+    ).to_list(1000)
+    module_name_map = {m["module_id"]: m["name"] for m in db_modules}
+
+    # Fallback legacy IDs for backwards compatibility
+    legacy_names = {
         "mod_phishing_email": "Phishing Email Detection",
         "mod_malicious_ads": "Malicious Ad Recognition",
         "mod_social_engineering": "Social Engineering Defense"
     }
-    
+
     modules_completed = list(set(
-        module_names.get(s.get("module_id"), s.get("module_id", "Unknown"))
+        module_name_map.get(s.get("module_id"))
+        or legacy_names.get(s.get("module_id"))
+        or s.get("module_id", "Unknown")
         for s in sessions
     ))
     
@@ -423,8 +433,35 @@ async def verify_certificate(certificate_id: str):
             org_name = org.get("name")
 
     # Build training_name from modules_completed
-    modules = cert.get("modules_completed", [])
-    training_name = modules[0] if len(modules) == 1 else " & ".join(modules) if modules else "Training"
+    # Resolve any raw module IDs to human-readable names
+    modules_raw = cert.get("modules_completed", [])
+    if not isinstance(modules_raw, list):
+        modules_raw = [modules_raw] if modules_raw else []
+
+    # Check if any entry looks like a raw ID (no spaces, or contains underscores)
+    # If so, look up the real name from training_modules collection
+    def looks_like_id(s):
+        return s and (" " not in str(s).strip() or "_" in str(s))
+
+    if any(looks_like_id(m) for m in modules_raw):
+        db_mods = await db.training_modules.find(
+            {"module_id": {"$in": modules_raw}},
+            {"_id": 0, "module_id": 1, "name": 1}
+        ).to_list(1000)
+        id_to_name = {m["module_id"]: m["name"] for m in db_mods}
+        legacy = {
+            "mod_phishing_email": "Phishing Email Detection",
+            "mod_malicious_ads": "Malicious Ad Recognition",
+            "mod_social_engineering": "Social Engineering Defense"
+        }
+        modules = [
+            id_to_name.get(m) or legacy.get(m) or m
+            for m in modules_raw
+        ]
+    else:
+        modules = modules_raw
+
+    training_name = modules[0] if len(modules) == 1 else " & ".join(modules) if modules else "Training Completion"
 
     return {
         "valid": True,
