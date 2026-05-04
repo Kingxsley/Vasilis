@@ -35,7 +35,15 @@ export default function Settings() {
     social_instagram: '',
     social_youtube: '',
     discord_webhook_url: '',
-    nav_menu_order: []
+    nav_menu_order: [],
+    cert_verify_heading: '',
+    cert_verify_subheading: '',
+    cert_verify_body_text: '',
+    cert_verify_footer_text: '',
+    cert_verify_badge_text: '',
+    cert_verify_show_score: true,
+    cert_verify_show_modules: true,
+    cert_verify_accent_color: '',
   });
   const [cmsTiles, setCmsTiles] = useState([]);
   const [orderedMenuItems, setOrderedMenuItems] = useState([]);
@@ -990,6 +998,129 @@ export default function Settings() {
                   <li>🔐 <strong>Credential Submissions</strong> - CRITICAL: When users enter credentials</li>
                   <li>🚀 <strong>Campaign Launches</strong> - When new campaigns are started</li>
                 </ul>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* ── Certificate Verification Page ── */}
+          <Card className="bg-[#1a1a2e] border-[#D4A836]/20">
+            <CardHeader>
+              <CardTitle className="text-[#E8DDB5] flex items-center gap-2">
+                <span>🎓</span> Certificate Verification Page
+              </CardTitle>
+              <CardDescription className="text-gray-400">
+                Customise the public page trainees see when they scan or share their certificate QR code.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Verified Badge Text</label>
+                  <Input
+                    value={branding.cert_verify_badge_text || ''}
+                    onChange={(e) => setBranding({ ...branding, cert_verify_badge_text: e.target.value })}
+                    placeholder="Certificate Authenticity Verified"
+                    className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Text inside the green verified badge at the top</p>
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Certificate Heading</label>
+                  <Input
+                    value={branding.cert_verify_heading || ''}
+                    onChange={(e) => setBranding({ ...branding, cert_verify_heading: e.target.value })}
+                    placeholder="Certificate of Achievement"
+                    className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Main heading on the certificate card</p>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Certificate Subheading</label>
+                <Input
+                  value={branding.cert_verify_subheading || ''}
+                  onChange={(e) => setBranding({ ...branding, cert_verify_subheading: e.target.value })}
+                  placeholder="Cybersecurity Awareness Training"
+                  className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]"
+                />
+                <p className="text-xs text-gray-500 mt-1">Shown under "has successfully completed" — defaults to the module name</p>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Body Text</label>
+                <textarea
+                  value={branding.cert_verify_body_text || ''}
+                  onChange={(e) => setBranding({ ...branding, cert_verify_body_text: e.target.value })}
+                  placeholder="This certificate is awarded in recognition of completing the required cybersecurity training programme."
+                  rows={3}
+                  className="w-full rounded-lg bg-[#1a1a24] border border-[#D4A836]/30 text-[#E8DDB5] px-3 py-2 text-sm focus:outline-none focus:border-[#D4A836]/60"
+                />
+                <p className="text-xs text-gray-500 mt-1">Optional paragraph shown below the recipient name</p>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Footer Note</label>
+                <Input
+                  value={branding.cert_verify_footer_text || ''}
+                  onChange={(e) => setBranding({ ...branding, cert_verify_footer_text: e.target.value })}
+                  placeholder="This certificate was issued by Vasilis NetShield and has been verified as authentic."
+                  className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5]"
+                />
+                <p className="text-xs text-gray-500 mt-1">Small print at the very bottom of the page</p>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Accent Colour Override</label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={branding.cert_verify_accent_color || branding.primary_color || '#D4A836'}
+                    onChange={(e) => setBranding({ ...branding, cert_verify_accent_color: e.target.value })}
+                    className="h-10 w-16 rounded cursor-pointer border border-[#D4A836]/30 bg-transparent"
+                  />
+                  <Input
+                    value={branding.cert_verify_accent_color || ''}
+                    onChange={(e) => setBranding({ ...branding, cert_verify_accent_color: e.target.value })}
+                    placeholder={branding.primary_color || '#D4A836'}
+                    className="bg-[#1a1a24] border-[#D4A836]/30 text-[#E8DDB5] flex-1 font-mono"
+                  />
+                  {branding.cert_verify_accent_color && (
+                    <button
+                      type="button"
+                      onClick={() => setBranding({ ...branding, cert_verify_accent_color: '' })}
+                      className="text-xs text-gray-500 hover:text-white transition-colors"
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Leave blank to use your primary brand colour</p>
+              </div>
+              <div className="flex items-center gap-8 pt-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={branding.cert_verify_show_score !== false}
+                    onChange={(e) => setBranding({ ...branding, cert_verify_show_score: e.target.checked })}
+                    className="w-4 h-4 accent-[#D4A836]"
+                  />
+                  <span className="text-sm text-gray-300">Show score ring</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={branding.cert_verify_show_modules !== false}
+                    onChange={(e) => setBranding({ ...branding, cert_verify_show_modules: e.target.checked })}
+                    className="w-4 h-4 accent-[#D4A836]"
+                  />
+                  <span className="text-sm text-gray-300">Show modules list</span>
+                </label>
+              </div>
+              <div className="pt-2 p-3 rounded-lg text-xs text-gray-500 flex items-start gap-2"
+                style={{ background: 'rgba(212,168,54,0.07)', border: '1px solid rgba(212,168,54,0.15)' }}>
+                <span>💡</span>
+                <span>
+                  The verification page is public — anyone with the certificate ID or QR code can view it.
+                  It automatically uses your company name, logo, and brand colours.
+                  Changes take effect immediately after saving.
+                </span>
               </div>
             </CardContent>
           </Card>
