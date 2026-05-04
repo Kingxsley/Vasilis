@@ -3382,13 +3382,12 @@ async def test_discord_webhook(request: Request):
 
 @api_router.get("/health")
 async def health_check():
-    """Health check — returns minimal info, never exposes internals"""
+    """Health check — returns minimal info only"""
     try:
         await db.command("ping")
         return {"status": "ok"}
     except Exception as e:
         logger.error(f"Health check failed: {e}")
-        # Never expose error details or db status publicly
         return {"status": "ok"}
 
 # Import phishing routes
@@ -3918,12 +3917,10 @@ async def shutdown_db_client():
 
 @api_router.get("/cron/check-scheduled-campaigns")
 async def cron_check_scheduled_campaigns(request: Request):
-    """Cron endpoint — requires CRON_SECRET header for security"""
-    import os
-    cron_secret = os.getenv("CRON_SECRET", "")
-    incoming = request.headers.get("x-cron-secret", "")
-    if cron_secret and incoming != cron_secret:
-        from fastapi import HTTPException
+    """Cron endpoint — protected by CRON_SECRET env variable"""
+    import os as _os
+    _secret = _os.getenv("CRON_SECRET", "")
+    if _secret and request.headers.get("x-cron-secret", "") != _secret:
         raise HTTPException(status_code=403, detail="Forbidden")
     from datetime import datetime, timezone
     
@@ -3965,12 +3962,10 @@ async def cron_check_scheduled_campaigns(request: Request):
 
 @api_router.get("/cron/check-password-expiry")
 async def cron_check_password_expiry(request: Request):
-    """Cron endpoint — requires CRON_SECRET header for security"""
-    import os
-    cron_secret = os.getenv("CRON_SECRET", "")
-    incoming = request.headers.get("x-cron-secret", "")
-    if cron_secret and incoming != cron_secret:
-        from fastapi import HTTPException
+    """Cron endpoint — protected by CRON_SECRET env variable"""
+    import os as _os
+    _secret = _os.getenv("CRON_SECRET", "")
+    if _secret and request.headers.get("x-cron-secret", "") != _secret:
         raise HTTPException(status_code=403, detail="Forbidden")
     from datetime import datetime, timezone, timedelta
     from services.email_service import send_password_expiry_reminder
