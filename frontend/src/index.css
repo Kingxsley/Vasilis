@@ -325,3 +325,36 @@ details[open] summary {
 details summary:hover {
   background: rgba(212, 168, 54, 0.05);
 }
+
+/* ═══════════════════════════════════════════════════════════
+   BLOG ARTICLE — GLOBAL OVERFLOW FIX
+   Prevents mid-word line breaking on blog post pages.
+   These rules must live in index.css (processed before component CSS)
+   ═══════════════════════════════════════════════════════════ */
+
+.blog-article-outer {
+  overflow-x: hidden !important;
+}
+
+.blog-article-inner {
+  max-width: 680px !important;
+  overflow-x: hidden !important;
+}
+
+/* Every element inside the article stays within bounds */
+.blog-article-content,
+.blog-article-content p,
+.blog-article-content h1,
+.blog-article-content h2,
+.blog-article-content h3,
+.blog-article-content h4,
+.blog-article-content li,
+.blog-article-content blockquote,
+.blog-article-content td,
+.blog-article-content th {
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important;
+  word-break: normal !important;
+  hyphens: none !important;
+  -webkit-hyphens: none !important;
+}
