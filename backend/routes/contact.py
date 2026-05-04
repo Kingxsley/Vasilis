@@ -12,6 +12,25 @@ import os
 
 logger = logging.getLogger(__name__)
 
+# Input sanitisation — shared utility
+try:
+    from utils.input_sanitizer import sanitize_field, sanitize_submission
+except ImportError:
+    # Inline fallback if module path differs
+    import re, html as _html
+    _INJ = re.compile(r"(--|;|/\*|\*/|\$where|\$gt|<script|javascript:|on\w+=)", re.I)
+    def sanitize_field(v, field="default"):
+        v = str(v or "").strip()
+        limits = {"name":100,"email":100,"phone":30,"organization":150,"subject":150,"message":200,"default":200}
+        if len(v) > limits.get(field, 200):
+            raise ValueError(f"Field '{field}' exceeds maximum length.")
+        if _INJ.search(v):
+            raise ValueError(f"Field '{field}' contains disallowed content.")
+        return _html.escape(v, quote=True)
+    def sanitize_submission(data, field_map=None):
+        fm = field_map or {}
+        return {k: sanitize_field(str(v) if v else "", fm.get(k,k)) for k,v in data.items()}
+
 router = APIRouter(prefix="/contact", tags=["Contact Forms"])
 
 # Email recipient for form submissions
@@ -124,17 +143,28 @@ class StatusUpdate(BaseModel):
 async def submit_contact_form(data: ContactSubmission, background_tasks: BackgroundTasks):
     """Submit a contact form (public endpoint)"""
     db = get_db()
-    
+
+    # Sanitise and enforce field limits
+    try:
+        clean_name    = sanitize_field(data.name or "",         "name")
+        clean_email   = sanitize_field(data.email or "",        "email")
+        clean_phone   = sanitize_field(data.phone or "",        "phone")
+        clean_org     = sanitize_field(data.organization or "", "organization")
+        clean_subject = sanitize_field(data.subject or "",      "subject")
+        clean_message = sanitize_field(data.message or "",      "message")
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
     submission_id = f"contact_{uuid.uuid4().hex[:12]}"
-    
+
     submission = {
         "submission_id": submission_id,
-        "name": data.name,
-        "email": data.email,
-        "phone": data.phone,
-        "organization": data.organization,
-        "subject": data.subject or "Contact Form Submission",
-        "message": data.message,
+        "name": clean_name,
+        "email": clean_email,
+        "phone": clean_phone,
+        "organization": clean_org,
+        "subject": clean_subject or "Contact Form Submission",
+        "message": clean_message,
         "status": "new",
         "type": "contact",
         "created_at": datetime.now(timezone.utc).isoformat()
