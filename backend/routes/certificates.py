@@ -432,36 +432,51 @@ async def verify_certificate(certificate_id: str):
         if org:
             org_name = org.get("name")
 
-    # Build training_name from modules_completed
-    # Resolve any raw module IDs to human-readable names
-    modules_raw = cert.get("modules_completed", [])
-    if not isinstance(modules_raw, list):
-        modules_raw = [modules_raw] if modules_raw else []
+    # Resolve training_name — handles both certificate types:
+    # Type A (module download): stores "module_name" + "module_id", no "modules_completed"
+    # Type B (full completion): stores "modules_completed" as a list of names or IDs
 
-    # Check if any entry looks like a raw ID (no spaces, or contains underscores)
-    # If so, look up the real name from training_modules collection
-    def looks_like_id(s):
-        return s and (" " not in str(s).strip() or "_" in str(s))
+    # --- Type A: single module certificate ---
+    if cert.get("module_name"):
+        training_name = cert["module_name"]
 
-    if any(looks_like_id(m) for m in modules_raw):
-        db_mods = await db.training_modules.find(
-            {"module_id": {"$in": modules_raw}},
-            {"_id": 0, "module_id": 1, "name": 1}
-        ).to_list(1000)
-        id_to_name = {m["module_id"]: m["name"] for m in db_mods}
+    # --- Type B: multi/full-completion certificate ---
+    else:
+        modules_raw = cert.get("modules_completed", [])
+        if not isinstance(modules_raw, list):
+            # Could be stored as a bullet-joined string e.g. "Module A • Module B"
+            modules_raw = [m.strip() for m in str(modules_raw).split("•")] if modules_raw else []
+
         legacy = {
             "mod_phishing_email": "Phishing Email Detection",
             "mod_malicious_ads": "Malicious Ad Recognition",
             "mod_social_engineering": "Social Engineering Defense"
         }
-        modules = [
-            id_to_name.get(m) or legacy.get(m) or m
-            for m in modules_raw
-        ]
-    else:
-        modules = modules_raw
 
-    training_name = modules[0] if len(modules) == 1 else " & ".join(modules) if modules else "Training Completion"
+        # Resolve any raw IDs (no spaces = likely an ID)
+        raw_ids = [m for m in modules_raw if m and " " not in str(m).strip()]
+        if raw_ids:
+            db_mods = await db.training_modules.find(
+                {"module_id": {"$in": raw_ids}},
+                {"_id": 0, "module_id": 1, "name": 1}
+            ).to_list(1000)
+            id_to_name = {m["module_id"]: m["name"] for m in db_mods}
+            modules = [
+                id_to_name.get(m) or legacy.get(m) or m
+                for m in modules_raw
+            ]
+        else:
+            modules = modules_raw
+
+        # Last resort: look up by module_id field on the cert itself
+        if not modules and cert.get("module_id"):
+            mod_doc = await db.training_modules.find_one(
+                {"module_id": cert["module_id"]},
+                {"_id": 0, "name": 1}
+            )
+            training_name = mod_doc["name"] if mod_doc else legacy.get(cert["module_id"], cert["module_id"])
+        else:
+            training_name = modules[0] if len(modules) == 1 else " & ".join(modules) if modules else "Training Completion"
 
     return {
         "valid": True,
