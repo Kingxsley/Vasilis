@@ -110,11 +110,11 @@ const ContactFormBlock = ({ content }) => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      await axios.post(`${API}/contact`, {
+      await axios.post(`${API}/inquiries`, {
         name: formData.name,
         email: formData.email,
         message: formData.message,
-        subject: content.subject || 'Contact Form Submission',
+        source: 'pagebuilder_contact_form',
       });
       setSubmitted(true);
       toast.success(content.success_message || 'Thank you for your message!');
@@ -152,7 +152,8 @@ const ContactFormBlock = ({ content }) => {
           <Input
             placeholder="Your Name"
             value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value.slice(0, 100) })}
+            maxLength={100}
             className="bg-[#1a1a24] border-[#30363D] text-white"
             required
           />
@@ -160,17 +161,26 @@ const ContactFormBlock = ({ content }) => {
             type="email"
             placeholder="Your Email"
             value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value.slice(0, 100) })}
+            maxLength={100}
             className="bg-[#1a1a24] border-[#30363D] text-white"
             required
           />
-          <Textarea
-            placeholder="Your Message"
-            value={formData.message}
-            onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-            className="bg-[#1a1a24] border-[#30363D] text-white min-h-[120px]"
-            required
-          />
+          <div>
+            <Textarea
+              placeholder="Your Message"
+              value={formData.message}
+              onChange={(e) => setFormData({ ...formData, message: e.target.value.slice(0, 200) })}
+              maxLength={200}
+              className="bg-[#1a1a24] border-[#30363D] text-white min-h-[120px]"
+              required
+            />
+            <div className="flex justify-end mt-1">
+              <span className={`text-xs ${formData.message.length >= 180 ? 'text-orange-400' : 'text-gray-500'}`}>
+                {formData.message.length}/200
+              </span>
+            </div>
+          </div>
           <Button type="submit" disabled={submitting} className="w-full bg-[#D4A836] hover:bg-[#C49A30] text-black">
             {submitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending...</> : content.submit_text || 'Send Message'}
           </Button>
