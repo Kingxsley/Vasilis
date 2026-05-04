@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { useAuth } from '../App';
 import { sanitizeHTML } from '../utils/sanitize';
+
+// Required by email preview panels — wraps sanitized HTML for dangerouslySetInnerHTML
+const createSafeMarkup = (html) => ({ __html: html || '' });
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
