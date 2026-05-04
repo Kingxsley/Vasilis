@@ -6,16 +6,18 @@
 /* ── Outer wrapper: full-width background ── */
 .blog-article-outer {
   width: 100%;
-  padding: 3rem 1.5rem 5rem;
+  padding: 3rem 2rem 5rem;
   box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* ── Inner article: constrained readable width ── */
 .blog-article-inner {
-  max-width: 720px;
+  max-width: 680px;
   width: 100%;
   margin: 0 auto;
   box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* ── Back link ── */
@@ -407,4 +409,31 @@
   .blog-article-content {
     font-size: 1.0625rem;
   }
+}
+
+/* ── HARD WIDTH CLAMP — prevents any child exceeding container ── */
+.blog-article-inner,
+.blog-article-inner * {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.blog-article-content {
+  /* Ensure text wraps before hitting container edge */
+  width: 100%;
+  min-width: 0;
+}
+
+/* Paragraphs never exceed their parent */
+.blog-article-content p,
+.blog-article-content h1,
+.blog-article-content h2,
+.blog-article-content h3,
+.blog-article-content li,
+.blog-article-content blockquote {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  hyphens: none;
+  -webkit-hyphens: none;
 }
