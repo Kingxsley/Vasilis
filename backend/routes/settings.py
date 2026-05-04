@@ -176,7 +176,15 @@ async def get_branding():
                 "social_linkedin": None,
                 "social_instagram": None,
                 "social_youtube": None,
-                "nav_menu_order": []
+                "nav_menu_order": [],
+                "cert_verify_badge_text": None,
+                "cert_verify_heading": None,
+                "cert_verify_subheading": None,
+                "cert_verify_body_text": None,
+                "cert_verify_footer_text": None,
+                "cert_verify_show_score": True,
+                "cert_verify_show_modules": True,
+                "cert_verify_accent_color": None
             }
         
         settings = await db.settings.find_one({"type": "branding"}, {"_id": 0})
@@ -203,7 +211,15 @@ async def get_branding():
                 "social_linkedin": None,
                 "social_instagram": None,
                 "social_youtube": None,
-                "nav_menu_order": []
+                "nav_menu_order": [],
+                "cert_verify_badge_text": None,
+                "cert_verify_heading": None,
+                "cert_verify_subheading": None,
+                "cert_verify_body_text": None,
+                "cert_verify_footer_text": None,
+                "cert_verify_show_score": True,
+                "cert_verify_show_modules": True,
+                "cert_verify_accent_color": None
             }
         
         return {
